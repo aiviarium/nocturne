@@ -5,6 +5,9 @@ on:
     branches: [main]
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
   check:
     runs-on: ubuntu-latest
@@ -25,14 +28,54 @@ jobs:
       - name: Gallery build
         run: bun run gallery:build
 
+  site:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: site
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # The full history gives each page its "Last updated" date.
+          fetch-depth: 0
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.3
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      # The site builds the gallery from the library, which needs its dependencies too.
+      - run: bun install --frozen-lockfile
+        working-directory: .
+      - run: bun install --frozen-lockfile
+      - name: Typecheck
+        run: bun run typecheck
+      - name: Lint
+        run: bun run lint
+      - name: Links
+        run: bun run links
+      - name: Build
+        run: bun run build
+      - name: Build with a base path
+        run: bun run build
+        env:
+          DOCS_BASE_PATH: /nocturne
+
   prose:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.3
+      # Vale reads MDX through mdx2vast, which comes with the site's dependencies.
+      - run: bun install --frozen-lockfile
+        working-directory: site
       - name: Install Vale
         run: |
           curl -sSfL https://github.com/errata-ai/vale/releases/download/v3.25.1/vale_3.25.1_Linux_64-bit.tar.gz | tar -xz -C /usr/local/bin vale
       - name: Vale
         run: |
-          out=$(vale --output=line $(git ls-files '*.md'))
+          export PATH="$PWD/site/node_modules/.bin:$PATH"
+          out=$(vale --output=line $(git ls-files '*.md' '*.mdx'))
           if [ -n "$out" ]; then echo "$out"; exit 1; fi
