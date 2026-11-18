@@ -78,7 +78,7 @@ export const PAGES: GalleryPage[] = [
     id: "filter-bar",
     title: "Filter bar",
     group: "Shared parts",
-    lead: "Search, segmented choices and selects in one row that wraps predictably: search first and growing, filters at their width, the count at the right. Labels live inside the controls.",
+    lead: "Search, segmented choices and selects in one row: search first and growing, filters at their width, the number of results at the right of the first line. Filters that do not fit wrap from the left edge, under the search. Labels live inside the controls.",
     sections: ["filter-bar/default"],
   },
   {

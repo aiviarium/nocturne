@@ -2,6 +2,7 @@ import {
   Avatar,
   Button,
   FilterBar,
+  FilterCount,
   InlineField,
   LabelChip,
   ListRow,
@@ -142,7 +143,7 @@ export default function IssueTracker() {
                 onInput={(e) => setQuery(e.currentTarget.value)}
               />
             }
-            end={<span>{rows().length} issues</span>}
+            end={<FilterCount value={rows().length} unit="Issues" />}
           >
             <Tabs
               label="Scope"
