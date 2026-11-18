@@ -97,6 +97,11 @@ export interface ComposerProps {
   onSubmit?: (submit: ComposerSubmit) => void
   /** Placeholder text. Default "Ask anything…". */
   placeholder?: string
+  /**
+   * A notice about the input, in a strip on the composer's top edge, outside its box: a rate limit, a lost
+   * connection. A blocked microphone or a failed dictation shows there too.
+   */
+  notice?: JSX.Element
   /** `/` commands, run now. They start a line. */
   commands?: ComposerItem[]
   /** `@` context: files, docs and people. */
@@ -466,6 +471,9 @@ export function Composer(props: ComposerProps): JSX.Element {
       .join(", ")
   const dictState = () => dictation()?.state ?? "idle"
   const hasText = () => dictState() === "idle" || dictState() === "blocked"
+  /** A blocked microphone or a failed dictation, shown above the composer. */
+  const dictNotice = () =>
+    dictState() === "blocked" || (dictState() === "idle" && Boolean(dictation()?.error))
   /** Recording or transcribing: the bottom row shows the dictation's status in place of the options. */
   const dictBusy = () => dictState() === "recording" || dictState() === "transcribing"
 
@@ -495,6 +503,12 @@ export function Composer(props: ComposerProps): JSX.Element {
           </div>
         }
       >
+        <Show when={props.notice || dictNotice()}>
+          <div class="nc-composer__notice" data-part="composer-notice">
+            {props.notice}
+            <Show when={dictation()}>{(d) => <DictationBar dictation={d()} part="notice" />}</Show>
+          </div>
+        </Show>
         <div class="nc-composer" data-dictation={dictState()}>
           <Show when={(props.attachments?.length ?? 0) > 0}>
             <div class="nc-composer__attachments" role="list" aria-label="Attachments">
@@ -520,7 +534,6 @@ export function Composer(props: ComposerProps): JSX.Element {
           <Show when={dictation()}>
             {(d) => (
               <>
-                <DictationBar dictation={d()} part="notice" />
                 {/* The text heard so far takes the field's place, where the typed text will go. */}
                 <DictationBar dictation={d()} part="live" class="nc-composer__live body-lg" />
               </>
