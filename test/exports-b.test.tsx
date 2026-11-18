@@ -514,6 +514,25 @@ describe("Nav", () => {
     expect(after.every((el, i) => el === before[i])).toBe(true)
     expect(after.map((el) => el.getAttribute("aria-current"))).toEqual([null, null, "page"])
   })
+
+  test("a drilled-down sidebar has a header that names the place and goes back", () => {
+    const went: string[] = []
+    const { root } = track(
+      mount(() => (
+        <Nav
+          label="Atlas web"
+          back={{ label: "Atlas web", to: "Projects", onClick: () => went.push("projects") }}
+          groups={[{ label: "Issues", items: [{ label: "Active", current: true }] }]}
+        />
+      )),
+    )
+    const back = one("[data-part=nav-back]", root)
+    expect(back.textContent).toBe("Atlas web")
+    expect(back.getAttribute("aria-label")).toBe("Back to Projects")
+    expect(back.nextElementSibling?.textContent).toBe("Issues")
+    click(back)
+    expect(went).toEqual(["projects"])
+  })
 })
 
 describe("NavigationBar", () => {

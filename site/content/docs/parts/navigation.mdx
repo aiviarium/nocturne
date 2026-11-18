@@ -14,8 +14,10 @@ Pass `onSidebarResize` to make it resizable: its edge drags, and the arrow keys 
 The app keeps the width and passes it back as `sidebarWidth`.
 The width runs from 180px to 420px.
 
-Going deeper changes the main column, not the sidebar.
-The sidebar keeps its width, its scroll and its current item while you drill down.
+Going deeper drills down the sidebar with the main column.
+Inside a domain of its own, such as a project, the sidebar shows that domain's places.
+Pass `back` to its `Nav`: a header row at the top shows a back chevron and the name of the domain, and it returns to the app's places.
+The sidebar keeps its width while it drills down.
 
 ## The app's header
 
@@ -42,7 +44,7 @@ A view has these columns, from left to right.
 | Column | What goes in it | Width | When there is no room |
 | --- | --- | --- | --- |
 | Rail | An activity bar, the `rail` of `ViewLayout` | 36px | It stays |
-| Shared sidebar | The app's places, from `AppShell` | 180px to 420px, the person resizes it | A drawer on a phone |
+| Shared sidebar | The app's places from `AppShell`, or the places of the domain you drilled into | 180px to 420px, the person resizes it | A drawer on a phone |
 | View sidebar | The view's own navigation, such as saved views or a page tree | 180px to 420px, 240px at first | Hides and leaves the rail |
 | Main column | What the view shows | At least `minMain`, 560px by default | It stays |
 | Inspector | The properties of the selection, an outline | 200px to 360px, 260px at first | Collapses behind its toggle |
@@ -86,7 +88,7 @@ Projects drill down to the issues of a project and then to one issue.
 The fleet drills down to a host and then to its sessions, tasks, units, logs and processes.
 
 Nest in place when the data is a part of one view.
-Use the view sidebar for saved views, `Nav` groups for sections, and a tree for pages.
+Use `Nav` groups for saved views and sections, and a tree for pages.
 Choosing an item in place changes the main column and keeps the view.
 
 To choose, ask whether the target has its own lists, its own inspector and its own actions.

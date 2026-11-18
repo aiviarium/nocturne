@@ -14,14 +14,14 @@ import {
   ViewHeader,
   ViewLayout,
 } from "@aiviarium/nocturne"
-import { createSignal, For, type JSX, Match, Show, Switch } from "solid-js"
+import { createSignal, For, Match, Show, Switch } from "solid-js"
 import { ISSUE_STATE, ISSUES, type Issue, STATE_NAME } from "../_kit/issues"
 import { ISSUE_VIEWS, issuesIn, PROJECTS } from "../_kit/projects"
 import type { ExampleMeta } from "../_kit/types"
 
 export const meta: ExampleMeta = {
   title: "Drilling down from projects to an issue",
-  note: "Open Atlas web, then open an issue with its arrow. The path and the view's actions sit in the app's header, beside the shared sidebar and above the view, with an up arrow once you are below the top level. The sidebar stays and keeps its width (drag its edge); only the main column changes. The issues view has its own sidebar of saved views, and a selected row fills the inspector without changing the path. The crumbs show the full path on the list and a folded one on the issue.",
+  note: "Open Atlas web, then open an issue with its arrow. The left column drills down with the main column: inside a project it shows the project's own places under a header with its name, and that header goes back to the app's places. The sidebar keeps its width (drag its edge). The path and the view's actions sit in the app's header above the view, with an up arrow below the top level. A selected row fills the inspector without changing the path.",
   surface: "none",
   frame: "A whole app window: the shared sidebar and a view beside it.",
   height: 560,
@@ -66,18 +66,47 @@ export default function Drilldown() {
     { label: project.name, onClick: () => toIssues() },
   ]
 
-  const views = (current?: string): JSX.Element => (
+  // The shared sidebar drills down with the main column: inside a project it shows the project's own places,
+  // under a header that names the project and goes back to the app's places.
+  const view = () => {
+    const p = place()
+    return p.at === "issues" ? p.view : undefined
+  }
+  const appNav = () => (
     <Nav
-      label="Issue views"
+      label="Workspace"
       groups={[
         {
+          items: [
+            { label: "Home", icon: "home", onClick: () => {} },
+            { label: "Inbox", icon: "inbox", onClick: () => {} },
+            { label: "Agents", icon: "agent", onClick: () => {} },
+            { label: "Projects", icon: "board", current: true, onClick: toProjects },
+          ],
+        },
+      ]}
+    />
+  )
+  const projectNav = () => (
+    <Nav
+      label={project.name}
+      back={{ label: project.name, to: "Projects", onClick: toProjects }}
+      groups={[
+        {
+          label: "Issues",
           items: ISSUE_VIEWS.map((v) => ({
             label: v.label,
             icon: v.icon,
-            current: v.id === current,
+            current: v.id === view(),
             meta: String(issuesIn(v.id).length),
             onClick: () => toIssues(v.id),
           })),
+        },
+        {
+          items: [
+            { label: "Board", icon: "board", onClick: () => {} },
+            { label: "Settings", icon: "settings", onClick: () => {} },
+          ],
         },
       ]}
     />
@@ -90,21 +119,7 @@ export default function Drilldown() {
         sidebarLabel="Workspace"
         sidebarWidth={width()}
         onSidebarResize={setWidth}
-        sidebar={
-          <Nav
-            label="Workspace"
-            groups={[
-              {
-                items: [
-                  { label: "Home", icon: "home", onClick: () => {} },
-                  { label: "Inbox", icon: "inbox", onClick: () => {} },
-                  { label: "Agents", icon: "agent", onClick: () => {} },
-                  { label: "Projects", icon: "board", current: true, onClick: toProjects },
-                ],
-              },
-            ]}
-          />
-        }
+        sidebar={place().at === "projects" ? appNav() : projectNav()}
       >
         <Frame flush class="ex-app-frame">
           <Switch>
@@ -135,18 +150,18 @@ export default function Drilldown() {
               </ViewLayout>
             </Match>
             <Match when={place().at === "issues" && (place() as { view: string }).view}>
-              {(view) => (
+              {(current) => (
                 <ViewLayout
                   id="nav-drill-issues"
-                  sidebarWidth={180}
                   minMain={360}
-                  sidebarLabel="Issue views"
-                  sidebar={views(view())}
                   header={
                     <ViewHeader
                       variant="shell"
                       up
-                      crumbs={[...projectCrumbs, { label: ISSUE_VIEWS.find((v) => v.id === view())!.label }]}
+                      crumbs={[
+                        ...projectCrumbs,
+                        { label: ISSUE_VIEWS.find((v) => v.id === current())!.label },
+                      ]}
                       actions={[{ id: "new", label: "New issue", icon: "plus", onClick: () => {} }]}
                     />
                   }
@@ -166,7 +181,7 @@ export default function Drilldown() {
                   }
                 >
                   <RowList label="Issues">
-                    <For each={issuesIn(view())}>
+                    <For each={issuesIn(current())}>
                       {(i) => {
                         const st = ISSUE_STATE[i.state]
                         return (
@@ -200,10 +215,7 @@ export default function Drilldown() {
               {(i) => (
                 <ViewLayout
                   id="nav-drill-issue"
-                  sidebarWidth={180}
                   minMain={360}
-                  sidebarLabel="Issue views"
-                  sidebar={views()}
                   reading
                   header={
                     <ViewHeader

@@ -84,6 +84,13 @@ textarea.nc-textarea { width: 100%; height: auto; min-height: calc(var(--control
 .nc-tab:not([aria-selected="true"]):hover { color: var(--text-1); }
 button.nc-nav-item { display: flex; width: 100%; gap: 10px; justify-content: flex-start; border: 0; background: transparent; font: inherit; text-align: left; cursor: pointer; }
 .nc-nav-item .nc-count { margin-left: auto; }
+/* A drilled-down sidebar's header: back to the app's navigation, named after the place it shows. */
+.nc-nav__back { display: flex; align-items: center; gap: var(--space-2); box-sizing: border-box; width: 100%; height: var(--control-md); margin-bottom: var(--space-1); padding: 0 8px; border: 0; border-radius: var(--radius-sm); background: transparent; color: var(--text-1); font-family: inherit; font-size: var(--nc-type-body); font-weight: 600; line-height: var(--nc-type-label-line); text-align: left; text-decoration: none; cursor: pointer; }
+.nc-nav__back > .nc-icon { flex: none; color: var(--text-2); }
+.nc-nav__back:hover { background: var(--bg-3); }
+.nc-nav__back:hover > .nc-icon { color: var(--text-1); }
+.nc-nav__back:focus-visible { outline: none; box-shadow: var(--focus-ring-inset); }
+.nc-nav__back-label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 .nc-tabstrip { position: relative; display: flex; align-items: center; flex: 1; min-width: 0; min-height: var(--header); padding: 0 var(--space-1) 0 6px; }
 .nc-tabstrip__tabs { display: flex; align-items: center; gap: 2px; flex: 0 1 auto; min-width: 0; overflow-x: auto; scrollbar-width: none; overscroll-behavior-x: contain; }
