@@ -291,6 +291,11 @@ describe("QueryBuilder", () => {
     const chips = all(".nc-qchip__main")
     expect(chips.map((c) => c.getAttribute("aria-label"))).toEqual(["State is Open", "Estimate > 3"])
     expect(one("[data-part=query-builder]").getAttribute("role")).toBe("group")
+    // Filter and the advanced button lead the chips, so they never wrap onto a line of their own.
+    const order = all(".nc-query__add, .nc-query__advanced, .nc-qchip").map(
+      (el) => el.className.split(" ")[0],
+    )
+    expect(order.slice(0, 2)).toEqual(["nc-btn", "nc-icon-btn"])
   })
 
   test("a chip opens its popover; picking an option sets the value and closes it", async () => {

@@ -11,6 +11,8 @@ description: FilterBar and QueryBuilder.
 2. Segmented `Tabs`, `Select`s and `Switch`es follow at their width.
 3. `end` sits at the right, for a count or Clear.
 
+Filters that don't fit wrap onto the next line from the left edge of the bar, under the search field.
+
 The name of a filter is inside the control, as its value or its `aria-label`.
 It is never a caption above it.
 On a phone the filters scroll sideways under the search field.
@@ -24,6 +26,7 @@ On a phone the filters scroll sideways under the search field.
 - Each rule is a 30px chip, such as "State is Open" or "Estimate > 3", that opens a popover.
 - "Filter" adds a rule.
 - The button with the sliders opens the builder, which groups rules with `AND` or `OR`.
+- Both buttons come before the chips, so they never wrap onto a line of their own.
 - Fields are typed by a schema, `QueryField`.
 - `toWhere` and `fromWhere` convert to and from the `where` of the store.
 - On a phone it is one sheet of grouped rows.

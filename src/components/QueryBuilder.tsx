@@ -268,6 +268,38 @@ function QueryChips(p: { state: QueryState; props: QueryBuilderProps }): JSX.Ele
           </button>
         </span>
       </Show>
+      {/* Filter and the advanced button lead the chips, so they never wrap onto a line of their own. */}
+      <Show when={!phone()}>
+        <DropdownMenu
+          label="Filter by"
+          items={fieldItems(props.fields)}
+          onSelect={addField}
+          trigger={(tp) => (
+            <Button
+              {...tp}
+              size="md"
+              variant="ghost"
+              icon="plus"
+              class="nc-query__add"
+              data-qchip-focus="add"
+            >
+              Filter
+            </Button>
+          )}
+        />
+        <IconButton
+          ref={setAdvAnchor}
+          label="Advanced filter"
+          icon="sliders-horizontal"
+          class="nc-query__advanced"
+          pressed={advanced()}
+          // The tooltip would cover the popover it opened.
+          tooltip={!advanced()}
+          aria-haspopup="dialog"
+          aria-expanded={advanced()}
+          onClick={() => setAdvanced(!advanced())}
+        />
+      </Show>
       <For each={top()}>
         {(node, i) => (
           <>
@@ -305,37 +337,6 @@ function QueryChips(p: { state: QueryState; props: QueryBuilderProps }): JSX.Ele
           </>
         )}
       </For>
-      <Show when={!phone()}>
-        <DropdownMenu
-          label="Filter by"
-          items={fieldItems(props.fields)}
-          onSelect={addField}
-          trigger={(tp) => (
-            <Button
-              {...tp}
-              size="md"
-              variant="ghost"
-              icon="plus"
-              class="nc-query__add"
-              data-qchip-focus="add"
-            >
-              Filter
-            </Button>
-          )}
-        />
-        <IconButton
-          ref={setAdvAnchor}
-          label="Advanced filter"
-          icon="sliders-horizontal"
-          class="nc-query__advanced"
-          pressed={advanced()}
-          // The tooltip would cover the popover it opened.
-          tooltip={!advanced()}
-          aria-haspopup="dialog"
-          aria-expanded={advanced()}
-          onClick={() => setAdvanced(!advanced())}
-        />
-      </Show>
       {/* One rule's popover. */}
       <Show when={!phone() && openId()}>
         {(id) => (

@@ -423,16 +423,16 @@ button.nc-lrow__toggle:hover { color: var(--text-1); }
 .nc-metaline__sep { flex: none; color: var(--text-4); }
 
 /* ---------- Filter bar ---------- */
-/* One line: the search, the filters inline after it (wrapping inside their own column, never under the search),
-   then the end. In a narrow bar the search has the first line and the filters always go under it. Which of the two
-   depends on the bar's width alone, so adding or removing a filter never rearranges it. */
+/* One flow: the search, the filters after it, then the end at the right. Filters that don't fit wrap onto the next
+   line from the bar's left edge, under the search. In a narrow bar the search has the first line to itself. A query
+   builder's chips join the same flow, after its Filter button. On a phone the filters scroll sideways instead. */
 .nc-filterbar { container: filterbar / inline-size; min-width: 0; }
-.nc-filterbar__row { display: flex; flex-wrap: nowrap; align-items: flex-start; gap: var(--space-2); min-width: 0; }
+.nc-filterbar__row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); min-width: 0; }
 .nc-filterbar__search { flex: 0 1 300px; min-width: 180px; }
 .nc-filterbar__row:not(:has(.nc-filterbar__filters)) .nc-filterbar__search { flex: 1 1 220px; max-width: 420px; }
 .nc-filterbar__filters { display: flex; flex: 1 1 0; flex-wrap: wrap; align-items: center; gap: var(--space-2); min-width: 0; min-height: var(--control-md); }
+:root:not([data-phone]) .nc-filterbar__filters, :root:not([data-phone]) .nc-filterbar__filters > .nc-query { display: contents; }
 @container filterbar (max-width: 560px) {
-  .nc-filterbar__row { flex-wrap: wrap; }
   .nc-filterbar__search, .nc-filterbar__row:not(:has(.nc-filterbar__filters)) .nc-filterbar__search { flex: 1 0 100%; max-width: none; }
 }
 .nc-filterbar__filters .nc-select { width: auto; min-width: 120px; }
