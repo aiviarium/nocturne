@@ -1,5 +1,6 @@
-import { createMemo, type JSX, Show, splitProps } from "solid-js"
+import { createMemo, createSignal, type JSX, Show, splitProps } from "solid-js"
 import { cx } from "../lib/cx"
+import { ShellHeaderContext } from "./ShellHeader"
 
 export interface PanelProps extends Omit<JSX.HTMLAttributes<HTMLElement>, "title"> {
   /** The panel title, in the 38px header. */
@@ -117,6 +118,19 @@ export interface AppShellProps extends Omit<JSX.HTMLAttributes<HTMLDivElement>, 
   onSidebarResize?: (width: number) => void
   /** A bar across the top at phone width only, with the button that opens the drawer. */
   topbar?: JSX.Element
+  /**
+   * The app's header: a bar on bg-0 at the top of the main column, beside the sidebar and above the frames, for
+   * the path to the open view and its actions. A view fills it with a `ViewHeader` with `variant="shell"`, which
+   * shows here by itself; this slot is for content the app puts there.
+   */
+  header?: JSX.Element
+  /**
+   * Where the header bar goes. `beside` (default): at the top of the main column, beside the sidebar. `across`: a
+   * top bar over the whole window, sidebar included, with the product at its start and search in its middle.
+   */
+  headerPlacement?: "beside" | "across"
+  /** Hides the sidebar on a desktop: the frames take its room. The app keeps a way to bring it back. */
+  sidebarHidden?: boolean
   /** A bar of small indicators along the bottom. */
   statusbar?: JSX.Element
   /** Whether the sidebar drawer is open at phone width. Setting it turns on the scrim. */
@@ -138,6 +152,9 @@ export function AppShell(props: AppShellProps): JSX.Element {
     "sidebarWidth",
     "onSidebarResize",
     "topbar",
+    "header",
+    "headerPlacement",
+    "sidebarHidden",
     "statusbar",
     "drawerOpen",
     "onDrawerClose",
@@ -151,6 +168,17 @@ export function AppShell(props: AppShellProps): JSX.Element {
   const topbar = createMemo(() => local.topbar)
   const sidebar = createMemo(() => local.sidebar)
   const statusbar = createMemo(() => local.statusbar)
+  const header = createMemo(() => local.header)
+  // Headers of the views that show in the bar. The bar takes room only while one does, or the app fills it.
+  const [claims, setClaims] = createSignal(0)
+  let headerBar!: HTMLDivElement
+  const shellHeader = {
+    mount: () => headerBar,
+    claim: () => {
+      setClaims((n) => n + 1)
+      return () => setClaims((n) => n - 1)
+    },
+  }
   const width = () => local.sidebarWidth ?? 232
   const resize = (w: number) => local.onSidebarResize?.(Math.max(180, Math.min(420, Math.round(w))))
   let root!: HTMLDivElement
@@ -161,6 +189,8 @@ export function AppShell(props: AppShellProps): JSX.Element {
       data-part="app-shell"
       data-fill={local.fill ? "" : undefined}
       data-drawer={local.drawerOpen ? "open" : undefined}
+      data-header={local.headerPlacement === "across" ? "across" : undefined}
+      data-sidebar={local.sidebarHidden ? "hidden" : undefined}
       class={cx("nc-shell", local.class)}
       style={{
         "--nc-sidebar-width": `${width()}px`,
@@ -222,8 +252,16 @@ export function AppShell(props: AppShellProps): JSX.Element {
           />
         </Show>
       </Show>
+      <div
+        ref={headerBar}
+        data-part="shell-header"
+        class="nc-shell__header"
+        hidden={!header() && claims() === 0}
+      >
+        {header()}
+      </div>
       <main data-part="shell-content" class="nc-shell__content">
-        {local.children}
+        <ShellHeaderContext.Provider value={shellHeader}>{local.children}</ShellHeaderContext.Provider>
       </main>
       <Show when={statusbar()}>
         <footer data-part="statusbar" class="nc-shell__status">

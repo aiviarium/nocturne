@@ -84,6 +84,17 @@ textarea.nc-textarea { width: 100%; height: auto; min-height: calc(var(--control
 .nc-tab:not([aria-selected="true"]):hover { color: var(--text-1); }
 button.nc-nav-item { display: flex; width: 100%; gap: 10px; justify-content: flex-start; border: 0; background: transparent; font: inherit; text-align: left; cursor: pointer; }
 .nc-nav-item .nc-count { margin-left: auto; }
+/* The top of the app's sidebar: back, the place (a switcher), the command palette and the toggle, search under them. */
+.nc-sidebar-header { display: flex; flex-direction: column; gap: var(--space-2); }
+.nc-sidebar-header__row { display: flex; align-items: center; gap: 2px; min-width: 0; height: var(--control-md); }
+.nc-sidebar-header__place { display: flex; flex: 1; align-items: center; justify-content: flex-start; gap: var(--space-2); min-width: 0; height: var(--control-md); padding: 0 var(--space-2); border: 0; border-radius: var(--radius-sm); background: transparent; color: var(--text-1); font-family: inherit; font-size: var(--nc-type-body); font-weight: 600; line-height: var(--nc-type-label-line); text-align: left; }
+button.nc-sidebar-header__place--menu { justify-content: flex-start; cursor: pointer; }
+.nc-sidebar-header__place--menu:hover, .nc-sidebar-header__place--menu[aria-expanded="true"] { background: var(--bg-3); }
+.nc-sidebar-header__place--menu:focus-visible { outline: none; box-shadow: var(--focus-ring-inset); }
+.nc-sidebar-header__place > .nc-icon { flex: none; color: var(--text-3); }
+.nc-sidebar-header__mark { display: inline-flex; flex: none; }
+.nc-sidebar-header__name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nc-sidebar-header__row > [data-part="sidebar-back"] + .nc-sidebar-header__place { padding-left: var(--space-1); }
 
 .nc-tabstrip { position: relative; display: flex; align-items: center; flex: 1; min-width: 0; min-height: var(--header); padding: 0 var(--space-1) 0 6px; }
 .nc-tabstrip__tabs { display: flex; align-items: center; gap: 2px; flex: 0 1 auto; min-width: 0; overflow-x: auto; scrollbar-width: none; overscroll-behavior-x: contain; }
@@ -489,8 +500,15 @@ button.nc-effort:focus-visible { outline: none; box-shadow: var(--focus-ring); }
 .nc-frame__header { display: flex; align-items: center; min-height: var(--header); border-bottom: 1px solid var(--line-soft); }
 .nc-frame__body { flex: 1; min-height: 0; overflow: auto; }
 .nc-frame__body--padded { padding: var(--space-4); }
-.nc-shell { display: grid; grid-template-columns: var(--nc-sidebar-width, 232px) minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr) auto; grid-template-areas: "top top" "side main" "status status"; min-height: 100%; background: var(--bg-0); color: var(--text-1); }
+.nc-shell { display: grid; grid-template-columns: var(--nc-sidebar-width, 232px) minmax(0, 1fr); grid-template-rows: auto auto minmax(0, 1fr) auto; grid-template-areas: "top top" "side head" "side main" "status status"; min-height: 100%; background: var(--bg-0); color: var(--text-1); }
 .nc-shell[data-fill] { height: 100%; }
+.nc-shell[data-header="across"] { grid-template-areas: "top top" "head head" "side main" "status status"; }
+.nc-shell[data-header="across"] > .nc-shell__header { gap: var(--space-3); padding: 0 var(--space-2) 0 var(--space-4); }
+.nc-shell[data-header="across"] .nc-view-header__middle { justify-content: center; }
+.nc-shell[data-header="across"] .nc-view-header__middle > .nc-search { flex: 0 1 440px; }
+.nc-shell[data-sidebar="hidden"] { grid-template-columns: 0 minmax(0, 1fr); }
+.nc-shell[data-sidebar="hidden"] > .nc-shell__sidebar, .nc-shell[data-sidebar="hidden"] > .nc-shell__edge { display: none; }
+.nc-shell[data-sidebar="hidden"] > .nc-shell__content { padding-left: var(--space-2); }
 .nc-shell__topbar { grid-area: top; display: none; align-items: center; gap: var(--space-2); min-height: var(--header); padding: 0 var(--space-1); }
 .nc-shell__scrim { display: none; padding: 0; border: 0; }
 .nc-shell__sidebar { grid-area: side; box-sizing: border-box; display: flex; flex-direction: column; gap: var(--space-3); min-height: 0; padding: var(--space-3) var(--space-2) var(--space-2); overflow: auto; background: var(--bg-0); }
@@ -498,12 +516,21 @@ button.nc-effort:focus-visible { outline: none; box-shadow: var(--focus-ring); }
 .nc-shell__edge { grid-area: side; justify-self: end; z-index: 3; width: 1px; margin-right: -4px; padding: 0 3px; background: transparent; background-clip: content-box; cursor: col-resize; outline: none; }
 .nc-shell__edge:hover, .nc-shell__edge:active { background-color: var(--accent-line); }
 .nc-shell__edge:focus-visible { background-color: var(--accent-strong); }
+/* The app's header: the path to the open view and its actions, on bg-0 beside the sidebar and above the frames.
+   It lines up with the frames' left edge, and the frames start right under it. */
+.nc-shell__header { grid-area: head; display: flex; align-items: center; min-width: 0; min-height: var(--header); padding-right: var(--space-2); }
+.nc-shell__header[hidden] { display: none; }
+.nc-shell__header-slot { display: contents; }
+.nc-shell:has(> .nc-shell__header:not([hidden])) > .nc-shell__content { padding-top: 0; }
+.nc-shell__header .nc-view-header--shell { flex: 1; min-width: 0; padding: 0; border-bottom: 0; }
+.nc-view-header__up { flex: none; margin-right: calc(-1 * var(--space-1)); }
 .nc-shell__content { grid-area: main; display: flex; flex-wrap: wrap; align-items: stretch; gap: var(--space-2); min-width: 0; padding: var(--space-2) var(--space-2) var(--space-2) 0; }
 .nc-shell__content > .nc-frame, .nc-shell__content > .nc-panel { flex: 1 1 320px; }
 .nc-shell[data-fill] > .nc-shell__content { flex-wrap: nowrap; min-height: 0; padding-bottom: 0; }
 .nc-shell__status { grid-area: status; display: flex; align-items: center; gap: var(--space-4); min-height: var(--control-md); padding: 0 var(--space-3); }
 @media (max-width: 720px) {
-  .nc-shell { grid-template-columns: minmax(0, 1fr); grid-template-areas: "top" "main" "status"; }
+  .nc-shell { grid-template-columns: minmax(0, 1fr); grid-template-areas: "top" "head" "main" "status"; }
+  .nc-shell__header { padding: 0 var(--space-2); }
   .nc-shell__topbar { display: flex; }
   .nc-shell__edge { display: none; }
   .nc-shell__sidebar { position: fixed; inset: 0 auto 0 0; z-index: 75; width: min(280px, 85vw); border-right: 1px solid var(--line-soft); transform: translateX(-100%); transition: transform 160ms ease; }
@@ -651,6 +678,10 @@ button.nc-effort:focus-visible { outline: none; box-shadow: var(--focus-ring); }
 .nc-view-header__sep { flex: none; color: var(--text-3); }
 /* A cut crumb ends in an ellipsis and shows its full text as its title. The fold is the folded start of the path. */
 .nc-view-header__label { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.nc-view-header__mark { display: inline-flex; flex: none; }
+.nc-view-header__switcher { flex: none; height: var(--control-sm); margin-left: calc(-1 * var(--space-1)); padding: 0 var(--space-1); border: 0; border-radius: var(--radius-xs); background: none; color: var(--text-1); font: inherit; font-weight: 600; cursor: pointer; }
+.nc-view-header__switcher:hover, .nc-view-header__switcher[aria-expanded="true"] { background: var(--bg-3); }
+.nc-view-header__switcher > .nc-icon { color: var(--text-3); }
 .nc-view-header__fold { flex: none; padding: 0 var(--space-1); border: 0; border-radius: var(--radius-xs); background: none; cursor: pointer; font: inherit; }
 .nc-view-header__fold:hover, .nc-view-header__fold[aria-expanded="true"] { background: var(--bg-3); }
 /* The back control in place of the crumbs: the way back to the list a target was opened from. */
