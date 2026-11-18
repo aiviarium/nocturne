@@ -29,10 +29,10 @@ export interface ContextWidgetProps {
   /** What fills it, each in its own colour: system prompt, tools, files, the conversation. */
   parts?: WidgetSegment[]
   /**
-   * `row`: a ring and the share. `sm` (default): the share over one bar. `lg`: the share large, used of total,
-   * the bar, and a row per part with its size and share.
+   * `row`: a ring and the share. `sm`: the share over one bar. `md` (default): used of total over the bar and a
+   * legend of the parts. `lg`: the share large, used of total, the bar, and a row per part with its size and share.
    */
-  size?: Extract<WidgetSize, "row" | "sm" | "lg">
+  size?: WidgetSize
   /** Default "Context". */
   title?: string
   /** How a number of tokens is shown. Default `compactCount`. */
@@ -49,13 +49,13 @@ export function ContextWidget(props: ContextWidgetProps): JSX.Element {
   const title = () => props.title ?? "Context"
   const fmt = (n: number) => (props.format ?? compactCount)(n)
   const share = () => Math.max(0, Math.min(100, Math.round((props.used / Math.max(1, props.total)) * 100)))
-  const bar = (labels: "none" | "list") =>
+  const bar = (labels: "none" | "legend" | "list") =>
     props.parts?.length ? (
       <WidgetSegments
         segments={props.parts}
         total={props.total}
         labels={labels}
-        free={labels === "list" ? "Free" : undefined}
+        free={labels === "none" ? undefined : "Free"}
         freeDisplay={fmt(Math.max(0, props.total - props.used))}
         label={title()}
       />
@@ -82,9 +82,14 @@ export function ContextWidget(props: ContextWidgetProps): JSX.Element {
           {bar("list")}
         </Widget>
       </Match>
-      <Match when={true}>
+      <Match when={props.size === "sm"}>
         <Widget {...common()} size="sm" title={title()} value={`${share()}%`}>
           {bar("none")}
+        </Widget>
+      </Match>
+      <Match when={true}>
+        <Widget {...common()} size="md" title={title()} value={`${fmt(props.used)} / ${fmt(props.total)}`}>
+          {bar("legend")}
         </Widget>
       </Match>
     </Switch>

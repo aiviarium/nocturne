@@ -1106,8 +1106,8 @@ describe("ContextWidget", () => {
     { label: "System", value: 9_000 },
     { label: "Chat", value: 115_000 },
   ]
-  test("is a ring and the share at row, one bar at sm, and the full account at lg", () => {
-    const [size, setSize] = createSignal<"row" | "sm" | "lg">("row")
+  test("is a ring and the share at row, one bar at sm, a legend at md, and the full account at lg", () => {
+    const [size, setSize] = createSignal<"row" | "sm" | "md" | "lg">("row")
     const { root } = track(
       mount(() => <ContextWidget size={size()} used={124_000} total={200_000} parts={parts} />),
     )
@@ -1118,6 +1118,15 @@ describe("ContextWidget", () => {
     setSize("sm")
     expect(widget().getAttribute("data-size")).toBe("sm")
     expect(one("[data-part=widget-segments]", root).getAttribute("data-labels")).toBe("none")
+    setSize("md")
+    expect(widget().getAttribute("data-size")).toBe("md")
+    expect(one(".nc-widget__value", root).textContent).toBe("124k / 200k")
+    expect(one("[data-part=widget-segments]", root).getAttribute("data-labels")).toBe("legend")
+    expect(Array.from(root.querySelectorAll(".nc-wsegments__key")).map((n) => n.textContent)).toEqual([
+      "System 9000",
+      "Chat 115000",
+      "Free 76k",
+    ])
     setSize("lg")
     expect(widget().getAttribute("data-size")).toBe("lg")
     expect(one(".nc-widget__figure", root).textContent).toBe("62%")
@@ -1131,7 +1140,7 @@ describe("ContextWidget", () => {
 
   test("shows a plain bar without parts", () => {
     const { root } = track(mount(() => <ContextWidget used={50} total={200} />))
-    expect(one("[data-part=widget]", root).getAttribute("data-size")).toBe("sm")
+    expect(one("[data-part=widget]", root).getAttribute("data-size")).toBe("md")
     expect(one("[data-part=widget-progress]", root).getAttribute("aria-valuenow")).toBe("25")
   })
 })
