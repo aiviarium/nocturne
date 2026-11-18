@@ -1,0 +1,252 @@
+/* The shared rich text editor (RichTextEditor). Tokens and type classes only (run `bun run lint:tokens`). The
+   layout follows the Docs boards: blocks in a 44px gutter with hover handles, a bg-3 insert menu and format bar,
+   the suggested-edit card of the writing assistant, and remote cursors in their people's colours. */
+
+.nc-editor { position: relative; color: var(--text-2); min-width: 0; }
+.nc-editor__mount { min-width: 0; }
+
+/* ProseMirror's own needs. */
+.nc-editor .ProseMirror { position: relative; outline: none; white-space: pre-wrap; word-wrap: break-word; font-variant-ligatures: none; font-feature-settings: "liga" 0; }
+.nc-editor .ProseMirror pre { white-space: pre; }
+.nc-editor .ProseMirror-hideselection *::selection { background: transparent; }
+.nc-editor .ProseMirror-hideselection { caret-color: transparent; }
+.nc-editor .ProseMirror [draggable][contenteditable="false"] { user-select: text; }
+.nc-editor .ProseMirror-gapcursor { display: none; pointer-events: none; position: absolute; }
+.nc-editor .ProseMirror-gapcursor::after { content: ""; display: block; position: absolute; top: -2px; width: 20px; border-top: 1px solid var(--text-1); animation: nc-editor-gap-blink 1.1s steps(2, start) infinite; }
+.nc-editor .ProseMirror-focused .ProseMirror-gapcursor { display: block; }
+@keyframes nc-editor-gap-blink { to { visibility: hidden; } }
+.nc-editor ::selection { background: var(--accent-line); }
+
+/* Content. */
+.nc-editor__content { min-height: var(--control-lg); padding: var(--space-1) 0; color: var(--text-2); caret-color: var(--text-1); }
+/* A page's text column: centred at `--nc-editor-measure` (set by the host; the whole width when unset), with at
+   least the handles' gutter before it and `--nc-editor-inset` on both sides. Top-level blocks wider than the
+   column (width.ts) break out of it: `wide` to the editor's width less the gutter (or the inset) on each side,
+   `full` to its edges. Elsewhere (fields, comments) every block fits its container. The host may also set
+   `--nc-editor-gutter-start` and `--nc-editor-gutter-end`. The older `--crow-editor-*` names of these four are
+   read when the `--nc-editor-*` ones are unset. */
+.nc-editor--page {
+  container-type: inline-size;
+  --nc-editor-gutter-start-default: calc(var(--space-10) + var(--space-1));
+  --nc-editor-gutter-end-default: var(--space-2);
+}
+.nc-editor--page .nc-editor__content {
+  --nc-editor-gutter-start-used: var(--nc-editor-gutter-start, var(--crow-editor-gutter-start, var(--nc-editor-gutter-start-default)));
+  --nc-editor-gutter-end-used: var(--nc-editor-gutter-end, var(--crow-editor-gutter-end, var(--nc-editor-gutter-end-default)));
+  --nc-editor-inset-used: var(--nc-editor-inset, var(--crow-editor-inset, 0px));
+  --nc-editor-mid: calc((100cqw - var(--nc-editor-measure, var(--crow-editor-measure, 100cqw))) / 2);
+  --nc-editor-start: max(var(--nc-editor-gutter-start-used), var(--nc-editor-inset-used), var(--nc-editor-mid));
+  --nc-editor-end: max(var(--nc-editor-gutter-end-used), var(--nc-editor-inset-used), var(--nc-editor-mid));
+  padding: var(--space-1) var(--nc-editor-end) var(--space-10) var(--nc-editor-start);
+}
+.nc-editor--page .nc-editor__content > [data-block-width="wide"] {
+  --nc-editor-wide-margin: max(var(--nc-editor-gutter-start-used), var(--nc-editor-inset-used));
+  margin-left: min(0px, calc(var(--nc-editor-wide-margin) - var(--nc-editor-start)));
+  margin-right: min(0px, calc(var(--nc-editor-wide-margin) - var(--nc-editor-end)));
+}
+.nc-editor--page .nc-editor__content > [data-block-width="full"] { margin-left: calc(-1 * var(--nc-editor-start)); margin-right: calc(-1 * var(--nc-editor-end)); }
+.nc-editor--page .nc-editor__content > [data-block-width="full"]:is(.nc-editor-codeblock, .tableWrapper),
+.nc-editor--page .nc-editor__content > .nc-editor-image[data-block-width="full"] img { border-radius: 0; border-inline: 0; }
+/* A full-width image's description stays in the text column. */
+.nc-editor--page .nc-editor__content > .nc-editor-image[data-block-width="full"] :is(.nc-editor-image__alt, .nc-editor-image__caption) { margin-inline: var(--nc-editor-start) var(--nc-editor-end); }
+.nc-editor--field .nc-editor__content { padding: var(--space-2) var(--space-3); border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--bg-2); }
+.nc-editor--field .ProseMirror-focused { border-color: var(--accent-strong); box-shadow: var(--focus-ring); }
+.nc-editor--comment .nc-editor__content { padding: var(--space-1) var(--space-2); }
+.nc-editor--comment .nc-editor__content p,
+.nc-editor--field .nc-editor__content p { margin: 0; }
+
+.nc-editor__content > * + * { margin-top: var(--space-1); }
+.nc-editor__content p { margin: 0; padding: 3px 0; color: var(--text-2); }
+.nc-editor__content h1, .nc-editor__content h2, .nc-editor__content h3 { margin: 0; padding: 0; color: var(--text-1); letter-spacing: -0.01em; }
+.nc-editor__content h1 { margin-top: var(--space-5); padding-bottom: 2px; }
+.nc-editor__content h2 { margin-top: var(--space-4); }
+.nc-editor__content h3 { margin-top: var(--space-3); font-weight: 600; }
+.nc-editor__content > :first-child { margin-top: 0; }
+.nc-editor__content strong { color: var(--text-1); font-weight: 600; }
+.nc-editor__content a { color: var(--accent-text); text-decoration: underline; text-decoration-color: var(--accent-line); text-underline-offset: 2px; }
+.nc-editor__content u { text-decoration-color: var(--line-strong); text-underline-offset: 3px; }
+.nc-editor__content s { color: var(--text-3); }
+.nc-editor__content .nc-editor-code { padding: 1px 5px; border-radius: var(--radius-xs); background: var(--bg-3); color: var(--text-1); }
+
+.nc-editor__content ul, .nc-editor__content ol { margin: 0; padding-left: var(--space-6); }
+.nc-editor__content li { padding: 1px 0; }
+.nc-editor__content li > p { padding: 2px 0; }
+.nc-editor__content li::marker { color: var(--text-3); }
+.nc-editor__content ul.nc-editor-tasks { list-style: none; padding-left: 0; }
+.nc-editor__content li[data-task] { display: flex; align-items: flex-start; gap: var(--space-2); }
+.nc-editor-task__body { flex: 1; min-width: 0; }
+.nc-editor__content li[data-checked="true"] > .nc-editor-task__body > p { color: var(--text-3); text-decoration: line-through; }
+.nc-editor-task__box { box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; width: 15px; height: 15px; margin-top: 6px; padding: 0; border: 1px solid var(--line-strong); border-radius: var(--radius-xs); background: transparent; color: var(--on-accent); cursor: pointer; }
+.nc-editor-task__box svg { width: 11px; height: 11px; }
+li[data-checked="true"] > .nc-editor-task__box { border-color: var(--accent); background: var(--accent); }
+.nc-editor-task__box:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+.nc-editor-task__box:disabled { cursor: default; }
+
+.nc-editor__content blockquote { margin: var(--space-2) 0; padding: 2px 0 2px var(--space-3); border-left: 3px solid var(--line-strong); color: var(--text-2); }
+.nc-editor__content hr { height: 1px; margin: var(--space-4) 0 var(--space-2); border: 0; background: var(--bg-4); }
+.nc-editor__content hr.ProseMirror-selectednode { background: var(--accent-strong); outline: none; }
+
+/* Backgrounds stay neutral. A callout is a neutral surface whose icon carries the hue; no hue fill, no hue outline
+   (a translucent hue line over a translucent hue fill reads as dirt on near-black). */
+.nc-editor-callout { display: flex; gap: var(--space-3); margin: var(--space-2) 0; padding: var(--space-2) var(--space-3); border-radius: var(--radius-md); background: var(--bg-2); --callout-ink: var(--info); }
+.nc-editor-callout::before { content: "i"; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; width: 16px; height: 16px; margin-top: 5px; border-radius: var(--radius-full); background: var(--callout-ink); color: var(--bg-0); font-weight: 700; }
+.nc-editor-callout__body { flex: 1; min-width: 0; }
+.nc-editor-callout--success { --callout-ink: var(--success); }
+.nc-editor-callout--success::before { content: "✓"; }
+.nc-editor-callout--warning { --callout-ink: var(--warning); }
+.nc-editor-callout--warning::before { content: "!"; }
+.nc-editor-callout--danger { --callout-ink: var(--danger); }
+.nc-editor-callout--danger::before { content: "!"; }
+.nc-editor-callout p { color: var(--syn-plain); }
+
+.nc-editor-codeblock { margin: var(--space-2) 0; border: 1px solid var(--line-soft); border-radius: var(--radius-sm); background: var(--bg-0); overflow: hidden; }
+.nc-editor-codeblock__bar { display: flex; align-items: center; justify-content: space-between; height: var(--row-compact); padding: 0 var(--space-1) 0 var(--space-2); border-bottom: 1px solid var(--line-soft); color: var(--text-3); user-select: none; }
+.nc-editor-codeblock__lang { height: var(--control-sm); padding: 0 var(--space-1); border: 0; border-radius: var(--radius-xs); background: transparent; color: var(--text-3); cursor: pointer; }
+.nc-editor-codeblock__lang:hover { background: var(--bg-3); color: var(--text-2); }
+.nc-editor-codeblock pre { margin: 0; padding: var(--space-2) var(--space-3); color: var(--syn-plain); overflow-x: auto; tab-size: 2; }
+.nc-editor-codeblock code { font: inherit; }
+/* The block clips to its rounded edge, and its bar and code run edge to edge: their focus ring is drawn inside. */
+.nc-editor-codeblock :is(button, select, pre):focus-visible { outline: none; box-shadow: var(--focus-ring-inset); }
+
+.nc-editor__content table { width: 100%; margin: var(--space-2) 0; border-collapse: collapse; table-layout: fixed; overflow: hidden; border: 1px solid var(--line-soft); border-radius: var(--radius-md); }
+.nc-editor__content td, .nc-editor__content th { position: relative; box-sizing: border-box; min-width: 60px; padding: 5px var(--space-3); border: 1px solid var(--line-soft); vertical-align: top; text-align: left; }
+.nc-editor__content th { background: var(--bg-2); color: var(--text-3); font-weight: 500; }
+.nc-editor__content th p { color: var(--text-3); }
+.nc-editor__content td p, .nc-editor__content th p { padding: 0; }
+.nc-editor__content .selectedCell::after { content: ""; position: absolute; inset: 0; background: var(--accent-tint); pointer-events: none; }
+.nc-editor__content .column-resize-handle { position: absolute; top: 0; right: -2px; bottom: 0; width: 3px; background: var(--accent-strong); pointer-events: none; }
+.nc-editor .ProseMirror.resize-cursor { cursor: col-resize; }
+.nc-editor .tableWrapper { overflow-x: auto; }
+
+.nc-editor-image { margin: var(--space-2) 0; position: relative; display: flex; flex-direction: column; gap: var(--space-1); }
+.nc-editor-image img { display: block; max-width: 100%; border: 1px solid var(--line-soft); border-radius: var(--radius-md); }
+.nc-editor-image.ProseMirror-selectednode img { box-shadow: 0 0 0 2px var(--accent-strong); }
+.nc-editor-image__state { position: absolute; left: var(--space-2); top: var(--space-2); padding: 2px var(--space-2); border-radius: var(--radius-xs); background: var(--bg-3); color: var(--text-2); }
+.nc-editor-image__alt, .nc-editor-image__caption { border: 0; background: transparent; color: var(--text-3); padding: 2px 0; outline: none; }
+.nc-editor-image__alt:focus { color: var(--text-2); }
+
+.nc-editor-file { display: flex; align-items: center; gap: var(--space-3); margin: var(--space-2) 0; padding: var(--space-2) var(--space-3); border: 1px solid var(--bg-4); border-radius: var(--radius-sm); background: var(--bg-2); }
+.nc-editor-file__icon { display: inline-flex; color: var(--text-3); }
+.nc-editor-file__text { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+.nc-editor-file__name { color: var(--text-1); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nc-editor-file__meta { color: var(--text-3); }
+.nc-editor-file.ProseMirror-selectednode { box-shadow: inset 0 0 0 1px var(--accent-line); background: var(--accent-tint); }
+
+.nc-editor-plugin-block { margin: var(--space-2) 0; }
+.nc-editor-plugin-block.ProseMirror-selectednode { border-radius: var(--radius-md); box-shadow: 0 0 0 2px var(--accent-line); }
+.nc-editor-plugin-block__missing { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); padding: var(--space-2) var(--space-3); border: 1px dashed var(--line-strong); border-radius: var(--radius-md); color: var(--text-2); }
+.nc-editor-plugin-block__missing .nc-editor-code { margin-left: auto; }
+
+/* Mentions. */
+.nc-editor-mention-view { display: inline; }
+.nc-editor-mention { display: inline-flex; align-items: center; gap: var(--space-1); padding: 0 6px; border-radius: var(--radius-full); background: var(--bg-4); color: var(--text-1); vertical-align: baseline; }
+.nc-editor-mention-view.ProseMirror-selectednode > * { box-shadow: 0 0 0 2px var(--accent-line); border-radius: var(--radius-full); }
+
+/* Selected blocks and the empty block's hint. */
+.nc-editor__content > .ProseMirror-selectednode:not(.nc-editor-image):not(hr):not(.nc-editor-plugin-block) { border-radius: var(--radius-sm); background: var(--accent-tint); box-shadow: inset 0 0 0 1px var(--accent-line); }
+.nc-editor__content .nc-editor-empty::before { content: attr(data-placeholder); position: absolute; color: var(--text-3); pointer-events: none; }
+.nc-editor__content h1.nc-editor-empty::before, .nc-editor__content h2.nc-editor-empty::before { color: var(--text-4); }
+.nc-editor-dropcursor { background: var(--accent-strong); }
+
+/* Remote cursors and selections. */
+.nc-editor-cursor { position: relative; margin-left: -1px; margin-right: -1px; border-left: 2px solid var(--cursor); word-break: normal; pointer-events: none; }
+.nc-editor-cursor__label { position: absolute; left: -2px; top: -18px; padding: 0 var(--space-1); border-radius: var(--radius-xs) var(--radius-xs) var(--radius-xs) 0; background: var(--cursor); color: var(--bg-0); white-space: nowrap; user-select: none; pointer-events: none; }
+.nc-editor-remote-selection { background: color-mix(in srgb, var(--cursor) 24%, transparent); }
+/* Commented text: the mention chip's treatment, a slight accent tint with the text in the accent's ink. */
+.nc-editor-annotation { padding: 1px calc(var(--space-1) / 2); margin: 0 calc(var(--space-1) / -2); border-radius: var(--radius-xs); background: var(--accent-tint); color: var(--accent-text); cursor: pointer; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
+/* The thread that is open: a stronger tint of the same hue, no outline. */
+.nc-editor-annotation--active { background: color-mix(in srgb, var(--accent) 34%, transparent); color: var(--text-1); }
+
+/* Hover handles. */
+.nc-editor-handle { position: absolute; left: 0; z-index: 2; display: flex; justify-content: flex-end; gap: 2px; width: var(--space-10); padding-top: 3px; }
+.nc-editor-handle__btn { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: var(--control-sm); padding: 0; border: 0; border-radius: var(--radius-xs); background: transparent; color: var(--text-3); cursor: pointer; }
+.nc-editor-handle__btn:hover { background: var(--bg-3); color: var(--text-1); }
+.nc-editor-handle__btn:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+.nc-editor-handle__drag { cursor: grab; touch-action: none; -webkit-touch-callout: none; user-select: none; }
+.nc-editor-handle__drag .nc-icon path { stroke-width: 2.2; }
+.nc-editor-handle--dragging { opacity: 0; }
+.nc-editor-handle--dragging .nc-editor-handle__drag { cursor: grabbing; }
+
+/* Dragging a block: it dims in place, a 2px line shows where it lands (indented to the level it lands at) and a
+   small chip with its kind and first words follows the pointer. */
+.nc-editor .nc-editor-drag-source { opacity: 0.35; }
+.nc-editor-drop-line { position: absolute; z-index: 3; height: 2px; border-radius: var(--radius-full); background: var(--accent-strong); pointer-events: none; }
+.nc-editor-drag-chip { position: fixed; z-index: 60; display: flex; align-items: baseline; gap: var(--space-2); max-width: 260px; padding: 2px var(--space-2); border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--bg-3); box-shadow: var(--shadow-overlay); pointer-events: none; white-space: nowrap; }
+.nc-editor-drag-chip__kind { flex-shrink: 0; color: var(--text-3); }
+.nc-editor-drag-chip__text { min-width: 0; overflow: hidden; text-overflow: ellipsis; color: var(--text-1); }
+
+/* The / menu and the @ picker. */
+.nc-editor-slash, .nc-editor-mentions { position: absolute; z-index: 30; width: 300px; max-height: 340px; overflow-y: auto; }
+.nc-editor-slash__item { box-sizing: border-box; display: flex; align-items: center; gap: var(--space-3); width: 100%; min-height: var(--row-default); padding: 5px var(--space-2); border: 0; border-radius: var(--radius-sm); background: transparent; color: var(--text-1); font: inherit; text-align: left; cursor: pointer; }
+.nc-editor-slash__item--active, .nc-editor-slash__item:hover { background: var(--bg-4); }
+.nc-editor-slash__glyph { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; width: var(--control-md); height: var(--control-md); border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--bg-2); color: var(--text-2); font-weight: 600; }
+.nc-editor-slash__text { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+.nc-editor-slash__text .body { color: var(--text-1); }
+.nc-editor-slash__desc { color: var(--text-3); font-weight: 400; letter-spacing: 0; }
+.nc-editor-slash__key { color: var(--text-3); }
+.nc-editor-mentions__icon { display: inline-flex; align-items: center; justify-content: center; width: var(--control-sm); height: var(--control-sm); border-radius: var(--radius-sm); background: var(--bg-2); color: var(--text-2); }
+
+/* The format bar. */
+.nc-editor-format { position: absolute; z-index: 31; display: inline-flex; align-items: center; gap: 2px; padding: 3px; transform: translate(-50%, -100%); border: 1px solid var(--line); border-radius: var(--radius-md); background: var(--bg-3); box-shadow: var(--shadow-overlay); white-space: nowrap; }
+.nc-editor-format__btn { display: inline-flex; align-items: center; justify-content: center; gap: var(--space-1); min-width: 26px; height: 26px; padding: 0; border: 0; border-radius: var(--radius-xs); background: transparent; color: var(--text-2); cursor: pointer; }
+.nc-editor-format__btn--text { padding: 0 var(--space-2); font-weight: 400; }
+.nc-editor-format__btn:hover { background: var(--bg-4); color: var(--text-1); }
+.nc-editor-format__btn[aria-pressed="true"] { background: var(--line); color: var(--text-1); }
+.nc-editor-format__ai { display: inline-flex; align-items: center; gap: 5px; height: 26px; padding: 0 var(--space-2); border: 0; border-radius: var(--radius-xs); background: var(--accent-tint); color: var(--accent-text); cursor: pointer; }
+.nc-editor-format__ai:hover { box-shadow: inset 0 0 0 1px var(--accent-line); }
+.nc-editor-format__sep { width: 1px; height: 16px; margin: 0 3px; background: var(--line); }
+.nc-editor-format__link { display: flex; align-items: center; gap: var(--space-1); }
+.nc-editor-format__input { width: 240px; height: 26px; padding: 0 var(--space-2); border: 1px solid var(--line); border-radius: var(--radius-xs); background: var(--bg-2); color: var(--text-1); outline: none; }
+.nc-editor-format__input:focus { border-color: var(--accent-strong); }
+
+/* The writing assistant. */
+.nc-editor-ai { position: absolute; z-index: 29; left: calc(var(--space-10) + var(--space-1)); right: var(--space-2); display: flex; flex-direction: column; gap: var(--space-1); }
+.nc-editor--field .nc-editor-ai, .nc-editor--comment .nc-editor-ai { left: 0; right: 0; }
+.nc-editor-ai__ask { display: flex; align-items: center; gap: var(--space-2); padding: var(--space-1) var(--space-1) var(--space-1) var(--space-3); border: 1px solid var(--accent-line); border-radius: var(--radius-md); background: var(--bg-2); color: var(--accent-text); box-shadow: var(--shadow-overlay); }
+.nc-editor-ai__input { flex: 1; min-width: 0; height: var(--control-md); border: 0; background: transparent; color: var(--text-1); outline: none; }
+.nc-editor-ai__input::placeholder { color: var(--text-3); }
+.nc-editor-ai__actions-list { display: flex; flex-direction: column; width: 260px; padding: var(--space-1); border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--bg-3); box-shadow: var(--shadow-overlay); }
+.nc-editor-ai__actions-list .nc-editor-slash__item { min-height: var(--control-md); }
+.nc-editor-ai__suggestion { display: flex; flex-direction: column; gap: var(--space-2); padding: var(--space-3) var(--space-4); border: 1px solid var(--accent-line); border-radius: var(--radius-md); background: var(--bg-2); box-shadow: var(--shadow-overlay); }
+.nc-editor-ai__label { display: inline-flex; align-items: center; gap: 6px; color: var(--accent-text); }
+.nc-editor-ai__asked { margin-left: var(--space-1); color: var(--text-3); font-weight: 400; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nc-editor-ai__text { margin: 0; color: var(--text-2); white-space: pre-wrap; }
+.nc-editor-ai__new { padding: 0 2px; border-radius: var(--radius-xs); background: var(--success-tint); color: var(--text-1); box-decoration-break: clone; }
+.nc-editor-ai__caret { display: inline-block; width: 2px; height: 1em; margin-left: 2px; vertical-align: text-bottom; background: var(--accent-strong); box-shadow: var(--glow-ai); animation: nc-editor-gap-blink 1s steps(2, start) infinite; }
+.nc-editor-ai__error { color: var(--danger); }
+.nc-editor-ai__actions { display: flex; justify-content: flex-end; gap: 6px; }
+.nc-editor .nc-editor-suggest-old { background: var(--danger-tint); color: var(--text-3); text-decoration: line-through; text-decoration-color: var(--danger); }
+
+/* Mention previews and dictation. */
+.nc-editor-preview { position: absolute; z-index: 32; min-width: 220px; max-width: 320px; padding: var(--space-3); border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--bg-3); box-shadow: var(--shadow-overlay); }
+.nc-editor-dictation { position: sticky; bottom: var(--space-3); z-index: 28; display: flex; align-items: center; gap: var(--space-2); width: max-content; margin: var(--space-2) 0 0 auto; padding: var(--space-1) var(--space-1) var(--space-1) var(--space-3); border: 1px solid var(--line); border-radius: var(--radius-full); background: var(--bg-3); color: var(--text-1); box-shadow: var(--shadow-overlay); }
+
+.nc-editor-dictate { position: sticky; bottom: var(--space-3); z-index: 28; display: flex; align-items: center; justify-content: center; width: var(--control-md); height: var(--control-md); margin: var(--space-2) 0 0 auto; padding: 0; border: 1px solid var(--line); border-radius: var(--radius-full); background: var(--bg-3); color: var(--text-2); cursor: pointer; }
+.nc-editor-dictate:hover { color: var(--text-1); }
+.nc-editor-dictate:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+
+/* Read only: no handles, no hints. */
+.nc-editor--readonly .nc-editor__content { caret-color: transparent; }
+
+[data-theme="light"] .nc-editor-drag-chip, [data-theme="light"] .nc-editor-format, [data-theme="light"] .nc-editor-slash, [data-theme="light"] .nc-editor-mentions, [data-theme="light"] .nc-editor-ai__actions-list, [data-theme="light"] .nc-editor-preview { background: var(--bg-1); }
+[data-theme="light"] .nc-editor-cursor__label { color: var(--bg-1); }
+
+/* Phones: no gutter or handles, the format bar sits above the keyboard, menus span the width. */
+@media (max-width: 720px) {
+  .nc-editor--page { --nc-editor-gutter-start-default: var(--space-1); --nc-editor-gutter-end-default: var(--space-1); }
+  .nc-editor-handle { display: none; }
+  .nc-editor-format { position: fixed; left: var(--space-2) !important; right: var(--space-2); top: auto !important; bottom: calc(var(--space-2) + env(safe-area-inset-bottom)); transform: none; justify-content: flex-start; overflow-x: auto; }
+  .nc-editor-format__btn, .nc-editor-format__ai { min-width: 44px; height: 40px; }
+  .nc-editor-slash, .nc-editor-mentions { left: 0 !important; right: 0; width: auto; max-height: 50vh; }
+  .nc-editor-slash__item { min-height: 44px; }
+  .nc-editor-ai { left: 0; right: 0; }
+  .nc-editor-ai__actions-list { width: auto; }
+  .nc-editor-ai__actions .nc-btn { height: 40px; }
+}
+/* Touch screens wide enough for the gutter: the handle of the block last touched, its drag button only and big
+   enough for a finger; a long press on it starts the drag, a tap opens the block menu. */
+@media (pointer: coarse) {
+  .nc-editor-handle { padding-top: 0; }
+  .nc-editor-handle [data-part=block-add] { display: none; }
+  .nc-editor-handle__drag { width: 32px; height: 36px; }
+}

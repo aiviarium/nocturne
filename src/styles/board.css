@@ -1,0 +1,96 @@
+/* Board (components/Board.tsx): lanes side by side that scroll sideways inside the board, never squeezed, and
+   the card. Narrower than 560px of its own width the board stacks its lanes as grouped lists. Tokens
+   only (run `bun run lint:tokens`). */
+
+.nc-board { --nc-board-lane: 272px; --nc-board-card: 112px; --nc-board-card-min: 64px; position: relative; container: nc-board / inline-size; min-width: 0; }
+.nc-board[data-dragging] { cursor: grabbing; user-select: none; }
+.nc-board__scroll { overflow-x: auto; overflow-y: hidden; overscroll-behavior-x: contain; }
+.nc-board__lanes { display: flex; align-items: flex-start; gap: 10px; width: max-content; min-width: 100%; box-sizing: border-box; }
+
+/* A board view: the board fills its frame, the lanes its height, and each lane scrolls inside itself. */
+.nc-board[data-fill] { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+.nc-board[data-fill] > .nc-board__scroll { display: flex; flex-direction: column; flex: 1; min-height: 0; overflow: auto; }
+.nc-board[data-fill] .nc-board__lanes { flex: 1; min-height: 0; align-items: stretch; padding: var(--space-3); }
+
+/* ── Lane ── */
+.nc-board-lane { display: flex; flex-direction: column; flex: 0 0 var(--nc-board-lane); min-width: 0; box-sizing: border-box; gap: var(--space-2); padding: 6px; border-radius: var(--radius-lg); background: var(--bg-0); }
+.nc-board-lane[data-drop] { box-shadow: inset 0 0 0 1px var(--line-strong); }
+.nc-board-lane__head { display: flex; align-items: center; gap: var(--space-2); height: 30px; min-width: 0; padding: 0 6px; }
+.nc-board-lane__name { min-width: 0; overflow: hidden; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; color: var(--text-1); }
+.nc-board-lane__icon { display: inline-flex; flex: none; }
+.nc-board-lane__dot { flex: none; width: 8px; height: 8px; border-radius: var(--radius-full); background: var(--text-3); }
+.nc-board-lane__dot[data-hue="sky"] { background: var(--label-sky); }
+.nc-board-lane__dot[data-hue="teal"] { background: var(--label-teal); }
+.nc-board-lane__dot[data-hue="mint"] { background: var(--label-mint); }
+.nc-board-lane__dot[data-hue="amber"] { background: var(--label-amber); }
+.nc-board-lane__dot[data-hue="ember"] { background: var(--label-ember); }
+.nc-board-lane__dot[data-hue="rose"] { background: var(--label-rose); }
+.nc-board-lane__dot[data-hue="orchid"] { background: var(--label-orchid); }
+.nc-board-lane__count { flex: none; }
+.nc-board-lane__add { flex: none; width: var(--control-sm); height: var(--control-sm); margin-left: auto; color: var(--text-3); }
+.nc-board-lane__body { position: relative; display: flex; flex-direction: column; gap: var(--space-2); min-height: var(--space-6); }
+.nc-board[data-fill] .nc-board-lane__body { flex: 1; min-height: 120px; overflow-x: hidden; overflow-y: auto; }
+.nc-board-lane__foot { display: flex; }
+
+/* ── Card ── */
+.nc-board-card { position: relative; display: flex; flex: none; flex-direction: column; gap: 6px; min-height: var(--nc-board-card-min); box-sizing: border-box; padding: 10px 12px; border: 1px solid var(--bg-4); border-radius: var(--radius-md); background: var(--bg-2); color: var(--text-2); overflow: hidden; cursor: pointer; touch-action: none; transition: transform 120ms ease; }
+.nc-board-card--placed { position: absolute; top: 0; left: 0; right: 0; }
+.nc-board-card:hover { border-color: var(--line); }
+.nc-board-card[data-selected] { border-color: var(--line-strong); background: var(--bg-4); }
+.nc-board-card[data-active] { box-shadow: var(--focus-ring); }
+.nc-board-card:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+.nc-board-card--ghost { position: fixed; top: 0; left: 0; z-index: 90; pointer-events: none; box-shadow: var(--shadow-overlay); transition: none; }
+.nc-board-card__top { display: flex; flex: none; align-items: center; justify-content: space-between; gap: 6px; height: 20px; min-width: 0; overflow: hidden; white-space: nowrap; }
+.nc-board-card__title { display: flex; flex: none; align-items: flex-start; gap: 6px; min-width: 0; }
+.nc-board-card__icon { display: inline-flex; flex: none; padding-top: 2px; }
+.nc-board-card__text { display: -webkit-box; min-width: 0; overflow: hidden; color: var(--text-1); overflow-wrap: anywhere; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+/* The last row sits on the bottom edge, the same distance from it on every card: a short title's spare height
+   goes between the title and this row. */
+.nc-board-card__meta { display: flex; flex: none; align-items: center; gap: 6px; min-width: 0; margin-top: auto; overflow: hidden; white-space: nowrap; }
+
+/* A board with `fixed` (virtualised lanes): every card and the drop placeholder are one fixed height. */
+.nc-board[data-fixed] .nc-board-card { height: var(--nc-board-card); min-height: 0; }
+
+.nc-board-drop { flex: none; min-height: var(--nc-board-card-min); box-sizing: border-box; border: 1px dashed var(--line-strong); border-radius: var(--radius-md); background: var(--bg-1); }
+.nc-board[data-fixed] .nc-board-drop { height: var(--nc-board-card); min-height: 0; }
+.nc-board-drop--placed { position: absolute; top: 0; left: 0; right: 0; }
+
+/* ── Stacked: grouped lists ── */
+@container nc-board (max-width: 559px) {
+  .nc-board__lanes { flex-direction: column; align-items: stretch; gap: var(--space-4); width: auto; }
+  .nc-board[data-fill] .nc-board__lanes { flex: none; }
+  .nc-board-lane { flex: none; gap: 6px; padding: 0; background: none; }
+  .nc-board-lane[data-drop] { box-shadow: none; }
+  .nc-board-lane[data-drop] .nc-board-lane__body { box-shadow: inset 0 0 0 1px var(--line-strong); }
+  .nc-board-lane__head { padding: 0 var(--space-3); }
+  .nc-board-lane__body,
+  .nc-board[data-fill] .nc-board-lane__body { flex: none; gap: 0; min-height: 0; overflow: visible; border: 1px solid var(--line-soft); border-radius: var(--radius-lg); background: var(--bg-1); }
+  .nc-board-lane__body:empty { display: none; }
+  .nc-board-lane__body > * { height: auto !important; }
+  .nc-board-card,
+  .nc-board[data-fixed] .nc-board-card,
+  .nc-board-card--placed { position: relative; inset: auto; display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "title title" "top meta"; align-items: center; gap: 0 var(--space-3); height: auto; min-height: 44px; padding: var(--space-2) var(--space-3); border: 0; border-radius: 0; background: none; transform: none !important; touch-action: pan-y; }
+  .nc-board-card + .nc-board-card { border-top: 1px solid var(--line-subtle); }
+  .nc-board-card:first-child { border-top-left-radius: var(--radius-lg); border-top-right-radius: var(--radius-lg); }
+  .nc-board-card:last-child { border-bottom-left-radius: var(--radius-lg); border-bottom-right-radius: var(--radius-lg); }
+  .nc-board-card[data-selected] { background: var(--bg-4); }
+  .nc-board-card[data-active] { box-shadow: inset 0 0 0 1px var(--accent-strong); }
+  .nc-board-card__title { grid-area: title; }
+  .nc-board-card__top { grid-area: top; justify-content: flex-start; }
+  .nc-board-card__meta { grid-area: meta; justify-content: flex-end; margin-top: 0; }
+  /* A card with no top row, a title and at most one short value: one line, the title at the start and the value
+     at the end. With several values (or a message in their place) the values are a line of their own. */
+  .nc-board-card:not(:has(.nc-board-card__top)) { grid-template-columns: minmax(0, 1fr) fit-content(45%); grid-template-areas: "title meta"; }
+  .nc-board-card[data-refused]:not(:has(.nc-board-card__top)),
+  .nc-board-card:not(:has(.nc-board-card__top)):has(.nc-board-card__meta > :nth-child(2)) { grid-template-columns: minmax(0, 1fr); grid-template-areas: "title" "meta"; row-gap: var(--space-1); }
+  .nc-board-card[data-refused]:not(:has(.nc-board-card__top)) .nc-board-card__meta,
+  .nc-board-card:not(:has(.nc-board-card__top)):has(.nc-board-card__meta > :nth-child(2)) .nc-board-card__meta { justify-content: flex-start; }
+  .nc-board-drop,
+  .nc-board-drop--placed { display: none; }
+}
+
+/* Touch: hit areas without growing the visible controls. */
+@media (pointer: coarse) {
+  .nc-board-lane__add { position: relative; }
+  .nc-board-lane__add::after { content: ""; position: absolute; inset: -10px; }
+}

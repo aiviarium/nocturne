@@ -1,0 +1,239 @@
+/* Gallery layout only. Colours, radii and type sizes all come from tokens. */
+body {
+  margin: 0;
+  background: var(--bg-0);
+  color: var(--text-1);
+}
+.g-app {
+  display: grid;
+  grid-template-columns: 232px minmax(0, 1fr);
+  min-height: 100vh;
+  background: var(--bg-0);
+}
+.g-side {
+  position: sticky;
+  top: 0;
+  align-self: start;
+  height: 100vh;
+  box-sizing: border-box;
+  padding: var(--space-3) var(--space-2);
+  overflow: auto;
+}
+.g-brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 0 var(--space-2) var(--space-3);
+  font-weight: 600;
+}
+.g-main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  margin: var(--space-2) var(--space-2) var(--space-2) 0;
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-md);
+  background: var(--bg-1);
+}
+.g-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  min-height: var(--header);
+  padding: 0 var(--space-3);
+  border-bottom: 1px solid var(--line-soft);
+  flex-wrap: wrap;
+}
+.g-bar__title {
+  margin: 0;
+  font-weight: 600;
+}
+.g-bar__spacer {
+  flex: 1;
+}
+.g-swatches {
+  display: inline-flex;
+  gap: var(--space-2);
+}
+.g-swatch {
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: var(--radius-full);
+  background: var(--swatch);
+  cursor: pointer;
+}
+.g-swatch[aria-pressed="true"] {
+  border-color: var(--text-1);
+}
+.g-swatch:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+.g-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  padding: var(--space-6);
+}
+.g-lead {
+  margin: 0;
+  max-width: 720px;
+  color: var(--text-2);
+}
+.g-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+}
+.g-section__title {
+  margin: 0;
+  color: var(--text-3);
+}
+.g-section__note {
+  margin: 0;
+  color: var(--text-3);
+}
+.g-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: var(--space-3);
+  align-items: start;
+}
+.g-grid--2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.g-grid--3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.g-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-md);
+  background: var(--bg-1);
+  min-width: 0;
+}
+.g-well {
+  padding: var(--space-4);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-md);
+  background: var(--bg-0);
+  min-width: 0;
+}
+@media (max-width: 800px) {
+  .g-app {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .g-side {
+    position: static;
+    height: auto;
+  }
+  .g-grid--2,
+  .g-grid--3 {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Phone pages: a frame of an iPhone's size whose content behaves as on a phone. */
+.g-phone {
+  position: relative;
+  width: 393px;
+  height: 760px;
+  max-width: 100%;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-2xl);
+  background: var(--bg-0);
+}
+
+/* A frame (/frame/<example>): one example filling the window, for the docs site's iframes. */
+html.g-frame,
+html.g-frame body {
+  min-height: 100%;
+  background: var(--bg-0);
+}
+.g-frame .ex-root {
+  box-sizing: border-box;
+  min-height: 100vh;
+  padding: var(--space-4);
+  background: var(--bg-0);
+}
+@media (max-width: 640px) {
+  .g-frame .ex-root {
+    padding: var(--space-3);
+  }
+}
+.g-frame .ex-root[data-surface="card"] {
+  background: var(--bg-1);
+}
+.g-frame .ex-root[data-phone] {
+  height: 100vh;
+  padding: 0;
+  overflow: hidden;
+  background: var(--bg-0);
+}
+
+/* An emulated iPhone (device.tsx): a phone frame, or a /frame shown with ?device=iphone (the docs site's device
+   frames). The safe-area insets are an iPhone 15 or 16's, with the Dynamic Island: the phone pieces pad for them
+   through the same variables they read on the device. */
+html[data-device="iphone"],
+.g-phone {
+  --nc-safe-top: 59px;
+  --nc-safe-bottom: 34px;
+  --nc-safe-left: 0px;
+  --nc-safe-right: 0px;
+}
+.g-device {
+  position: absolute;
+  inset: 0;
+  z-index: 1000;
+  pointer-events: none;
+  color: var(--text-1);
+}
+.g-device--fixed {
+  position: fixed;
+}
+.g-device__status {
+  position: absolute;
+  top: 11px;
+  left: 0;
+  right: 0;
+  display: grid;
+  grid-template-columns: 1fr 126px 1fr;
+  align-items: center;
+  height: 37px;
+}
+.g-device__time {
+  justify-self: center;
+  font-family: var(--font-sans);
+  font-size: 17px; /* lint-tokens-ignore: the device's own status bar */
+  line-height: 22px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.g-device__island {
+  height: 37px;
+  border-radius: var(--radius-full);
+  background: #000000; /* lint-tokens-ignore: the hardware is black in both themes */
+}
+.g-device__icons {
+  display: flex;
+  align-items: center;
+  justify-self: center;
+  gap: 6px;
+}
+.g-device__home {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  width: 134px;
+  height: 5px;
+  margin-left: -67px;
+  border-radius: var(--radius-full);
+  background: var(--text-1);
+}

@@ -1,0 +1,26 @@
+/* The widget grid: 12 columns, rows of --wg-row, items placed by cell. Below 640px it stacks. */
+.nc-wgrid { display: grid; grid-template-columns: repeat(var(--wg-cols, 12), minmax(0, 1fr)); grid-auto-rows: var(--wg-row, 80px); gap: var(--space-3); position: relative; }
+.nc-wgrid__item { position: relative; min-width: 0; min-height: 0; grid-column: calc(var(--wg-x) + 1) / span var(--wg-w); grid-row: calc(var(--wg-y) + 1) / span var(--wg-h); border-radius: var(--radius-2xl); }
+.nc-wgrid[data-stacked] .nc-wgrid__item { grid-column: 1 / -1; grid-row: auto / span var(--wg-h); order: var(--wg-order); }
+/* Outside editing the layout is drawn compacted (lib/grid.ts, fitLayout): each item absolutely placed at its
+   columns, its top and its fitted height in px. Hidden items take no space. While measuring, an item takes its
+   content's height for one layout. */
+.nc-wgrid[data-fit] { display: block; height: var(--wg-height, auto); }
+.nc-wgrid[data-fit] > .nc-wgrid__item { position: absolute; top: var(--wg-top, 0); left: calc((100% - (var(--wg-cols) - 1) * var(--space-3)) / var(--wg-cols) * var(--wg-fx, 0) + var(--space-3) * var(--wg-fx, 0)); width: calc((100% - (var(--wg-cols) - 1) * var(--space-3)) / var(--wg-cols) * var(--wg-fw, 12) + var(--space-3) * (var(--wg-fw, 12) - 1)); height: var(--wg-fit-h, auto); }
+.nc-wgrid[data-fit] > .nc-wgrid__item[data-measure] { height: auto; }
+.nc-wgrid > .nc-wgrid__item[data-hidden] { display: none; }
+.nc-wgrid[data-editing] .nc-wgrid__item { cursor: grab; touch-action: none; user-select: none; outline: 1px dashed var(--line-strong); outline-offset: 2px; }
+.nc-wgrid[data-editing] .nc-wgrid__item:hover { outline-color: var(--accent-line); }
+.nc-wgrid[data-editing] .nc-wgrid__item:focus-visible { outline: 2px solid var(--accent-strong); }
+.nc-wgrid__item[data-state="moving"], .nc-wgrid__item[data-state="resizing"] { cursor: grabbing; outline: 2px solid var(--accent-strong); box-shadow: var(--glow-ai); z-index: 2; }
+/* In edit mode the veil takes the pointer so the widget behind it does not react to a drag. */
+.nc-wgrid__veil { position: absolute; inset: 0; z-index: 1; border-radius: inherit; }
+.nc-wgrid__resize { position: absolute; right: 2px; bottom: 2px; z-index: 3; width: 18px; height: 18px; cursor: nwse-resize; border-radius: var(--radius-xs); color: var(--text-3); background: linear-gradient(135deg, transparent 0 55%, currentColor 55% 62%, transparent 62% 72%, currentColor 72% 79%, transparent 79%); }
+.nc-wgrid__resize:hover { color: var(--accent-text); }
+/* Every card on the grid takes the widget card's frame (18/20px padding, 20px radius), so the titles of a row
+   line up whichever part each tile is: a Card, a StatCard or a Widget. */
+.nc-wgrid__item { --nc-pad: 20px; }
+.nc-wgrid__item :is(.nc-stat, .nc-ccard:not([data-padding="none"]))[data-fill] { padding: 18px var(--nc-pad); border-radius: var(--radius-2xl); }
+.nc-wgrid__item .nc-ccard[data-padding="none"][data-fill] { border-radius: var(--radius-2xl); }
+/* Its rows' text starts on the title's edge at this padding too: only the row's own inset hangs into it. */
+.nc-wgrid__item .nc-ccard[data-fill] > .nc-card__body > .nc-rows { margin-inline: calc(var(--nc-inset) * -1); }

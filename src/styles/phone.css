@@ -1,0 +1,293 @@
+/* The phone layout's pieces (docs/phone.md): the compact phone scale, the navigation bar and screen,
+   the navigation stack, the tab bar, sheets and action sheets, inset lists with swipe actions, and the rules that
+   apply to every component while the window is a phone (`:root[data-phone]`, set by lib/phone.ts; a landscape
+   phone is wider than 720 px, so a media query on width would miss it). Built from tokens only. */
+
+/* ---------- The phone scale ----------
+   The same numbers are PHONE_SCALE in lib/phone.ts; change both together. Type sizes are the phone's own: a
+   phone is read at arm's length, so body text is 15 px where the desktop's is 13, and every field is 16 px so
+   Safari does not zoom into it. Hierarchy still comes from weight and colour first. */
+:root {
+  --phone-bar: 44px;
+  --phone-tabbar: 50px;
+  --phone-hit: 44px;
+  --phone-control: 30px;
+  --phone-row: 44px;
+  --phone-row-2: 58px;
+  --phone-gutter: 12px;
+  --phone-group-gap: 20px;
+  --phone-large-title-size: 26px;
+  --phone-large-title-line: 32px;
+  --phone-bar-title-size: 15px;
+  --phone-body-size: 15px;
+  --phone-body-line: 20px;
+  --phone-secondary-size: 13px;
+  --phone-secondary-line: 18px;
+  --phone-caption-size: 11px;
+  --phone-caption-line: 14px;
+  --phone-tab-label-size: 10px;
+  --phone-input-size: 16px;
+}
+/* ---------- Safe areas ----------
+   The one place the device's insets come from: the notch or Dynamic Island and the status bar at the top, the home
+   indicator at the bottom, the sides in landscape. Every phone piece reads these variables, never env() itself,
+   so a preview can set them to a device's values (the gallery's device frame does). A piece that pads for an inset
+   sets it to 0 for what it holds, so nothing inside pads for it twice: the navigation bar takes the top, the tab
+   bar (or a screen's scroller, a bottom area or a sheet) the bottom, a screen's scroller the sides. */
+:root {
+  --nc-safe-top: env(safe-area-inset-top, 0px);
+  --nc-safe-bottom: env(safe-area-inset-bottom, 0px);
+  --nc-safe-left: env(safe-area-inset-left, 0px);
+  --nc-safe-right: env(safe-area-inset-right, 0px);
+}
+/* Landscape: height is what is short, so the bars are lower and the tab bar puts its label beside the icon. */
+@media (max-height: 500px) {
+  :root[data-phone] { --phone-bar: 36px; --phone-tabbar: 36px; }
+}
+
+/* ---------- The hit area ----------
+   A control's tappable area reaches at least 44 px square around its centre, invisibly: the visible control
+   stays compact and the ::after box takes the taps. Percentages of top/bottom refer to the control's height, so
+   a 28 px control extends 8 px each way. Neighbours are spaced so their areas do not overlap. */
+.nc-hit { position: relative; }
+.nc-hit::after { content: ""; position: absolute; inset: min(0px, calc(50% - var(--phone-hit) / 2)); }
+:root[data-phone] .nc-icon-btn, :root[data-phone] .nc-btn, :root[data-phone] .nc-send, :root[data-phone] .nc-effort,
+:root[data-phone] .nc-switch, :root[data-phone] .nc-check, :root[data-phone] .nc-token__remove { position: relative; }
+:root[data-phone] .nc-icon-btn::after, :root[data-phone] .nc-btn::after, :root[data-phone] .nc-send::after,
+:root[data-phone] .nc-effort::after, :root[data-phone] .nc-check::after,
+:root[data-phone] .nc-token__remove::after { content: ""; position: absolute; inset: min(0px, calc(50% - var(--phone-hit) / 2)); }
+/* A switch draws its knob with ::after, so its hit area is the ::before box. */
+:root[data-phone] .nc-switch::before { content: ""; position: absolute; inset: min(0px, calc(50% - var(--phone-hit) / 2)); }
+
+/* ---------- App-like behaviour on a phone ---------- */
+:root[data-phone], :root[data-phone] body { overflow: hidden; overscroll-behavior: none; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+:root[data-phone] body { -webkit-tap-highlight-color: transparent; }
+/* Chrome is not text to select; content is. Buttons and links do not pop a callout on a long press. */
+:root[data-phone] .nc-navbar, :root[data-phone] .nc-tabbar, :root[data-phone] .nc-sheet__header,
+:root[data-phone] button, :root[data-phone] .nc-inset-row__main { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+:root[data-phone] a, :root[data-phone] button { touch-action: manipulation; }
+/* Safari zooms into a field whose text is under 16 px. */
+:root[data-phone] input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), :root[data-phone] textarea,
+:root[data-phone] select, :root[data-phone] [contenteditable="true"] { font-size: var(--phone-input-size); }
+
+/* ---------- Navigation bar ---------- */
+.nc-navbar { display: grid; grid-template-columns: minmax(96px, 1fr) minmax(0, auto) minmax(96px, 1fr); align-items: center; flex: none; box-sizing: border-box; height: calc(var(--phone-bar) + var(--nc-safe-top)); padding: var(--nc-safe-top) calc(var(--space-1) + var(--nc-safe-right)) 0 calc(var(--space-1) + var(--nc-safe-left)); background: var(--bg-0); border-bottom: 1px solid transparent; transition: border-color 120ms; }
+.nc-navbar[data-scrolled] { border-bottom-color: var(--line-soft); }
+.nc-navbar__leading { display: flex; align-items: center; min-width: 0; }
+.nc-navbar__trailing { display: flex; align-items: center; justify-content: flex-end; gap: var(--space-1); min-width: 0; }
+.nc-navbar__back { display: inline-flex; align-items: center; gap: 0; max-width: 100%; height: var(--phone-control); padding: 0 var(--space-2) 0 0; border: 0; border-radius: var(--radius-sm); background: transparent; color: var(--text-2); font-family: var(--font-sans); font-size: var(--phone-body-size); line-height: var(--phone-body-line); cursor: pointer; }
+.nc-navbar__back:active { color: var(--text-1); }
+.nc-navbar__back:focus-visible, .nc-navbar__button:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+.nc-navbar__chevron { width: 22px; height: 22px; flex: none; stroke-width: 2; }
+.nc-navbar__back-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nc-navbar__title { display: flex; flex-direction: column; align-items: center; min-width: 0; max-width: 100%; padding: 0 var(--space-1); text-align: center; transition: opacity 140ms; }
+.nc-navbar__title[data-hidden] { opacity: 0; }
+.nc-navbar__title-text { max-width: 100%; overflow: hidden; color: var(--text-1); font-family: var(--font-sans); font-size: var(--phone-bar-title-size); line-height: var(--phone-body-line); font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+.nc-navbar__subtitle { display: inline-flex; align-items: center; gap: var(--space-1); max-width: 100%; overflow: hidden; color: var(--text-3); font-size: var(--phone-caption-size); line-height: var(--phone-caption-line); white-space: nowrap; }
+/* A subtitle wider than the bar: its words and badges give way with an ellipsis, people (avatars) keep their size. */
+.nc-navbar__subtitle > * { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nc-navbar__subtitle > :is([data-part="presence"], [data-part="avatar-stack"], [data-part="avatar"], .nc-icon) { flex: none; overflow: visible; }
+.nc-navbar__subtitle { padding-inline: 2px; }
+.nc-navbar__subtitle .nc-state { font-size: var(--phone-caption-size); line-height: var(--phone-caption-line); }
+.nc-navbar__button { display: inline-flex; align-items: center; justify-content: center; gap: 2px; min-width: var(--phone-control); height: var(--phone-control); padding: 0 var(--space-1); border: 0; border-radius: var(--radius-sm); background: transparent; color: var(--text-2); font-family: var(--font-sans); font-size: var(--phone-body-size); line-height: var(--phone-body-line); cursor: pointer; }
+.nc-navbar__button + .nc-navbar__button, .nc-navbar__trailing > * + * { margin-left: calc(var(--phone-hit) - var(--phone-control)); }
+.nc-navbar__button:active, .nc-navbar__button[aria-pressed="true"] { color: var(--text-1); background: var(--bg-3); }
+.nc-navbar__button[disabled] { color: var(--text-4); }
+.nc-navbar__button--text { color: var(--text-1); font-weight: 500; }
+.nc-navbar__button--primary { color: var(--accent-text); font-weight: 600; }
+.nc-navbar__glyph { width: 20px; height: 20px; }
+.nc-navbar__count { color: var(--text-3); font-size: var(--phone-caption-size); }
+
+/* ---------- Screen ---------- */
+.nc-screen { display: flex; flex-direction: column; height: 100%; min-height: 0; background: var(--bg-0); color: var(--text-1); }
+.nc-screen__scroll { position: relative; flex: 1; min-height: 0; overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; padding: 0 var(--nc-safe-right) var(--nc-safe-bottom) var(--nc-safe-left); transform: translateY(var(--nc-pull, 0px)); }
+/* The navigation bar above took the top inset; the scroller takes the sides and the bottom. */
+.nc-screen__scroll > * { --nc-safe-top: 0px; --nc-safe-left: 0px; --nc-safe-right: 0px; }
+.nc-screen[data-mode="scroll"] > .nc-screen__scroll > * { --nc-safe-bottom: 0px; }
+/* With the keyboard open the layout ends at the keyboard, not at the home indicator. */
+:root[data-keyboard] .nc-screen__scroll { padding-bottom: 0; }
+/* A screen that fills the height leaves the bottom inset to what sits at its end (a BottomArea, a terminal). */
+.nc-screen[data-mode="fill"] > .nc-screen__scroll, .nc-screen[data-mode="full"] > .nc-screen__scroll { display: flex; flex-direction: column; overflow: hidden; padding-bottom: 0; }
+.nc-screen[data-mode="fill"] .nc-screen__content, .nc-screen[data-mode="full"] .nc-screen__content { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+.nc-screen__content { min-width: 0; }
+.nc-screen__large { margin: 0; padding: 2px var(--phone-gutter) var(--space-2); overflow: hidden; color: var(--text-1); font-family: var(--font-sans); font-size: var(--phone-large-title-size); line-height: var(--phone-large-title-line); font-weight: 700; letter-spacing: -0.01em; text-overflow: ellipsis; white-space: nowrap; }
+.nc-screen__search { position: sticky; top: 0; z-index: 2; padding: 0 var(--phone-gutter) var(--space-2); background: var(--bg-0); transition: transform 180ms ease, opacity 180ms ease; }
+.nc-screen__search[data-hidden] { transform: translateY(-100%); opacity: 0; pointer-events: none; }
+.nc-screen__search-field { height: 36px; border-radius: var(--radius-lg); }
+.nc-screen__search-field input { min-width: 0; }
+.nc-screen__refresh { position: absolute; top: calc(-1 * var(--nc-pull, 0px)); left: 0; right: 0; display: flex; justify-content: center; align-items: center; height: var(--nc-pull, 40px); min-height: 32px; }
+
+/* ---------- Navigation stack ---------- */
+.nc-navstack { position: relative; flex: 1; min-height: 0; overflow: hidden; contain: layout paint; }
+.nc-navstack[hidden] { display: none; }
+.nc-navstack__screen { position: absolute; inset: 0; background: var(--bg-0); transition: transform 280ms cubic-bezier(0.2, 0.8, 0.2, 1), filter 280ms; will-change: transform; }
+.nc-navstack__screen[data-position="hidden"] { visibility: hidden; transform: translateX(-30%); }
+.nc-navstack__screen[data-position="below"] { transform: translateX(-30%); filter: brightness(0.7); }
+.nc-navstack__screen[data-position="entering"] { transform: translateX(100%); transition: none; }
+.nc-navstack__screen[data-position="leaving"] { transform: translateX(100%); z-index: 2; box-shadow: var(--shadow-overlay); }
+.nc-navstack__screen[data-position="top"] { z-index: 1; transform: none; }
+.nc-navstack[data-swiping] .nc-navstack__screen { transition: none; }
+.nc-navstack[data-swiping] .nc-navstack__screen[data-position="top"] { transform: translateX(var(--nc-swipe)); box-shadow: var(--shadow-overlay); }
+.nc-navstack[data-swiping] .nc-navstack__screen[data-position="below"] { transform: translateX(calc(-30% + var(--nc-swipe) * 0.3)); }
+.nc-navstack__edge { position: absolute; top: calc(var(--phone-bar) + var(--nc-safe-top)); bottom: 0; left: 0; z-index: 5; touch-action: pan-y; }
+.nc-navstack__edge[hidden] { display: none; }
+
+/* ---------- Tab bar ---------- */
+.nc-tabbar { display: flex; flex: none; box-sizing: content-box; height: var(--phone-tabbar); padding: 0 var(--nc-safe-right) var(--nc-safe-bottom) var(--nc-safe-left); border-top: 1px solid var(--line-soft); background: var(--bg-0); }
+.nc-tabbar[hidden] { display: none; }
+/* The tab bar takes the bottom inset: what is stacked above it (the navigation stacks) pads for none. */
+:has(~ .nc-tabbar:not([hidden])) { --nc-safe-bottom: 0px; }
+.nc-tabbar__item { display: flex; flex: 1; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-width: 0; padding: 0; border: 0; background: transparent; color: var(--text-3); font-family: var(--font-sans); cursor: pointer; }
+.nc-tabbar__item:focus-visible { outline: none; }
+.nc-tabbar__item:focus-visible .nc-tabbar__icon { box-shadow: var(--focus-ring); }
+.nc-tabbar__icon { position: relative; display: flex; align-items: center; justify-content: center; width: 44px; height: 26px; border-radius: var(--radius-full); transition: background 120ms; }
+.nc-tabbar__glyph { width: 20px; height: 20px; }
+.nc-tabbar__label { max-width: 100%; overflow: hidden; font-size: var(--phone-tab-label-size); line-height: 12px; font-weight: 500; text-overflow: ellipsis; white-space: nowrap; }
+.nc-tabbar__item[aria-current="page"] { color: var(--text-1); }
+.nc-tabbar__item[aria-current="page"] .nc-tabbar__icon { background: var(--bg-3); }
+.nc-tabbar__item[aria-current="page"] .nc-tabbar__label { font-weight: 600; }
+.nc-tabbar__badge { position: absolute; top: -3px; left: 27px; box-sizing: border-box; min-width: 16px; height: 16px; padding: 0 4px; border: 2px solid var(--bg-0); border-radius: var(--radius-full); background: var(--danger); color: var(--on-primary, var(--bg-0)); font-size: var(--phone-tab-label-size); line-height: 12px; font-weight: 600; text-align: center; font-variant-numeric: tabular-nums; }
+@media (max-height: 500px) {
+  :root[data-phone] .nc-tabbar__item { flex-direction: row; gap: var(--space-3); }
+  :root[data-phone] .nc-tabbar__badge { left: 20px; }
+  :root[data-phone] .nc-tabbar__icon { width: 34px; height: 26px; }
+  :root[data-phone] .nc-tabbar__label { font-size: var(--phone-caption-size); }
+}
+
+/* ---------- Sheet ---------- */
+.nc-sheet-scrim { position: fixed; inset: 0; z-index: 80; background: color-mix(in srgb, var(--bg-0) 64%, transparent); transition: background 240ms ease; }
+.nc-sheet-scrim[data-phase="enter"], .nc-sheet-scrim[data-phase="leave"] { background: transparent; }
+.nc-sheet { position: fixed; left: var(--nc-safe-left); right: var(--nc-safe-right); display: flex; flex-direction: column; box-sizing: border-box; max-height: calc(100% - var(--nc-safe-top)); border: 1px solid var(--line); border-bottom: 0; border-radius: var(--radius-xl) var(--radius-xl) 0 0; background: var(--bg-1); box-shadow: var(--shadow-overlay); outline: none; transition: height 260ms cubic-bezier(0.2, 0.8, 0.2, 1), transform 240ms cubic-bezier(0.2, 0.8, 0.2, 1), bottom 120ms; }
+.nc-sheet[data-phase="enter"], .nc-sheet[data-phase="leave"] { transform: translateY(100%); }
+.nc-sheet[data-dragging] { transition: none; }
+/* Above the keyboard there is no home indicator to clear. */
+:root[data-keyboard] .nc-sheet { --nc-safe-bottom: 0px; }
+@media (min-width: 721px) {
+  /* A sheet in a wide window (a desktop that asked for one) is a column, not the full width. */
+  .nc-sheet { left: 50%; right: auto; width: min(560px, 100%); margin-left: max(-280px, -50%); }
+}
+.nc-sheet__header { flex: none; padding: 6px var(--space-2) 0 var(--space-4); touch-action: none; cursor: grab; }
+.nc-sheet__grab { display: block; width: 36px; height: 5px; margin: 0 auto 4px; border-radius: var(--radius-full); background: var(--line-strong); }
+.nc-sheet__titlebar { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); min-height: 36px; padding-bottom: var(--space-1); }
+.nc-sheet__title { margin: 0; min-width: 0; overflow: hidden; color: var(--text-1); font-family: var(--font-sans); font-size: var(--phone-bar-title-size); line-height: var(--phone-body-line); font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+.nc-sheet__close { flex: none; }
+.nc-sheet__action { display: flex; gap: var(--space-2); flex: none; }
+/* A dialog that became a sheet: its description, then its fields. */
+.nc-dialog-sheet__desc { margin: 0 0 var(--space-3); color: var(--text-2); font-size: var(--phone-secondary-size); line-height: var(--phone-secondary-line); }
+/* The sheet pads for the sides (its position) and the bottom (its body or footer): its content pads for none. */
+.nc-sheet__content { display: flow-root; --nc-safe-top: 0px; --nc-safe-bottom: 0px; --nc-safe-left: 0px; --nc-safe-right: 0px; }
+.nc-sheet__body { flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; padding: var(--space-1) var(--space-4) calc(var(--space-4) + var(--nc-safe-bottom)); }
+.nc-sheet__body--flush { padding: 0 0 calc(var(--space-2) + var(--nc-safe-bottom)); }
+.nc-sheet__footer { flex: none; display: flex; justify-content: flex-end; gap: var(--space-2); padding: var(--space-2) var(--space-4) calc(var(--space-2) + var(--nc-safe-bottom)); border-top: 1px solid var(--line-soft); }
+.nc-sheet__footer:has(+ *) { padding-bottom: var(--space-2); }
+/* With a footer under it the body does not pad for the home indicator: the footer does. */
+.nc-sheet:has(> .nc-sheet__footer) > .nc-sheet__body { padding-bottom: var(--space-4); }
+.nc-sheet:has(> .nc-sheet__footer) > .nc-sheet__body--flush { padding-bottom: 0; }
+.nc-sheet__footer ~ .nc-sheet__body { padding-bottom: var(--space-4); }
+/* A menu inside a sheet: phone rows. */
+.nc-sheet .nc-menu, .nc-menu--sheet { min-width: 0; padding: var(--space-1) var(--space-2); border: 0; background: transparent; box-shadow: none; }
+.nc-sheet .nc-menu__item { min-height: var(--phone-row); padding: 0 var(--space-3); font-size: var(--phone-body-size); }
+.nc-sheet .nc-menu__item--rich { min-height: var(--phone-row-2); }
+.nc-sheet .nc-menu__label { padding: var(--space-3) var(--space-3) var(--space-1); }
+.nc-sheet .nc-menu__option { height: 30px; font-size: var(--phone-secondary-size); }
+.nc-sheet .nc-menu__option--swatch { width: 28px; height: 28px; }
+.nc-sheet .nc-menu__choice--swatches { gap: var(--space-3); padding: var(--space-1) var(--space-3); }
+.nc-sheet .nc-menu__choice { margin: 2px var(--space-3) var(--space-2); }
+/* Keys mean nothing to a finger: a menu in a sheet shows none. */
+:root[data-phone] .nc-sheet .nc-menu__key { display: none; }
+.nc-sheet .nc-menu__sep { margin: var(--space-1) var(--space-3); }
+
+/* ---------- Action sheet ---------- */
+.nc-action-sheet .nc-sheet__body { padding: 0 var(--space-2) calc(var(--space-2) + var(--nc-safe-bottom)); }
+.nc-action-sheet__group { display: flex; flex-direction: column; margin-bottom: var(--space-2); overflow: hidden; border-radius: var(--radius-lg); background: var(--bg-2); }
+.nc-action-sheet__head { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: var(--space-3) var(--space-4); border-bottom: 1px solid var(--line-soft); text-align: center; }
+.nc-action-sheet__title { color: var(--text-2); font-size: var(--phone-secondary-size); line-height: var(--phone-secondary-line); font-weight: 600; }
+.nc-action-sheet__message { color: var(--text-3); font-size: var(--phone-secondary-size); line-height: var(--phone-secondary-line); }
+.nc-action-sheet__button { min-height: var(--phone-row); padding: 0 var(--space-4); border: 0; background: transparent; color: var(--text-1); font-family: var(--font-sans); font-size: var(--phone-body-size); cursor: pointer; }
+.nc-action-sheet__group > .nc-action-sheet__button + .nc-action-sheet__button { border-top: 1px solid var(--line-soft); }
+.nc-action-sheet__button[data-danger] { color: var(--danger); }
+.nc-action-sheet__button:active { background: var(--bg-3); }
+.nc-action-sheet__cancel { width: 100%; border-radius: var(--radius-lg); background: var(--bg-2); font-weight: 600; }
+
+/* ---------- Inset lists ---------- */
+.nc-inset-list { display: flex; flex-direction: column; gap: var(--phone-group-gap); padding: var(--space-1) calc(var(--phone-gutter) + var(--nc-safe-right)) var(--space-6) calc(var(--phone-gutter) + var(--nc-safe-left)); }
+.nc-inset-group { display: flex; flex-direction: column; min-width: 0; }
+.nc-inset-group__head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-2); padding: 0 var(--space-3) 6px; }
+.nc-inset-group__head a, .nc-inset-group__head button { font-size: var(--phone-secondary-size); }
+.nc-inset-group__title { margin: 0; color: var(--text-3); font-family: var(--font-sans); font-size: var(--phone-secondary-size); line-height: var(--phone-secondary-line); font-weight: 500; }
+.nc-inset-group__rows { overflow: hidden; border: 1px solid var(--line-soft); border-radius: var(--radius-lg); background: var(--bg-1); }
+.nc-inset-group__footer { margin: 0; padding: 6px var(--space-3) 0; color: var(--text-3); font-size: var(--phone-secondary-size); line-height: var(--phone-secondary-line); }
+.nc-inset-row { position: relative; overflow: hidden; }
+.nc-inset-row + .nc-inset-row::before { content: ""; position: absolute; top: 0; left: var(--space-3); right: 0; z-index: 1; height: 1px; background: var(--line-subtle); pointer-events: none; }
+.nc-inset-row:has(.nc-inset-row__leading) + .nc-inset-row::before, .nc-inset-row + .nc-inset-row:has(.nc-inset-row__leading)::before { left: 46px; }
+.nc-inset-row__face { position: relative; z-index: 1; background: var(--bg-1); transition: transform 220ms cubic-bezier(0.2, 0.8, 0.2, 1); }
+.nc-inset-row__face[data-dragging] { transition: none; }
+.nc-inset-row__main { display: flex; align-items: center; gap: var(--space-3); box-sizing: border-box; width: 100%; min-height: var(--phone-row); padding: var(--space-2) var(--space-3); border: 0; background: transparent; color: var(--text-1); font-family: var(--font-sans); font-size: var(--phone-body-size); line-height: var(--phone-body-line); text-align: left; text-decoration: none; cursor: pointer; }
+div.nc-inset-row__main { cursor: default; }
+.nc-inset-row[data-two-line] .nc-inset-row__main { min-height: var(--phone-row-2); }
+a.nc-inset-row__main:active, button.nc-inset-row__main:active { background: var(--bg-3); }
+.nc-inset-row__main:focus-visible { outline: none; box-shadow: var(--focus-ring-inset); }
+.nc-inset-row__leading { display: flex; align-items: center; justify-content: center; flex: none; width: 22px; color: var(--text-2); }
+.nc-inset-row__leading .nc-icon { width: 18px; height: 18px; }
+.nc-inset-row__text { display: flex; flex: 1; flex-direction: column; min-width: 0; }
+.nc-inset-row__label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nc-inset-row__detail { min-width: 0; overflow: hidden; color: var(--text-3); font-size: var(--phone-secondary-size); line-height: var(--phone-secondary-line); text-overflow: ellipsis; white-space: nowrap; }
+.nc-inset-row__value { flex: none; max-width: 45%; overflow: hidden; color: var(--text-3); font-size: var(--phone-secondary-size); text-overflow: ellipsis; white-space: nowrap; }
+.nc-inset-row__trailing { display: flex; align-items: center; gap: var(--space-2); flex: none; }
+.nc-inset-row__chevron { flex: none; width: 14px; height: 14px; color: var(--text-4); }
+.nc-inset-row__check { flex: none; color: var(--accent-strong); }
+.nc-inset-row[data-danger] .nc-inset-row__label { color: var(--danger); }
+.nc-inset-row[data-muted] .nc-inset-row__label { color: var(--text-2); }
+.nc-inset-row__below { padding: 0 var(--space-3) var(--space-3); }
+.nc-inset-row__actions { position: absolute; top: 0; bottom: 0; display: flex; overflow: hidden; }
+.nc-inset-row__actions--leading { left: 0; }
+.nc-inset-row__actions--trailing { right: 0; flex-direction: row-reverse; }
+.nc-inset-row__action { display: flex; flex: 1; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-width: 0; padding: 0 var(--space-1); border: 0; color: var(--text-1); font-family: var(--font-sans); font-size: var(--phone-caption-size); line-height: var(--phone-caption-line); font-weight: 500; white-space: nowrap; cursor: pointer; }
+.nc-inset-row__action[data-tone="danger"] { background: var(--danger); color: var(--bg-0); }
+.nc-inset-row__action[data-tone="accent"] { background: var(--accent); color: var(--on-accent, var(--text-1)); }
+.nc-inset-row__action[data-tone="warning"] { background: var(--warning); color: var(--bg-0); }
+.nc-inset-row__action[data-tone="neutral"] { background: var(--bg-4); }
+[data-theme="light"] .nc-inset-row__action[data-tone="danger"], [data-theme="light"] .nc-inset-row__action[data-tone="warning"] { color: var(--bg-1); }
+
+/* ---------- Composer on a phone ----------
+   The text field and one row under it: attach, one compact control for model, mode and effort (a sheet), and
+   send. Controls in the row are spaced so their hit areas do not overlap. */
+.nc-composer__options { display: inline-flex; align-items: center; gap: 6px; min-width: 0; max-width: 180px; height: 26px; padding: 0 10px; border: 1px solid var(--line-soft); border-radius: var(--radius-full); background: transparent; color: var(--text-2); font-family: var(--font-sans); font-size: var(--phone-secondary-size); line-height: 1; cursor: pointer; }
+.nc-composer__options:active, .nc-composer__options[aria-expanded="true"] { background: var(--bg-3); color: var(--text-1); }
+.nc-composer__options .nc-icon { flex: none; }
+.nc-composer__options .nc-effort__bars { flex: none; }
+.nc-composer__options-text { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+:root[data-phone] .nc-composer__editor, :root[data-phone] .nc-composer__placeholder { padding: 9px 12px 3px; font-size: var(--phone-input-size); line-height: 22px; }
+:root[data-phone] .nc-composer__bar { gap: var(--space-3); padding: 2px 6px 6px; }
+:root[data-phone] .nc-composer__sheet { padding-top: 0; }
+
+/* ---------- Bottom area, pull to refresh, context area ---------- */
+.nc-bottom-area { flex: none; padding: 0 var(--nc-safe-right) var(--nc-safe-bottom) var(--nc-safe-left); }
+.nc-bottom-area > * { --nc-safe-bottom: 0px; --nc-safe-left: 0px; --nc-safe-right: 0px; }
+.nc-bottom-area[data-keyboard], .nc-bottom-area[data-above-tabs] { padding-bottom: 0; }
+.nc-ptr { position: relative; height: 100%; overflow-y: auto; overscroll-behavior: contain; }
+.nc-ptr__content { transform: translateY(var(--nc-pull, 0px)); }
+.nc-context-area { display: contents; }
+
+/* ---------- Components while the window is a phone ---------- */
+:root[data-phone] .nc-tooltip--floating { display: none; }
+:root[data-phone] .nc-view-header--phone { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); min-height: 0; padding: 0 var(--phone-gutter) var(--space-2); border: 0; }
+:root[data-phone] .nc-view-layout--phone { display: block; height: auto; min-height: 0; }
+:root[data-phone] .nc-view-layout--phone[data-fill] { display: flex; flex: 1; flex-direction: column; height: 100%; }
+:root[data-phone] .nc-view-layout--phone > .nc-view-layout__main { overflow: visible; }
+:root[data-phone] .nc-view-layout--phone[data-fill] > .nc-view-layout__main { display: flex; flex: 1; flex-direction: column; min-height: 0; overflow: hidden; }
+:root[data-phone] .nc-view-layout--phone .nc-view-layout__main[data-reading] > * { max-width: none; }
+/* Stacked widgets are as tall as their content, up to their cells (WidgetGrid's fit layout, on every width). */
+/* Code and long paths scroll inside their own block; nothing pushes the screen sideways. */
+:root[data-phone] .nc-code, :root[data-phone] pre { max-width: 100%; overflow-x: auto; overscroll-behavior-x: contain; }
+:root[data-phone] .nc-diff { max-width: 100%; overflow-x: auto; }
+/* Dialogs that stay dialogs (a confirmation the app asks for as one) fit the screen. */
+:root[data-phone] .nc-scrim { padding: var(--space-3); }
+/* Toasts come down from the top as iOS banners do, under the status bar, over the navigation bar for the moment
+   they show: never over the composer, the tab bar or the keyboard at the bottom where the thumb is. */
+:root[data-phone] .nc-toast-region { top: calc(var(--nc-vv-top, 0px) + var(--nc-safe-top) + var(--space-1)); bottom: auto; left: calc(var(--phone-gutter) + var(--nc-safe-left)); right: calc(var(--phone-gutter) + var(--nc-safe-right)); align-items: stretch; }
+:root[data-phone] .nc-toast { min-width: 0; max-width: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .nc-navstack__screen, .nc-sheet, .nc-sheet-scrim, .nc-inset-row__face, .nc-screen__search, .nc-navbar__title { transition: none; }
+}

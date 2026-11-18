@@ -1,0 +1,189 @@
+/* NumberField, Slider and QueryBuilder (src/components/NumberField.tsx, Slider.tsx, QueryBuilder.tsx). Sizes
+   follow the form controls: a field is 30px like TextField and Select, an inline field 28px like InlineField, the
+   slider's row 28px with a 4px track; on a phone the hit areas reach 44px while what shows stays compact. */
+
+/* ---------- NumberField ---------- */
+.nc-number { display: flex; align-items: center; min-width: 0; padding: 0; cursor: text; }
+.nc-number.nc-input:hover { border-color: var(--line-strong); }
+.nc-number.nc-input:focus-within, .nc-number.nc-input[data-scrubbing] { border-color: var(--accent-strong); box-shadow: var(--focus-ring); }
+.nc-number.nc-input--error, .nc-number.nc-input--error:hover, .nc-number.nc-input--error:focus-within { border-color: var(--danger); }
+.nc-number[data-disabled] { background: var(--bg-1); cursor: not-allowed; }
+.nc-number__input { flex: 1; min-width: 0; height: 100%; box-sizing: border-box; margin: 0; padding: 0 10px; border: 0; border-radius: inherit; background: transparent; color: var(--text-1); font-family: inherit; font-size: var(--nc-type-body); line-height: var(--nc-type-label-line); font-variant-numeric: tabular-nums; outline: none; }
+.nc-number__input:focus-visible { box-shadow: none; }
+.nc-number__input::placeholder { color: var(--text-3); }
+.nc-number__input:disabled { color: var(--text-4); cursor: not-allowed; }
+.nc-number__input:has(+ .nc-number__unit) { padding-right: var(--space-1); }
+.nc-number__unit { flex: none; padding-right: 10px; color: var(--text-3); font-size: var(--nc-type-label); line-height: var(--nc-type-label-line); white-space: nowrap; pointer-events: none; }
+.nc-number__steps { display: flex; align-self: stretch; flex: none; }
+.nc-number__steps--end, .nc-number__steps--stacked { border-left: 1px solid var(--line-soft); }
+.nc-number__steps--start { border-right: 1px solid var(--line-soft); }
+/* Up over down at the end, each half the field's height. */
+.nc-number__steps--stacked { flex-direction: column; }
+.nc-number__steps--stacked .nc-number__step { flex: 1; width: 20px; min-height: 0; }
+.nc-number__steps--stacked .nc-number__step + .nc-number__step { border-top: 1px solid var(--line-soft); }
+.nc-number__steps--stacked .nc-number__step[data-dir="up"] svg { transform: rotate(180deg); }
+.nc-number__steps--stacked .nc-number__step[data-dir="up"] { border-radius: 0 var(--radius-sm) 0 0; }
+.nc-number__steps--stacked .nc-number__step[data-dir="down"] { border-radius: 0 0 var(--radius-sm) 0; }
+.nc-number__steps--start .nc-number__step { border-radius: var(--radius-sm) 0 0 var(--radius-sm); }
+.nc-number__steps--end .nc-number__step { border-radius: 0 var(--radius-sm) var(--radius-sm) 0; }
+/* At rest a mouse drags the value sideways; once editing, the field is text. */
+@media (pointer: fine) { .nc-number[data-scrub] .nc-number__input { cursor: ew-resize; } }
+.nc-number__step { display: flex; align-items: center; justify-content: center; width: var(--control-sm); padding: 0; border: 0; background: transparent; color: var(--text-3); cursor: pointer; }
+.nc-number__step:hover:not(:disabled) { background: var(--bg-3); color: var(--text-1); }
+.nc-number__step:active:not(:disabled) { background: var(--bg-4); }
+.nc-number__step:disabled { color: var(--text-4); cursor: default; }
+.nc-number__label[data-scrub] { align-self: flex-start; cursor: ew-resize; touch-action: pan-y; -webkit-user-select: none; user-select: none; }
+:root[data-nc-scrubbing], :root[data-nc-scrubbing] * { cursor: ew-resize !important; -webkit-user-select: none !important; user-select: none !important; }
+
+/* Inline: text at rest, the InlineField's bg-3 on hover and its edge and focus ring on focus. In a property list
+   or a table cell the fill reaches into the cell's padding, so the number keeps the text edge. */
+.nc-number--inline { box-sizing: border-box; width: calc(100% + var(--nc-inset) * 2); height: var(--control-md); margin: 0 calc(var(--nc-inset) * -1); border: 1px solid transparent; border-radius: var(--radius-sm); background: transparent; }
+.nc-number--inline .nc-number__input { flex: 0 1 auto; min-width: 0; max-width: 100%; padding: 0 calc(var(--nc-inset) - 1px); cursor: ew-resize; }
+.nc-number--inline .nc-number__input:focus { cursor: text; }
+.nc-number--inline .nc-number__input:has(+ .nc-number__unit) { padding-right: var(--space-1); }
+.nc-number--inline .nc-number__unit { padding-right: calc(var(--nc-inset) - 1px); }
+.nc-number--inline:hover:not([data-disabled]) { background: var(--bg-3); }
+.nc-number--inline:focus-within, .nc-number--inline[data-scrubbing] { border-color: var(--accent-strong); background: var(--bg-2); box-shadow: var(--focus-ring); }
+.nc-number--inline[data-invalid], .nc-number--inline[data-invalid]:focus-within { border-color: var(--danger); }
+.nc-number--inline[data-disabled] .nc-number__input { cursor: default; }
+.nc-number-field[data-variant="inline"] { min-width: 0; }
+/* Numbers line up at the right in a numeric table column. */
+.nc-table td.is-num .nc-number--inline { justify-content: flex-end; }
+.nc-table td.is-num .nc-number__input { text-align: right; }
+
+:root[data-phone] .nc-number__input { font-size: var(--phone-input-size); }
+:root[data-phone] .nc-number__step { position: relative; width: var(--phone-control); }
+:root[data-phone] .nc-number__step::after { content: ""; position: absolute; inset: min(0px, calc(50% - var(--phone-hit) / 2)) 0; }
+:root[data-phone] .nc-number--inline { height: var(--phone-control); }
+
+/* ---------- Slider ---------- */
+.nc-slider-field { --nc-slider-thumb: 14px; --nc-slider-track: 4px; --nc-slider-hit: var(--control-md); --nc-slider-length: 120px; min-width: 0; }
+.nc-slider__head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-2); min-width: 0; }
+.nc-slider__value { flex: none; color: var(--text-2); font-size: var(--nc-type-label); line-height: var(--nc-type-label-line); font-variant-numeric: tabular-nums; }
+.nc-slider__row { display: flex; align-items: center; gap: var(--space-3); min-width: 0; }
+.nc-slider__body { display: flex; flex: 1; flex-direction: column; min-width: 0; }
+/* The thumb's centre travels the box inside the margins, so at either end it stays inside the field. */
+.nc-slider { position: relative; height: var(--nc-slider-hit); margin: 0 calc(var(--nc-slider-thumb) / 2); touch-action: pan-y; cursor: pointer; -webkit-user-select: none; user-select: none; }
+.nc-slider__track { position: absolute; top: 50%; right: 0; left: 0; height: var(--nc-slider-track); margin-top: calc(var(--nc-slider-track) / -2); border-radius: var(--radius-full); background: var(--bg-4); pointer-events: none; }
+.nc-slider__fill { position: absolute; top: 0; bottom: 0; border-radius: var(--radius-full); background: var(--accent); }
+.nc-slider__thumb { position: absolute; top: 50%; z-index: 1; box-sizing: border-box; width: var(--nc-slider-thumb); height: var(--nc-slider-thumb); margin: calc(var(--nc-slider-thumb) / -2) 0 0 calc(var(--nc-slider-thumb) / -2); border-radius: var(--radius-full); background: var(--on-accent); box-shadow: 0 0 0 1px var(--line-strong); cursor: grab; touch-action: none; transition: box-shadow 120ms; }
+.nc-slider__thumb:hover { box-shadow: 0 0 0 1px var(--line-strong), 0 0 0 4px var(--accent-tint); }
+.nc-slider__thumb:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+.nc-slider__thumb[data-active] { cursor: grabbing; box-shadow: 0 0 0 1px var(--accent-strong), 0 0 0 4px var(--accent-tint); }
+.nc-slider[data-dragging] { cursor: grabbing; }
+.nc-slider__tick { position: absolute; top: calc(50% + var(--nc-slider-track) / 2 + 3px); width: 1px; height: 4px; margin-left: -0.5px; background: var(--line-strong); pointer-events: none; }
+.nc-slider__marks { position: relative; height: var(--nc-type-label-line); margin: -2px calc(var(--nc-slider-thumb) / 2) 0; }
+.nc-slider__mark { position: absolute; top: 0; color: var(--text-3); font-size: var(--nc-type-section); line-height: var(--nc-type-label-line); white-space: nowrap; transform: translateX(-50%); }
+.nc-slider__mark[data-edge="start"] { transform: translateX(calc(var(--nc-slider-thumb) / -2)); }
+.nc-slider__mark[data-edge="end"] { transform: translateX(calc(-100% + var(--nc-slider-thumb) / 2)); }
+/* One width for every attached field, so the tracks of stacked sliders end on one edge. */
+.nc-slider__field { flex: none; width: calc(var(--control-md) * 3); }
+.nc-slider__field .nc-number__input { text-align: right; }
+.nc-slider-field[data-disabled] .nc-slider { opacity: 0.45; cursor: not-allowed; }
+.nc-slider-field[data-disabled] .nc-slider__thumb { cursor: not-allowed; box-shadow: 0 0 0 1px var(--line-strong); }
+
+/* Vertical: the same parts stood up. */
+.nc-slider-field[data-orientation="vertical"] { display: inline-flex; align-items: center; }
+.nc-slider-field[data-orientation="vertical"] .nc-slider__head { flex-direction: column; align-items: center; gap: 0; }
+.nc-slider-field[data-orientation="vertical"] .nc-slider { width: var(--nc-slider-hit); height: var(--nc-slider-length); margin: calc(var(--nc-slider-thumb) / 2) 0; touch-action: pan-x; }
+.nc-slider-field[data-orientation="vertical"] .nc-slider__track { top: 0; bottom: 0; right: auto; left: 50%; width: var(--nc-slider-track); height: auto; margin: 0 0 0 calc(var(--nc-slider-track) / -2); }
+.nc-slider-field[data-orientation="vertical"] .nc-slider__fill { top: auto; right: 0; left: 0; }
+.nc-slider-field[data-orientation="vertical"] .nc-slider__thumb { top: auto; left: 50%; margin: 0 0 calc(var(--nc-slider-thumb) / -2) calc(var(--nc-slider-thumb) / -2); }
+.nc-slider-field[data-orientation="vertical"] .nc-slider__tick { top: auto; left: calc(50% + var(--nc-slider-track) / 2 + 3px); width: 4px; height: 1px; margin: 0 0 -0.5px; }
+
+:root[data-phone] .nc-slider-field { --nc-slider-thumb: 22px; --nc-slider-hit: var(--phone-hit); }
+:root[data-phone] .nc-slider__value { font-size: var(--phone-secondary-size); line-height: var(--phone-secondary-line); }
+:root[data-phone] .nc-slider__mark { font-size: var(--phone-caption-size); }
+@media (prefers-reduced-motion: reduce) {
+  .nc-slider__thumb { transition: none; }
+}
+
+/* ---------- QueryBuilder ----------
+   A chip per rule at the height of the filter bar's fields (30px), the field in text-2, the operator in text-3
+   and the value in text-1; its popover is a menu surface. The advanced view lines rules up in columns. */
+.nc-query { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); min-width: 0; }
+.nc-query__join { color: var(--text-3); font-size: var(--nc-type-label); line-height: var(--nc-type-label-line); }
+.nc-qchip { display: inline-flex; align-items: stretch; box-sizing: border-box; height: var(--row-compact); max-width: 320px; min-width: 0; border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--bg-2); }
+.nc-qchip:hover { border-color: var(--line-strong); }
+.nc-qchip[data-open] { border-color: var(--accent-strong); }
+.nc-qchip__main { display: inline-flex; align-items: center; gap: var(--space-1); min-width: 0; padding: 0 2px 0 10px; border: 0; border-radius: var(--radius-sm) 0 0 var(--radius-sm); background: transparent; color: var(--text-2); font-family: inherit; font-size: var(--nc-type-body); line-height: var(--nc-type-label-line); white-space: nowrap; cursor: pointer; }
+.nc-qchip__field { flex: none; color: var(--text-2); }
+.nc-qchip__op { flex: none; color: var(--text-3); }
+.nc-qchip__value { min-width: 0; overflow: hidden; color: var(--text-1); font-weight: 500; text-overflow: ellipsis; }
+.nc-qchip__value--empty { color: var(--text-3); font-weight: 400; }
+.nc-qchip__icon { flex: none; color: var(--text-3); }
+.nc-qchip[data-group] .nc-qchip__value { font-weight: 400; }
+.nc-qchip__remove { display: flex; align-items: center; justify-content: center; flex: none; width: var(--control-sm); padding: 0; border: 0; border-radius: 0 var(--radius-sm) var(--radius-sm) 0; background: transparent; color: var(--text-3); cursor: pointer; }
+.nc-qchip__remove:hover { background: var(--bg-3); color: var(--text-1); }
+/* On a phone a chip opens the sheet, where a rule is removed by a swipe or from its page. */
+:root[data-phone] .nc-qchip__remove { display: none; }
+:root[data-phone] .nc-qchip__main { position: relative; padding-right: 10px; border-radius: var(--radius-sm); font-size: var(--phone-secondary-size); }
+:root[data-phone] .nc-qchip__main::after { content: ""; position: absolute; inset: min(0px, calc(50% - var(--phone-hit) / 2)) 0; }
+:root[data-phone] .nc-query { flex-wrap: nowrap; }
+.nc-qchip--lead .nc-qchip__field { color: var(--text-1); }
+:root[data-phone] .nc-qchip { flex: none; }
+
+.nc-qpop { gap: var(--space-2); box-sizing: border-box; width: 288px; max-width: calc(100vw - var(--space-4)); padding: var(--space-2); }
+.nc-qpop--list { width: auto; padding: var(--space-1); }
+.nc-qpop--advanced { width: 680px; padding: var(--space-3); gap: var(--space-3); }
+.nc-qpop__head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); min-height: var(--row-compact); }
+.nc-qpop__field { display: inline-flex; align-items: center; gap: 6px; min-width: 0; padding-left: var(--space-1); color: var(--text-2); font-size: var(--nc-type-label); line-height: var(--nc-type-label-line); font-weight: 500; white-space: nowrap; }
+.nc-qpop__field .nc-icon { color: var(--text-3); }
+.nc-qpop__op { flex: none; }
+.nc-qpop__op .nc-select { width: auto; min-width: 136px; }
+.nc-qpop__foot { display: flex; margin: 0 calc(var(--space-2) * -1) calc(var(--space-1) * -1); padding: var(--space-1) var(--space-1) 0; border-top: 1px solid var(--line-soft); }
+.nc-qpop__bar { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); }
+.nc-qpop__title { color: var(--text-1); font-size: var(--nc-type-body); font-weight: 600; }
+
+.nc-qopts { display: flex; flex-direction: column; gap: var(--space-1); min-width: 0; }
+.nc-qopts__list { display: flex; flex-direction: column; max-height: 264px; overflow-y: auto; border-radius: var(--radius-sm); outline: none; }
+.nc-qopts__list:focus-visible { box-shadow: var(--focus-ring); }
+.nc-qopts__option { cursor: pointer; }
+.nc-qopts__box { display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box; flex: none; width: 14px; height: 14px; border: 1px solid var(--line-strong); border-radius: var(--radius-xs); color: var(--bg-0); }
+.nc-qopts__box[data-on] { border-color: var(--accent-strong); background: var(--accent-strong); }
+.nc-qopts__box .nc-icon { width: 10px; height: 10px; stroke-width: 2.4; }
+.nc-qopts__icon { flex: none; color: var(--text-3); }
+.nc-qopts__empty { padding: var(--space-2); color: var(--text-3); font-size: var(--nc-type-label); }
+
+.nc-qvalue { min-width: 0; }
+.nc-qvalue__pair { display: flex; align-items: center; gap: var(--space-2); min-width: 0; }
+.nc-qvalue__pair > * { flex: 1; min-width: 0; }
+.nc-qvalue__pair > .nc-qvalue__word { flex: none; color: var(--text-3); font-size: var(--nc-type-label); }
+.nc-qvalue--stack .nc-seg { display: flex; }
+.nc-qvalue--stack .nc-seg__item { flex: 1; }
+.nc-qvalue--row[data-shape="days"] .nc-qvalue__pair > .nc-number-field { flex: 0 1 96px; }
+.nc-qday { min-width: 0; font-variant-numeric: tabular-nums; }
+.nc-qday::-webkit-calendar-picker-indicator { opacity: 0.6; cursor: pointer; }
+
+.nc-qbuilder { display: flex; flex-direction: column; gap: var(--space-3); min-width: 0; }
+.nc-qlines { display: flex; flex-direction: column; gap: var(--space-2); min-width: 0; }
+.nc-qlines__empty { margin: 0; color: var(--text-3); font-size: var(--nc-type-body); }
+.nc-qline { display: grid; grid-template-columns: 76px minmax(0, 1fr); align-items: start; gap: var(--space-2); }
+.nc-qline__join { display: flex; align-items: center; min-height: var(--row-compact); color: var(--text-3); font-size: var(--nc-type-label); }
+.nc-qline__combinator { width: 100%; }
+.nc-qrow { display: grid; grid-template-columns: minmax(0, 9fr) minmax(0, 10fr) minmax(0, 14fr) var(--control-sm); align-items: center; gap: var(--space-2); }
+.nc-qrow__value { min-width: 0; }
+.nc-qrow__picker { width: 100%; }
+.nc-qgroup { display: flex; flex-direction: column; gap: var(--space-2); padding: var(--space-2); border: 1px solid var(--line-soft); border-radius: var(--radius-md); background: var(--bg-2); }
+.nc-qgroup .nc-qline { grid-template-columns: 68px minmax(0, 1fr); }
+.nc-qgroup__foot, .nc-qbuilder__add { display: flex; flex-wrap: wrap; gap: var(--space-1); }
+.nc-qgroup__foot { margin-left: calc(68px + var(--space-2) - var(--space-2)); }
+.nc-qbuilder__add { margin-left: calc(76px + var(--space-2) - var(--space-2)); }
+.nc-qtext { min-width: 0; }
+
+/* The phone sheet: grouped rows, a back button over a rule's page, the iOS add row in the accent's ink. */
+.nc-qsheet { display: flex; flex-direction: column; min-width: 0; }
+.nc-qsheet__title { display: inline-flex; align-items: center; gap: 2px; min-width: 0; }
+.nc-qsheet__back { position: relative; display: inline-flex; align-items: center; justify-content: center; flex: none; width: var(--control-md); height: var(--control-md); margin-left: calc(var(--space-2) * -1); padding: 0; border: 0; border-radius: var(--radius-sm); background: transparent; color: var(--text-2); cursor: pointer; }
+.nc-qsheet__back::after { content: ""; position: absolute; inset: min(0px, calc(50% - var(--phone-hit) / 2)); }
+.nc-qsheet__back:active { background: var(--bg-3); color: var(--text-1); }
+.nc-qsheet__add .nc-inset-row__label, .nc-qsheet__add .nc-inset-row__leading { color: var(--accent-text); }
+.nc-qsheet__done { font-weight: 600; }
+/* The registry's text filter inside a grouped row: the group is the frame, the input only has its text. */
+.nc-qsheet__text { display: block; width: 100%; }
+.nc-qsheet__text .nc-input { border: 0; background: transparent; padding-inline: 0; font-size: var(--phone-input-size); box-shadow: none; }
+.nc-qsheet__number { width: 128px; }
+.nc-qsheet__number .nc-number--inline { justify-content: flex-end; }
+.nc-qsheet__number .nc-number__input { text-align: right; }
+.nc-qsheet .nc-qday { width: auto; height: var(--phone-control); padding: 0 var(--space-1); border: 0; background: transparent; color: var(--text-2); font-size: var(--phone-input-size); text-align: right; }
+

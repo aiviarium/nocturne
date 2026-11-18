@@ -1,0 +1,452 @@
+/* Layout helpers of the examples, the same in the gallery and on the site. Colours, radii and type sizes all
+   come from tokens. Grids answer to the width of the example's own box (a container), not the window's, so an
+   example lays out the same in a wide gallery page and in a narrow column of the site. */
+.ex-host {
+  container-type: inline-size;
+  min-width: 0;
+}
+.ex-col {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+}
+.ex-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+.ex-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+.ex-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: var(--space-3);
+  align-items: start;
+}
+.ex-grid--2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.ex-grid--3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+@container (max-width: 760px) {
+  .ex-grid--3 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@container (max-width: 520px) {
+  .ex-grid--2,
+  .ex-grid--3 {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+.ex-gap-lg {
+  gap: var(--space-5);
+}
+.ex-grow {
+  flex: 1;
+  min-width: 0;
+}
+.ex-spacer {
+  flex: 1;
+}
+.ex-narrow {
+  max-width: 280px;
+}
+.ex-well {
+  padding: var(--space-4);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-md);
+  background: var(--bg-0);
+  min-width: 0;
+}
+.ex-fill {
+  height: 260px;
+}
+.ex-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-2);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-sm);
+  color: var(--text-2);
+}
+.ex-icons {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
+  gap: var(--space-2);
+}
+.ex-toolbar {
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--line-soft);
+  flex-wrap: nowrap;
+}
+.ex-chat {
+  gap: var(--space-4);
+}
+.ex-tokens {
+  line-height: 28px;
+}
+.ex-shell-demo {
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-md);
+  background: var(--bg-0);
+  overflow: hidden;
+}
+.ex-h {
+  margin: 0 0 var(--space-1);
+}
+.ex-pad {
+  padding: var(--space-3);
+}
+.ex-pop {
+  gap: var(--space-2);
+  padding: var(--space-3);
+  min-width: 240px;
+}
+.ex-json {
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--bg-0);
+  color: var(--text-2);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.ex-pre {
+  max-height: 320px;
+  overflow: auto;
+}
+
+/* The rich text editor. */
+.ex-editor-page {
+  padding: var(--space-6) var(--space-6) var(--space-4) var(--space-2);
+}
+.ex-counter {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-md);
+  background: var(--bg-2);
+}
+.ex-counter__value {
+  color: var(--text-1);
+}
+.ex-preview {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+/* A phone screen: the app fills the frame it is shown in (a phone frame in the gallery, an iframe on the site). */
+.ex-phone-app {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+.ex-phone-fill {
+  flex: 1;
+  min-height: 0;
+}
+.ex-phone-body {
+  padding: var(--space-3);
+  color: var(--text-2);
+}
+/* A part shown as a phone screen's content (mount's `phone`): the screen's gutter around it. */
+.ex-screen-body {
+  padding: var(--space-1) var(--phone-gutter) var(--space-4);
+}
+/* The BottomArea pads for the home indicator; what it holds has its own padding. */
+.ex-phone-bottom {
+  border-top: 1px solid var(--line-soft);
+}
+.ex-phone-bottom__content {
+  margin: 0;
+  padding: var(--space-3);
+}
+
+/* Do and don't pairs on the design pages draw a part twice; these give each a frame of a view's proportions. */
+.ex-view {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-md);
+  background: var(--bg-1);
+  overflow: hidden;
+}
+.ex-view__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  min-width: 0;
+}
+.ex-col > .nc-seg {
+  align-self: flex-start;
+}
+.ex-tile--button {
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+}
+.ex-tile--button:hover {
+  background: var(--bg-3);
+  color: var(--text-1);
+}
+.ex-scale-row {
+  display: grid;
+  grid-template-columns: 96px 128px 28px minmax(0, 1fr);
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 24px;
+}
+.ex-scale-bar {
+  height: 8px;
+  border-radius: var(--radius-xs);
+  background: var(--text-4);
+  max-width: 128px;
+}
+.ex-type-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--line-subtle);
+}
+/* A view's header bar inside a do/don't frame (38px, as ViewHeader). */
+.ex-bar {
+  min-height: var(--header);
+  padding: 0 var(--space-2) 0 var(--space-3);
+  border-bottom: 1px solid var(--line-soft);
+  flex-wrap: nowrap;
+}
+.ex-bar--inflated {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+  min-height: 72px;
+  padding: var(--space-3) var(--space-4);
+}
+/* The inflated title of a don't: deliberately off the scale's compact steps. */
+.ex-big-title {
+  font-size: 26px; /* lint-tokens-ignore */
+  line-height: 32px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.ex-section-title {
+  margin: 0;
+  font-size: 20px; /* lint-tokens-ignore */
+  line-height: 28px;
+  font-weight: 600;
+}
+.ex-section-title--16 {
+  font-size: 16px; /* lint-tokens-ignore */
+  line-height: 24px;
+}
+/* The don'ts of the colour rules, drawn by hand: a hue fill with a hue edge. */
+.ex-tinted {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--hue-line);
+  border-radius: var(--radius-md);
+  background: var(--hue-tint);
+  color: var(--text-1);
+}
+.ex-tinted-row {
+  background: var(--hue-tint);
+  box-shadow: inset 2px 0 0 var(--hue);
+}
+.ex-solid-chip {
+  display: inline-flex;
+  align-items: center;
+  height: 20px;
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-full);
+  background: var(--hue);
+  color: var(--on-accent);
+  font-size: 11px; /* lint-tokens-ignore */
+  font-weight: 600;
+}
+.ex-edge > * {
+  border-color: var(--hue-line);
+  box-shadow: inset 3px 0 0 var(--hue);
+}
+.ex-outlined-danger {
+  border: 1px solid var(--danger-line);
+}
+.ex-icon-tile {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  border-radius: var(--radius-md);
+  background: var(--hue);
+  color: var(--on-accent);
+}
+/* A phone's navigation bar, drawn on a desktop page to show hit areas. */
+.ex-phone-bar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  max-width: 390px;
+  min-height: 44px;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-md);
+  background: var(--bg-0);
+}
+.ex-hit {
+  position: relative;
+  display: inline-flex;
+}
+.ex-hit::after {
+  content: "";
+  position: absolute;
+  inset: -8px;
+  border: 1px dashed var(--text-4);
+  border-radius: var(--radius-sm);
+  pointer-events: none;
+}
+.ex-fat {
+  height: 44px;
+  padding: 0 var(--space-4);
+}
+/* A whole screen (the blocks): the view fills the frame it is shown in. */
+.ex-screen {
+  display: flex;
+  height: 100%;
+  min-height: 560px;
+  overflow: hidden;
+  background: var(--bg-1);
+}
+.g-frame .ex-root:has(> .ex-screen) {
+  padding: 0;
+  height: 100vh;
+}
+.ex-chat-screen {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+.ex-chat-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: var(--space-6) var(--space-4);
+}
+.ex-chat-column {
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+}
+.ex-chat-foot {
+  padding: 0 var(--space-4) var(--space-4);
+}
+/* A whole view inside a screen or a view frame takes all of it. */
+.ex-screen > *,
+.ex-view > [data-part="view-layout"] {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+}
+/* A form's fields at a form's width, not stretched across a wide page. */
+.ex-form {
+  max-width: 560px;
+}
+.ex-note {
+  margin: var(--space-3) 0 0;
+}
+.ex-picker {
+  display: flex;
+  flex-direction: column;
+}
+.ex-picker__item:hover,
+.ex-picker__item:focus-visible {
+  background: var(--bg-4);
+}
+/* A row of cards that share the row's height: each fills it (with `fill`), so their bottom edges line up. */
+.ex-grid--fill {
+  align-items: stretch;
+}
+/* An inspector's width: a supporting column beside a view's main one. */
+.ex-inspector {
+  max-width: 360px;
+}
+/* A form whose fields stack at the field gap. */
+form.ex-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+/* A phone form screen: a group in the gutter with its footer under it, as in iOS settings. */
+.ex-phone-form {
+  padding: var(--space-4) var(--phone-gutter);
+}
+.ex-phone-form__footer {
+  margin: var(--space-2) var(--phone-gutter) 0;
+  color: var(--text-3);
+  font-size: var(--phone-secondary-size);
+  line-height: var(--phone-secondary-line);
+}
+.ex-board-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 248px);
+  gap: var(--space-3);
+}
+.ex-editor-widths {
+  --nc-editor-measure: 440px;
+  padding: var(--space-6) 0 var(--space-4);
+}
+
+/* The field kinds example: a table of kind by mode. */
+.ex-fields {
+  overflow-x: auto;
+}
+.ex-fields__table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: var(--nc-type-body);
+}
+.ex-fields__table th,
+.ex-fields__table td {
+  padding: var(--space-2);
+  border-bottom: 1px solid var(--line);
+  text-align: start;
+  vertical-align: middle;
+  min-width: 8rem;
+}
+.ex-fields__table th[scope="row"] {
+  color: var(--text-2);
+  font-weight: 500;
+  white-space: nowrap;
+}
+.ex-fields__table thead th {
+  color: var(--text-3);
+  font-weight: 500;
+  font-size: var(--nc-type-label);
+}
+.ex-fields__form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+  max-width: 28rem;
+}

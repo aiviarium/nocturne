@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.3
+      - run: bun install --frozen-lockfile
+      - name: Biome
+        run: bun run lint
+      - name: Typecheck
+        run: bun run typecheck
+      - name: Tests
+        run: bun test
+      - name: Token lint
+        run: bun run lint:tokens
+      - name: Gallery build
+        run: bun run gallery:build
+
+  prose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Vale
+        run: |
+          curl -sSfL https://github.com/errata-ai/vale/releases/download/v3.25.1/vale_3.25.1_Linux_64-bit.tar.gz | tar -xz -C /usr/local/bin vale
+      - name: Vale
+        run: |
+          out=$(vale --output=line $(git ls-files '*.md'))
+          if [ -n "$out" ]; then echo "$out"; exit 1; fi

@@ -1,0 +1,92 @@
+/* The field kinds (src/fields): how a typed value reads, how it is edited in place and in a form, and the row a form
+   lays a field out in. Tokens only. */
+
+.nc-field-empty { color: var(--text-3); }
+.nc-field-mono { font-family: var(--font-mono); font-size: var(--nc-type-label); }
+.nc-field-link { color: inherit; text-decoration: underline; text-decoration-color: var(--line); }
+.nc-field-number { font-variant-numeric: tabular-nums; }
+.nc-field-long { display: block; white-space: pre-wrap; overflow-wrap: anywhere; }
+.nc-field-long--compact { display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; white-space: normal; }
+.nc-field-json { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: inline-block; vertical-align: bottom; }
+.nc-field-file { display: inline-flex; align-items: center; gap: var(--space-1); color: var(--text-2); }
+.nc-field-file__name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nc-field-upload { display: inline-flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); min-width: 0; }
+.nc-field-upload--boxed { display: flex; }
+.nc-field-rich { min-width: 0; width: 100%; }
+.nc-field-rich:not(.nc-field-rich--boxed) .nc-editor--field .nc-editor__content { border-color: transparent; background: transparent; margin-inline: calc(var(--nc-inset) * -1); padding-inline: var(--nc-inset); }
+.nc-field-rich:not(.nc-field-rich--boxed) .nc-editor--field .nc-editor__content:hover { background: var(--bg-3); }
+.nc-field-rich[data-invalid] .nc-editor--field .nc-editor__content { border-color: var(--danger); }
+.nc-field-refs { display: inline-flex; flex-wrap: wrap; align-items: center; gap: var(--space-1); min-width: 0; }
+.nc-field-longinput { width: 100%; min-height: calc(var(--control-md) * 2); }
+.nc-inline-field.nc-field-longinput { width: calc(100% + var(--nc-inset) * 2); }
+
+/* A switch with the field's words for it. */
+.nc-field-switch { display: inline-flex; align-items: center; gap: var(--space-2); min-height: var(--control-md); }
+.nc-field-switch__word { color: var(--text-1); }
+
+/* The chip that opens a choice (an enum, a reference) and the button that opens a picker (a day). Inline they are text
+   with a hover fill; boxed they are the bordered select of a form. */
+.nc-field-chip, .nc-field-pick--inline { display: inline-flex; align-items: center; gap: var(--space-1); min-height: var(--control-md); padding: 0 var(--space-1); border: 1px solid transparent; border-radius: var(--radius-sm); background: transparent; color: var(--text-1); font: inherit; cursor: pointer; }
+.nc-field-chip:not(.nc-field-chip--boxed), .nc-field-pick--inline { margin-inline-start: calc(var(--nc-inset) * -1); padding-inline: calc(var(--nc-inset) - 1px); }
+.nc-field-chip:hover:not(:disabled), .nc-field-pick--inline:hover:not(:disabled) { background: var(--bg-3); }
+.nc-field-chip:disabled, .nc-field-pick--inline:disabled { cursor: default; }
+.nc-field-chip:focus-visible, .nc-field-pick--inline:focus-visible { outline: none; border-color: var(--accent-strong); box-shadow: var(--focus-ring); }
+.nc-field-chip[aria-invalid="true"], .nc-field-pick--inline[aria-invalid="true"] { border-color: var(--danger); }
+.nc-field-chip--boxed, .nc-field-pick.nc-input { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); width: 100%; padding: 0 var(--space-2); background: var(--bg-2); border-color: var(--line); text-align: start; }
+.nc-field-chip--boxed:hover:not(:disabled), .nc-field-pick.nc-input:hover:not(:disabled) { background: var(--bg-2); border-color: var(--line-strong); }
+.nc-field-chip--boxed[aria-invalid="true"], .nc-field-pick.nc-input[aria-invalid="true"] { border-color: var(--danger); }
+[data-variant="boxed"] > .nc-field-chip { flex: 1; }
+
+/* Pickers: a day, an entity. */
+.nc-field-pop { padding: var(--space-2); border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--bg-3); box-shadow: var(--shadow-overlay); }
+.nc-field-pop--list { display: flex; flex-direction: column; gap: var(--space-2); width: 18rem; max-width: calc(100vw - var(--space-4) * 2); }
+.nc-field-pop__list { display: flex; flex-direction: column; gap: var(--space-2); min-width: 0; }
+.nc-field-pop__body { display: flex; flex-direction: column; gap: var(--space-2); }
+.nc-field-pop__foot { display: flex; align-items: center; justify-content: flex-end; gap: var(--space-1); }
+/* The same pickers as a bottom sheet on a phone: the content takes the sheet's width. */
+.nc-field-sheet { display: flex; flex-direction: column; gap: var(--space-2); min-width: 0; }
+.nc-field-sheet .nc-calendar { width: 100%; }
+.nc-field-sheet .nc-field-result { min-height: var(--phone-hit, 44px); justify-content: space-between; text-align: start; }
+.nc-field-sheet .nc-field-results { max-height: 50vh; }
+.nc-field-sheet .nc-menu.nc-qpop { width: auto; max-width: none; padding: 0; border: 0; box-shadow: none; background: transparent; }
+.nc-field-time { width: auto; align-self: flex-start; }
+.nc-field-results { margin: 0; padding: 0; max-height: 14rem; overflow: auto; }
+.nc-field-result { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); width: 100%; min-height: var(--control-md); padding: 0 var(--space-2); border: 0; border-radius: var(--radius-sm); background: transparent; color: var(--text-1); font: inherit; text-align: start; cursor: pointer; }
+.nc-field-result:hover, .nc-field-result:focus-visible { background: var(--bg-3); outline: none; }
+.nc-field-none { padding: var(--space-2); }
+
+/* The calendar. */
+.nc-calendar { display: flex; flex-direction: column; gap: var(--space-1); width: 17.5rem; max-width: 100%; }
+.nc-calendar__head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); }
+.nc-calendar__title { font-weight: 600; text-transform: capitalize; }
+.nc-calendar__grid { display: flex; flex-direction: column; gap: 2px; }
+.nc-calendar__row { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+.nc-calendar__row > [role="gridcell"] { display: flex; }
+.nc-calendar__weekday { text-align: center; color: var(--text-3); font-size: var(--nc-type-label); line-height: var(--control-md); }
+.nc-calendar__day { flex: 1; min-height: var(--control-md); padding: 0; border: 1px solid transparent; border-radius: var(--radius-sm); background: transparent; color: var(--text-1); font: inherit; font-variant-numeric: tabular-nums; cursor: pointer; }
+.nc-calendar__day:hover { background: var(--bg-3); }
+.nc-calendar__day:focus-visible { outline: none; border-color: var(--accent-strong); box-shadow: var(--focus-ring); }
+.nc-calendar__day[data-outside] { color: var(--text-4); }
+.nc-calendar__day[data-today] { border-color: var(--line-strong); }
+.nc-calendar__day[data-selected] { background: var(--accent-tint); border-color: var(--accent-strong); color: var(--text-1); font-weight: 600; }
+
+/* A field of a form: its label above its control, a switch beside its label; one rhythm for every kind. */
+.nc-fieldrow { display: flex; flex-direction: column; gap: var(--space-1); min-width: 0; }
+.nc-fieldrow--row { display: grid; grid-template-columns: 1fr auto; align-items: center; column-gap: var(--space-3); }
+.nc-fieldrow--row > .nc-fieldrow__message { grid-column: 1 / -1; }
+.nc-fieldrow__label { color: var(--text-2); font-size: var(--nc-type-label); line-height: var(--nc-type-label-line); font-weight: 500; }
+.nc-fieldrow__optional { color: var(--text-3); font-weight: 400; }
+.nc-fieldrow__control { min-width: 0; display: flex; flex-direction: column; }
+.nc-fieldrow--row .nc-fieldrow__control { align-items: flex-end; }
+.nc-fieldrow__message { margin: 0; color: var(--text-3); font-size: var(--nc-type-label); line-height: var(--nc-type-label-line); }
+.nc-fieldrow__message--error { color: var(--danger); }
+.nc-fieldrow .nc-input, .nc-fieldrow .nc-number { width: 100%; }
+.nc-fieldrow[data-invalid] .nc-input { border-color: var(--danger); }
+
+/* An explanation on demand: the info button beside a label and the words it opens. */
+.nc-infotip { display: inline-flex; vertical-align: middle; margin-inline-start: var(--space-1); }
+.nc-infotip__button { color: var(--text-3); }
+.nc-infotip__button:hover { color: var(--text-1); }
+.nc-infotip__pop { max-width: min(20rem, calc(100vw - var(--space-4) * 2)); padding: var(--space-2) var(--space-3); border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--bg-3); box-shadow: var(--shadow-overlay); }
+.nc-infotip__text { color: var(--text-1); font-size: var(--nc-type-label); line-height: var(--nc-type-label-line); font-weight: 400; white-space: normal; overflow-wrap: anywhere; }
+.nc-infotip__text--sheet { font-size: var(--nc-type-body); }

@@ -1,0 +1,544 @@
+/* The shared parts every view is built from (the site's "Which part for what" pages, site/content/docs/parts/): list rows and their list,
+   cards and panels with one padding rule, section headings, inline-edit fields, the property list, the filter
+   bar, the metadata line, stats, truncation, and the focus ring on everything interactive. Built from tokens:
+   the type sizes below are tokens.css's type scale as variables, so CSS can use them where it cannot add a
+   type class. */
+
+:root {
+  /* The type scale of tokens.css (.body, .label, .section, .heading, .title, .figure-xl). */
+  --nc-type-section: 11px;
+  --nc-type-label: 12px;
+  --nc-type-label-line: 16px;
+  --nc-type-body: 13px;
+  --nc-type-body-line: 20px;
+  --nc-type-heading: 16px;
+  --nc-type-heading-line: 24px;
+  --nc-type-title: 20px;
+  --nc-type-title-line: 28px;
+  --nc-type-figure: 24px;
+  --nc-type-figure-line: 28px;
+  --nc-type-figure-xl: 32px;
+  --nc-type-figure-xl-line: 36px;
+  /* The one padding of a card and a panel's body, and the inset of a selection from its container's edge. The
+     inset is half the padding, so a row's text (inset plus the row's own inset) meets the card's text edge. */
+  --nc-pad: var(--space-3);
+  --nc-inset: 6px;
+}
+
+/* ---------- Focus ----------
+   Every interactive element shows the focus ring on keyboard focus. Components that draw their own focus (a
+   field's edge, a menu's highlight, a list row's ring on the whole row) are left out here and style it themselves. */
+:where(.nc) :where(
+  a[href], button, summary, [role="button"], [role="tab"], [role="switch"], [role="checkbox"], [role="radio"],
+  [role="link"], [tabindex]:not([tabindex="-1"]), input:not([type="hidden"]), select, textarea
+):where(:not(
+  [role="menuitem"], [role="menuitemradio"], [role="menuitemcheckbox"], [role="option"], [contenteditable="true"],
+  [role="separator"], .nc-lrow__main, .nc-tabbar__item, .nc-menu__item, .nc-search *, .nc-composer *, .xterm *,
+  [data-part="palette"] input
+)):focus-visible { outline: none; box-shadow: var(--focus-ring); }
+/* The ring of what sits edge to edge in something that clips (a row of a list, a tab of a strip, a crumb) is drawn
+   inside it: outside, the list's or the strip's edge would cut it off. Focus scrolls a little past an element, so
+   its ring is not cut at the edge of a scroll area either. A resize edge (a separator) shows focus by its colour. */
+:where(.nc) :where(
+  ul, ol, [role="list"], [role="listbox"], [role="grid"], [role="tree"], [role="tablist"], [data-part="breadcrumbs"]
+) :where(a[href], button, [role="button"], [role="tab"], [tabindex]:not([tabindex="-1"])):focus-visible {
+  box-shadow: var(--focus-ring-inset);
+}
+:where(.nc) :where(
+  a[href], button, summary, [role="button"], [role="tab"], [tabindex]:not([tabindex="-1"]), input, select, textarea
+) { scroll-margin: var(--space-2); }
+:where(.nc) [role="separator"]:focus-visible { outline: none; box-shadow: none; }
+
+/* ---------- Truncation ---------- */
+.nc-truncate { display: inline-block; min-width: 0; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: bottom; }
+.nc-truncate--clamp { display: -webkit-box; -webkit-box-orient: vertical; white-space: normal; }
+
+/* ---------- Buttons at the token sizes ----------
+   The bundle's small button has a 5px radius, which is no token: it takes the control radius like every control. */
+.nc-btn--sm { border-radius: var(--radius-sm); }
+.nc-icon-btn--sm { width: var(--control-sm); height: var(--control-sm); }
+/* In light, danger text on its tint takes the deeper shade that passes 4.5:1, as badges do. */
+.nc-btn--danger { color: var(--danger-ink, var(--danger)); }
+
+/* ---------- Section heading ---------- */
+.nc-section-heading { display: flex; align-items: center; gap: var(--space-2); min-width: 0; min-height: var(--control-sm); }
+.nc-section-heading__title { display: flex; align-items: baseline; gap: var(--space-2); flex: 1; min-width: 0; margin: 0; overflow: hidden; color: var(--text-1); font-size: var(--nc-type-body); line-height: var(--nc-type-body-line); font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+.nc-section-heading__count { color: var(--text-3); font-size: var(--nc-type-label); font-weight: 400; font-variant-numeric: tabular-nums; }
+.nc-section-heading__action { display: inline-flex; align-items: center; gap: var(--space-1); flex: none; margin-left: auto; color: var(--text-3); font-size: var(--nc-type-label); }
+.nc-section-heading__action a { color: var(--text-2); text-decoration: none; }
+.nc-section-heading__action a:hover { color: var(--text-1); }
+
+/* ---------- Card ----------
+   One padding rule. As tall as the content by default; `fill` makes it take the box it is given, and its body
+   then lays its content out in that box: a list grows and scrolls, an empty state centres, a lone stat keeps
+   its label and figure at the top and gives the rest of the height to its chart. */
+.nc-ccard { box-sizing: border-box; display: flex; flex-direction: column; gap: var(--space-2); min-width: 0; padding: var(--nc-pad); color: var(--text-1); text-align: left; }
+.nc-ccard[data-padding="none"] { padding: 0; gap: 0; }
+.nc-ccard[data-padding="none"] > .nc-card__head { padding: var(--space-2) var(--nc-pad) 0; }
+.nc-card__body { display: flex; flex-direction: column; gap: var(--space-2); min-width: 0; }
+.nc-card__footer { display: flex; align-items: center; gap: var(--space-2); min-height: var(--control-sm); color: var(--text-3); font-size: var(--nc-type-label); }
+.nc-ccard[data-fill] { height: 100%; min-height: 0; }
+/* The scrolling body spans the card's width (its padding moves inside), so rows that bleed into the card's padding
+   are not clipped by the scroller and the scrollbar sits at the card's edge. */
+.nc-ccard[data-fill] > .nc-card__body { flex: 1; min-height: 0; overflow: auto; margin-inline: calc(var(--nc-pad) * -1); padding-inline: var(--nc-pad); }
+.nc-ccard[data-fill] > .nc-card__body > .nc-empty { margin: auto; }
+.nc-ccard[data-fill] > .nc-card__body:has(> .nc-statv:only-child) { overflow: hidden; }
+.nc-ccard[data-fill] > .nc-card__body > .nc-statv:only-child { flex: 1; min-height: 0; }
+a.nc-ccard, button.nc-ccard { text-decoration: none; cursor: pointer; font: inherit; }
+.nc button.nc-ccard { display: flex; align-items: stretch; justify-content: flex-start; white-space: normal; line-height: inherit; }
+.nc-ccard--action:hover { border-color: var(--line); background: var(--bg-2); }
+.nc-ccard--action:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+/* Nested padded containers collapse to one padding: a card, panel, stat card or widget that is a card's only
+   child keeps the outer card's edge and padding only. */
+.nc-card__body > :only-child:is(.nc-card, .nc-stat, .nc-widget) { padding: 0; border: 0; border-radius: 0; background: transparent; }
+/* A list, table or empty state alone in a card meets the card's own inset instead of adding one. */
+.nc-card__body > .nc-rows:first-child { margin-top: calc(var(--space-1) * -1); }
+.nc-card__body > .nc-rows { margin-inline: calc((var(--nc-pad) - var(--nc-inset)) * -1); padding-inline: 0; }
+.nc-card__body > .nc-rows:last-child { margin-bottom: calc(var(--space-1) * -1); }
+.nc-card__body > .nc-empty { padding: var(--space-4) 0; }
+.nc-ccard[data-padding="none"] > .nc-card__body > .nc-rows { margin: 0; padding: var(--space-1) var(--nc-inset); }
+.nc-ccard[data-padding="none"][data-fill] > .nc-card__body { margin-inline: 0; padding-inline: 0; }
+
+/* Panel: the body takes the card padding, and `fill` gives it the box. */
+.nc-panel__body { display: flex; flex-direction: column; gap: var(--space-2); padding: var(--nc-pad); }
+.nc-panel[data-fill] { height: 100%; }
+.nc-panel__body > .nc-empty { margin: auto; padding: var(--space-4) 0; }
+.nc-panel__body > :only-child:is(.nc-card, .nc-stat, .nc-widget) { padding: 0; border: 0; border-radius: 0; background: transparent; }
+.nc-panel__body > .nc-rows { margin-inline: calc((var(--nc-pad) - var(--nc-inset)) * -1); padding-inline: 0; }
+.nc-panel__body--flush > .nc-rows { margin: 0; padding: var(--space-1) var(--nc-inset); }
+
+/* ---------- Empty state ---------- */
+.nc-empty { gap: var(--space-1); }
+.nc-empty__title { color: var(--text-1); }
+.nc-empty__desc { max-width: 44ch; }
+.nc-empty--sm { padding: var(--space-4) var(--space-3); }
+.nc-empty--sm .nc-empty__icon { margin-bottom: 0; }
+
+/* ---------- Stat ----------
+   The stat card takes the one card padding too. In a box it fills (a fill card's lone Stat, a fill StatCard),
+   the label and figure stay at the top and the figure steps up to the large size in a tall box (`data-tall`,
+   lib/box.ts);
+   a chart under them takes the rest of the height (a sparkline grows, a meter sits at the bottom), and without
+   one the box's padding is below the group, never a gap above it. A sparkline outside a Widget takes the
+   accent and no glow. */
+.nc-stat { padding: var(--nc-pad); }
+.nc-statv { display: flex; flex-direction: column; gap: var(--space-1); min-width: 0; }
+.nc-statv__label { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); color: var(--text-2); font-size: var(--nc-type-label); line-height: var(--nc-type-label-line); }
+.nc-statv__figure { display: flex; align-items: baseline; gap: var(--space-1); min-width: 0; }
+.nc-statv__value { color: var(--text-1); font-size: var(--nc-type-figure); line-height: var(--nc-type-figure-line); font-weight: 600; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.nc-statv__unit { color: var(--text-3); font-size: var(--nc-type-label); font-weight: 500; }
+.nc-statv__caption { color: var(--text-3); font-size: var(--nc-type-label); line-height: var(--nc-type-label-line); }
+.nc-statv__chart, .nc-stat__footer { display: flex; flex-direction: column; justify-content: flex-end; min-height: 0; --w-hue: var(--accent-strong); --w-glow: none; }
+.nc-statv__chart { margin-top: var(--space-1); }
+.nc-ccard[data-fill] .nc-statv > .nc-statv__chart { flex: 1; }
+:is(.nc-ccard[data-fill] .nc-statv[data-tall] .nc-statv__value, .nc-stat[data-fill][data-tall] .nc-stat__value) { font-size: var(--nc-type-figure-xl); line-height: var(--nc-type-figure-xl-line); }
+.nc-stat[data-fill] { box-sizing: border-box; height: 100%; min-height: 0; gap: var(--space-1); overflow: hidden; }
+.nc-stat[data-fill] > :is(.nc-meter, .nc-stat__footer) { margin-top: auto; }
+.nc-stat[data-fill] > .nc-stat__footer { flex: 1; }
+.nc-stat[data-fill] > .nc-meter + .nc-stat__footer { flex: none; margin-top: var(--space-2); }
+:is(.nc-ccard[data-fill] .nc-statv__chart, .nc-stat[data-fill] > .nc-stat__footer) > .nc-wspark { flex: 1 1 auto; min-height: 24px; max-height: 120px; }
+/* A widget that fills its box: the title at the top, a sparkline or list grows, and a bar, strip or gauge
+   that cannot grow sits with the caption at the bottom edge. Other content stays under the title: height left
+   over goes between the content and the caption, never above the content or around a centred part. */
+/* A widget's title gives way to its value, which never wraps. */
+.nc-widget__head > .nc-widget__title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nc-widget__head > .nc-widget__value { flex: none; white-space: nowrap; }
+.nc-widget[data-fill] { box-sizing: border-box; height: 100%; min-height: 0; overflow: hidden; }
+.nc-widget[data-fill] > .nc-widget__head + :is(.nc-wprogress, .nc-wuptime, .nc-wgauge) { margin-top: auto; }
+.nc-widget[data-fill] > .nc-widget__caption { margin-top: auto; }
+.nc-widget[data-fill] > :is(.nc-wprogress, .nc-wuptime, .nc-wgauge) ~ .nc-widget__caption { margin-top: 0; }
+/* Rows in a widget start their text on the title's edge, as in a card: the row's own inset hangs into the padding. */
+.nc-widget > .nc-rows { margin-inline: calc(var(--nc-inset) * -1); padding-inline: 0; }
+.nc-widget[data-fill] > :is(.nc-wspark, .nc-rows) { flex: 1 1 auto; min-height: 24px; }
+.nc-widget[data-fill] > .nc-wspark { max-height: 160px; }
+
+/* ---------- List rows ----------
+   A row is a grid of named columns: check, unread, lead (a fixed box, so icons and avatars of any glyph start titles on
+   one edge), main (the title and secondary text), status, meta, actions and answers (persistent actions). In a
+   RowList the rows are subgrids of the list's grid, so each trailing column is as wide as its widest cell and
+   states, times and actions line up down the list. A lone row, or a row of a virtualised list, lays the same
+   columns out on its own; the virtualised list gives the trailing columns the widest cell it has seen
+   (`--nc-lrow-status`, `--nc-lrow-meta`, `--nc-lrow-actions`, each at most a quarter of the row). The title
+   keeps its widest title or 40% of the row, whichever is less (`--nc-lrow-title`, measured by the RowList; 14rem
+   for a lone row), before the trailing columns get their width; past that a state or
+   a time is cut with an ellipsis first. Cells take their gaps as margins, so an empty column takes no room. */
+.nc-rows { display: flex; flex-direction: column; min-width: 0; min-height: 0; padding: var(--space-1) var(--nc-inset); }
+.nc-rows--flush { padding-inline: 0; }
+.nc-rows, .nc-lrow {
+  --nc-lrow-gap: var(--space-2);
+  --nc-lrow-lead: 20px;
+  --nc-lrow-indent: 16px;
+  --nc-lrow-cols: [check] auto [unread] auto [lead] auto [main] minmax(min(40%, var(--nc-lrow-title, 14rem)), 1fr) [status] minmax(min(var(--nc-lrow-status, 0px), 25%), auto) [meta] minmax(min(var(--nc-lrow-meta, 0px), 25%), auto) [actions] minmax(min(var(--nc-lrow-actions, 0px), 25%), auto) [answers] auto [end];
+}
+.nc-rows__list { display: grid; grid-template-columns: var(--nc-lrow-cols); row-gap: 1px; min-width: 0; }
+.nc-rows__list > * { grid-column: 1 / -1; min-width: 0; }
+.nc-rows__list > .nc-lrow, .nc-rows__list > :not(.nc-lrow):has(> .nc-lrow) > .nc-lrow { grid-template-columns: subgrid; }
+/* A wrapper around rows (a context menu area, an element an app queries) passes the columns through. */
+.nc-rows__list > :not(.nc-lrow):has(> .nc-lrow) { display: grid; grid-template-columns: subgrid; }
+.nc-rows__list > :not(.nc-lrow):has(> .nc-lrow) > * { grid-column: 1 / -1; min-width: 0; }
+.nc-rows--virtual { flex: 1; }
+.nc-rows--virtual .nc-list__row { padding: 0; border-radius: 0; }
+.nc-rows--virtual .nc-list__row:hover, .nc-rows--virtual .nc-list__row[data-active] { background: transparent; }
+.nc-rows--virtual .nc-list__row > .nc-lrow { flex: 1; }
+.nc-rows--divided .nc-rows__list .nc-lrow + .nc-lrow::before { content: ""; position: absolute; top: -1px; left: var(--nc-inset); right: var(--nc-inset); height: 1px; background: var(--line-subtle); pointer-events: none; }
+.nc-rows--divided .nc-rows__list .nc-lrow:is(:hover, [data-selected])::before,
+.nc-rows--divided .nc-rows__list .nc-lrow:is(:hover, [data-selected]) + .nc-lrow::before { opacity: 0; }
+
+.nc-lrow { position: relative; display: grid; grid-template-columns: var(--nc-lrow-cols); align-items: center; box-sizing: border-box; min-width: 0; min-height: var(--row-compact); padding: 0 var(--nc-inset); border-radius: var(--radius-sm); color: var(--text-1); font-size: var(--nc-type-body); line-height: var(--nc-type-body-line); }
+.nc-lrow[data-density="comfortable"] { min-height: var(--row-default); }
+.nc-lrow[data-lines="2"], .nc-lrow[data-lines="3"] { align-items: start; padding-top: var(--nc-inset); padding-bottom: var(--nc-inset); }
+.nc-lrow[data-interactive]:hover { background: var(--bg-2); }
+/* A finger has no hover: a tapped row is filled only while it is pressed, not after. */
+.nc-lrow[data-touch][data-interactive]:hover:not([data-selected]) { background: transparent; }
+.nc-lrow[data-touch][data-interactive]:active:not([data-selected]) { background: var(--bg-3); }
+.nc-lrow[data-selected] { background: var(--bg-4); }
+.nc-lrow:has(> .nc-lrow__main:focus-visible) { box-shadow: var(--focus-ring); }
+.nc-lrow__main { grid-column: main; display: flex; align-items: center; min-width: 0; padding: 0; border: 0; background: transparent; color: inherit; font: inherit; text-align: left; text-decoration: none; }
+.nc button.nc-lrow__main { justify-content: flex-start; white-space: normal; line-height: inherit; }
+.nc-lrow__main:focus-visible { outline: none; }
+/* The whole row is the link or button; leading content and the text sit under its stretched box, the trailing
+   actions (and interactive leading content, such as a checkbox) above it. */
+.nc-lrow[data-interactive] .nc-lrow__main { cursor: pointer; }
+.nc-lrow[data-interactive] .nc-lrow__main::after { content: ""; position: absolute; inset: 0; border-radius: inherit; }
+.nc-lrow__lead { grid-column: lead; display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box; min-width: var(--nc-lrow-lead); height: var(--nc-lrow-lead); margin-right: var(--nc-lrow-gap); color: var(--text-2); }
+.nc-lrow__lead:has(input, button, a, [tabindex]) { position: relative; z-index: 1; }
+.nc-lrow__text { display: flex; align-items: baseline; gap: var(--space-2); flex: 1; min-width: 0; }
+.nc-lrow[data-lines="2"] .nc-lrow__text, .nc-lrow[data-lines="3"] .nc-lrow__text { flex-direction: column; align-items: stretch; gap: 0; }
+.nc-lrow__title { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* One line: the secondary text gives way first, and once fewer than 4em of it would show it wraps out of
+   the single visible line instead of leaving a sliver. */
+.nc-lrow[data-lines="1"] .nc-lrow__text { flex-wrap: wrap; max-height: var(--nc-type-body-line); overflow: hidden; }
+.nc-lrow[data-lines="1"] .nc-lrow__text > .nc-lrow__secondary { flex: 1 1 4em; max-width: max-content; }
+.nc-lrow__secondary, .nc-lrow__detail { flex: 0 100 auto; min-width: 0; overflow: hidden; color: var(--text-3); font-size: var(--nc-type-label); line-height: var(--nc-type-label-line); text-overflow: ellipsis; white-space: nowrap; }
+.nc-lrow__detail { display: flex; margin-top: 2px; }
+/* On a row of two or three lines the text spans the status and meta columns: the time ends the first line and
+   the state the second, both at the trailing edge of the times of one-line rows. */
+.nc-lrow:is([data-lines="2"], [data-lines="3"]) > .nc-lrow__main { grid-column: main / actions; }
+.nc-lrow__line { display: flex; align-items: baseline; gap: var(--space-2); min-width: 0; }
+.nc-lrow__line > :is(.nc-lrow__title, .nc-lrow__secondary) { flex: 0 1 auto; margin-right: auto; }
+.nc-lrow__line > :is(.nc-lrow__status, .nc-lrow__meta) { flex: none; max-width: 60%; }
+.nc-lrow[data-unread] .nc-lrow__title { font-weight: 600; }
+/* On the selected fill (bg-4) text-3 is under 4.5:1: the row's secondary text and meta take text-2 there. */
+.nc-lrow[data-selected] :is(.nc-lrow__secondary, .nc-lrow__detail, .nc-lrow__meta, .nc-lrow__status, .nc-metaline, .nc-state) { color: var(--text-2); }
+.nc-lrow[data-muted] .nc-lrow__title { color: var(--text-2); }
+.nc-lrow__status, .nc-lrow__meta { min-width: 0; max-width: 100%; overflow: hidden; color: var(--text-3); font-size: var(--nc-type-label); line-height: var(--nc-type-label-line); text-overflow: ellipsis; white-space: nowrap; }
+/* A state's dots line up at the column's start, times at its end. The state is inline so its word can be cut. */
+.nc-lrow > .nc-lrow__status { grid-column: status; justify-self: start; margin-left: var(--nc-lrow-gap); }
+.nc-lrow__status > .nc-state { display: inline; }
+.nc-lrow__status > .nc-state > .nc-dot { display: inline-block; margin-right: 6px; vertical-align: 1px; }
+.nc-lrow > .nc-lrow__meta { grid-column: meta; justify-self: end; margin-left: var(--nc-lrow-gap); }
+.nc-lrow__meta { font-variant-numeric: tabular-nums; }
+.nc-lrow[data-lines="2"] > .nc-lrow__actions, .nc-lrow[data-lines="3"] > .nc-lrow__actions { margin-top: 2px; }
+.nc-lrow[data-lines="2"] .nc-lrow__lead, .nc-lrow[data-lines="3"] .nc-lrow__lead { margin-top: 0; }
+.nc-lrow__actions { position: relative; z-index: 1; grid-column: actions; justify-self: end; display: inline-flex; align-items: center; gap: 2px; margin-left: var(--nc-lrow-gap); margin-right: calc(var(--space-1) * -1); }
+.nc-lrow__actions:not(.nc-lrow__actions--persistent) { opacity: 0; }
+.nc-lrow:is(:hover, :focus-within, [data-selected]) .nc-lrow__actions { opacity: 1; }
+.nc-lrow__actions--persistent { grid-column: answers; gap: var(--space-1); margin-right: 0; }
+/* The unread dot is the first column, inside the row's fill on its leading edge. A row that tracks unread
+   (`unread` true or false) keeps the column, so marking it read moves nothing. */
+.nc-lrow__unread { grid-column: unread; width: 6px; height: 6px; margin-right: 6px; border-radius: var(--radius-full); }
+.nc-lrow__unread[data-on] { background: var(--accent-strong); }
+.nc-lrow[data-lines="2"] .nc-lrow__unread, .nc-lrow[data-lines="3"] .nc-lrow__unread { margin-top: 7px; }
+/* Swipe actions (touch): the cells slide over the tray at the row's edge. */
+.nc-lrow[data-swipe] { overflow: clip; }
+.nc-lrow[data-swipe] > :not(.nc-lrow__tray) { transform: translateX(var(--nc-swipe, 0px)); transition: transform 220ms cubic-bezier(0.2, 0.8, 0.2, 1); }
+.nc-lrow[data-dragging] > :not(.nc-lrow__tray) { transition: none; }
+.nc-lrow[data-swipeable] { touch-action: pan-y; }
+.nc-lrow[data-menu][data-touch] { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
+.nc-lrow__tray { position: absolute; top: 0; bottom: 0; z-index: 2; display: flex; overflow: hidden; }
+.nc-lrow__tray--leading { left: 0; }
+.nc-lrow__tray--trailing { right: 0; flex-direction: row-reverse; }
+.nc-lrow__tray--actions { flex-direction: row; justify-content: flex-start; background: var(--bg-3); }
+.nc-lrow__tray-inner { display: flex; flex: none; align-items: center; gap: var(--space-1); padding: 0 var(--space-3); }
+
+/* ---------- Where a list sits ----------
+   `inset`: in a padded container at any depth (a card, a panel, an inspector's section), the rows hang into its
+   padding: text on the container's text edge, the fill 6px from its edge. `inline`: among other content (a
+   property value, a form), text on the content's edge and the fill 6px past it, rows as tall as a property row.
+   `boxed`: a group of its own with an edge, rows filled to the edge and divided by hairlines. */
+.nc-rows { position: relative; }
+.nc-rows--inset { margin-inline: calc((var(--nc-pad) - var(--nc-inset)) * -1); padding-inline: 0; }
+.nc-rows--inline { margin-inline: calc(var(--nc-inset) * -1); padding: 0; }
+.nc-card__body > .nc-rows--inline { margin-block: 0; }
+.nc-rows--inline .nc-lrow[data-density="compact"][data-lines="1"] { min-height: var(--control-md); }
+.nc-props__value > :is(.nc-rows, .nc-datalist) { flex: 1 1 100%; min-width: 0; }
+.nc-props__label:has(+ .nc-props__value > :is(.nc-rows, .nc-datalist)) { align-self: start; }
+.nc-rows--boxed { overflow: clip; padding: 0; border: 1px solid var(--line-soft); border-radius: var(--radius-md); }
+.nc-rows--boxed .nc-rows__list { row-gap: 0; }
+.nc-rows--boxed .nc-lrow { padding-inline: var(--space-3); border-radius: 0; }
+.nc-rows--boxed :is(.nc-rows__list, .nc-lrow-group) > * + * { border-top: 1px solid var(--line-subtle); }
+
+/* ---------- A tree of rows ----------
+   A row with children, or any row of a tree, puts its disclosure, leading box and text in one cell indented by
+   its depth; the trailing columns stay the list's, so the values of every level line up. */
+.nc-lrow-group { display: grid; grid-template-columns: subgrid; grid-column: 1 / -1; row-gap: 1px; min-width: 0; }
+.nc-lrow-group > .nc-lrow { grid-template-columns: subgrid; grid-column: 1 / -1; min-width: 0; }
+.nc-lrow__branch { grid-column: lead / status; display: flex; align-items: center; min-width: 0; padding-left: calc(var(--nc-lrow-depth, 0) * var(--nc-lrow-indent)); }
+.nc-lrow:is([data-lines="2"], [data-lines="3"]) > .nc-lrow__branch { grid-column: lead / actions; align-items: flex-start; }
+.nc-lrow__branch > .nc-lrow__main { flex: 1 1 auto; }
+.nc-lrow:has(> .nc-lrow__branch > .nc-lrow__main:focus-visible) { box-shadow: var(--focus-ring); }
+.nc-lrow__toggle { position: relative; z-index: 1; flex: none; display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; margin-right: var(--space-1); padding: 0; border: 0; border-radius: var(--radius-xs); background: transparent; color: var(--text-3); }
+.nc-lrow__toggle .nc-icon { transition: transform 120ms ease; }
+.nc-lrow__toggle[data-open] .nc-icon { transform: rotate(90deg); }
+button.nc-lrow__toggle { cursor: pointer; }
+button.nc-lrow__toggle:hover { color: var(--text-1); }
+
+/* ---------- Managing a list ----------
+   No grips: a row is dragged by itself (a press that moves past a few px; on a touch screen a move after the long
+   press), so a movable row's text is not selectable by a drag. A lifted row follows the pointer above the others;
+   the line is where it will land, under the lifted row, so it never strikes through it. Selection is the neutral
+   fill; the keyboard's cursor is the focus ring. */
+.nc-lrow__check { grid-row: 1; }
+.nc-rows--movable .nc-lrow[data-movable] { -webkit-user-select: none; user-select: none; }
+.nc-rows--reordering, .nc-rows--reordering * { cursor: grabbing; -webkit-user-select: none; user-select: none; }
+.nc-lrow[data-lifted], .nc-list__row[data-lifted] { z-index: 3; pointer-events: none; }
+.nc-lrow[data-lifted], .nc-list__row[data-lifted] > .nc-lrow { background: var(--bg-3); box-shadow: var(--shadow-overlay); }
+.nc-lrow[data-grabbed] { background: var(--bg-3); }
+.nc-rows__drop { position: absolute; z-index: 2; left: var(--nc-inset); right: var(--nc-inset); height: 2px; margin-top: -1px; border-radius: var(--radius-full); background: var(--accent); pointer-events: none; }
+.nc-rows--flush .nc-rows__drop, .nc-rows--inset .nc-rows__drop, .nc-rows--inline .nc-rows__drop { left: 0; right: 0; }
+.nc-lrow__check { position: relative; z-index: 1; grid-column: check; display: inline-flex; align-items: center; margin-right: var(--nc-lrow-gap); }
+/* Renaming: the title is an InlineField, over nothing (the row's stretched click area is off). */
+:root .nc-lrow[data-lines] :is(.nc-lrow__text, .nc-lrow__line):has(> .nc-lrow__title--edit) { max-height: none; overflow: visible; }
+.nc-lrow__text:has(> .nc-lrow__title--edit) > .nc-lrow__secondary { display: none; }
+.nc-lrow__title--edit { display: flex; flex: 1 1 auto; overflow: visible; }
+.nc-lrow__main:has(.nc-lrow__title--edit)::after { content: none; }
+/* The add row: a row of its own at the end, quieter than the rows. */
+.nc button.nc-lrow--add { display: grid; grid-column: 1 / -1; gap: 0; justify-content: stretch; width: 100%; border: 0; background: transparent; color: var(--text-3); font: inherit; line-height: inherit; text-align: left; white-space: normal; }
+.nc-lrow--add .nc-lrow__lead { color: inherit; }
+.nc button.nc-lrow--add:hover { color: var(--text-1); }
+.nc-rows--virtual > .nc-rows__add > .nc-lrow--add { grid-template-columns: var(--nc-lrow-cols); }
+/* The selection bar: at the list's foot while something is selected, kept in view as the list scrolls. */
+.nc-rows__bulk { position: sticky; bottom: var(--space-2); z-index: 5; min-height: 36px; margin-top: var(--space-2); padding: 0 var(--space-1) 0 var(--space-3); border: 1px solid var(--line-soft); border-radius: var(--radius-md); box-shadow: var(--shadow-overlay); }
+.nc-rows__count { font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+/* ---------- Data list ----------
+   Records edited in place: one field-like box (`boxed`), rows on the content's edge (`inline`), or a table of
+   fields with a header row (`table`). The rows share the list's columns (a subgrid each): the checkbox, then the
+   fields. A row has no grip and no remove button: it is dragged by its edge outside the fields, and removed from
+   its menu, the Delete key or a swipe. The checkbox keeps its width and shows on hover and focus, and on every
+   row while something is selected, so nothing moves. */
+.nc-datalist { position: relative; min-width: 0; }
+.nc-datalist__list { display: grid; grid-template-columns: var(--nc-datalist-cols); min-width: 0; }
+.nc-datalist__list > * { grid-column: 1 / -1; display: grid; grid-template-columns: subgrid; min-width: 0; }
+.nc-datalist--boxed { border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--bg-2); }
+.nc-datalist--table { overflow: clip; border: 1px solid var(--line-soft); border-radius: var(--radius-md); background: var(--bg-1); }
+:is(.nc-datalist--boxed, .nc-datalist--table) .nc-datalist__row + .nc-datalist__row { border-top: 1px solid var(--line-subtle); }
+.nc-datalist--inline { margin-inline: calc(var(--nc-inset) * -1); }
+.nc-datalist__row { position: relative; align-items: center; column-gap: var(--space-1); min-height: var(--row-compact); padding: 0 var(--space-1) 0 var(--nc-inset); outline: none; }
+.nc-datalist--inline .nc-datalist__row { min-height: var(--control-md); }
+.nc-datalist--table[data-density="comfortable"] .nc-datalist__row:not(.nc-datalist__row--add) { min-height: var(--row-default); }
+.nc-datalist__row[data-selected] { background: var(--bg-4); }
+.nc-datalist__row:focus-visible { box-shadow: inset 0 0 0 1px var(--accent-strong); }
+.nc-datalist--movable .nc-datalist__row:not(.nc-datalist__row--add) { -webkit-user-select: none; user-select: none; }
+.nc-datalist--movable .nc-datalist__row :is(input, textarea) { -webkit-user-select: text; user-select: text; }
+/* With a mouse a row at rest is one target: a click selects it, a press drags it, a double click edits. Its fields
+   take the pointer only while the row is being edited (DataList, "Editing"). Touch keeps tap to edit. */
+.nc-datalist:not([data-touch]) .nc-datalist__row:not([data-editing]) :is(input, textarea, select, [contenteditable=true]) { pointer-events: none; }
+.nc-datalist:not([data-touch]) .nc-datalist__row:not([data-editing]):not(.nc-datalist__row--add) { cursor: default; }
+.nc-datalist--inline .nc-datalist__row:focus-visible, .nc-datalist--inline .nc-datalist__row[data-selected] { border-radius: var(--radius-sm); }
+.nc-datalist__head { align-items: center; column-gap: var(--space-1); min-height: var(--row-compact); padding: 0 var(--space-1) 0 var(--nc-inset); border-bottom: 1px solid var(--line-soft); background: var(--bg-2); color: var(--text-3); font-size: var(--nc-type-label); font-weight: 500; line-height: var(--nc-type-label-line); }
+.nc-datalist__th { min-width: 0; padding-left: var(--space-1); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nc-datalist__fields { grid-column: fields / end; grid-row: 1; display: flex; align-items: center; gap: var(--space-2); min-width: 0; padding-left: var(--space-1); }
+.nc-datalist__cell { grid-row: 1; display: flex; align-items: center; min-width: 0; padding-left: var(--space-1); }
+:is(.nc-datalist__fields, .nc-datalist__cell) > .nc-inline-field { flex: 1 1 0; min-width: 0; }
+.nc-datalist__sep { flex: none; color: var(--text-3); }
+.nc-datalist__check { grid-column: check; grid-row: 1; position: relative; z-index: 1; display: inline-flex; align-items: center; justify-content: center; margin-right: var(--space-1); }
+.nc-datalist__check > .nc-check { opacity: 0; }
+:is(.nc-datalist__row, .nc-datalist__head):is(:hover, :focus-within) .nc-datalist__check > .nc-check,
+.nc-datalist:is([data-selecting], [data-touch]) .nc-datalist__check > .nc-check { opacity: 1; }
+.nc-datalist--reordering, .nc-datalist--reordering * { cursor: grabbing; }
+/* Swipe to delete (touch): the cells slide over the tray at the row's end. */
+.nc-datalist[data-touch] .nc-datalist__row { touch-action: pan-y; }
+.nc-datalist__row[data-swipe] { overflow: clip; }
+.nc-datalist__row[data-swipe] > :not(.nc-datalist__tray) { transform: translateX(var(--nc-swipe, 0px)); transition: transform 220ms cubic-bezier(0.2, 0.8, 0.2, 1); }
+.nc-datalist__row[data-dragging] > :not(.nc-datalist__tray) { transition: none; }
+.nc-datalist__row[data-lifted] { z-index: 3; background: var(--bg-3); box-shadow: var(--shadow-overlay); pointer-events: none; }
+.nc-datalist__row[data-grabbed] { background: var(--bg-3); }
+.nc-datalist__drop { position: absolute; z-index: 2; left: 0; right: 0; height: 2px; margin-top: -1px; border-radius: var(--radius-full); background: var(--accent); pointer-events: none; }
+.nc-datalist__error { grid-column: fields / end; grid-row: 2; padding: 0 0 var(--space-1) var(--space-1); color: var(--danger-ink, var(--danger)); font-size: var(--nc-type-label); line-height: var(--nc-type-label-line); }
+.nc-datalist__row[data-invalid] .nc-inline-field { color: var(--text-1); }
+.nc button.nc-datalist__add { grid-column: fields / -1; justify-content: flex-start; gap: var(--space-2); width: 100%; min-height: var(--control-md); padding: 0 var(--space-1); border: 0; border-radius: var(--radius-xs); background: transparent; color: var(--text-3); font: inherit; font-size: var(--nc-type-body); }
+.nc button.nc-datalist__add:hover { color: var(--text-1); }
+.nc-datalist__bulk { position: sticky; bottom: var(--space-2); z-index: 5; min-height: 36px; margin: var(--space-2) 0 0; padding: 0 var(--space-1) 0 var(--space-3); border: 1px solid var(--line-soft); border-radius: var(--radius-md); box-shadow: var(--shadow-overlay); }
+.nc-datalist--table .nc-datalist__bulk { margin: var(--space-2); }
+.nc-bulkbar__actions { display: contents; }
+/* A selection's checkboxes are neutral, as the selection is: the accent is for actions, links, focus and unread. */
+:is(.nc-table__check, .nc-datalist__check, .nc-lrow__check) > .nc-check[aria-checked="true"] { border-color: var(--text-2); background: var(--text-2); color: var(--bg-0); }
+:is(.nc-table__check, .nc-datalist__check, .nc-lrow__check) > .nc-check[aria-checked="mixed"] { border-color: var(--text-3); background: var(--bg-4); }
+:is(.nc-table__check, .nc-datalist__check, .nc-lrow__check) > .nc-check .nc-check__dash { background: var(--text-2); }
+/* ---------- DataTable: managing rows ----------
+   No grip column: a row is dragged by itself; a lifted row follows the pointer and the line is where it lands.
+   The checkbox column keeps its width; its boxes show on a row's hover and focus, on every row while something is
+   selected, and always on a touch screen. A row is one tab stop and draws the focus ring inside its edge. */
+.nc-datatable__scroll { position: relative; }
+.nc-table__check > .nc-check { opacity: 0; }
+.nc-table tbody tr:is(:hover, :focus-visible, :focus-within) .nc-table__check > .nc-check,
+.nc-table thead tr:is(:hover, :focus-within) .nc-table__check > .nc-check,
+.nc-datatable:is([data-selecting], [data-touch]) .nc-table__check > .nc-check { opacity: 1; }
+.nc-datatable--movable tbody tr { -webkit-user-select: none; user-select: none; }
+.nc-table tbody tr { outline: none; }
+.nc-table tbody tr:focus-visible td { box-shadow: inset 0 1px 0 var(--accent-strong), inset 0 -1px 0 var(--accent-strong); }
+.nc-table tbody tr:focus-visible td:first-child { box-shadow: inset 1px 1px 0 var(--accent-strong), inset 0 -1px 0 var(--accent-strong); }
+.nc-table tbody tr:focus-visible td:last-child { box-shadow: inset -1px 1px 0 var(--accent-strong), inset 0 -1px 0 var(--accent-strong); }
+.nc-table tbody tr[data-lifted] { position: relative; z-index: 3; box-shadow: var(--shadow-overlay); pointer-events: none; }
+.nc-table tbody tr[data-lifted] td, .nc-table tbody tr[data-grabbed] td { background: var(--bg-3); }
+.nc-datatable--reordering, .nc-datatable--reordering * { cursor: grabbing; -webkit-user-select: none; user-select: none; }
+.nc-datatable__drop { position: absolute; z-index: 2; left: 0; right: 0; height: 2px; margin-top: -1px; border-radius: var(--radius-full); background: var(--accent); pointer-events: none; }
+
+/* ---------- Inline-edit fields ---------- */
+.nc-inline-field { box-sizing: border-box; width: 100%; min-width: 0; margin: 0 calc(var(--nc-inset) * -1); padding: 0 calc(var(--nc-inset) - 1px); border: 1px solid transparent; border-radius: var(--radius-sm); background: transparent; color: var(--text-1); font-family: inherit; font-size: var(--nc-type-body); line-height: var(--nc-type-body-line); outline: none; text-overflow: ellipsis; resize: none; }
+.nc-inline-field { width: calc(100% + var(--nc-inset) * 2); height: var(--control-md); }
+.nc-inline-field::placeholder { color: var(--text-3); }
+.nc-inline-field:not([readonly]):hover { background: var(--bg-3); }
+.nc-inline-field:focus { border-color: var(--accent-strong); background: var(--bg-2); box-shadow: var(--focus-ring); text-overflow: clip; }
+.nc-inline-field[readonly] { cursor: default; }
+
+/* ---------- Field states ----------
+   A state's edge survives hover and focus: an invalid field (TextField, TextArea, Select, SchemaForm's fields, an
+   InlineField given aria-invalid) keeps its danger edge under the pointer, and when focused shows the focus ring
+   in danger instead of the accent, so the error stays visible while it is being fixed. */
+:root, [data-theme] { --focus-ring-danger: 0 0 0 1px var(--danger), 0 0 0 4px color-mix(in srgb, var(--danger) 28%, transparent); }
+.nc-input--error, .nc-input--error:hover, .nc-input[aria-invalid="true"], .nc-input[aria-invalid="true"]:hover,
+.nc-inline-field[aria-invalid="true"], .nc-inline-field[aria-invalid="true"]:hover { border-color: var(--danger); }
+.nc-input--error:focus, .nc-input[aria-invalid="true"]:focus, .nc-input--error[aria-expanded="true"],
+.nc-inline-field[aria-invalid="true"]:focus { border-color: var(--danger); box-shadow: var(--focus-ring-danger); }
+.nc-inline-field--title { height: auto; min-height: var(--control-lg); font-size: var(--nc-type-title); line-height: var(--nc-type-title-line); font-weight: 600; letter-spacing: -0.01em; }
+.nc-inline-field--mono { font-family: var(--font-mono); font-size: var(--nc-type-label); }
+.nc-inline-field--multiline { display: block; height: auto; overflow: hidden; padding-top: 1px; padding-bottom: 1px; white-space: pre-wrap; }
+
+/* ---------- Property list ---------- */
+/* The label column gives way in a narrow place (a panel at its narrowest), so values keep the room they need. */
+.nc-props { display: grid; grid-template-columns: min(var(--nc-props-label, 120px), 38%) minmax(0, 1fr); column-gap: var(--space-3); row-gap: 0; margin: 0; }
+.nc-props__row { display: contents; }
+/* A label sits level with its value's first line, not centred against a value of several rows (a list of links). */
+.nc-props__label { display: flex; align-self: start; align-items: center; gap: var(--space-2); min-width: 0; min-height: var(--control-md); color: var(--text-3); font-size: var(--nc-type-label); }
+.nc-props__label-text { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nc-props__value { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-1); min-width: 0; min-height: var(--control-md); margin: 0; color: var(--text-1); }
+
+/* ---------- Metadata line ---------- */
+.nc-metaline { display: flex; align-items: center; gap: 6px; min-width: 0; overflow: hidden; color: var(--text-3); font-size: var(--nc-type-label); line-height: var(--nc-type-label-line); white-space: nowrap; }
+.nc-metaline__item { display: inline-flex; align-items: center; gap: var(--space-1); flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.nc-metaline__item:last-child { flex-shrink: 100; }
+.nc-metaline__text { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.nc-metaline__sep { flex: none; color: var(--text-4); }
+
+/* ---------- Filter bar ---------- */
+/* One line: the search, the filters inline after it (wrapping inside their own column, never under the search),
+   then the end. In a narrow bar the search has the first line and the filters always go under it. Which of the two
+   depends on the bar's width alone, so adding or removing a filter never rearranges it. */
+.nc-filterbar { container: filterbar / inline-size; min-width: 0; }
+.nc-filterbar__row { display: flex; flex-wrap: nowrap; align-items: flex-start; gap: var(--space-2); min-width: 0; }
+.nc-filterbar__search { flex: 0 1 300px; min-width: 180px; }
+.nc-filterbar__row:not(:has(.nc-filterbar__filters)) .nc-filterbar__search { flex: 1 1 220px; max-width: 420px; }
+.nc-filterbar__filters { display: flex; flex: 1 1 0; flex-wrap: wrap; align-items: center; gap: var(--space-2); min-width: 0; min-height: var(--control-md); }
+@container filterbar (max-width: 560px) {
+  .nc-filterbar__row { flex-wrap: wrap; }
+  .nc-filterbar__search, .nc-filterbar__row:not(:has(.nc-filterbar__filters)) .nc-filterbar__search { flex: 1 0 100%; max-width: none; }
+}
+.nc-filterbar__filters .nc-select { width: auto; min-width: 120px; }
+.nc-filterbar__end { display: flex; flex: none; align-items: center; gap: var(--space-2); min-height: var(--control-md); margin-left: auto; color: var(--text-3); font-size: var(--nc-type-label); }
+
+/* ---------- On a phone ----------
+   The phone's row height and type (docs/phone.md): one line 44px, two 58px, body 15px, secondary 13px,
+   the 12px gutter. The look stays Nocturne's; the controls in a row keep their compact size and get the hit area. */
+:root[data-phone] .nc-rows { padding: 0; }
+:root[data-phone] .nc-rows, :root[data-phone] .nc-lrow { --nc-lrow-gap: var(--space-3); }
+:root[data-phone] .nc-lrow { min-height: var(--phone-row); padding: 0 var(--phone-gutter); font-size: var(--phone-body-size); line-height: var(--phone-body-line); border-radius: 0; }
+:root[data-phone] .nc-lrow[data-lines="2"], :root[data-phone] .nc-lrow[data-lines="3"] { min-height: var(--phone-row-2); padding-top: var(--space-2); padding-bottom: var(--space-2); }
+:root[data-phone] :is(.nc-lrow__secondary, .nc-lrow__detail, .nc-lrow__status, .nc-lrow__meta) { font-size: var(--phone-secondary-size); line-height: var(--phone-secondary-line); }
+:root[data-phone] .nc-lrow__lead .nc-icon { width: 20px; height: 20px; }
+:root[data-phone] .nc-lrow[data-lines="1"] .nc-lrow__text { max-height: var(--phone-body-line); }
+:root[data-phone] .nc-lrow__unread { width: 8px; height: 8px; margin-right: var(--space-2); }
+:root[data-phone] .nc-lrow[data-lines="2"] .nc-lrow__unread, :root[data-phone] .nc-lrow[data-lines="3"] .nc-lrow__unread { margin-top: 6px; }
+/* Separators start at the text, past the leading icon, as on iOS. */
+:root[data-phone] .nc-lrow + .nc-lrow::before { content: ""; position: absolute; top: -1px; left: var(--phone-gutter); right: 0; height: 1px; background: var(--line-subtle); }
+:root[data-phone] .nc-lrow + .nc-lrow:has(> .nc-lrow__lead)::before { left: calc(var(--phone-gutter) + var(--nc-lrow-lead) + var(--nc-lrow-gap)); }
+:root[data-phone] .nc-lrow + .nc-lrow:has(> .nc-lrow__unread)::before { left: calc(var(--phone-gutter) + 8px + var(--space-2)); }
+:root[data-phone] .nc-lrow + .nc-lrow:has(> .nc-lrow__unread):has(> .nc-lrow__lead)::before { left: calc(var(--phone-gutter) + 8px + var(--space-2) + var(--nc-lrow-lead) + var(--nc-lrow-gap)); }
+:root[data-phone] .nc-lrow[data-selected]::before, :root[data-phone] .nc-lrow[data-selected] + .nc-lrow::before { opacity: 0; }
+:root[data-phone] .nc-section-heading { padding: 0 var(--space-3); }
+:root[data-phone] .nc-section-heading__title { font-size: var(--phone-secondary-size); line-height: var(--phone-secondary-line); color: var(--text-3); font-weight: 500; }
+/* A card on a phone is an inset group: its heading above, its body the rounded group, its rows the phone's rows. */
+:root[data-phone] .nc-ccard:not(.nc-ccard--action) { gap: 6px; padding: 0; border: 0; border-radius: 0; background: transparent; }
+:root[data-phone] .nc-ccard:not(.nc-ccard--action) > .nc-card__head { min-height: 0; }
+:root[data-phone] .nc-ccard:not(.nc-ccard--action) > .nc-card__body { overflow: hidden; margin-inline: 0; padding-inline: 0; border: 1px solid var(--line-soft); border-radius: var(--radius-lg); background: var(--bg-1); }
+:root[data-phone] .nc-ccard:not(.nc-ccard--action) > .nc-card__body:not(:has(> .nc-rows)) { padding: var(--space-3); }
+:root[data-phone] .nc-ccard:not(.nc-ccard--action) > .nc-card__body { gap: 0; }
+/* A clickable card stays one tappable card on a phone: its title is the card's own, at the body size and the
+   card's padding, not the inset-group heading above a group (which is indented and in secondary text). */
+:root[data-phone] .nc-ccard--action > .nc-card__head { padding: 0; }
+:root[data-phone] .nc-ccard--action > .nc-card__head .nc-section-heading__title { font-size: var(--phone-body-size); line-height: var(--phone-body-line); color: var(--text-1); font-weight: 600; }
+:root[data-phone] .nc-card__body > .nc-rows { margin: 0; padding: 0; }
+:root[data-phone] .nc-card__body > .nc-rows + .nc-rows, :root[data-phone] .nc-card__body > * + .nc-rows { border-top: 1px solid var(--line-subtle); }
+:root[data-phone] .nc-props { grid-template-columns: minmax(96px, auto) minmax(0, 1fr); }
+:root[data-phone] .nc-props__label, :root[data-phone] .nc-props__value { min-height: var(--phone-row); font-size: var(--phone-body-size); }
+:root[data-phone] .nc-props__label { font-size: var(--phone-secondary-size); }
+:root[data-phone] .nc-filterbar__row { flex-wrap: nowrap; }
+:root[data-phone] .nc-filterbar__search { flex: 0 0 100%; max-width: none; }
+:root[data-phone] .nc-filterbar__row:has(.nc-filterbar__search) { flex-wrap: wrap; }
+/* The row scrolls sideways; its padding keeps a control's focus ring from being clipped by the scroller. */
+:root[data-phone] .nc-filterbar__filters { flex: 1 1 0; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin: -4px; padding: 4px; }
+/* In the sideways row each filter keeps its width (a switch's label is not cut mid-word), and the row's edge fades
+   where more is hidden past it, so it shows it scrolls. */
+:root[data-phone] .nc-filterbar__filters > * { flex: none; white-space: nowrap; }
+:root[data-phone] .nc-filterbar__filters { --nc-fade: 28px; overscroll-behavior-x: contain; }
+:root[data-phone] .nc-filterbar__filters[data-more-end] { -webkit-mask-image: linear-gradient(to left, transparent, black var(--nc-fade)); mask-image: linear-gradient(to left, transparent, black var(--nc-fade)); }
+:root[data-phone] .nc-filterbar__filters[data-more-start] { -webkit-mask-image: linear-gradient(to right, transparent, black var(--nc-fade)); mask-image: linear-gradient(to right, transparent, black var(--nc-fade)); }
+:root[data-phone] .nc-filterbar__filters[data-more-start][data-more-end] { -webkit-mask-image: linear-gradient(to right, transparent, black var(--nc-fade), black calc(100% - var(--nc-fade)), transparent); mask-image: linear-gradient(to right, transparent, black var(--nc-fade), black calc(100% - var(--nc-fade)), transparent); }
+:root[data-phone] .nc-inline-field { font-size: var(--phone-input-size); height: var(--phone-control); }
+/* Every field's text is 16px on a phone (Safari zooms into smaller): the select's trigger is a button, not an input. */
+:root[data-phone] .nc-select { font-size: var(--phone-input-size); line-height: 22px; }
+:root[data-phone] .nc-inline-field--title { font-size: var(--phone-large-title-size); line-height: var(--phone-large-title-line); height: auto; }
+:root[data-phone] .nc-metaline { font-size: var(--phone-secondary-size); line-height: var(--phone-secondary-line); }
+:root[data-phone] .nc-rows--inset { margin-inline: calc(var(--nc-pad) * -1); }
+:root[data-phone] .nc-rows--inline { margin-inline: 0; }
+:root[data-phone] .nc-rows--inline .nc-lrow { padding-inline: 0; }
+:root[data-phone] .nc-rows--boxed { border-radius: var(--radius-lg); background: var(--bg-1); }
+:root[data-phone] .nc-rows--boxed .nc-lrow { padding-inline: var(--phone-gutter); }
+:root[data-phone] .nc-rows--boxed .nc-lrow + .nc-lrow::before { content: none; }
+:root[data-phone] :is(.nc-lrow + .nc-lrow-group > .nc-lrow:first-child, .nc-lrow-group + .nc-lrow)::before { content: ""; position: absolute; top: -1px; left: var(--phone-gutter); right: 0; height: 1px; background: var(--line-subtle); }
+/* In editing the selection circle is the row's first control, then the content. */
+:root[data-phone] .nc-lrow__check { justify-content: center; width: 22px; margin-right: var(--space-3); }
+:root[data-phone] .nc-lrow + .nc-lrow:has(> .nc-lrow__check)::before { left: calc(var(--phone-gutter) + 22px + var(--space-3)); }
+:root[data-phone] .nc-lrow + .nc-lrow:has(> .nc-lrow__check):has(> .nc-lrow__lead)::before { left: calc(var(--phone-gutter) + 22px + var(--space-3) + var(--nc-lrow-lead) + var(--nc-lrow-gap)); }
+:root[data-phone] .nc-rows__bulk { bottom: max(var(--space-2), env(safe-area-inset-bottom)); margin-inline: var(--phone-gutter); }
+/* A phone's width may not hold every action on one line: the bar wraps rather than cutting Clear off. */
+:root[data-phone] :is(.nc-rows__bulk, .nc-datalist__bulk) { flex-wrap: wrap; row-gap: 0; padding-block: var(--space-1); }
+:root[data-phone] .nc button.nc-lrow--add { color: var(--accent-text); }
+/* A list editor on a phone is an iOS form group: 44px rows; a swipe to the left deletes a row, a long press opens
+   its menu and moving the finger then drags it. */
+:root[data-phone] :is(.nc-datalist--boxed, .nc-datalist--table) { border-color: var(--line-soft); border-radius: var(--radius-lg); background: var(--bg-1); }
+:root[data-phone] .nc-datalist__row, :root[data-phone] .nc-datalist__head { min-height: var(--phone-row); padding: 0 0 0 var(--phone-gutter); }
+:root[data-phone] .nc-datalist__check { margin-right: var(--space-2); }
+:root[data-phone] .nc button.nc-datalist__add { min-height: var(--phone-row); padding: 0; color: var(--accent-text); font-size: var(--phone-body-size); }
+
+/* ---------- What scrolls sideways, on a phone ----------
+   Code, terminal output and diffs scroll inside their own block; a shade at the edge where more is hidden says so
+   (the shades scroll with the content and uncover the ones fixed at the edges). Long words and paths in prose and
+   chat wrap instead. */
+:root[data-phone] :is(.nc-code, .nc-terminal, .nc-diffview__scroll, .nc-datatable__scroll) {
+  background:
+    linear-gradient(to right, var(--bg-0) 40%, transparent) left / 24px 100% no-repeat local,
+    linear-gradient(to left, var(--bg-0) 40%, transparent) right / 24px 100% no-repeat local,
+    linear-gradient(to right, color-mix(in srgb, var(--text-1) 16%, transparent), transparent) left / 12px 100% no-repeat scroll,
+    linear-gradient(to left, color-mix(in srgb, var(--text-1) 16%, transparent), transparent) right / 12px 100% no-repeat scroll,
+    var(--bg-0);
+}
+:root[data-phone] :is(.nc-msg-user, .nc-msg-ai__body, .nc-approval__items, .nc-callout__body) { overflow-wrap: anywhere; }
+
+/* ---------- Colour: surfaces stay neutral ----------
+   The owner's direction over the design snapshot (the site's colour page, "Neutral fills"): surfaces (cards, panels, rows, strips,
+   banners) are the neutral bg-* steps and hairlines, and hue goes in the foreground (an icon, a dot and a word, the
+   text). A small inline chip or badge may keep a slight tint with a stronger foreground of its hue; coloured fills
+   are for icon tiles and buttons; never a hue outline around a hue fill, nor a hue edge as the only mark of a
+   state on a card. */
+.nc-approval { border-color: var(--line-soft); }
+.nc-table tr[aria-selected="true"] td, .nc-table tbody tr[aria-selected="true"]:hover td { background: var(--bg-4); }
+.nc-bulkbar { border-bottom-color: var(--line-soft); background: var(--bg-2); color: var(--text-1); }
+.nc-step--running, .nc-step--button.nc-step--running { background: transparent; color: var(--accent-text); }
+.nc-composer--running, .nc-composer[data-dictation="recording"] { border-color: var(--line-strong); box-shadow: none; }
+.nc-field[data-dictation="recording"] .nc-textarea__input { border-color: var(--line-strong); box-shadow: none; }
+/* A button may be filled with its hue; then it has no hue edge as well. */
+.nc-btn--danger { border-color: transparent; }
+.nc-stream--warn, .nc-stream--error { border-color: var(--line-soft); }
+.nc-dropframe__target { border-color: var(--line-strong); background: color-mix(in srgb, var(--bg-4) 60%, transparent); }

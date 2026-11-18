@@ -1,0 +1,11 @@
+node_modules/
+dist/
+examples/dist/
+*.tsbuildinfo
+.env
+*.local
+__pycache__/
+.playwright/
+test-results/
+# Local screenshots, never committed
+screens/
