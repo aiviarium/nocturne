@@ -76,8 +76,14 @@
   .nc-board-card[data-selected] { background: var(--bg-4); }
   .nc-board-card[data-active] { box-shadow: inset 0 0 0 1px var(--accent-strong); }
   .nc-board-card__title { grid-area: title; }
-  .nc-board-card__top { grid-area: top; justify-content: flex-start; }
+  .nc-board-card__top { grid-area: top; }
   .nc-board-card__meta { grid-area: meta; justify-content: flex-end; margin-top: 0; }
+  /* A card with a top row reads as on the desktop, in three rows: the key and the person at the two ends, the
+     title, then the labels. */
+  .nc-board .nc-board-card:has(.nc-board-card__top) { grid-template-columns: minmax(0, 1fr); grid-template-areas: "top" "title" "meta"; row-gap: var(--space-1); }
+  .nc-board .nc-board-card:has(.nc-board-card__top) .nc-board-card__top { justify-content: space-between; }
+  .nc-board .nc-board-card:has(.nc-board-card__top) .nc-board-card__meta { justify-content: flex-start; }
+  .nc-board .nc-board-card:has(.nc-board-card__top) .nc-board-card__meta:empty { display: none; }
   /* A card with no top row, a title and at most one short value: one line, the title at the start and the value
      at the end. With several values (or a message in their place) the values are a line of their own. */
   .nc-board-card:not(:has(.nc-board-card__top)) { grid-template-columns: minmax(0, 1fr) fit-content(45%); grid-template-areas: "title meta"; }

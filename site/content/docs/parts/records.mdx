@@ -13,6 +13,7 @@ Use `Board`, `BoardLane` and `BoardCard` for records in lanes.
 - In a board view, `fill` makes lanes scroll inside, and `placed` cards let a lane render only what is visible.
 - In a document, lanes are as tall as their cards.
 - Below 560px of the board's own width the board is grouped lists with 44px rows. This is a container query, and `useBoard().stacked()` reports it.
+- A stacked card with a top row keeps the desktop order. The key is at the start of the first row and the person at its end. The title is under them, and the labels are at the bottom.
 - Selection is a neutral fill, and the cursor is the focus ring.
 
 <Example id="board/lanes" />
