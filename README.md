@@ -1,4 +1,4 @@
-<h1><picture><source media="(prefers-color-scheme: dark)" srcset="site/public/brand/lockup-nocturne.svg"><img src="site/public/brand/lockup-nocturne-light.svg" alt="Nocturne" height="56"></picture></h1>
+<h1><a href="https://github.com/aiviarium/nocturne"><picture><source media="(prefers-color-scheme: dark)" srcset="site/public/brand/lockup-nocturne.svg"><img src="site/public/brand/lockup-nocturne-light.svg" alt="Nocturne" height="56"></picture></a><br><a href="https://github.com/aiviarium/nocturne/actions/workflows/ci.yml"><img src="https://aiviarium-badges.helight.workers.dev/nocturne/github/actions/workflow/status/aiviarium/nocturne/ci.yml?branch=main&label=CI" alt="CI"></a> <a href="#license"><img src="https://aiviarium-badges.helight.workers.dev/nocturne/github/license/aiviarium/nocturne" alt="License"></a></h1>
 
 Nocturne is a dark-first design system for dense tool interfaces, and `@aiviarium/nocturne` is its SolidJS
 component library: typed wrappers over the `nc-*` classes, plus layout, overlay, data, form and phone
