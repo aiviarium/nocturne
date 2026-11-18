@@ -1,6 +1,6 @@
 ---
 title: Conversation and code
-description: ChatMessage, Composer, CodeBlock and DiffView.
+description: ChatMessage, ChatMedia, Composer, CodeBlock and DiffView.
 ---
 
 ## ChatMessage
@@ -15,6 +15,35 @@ Decisions are approval cards.
 <Example id="chat-message/conversation" />
 <Example id="tool-steps/states" />
 <Example id="approval-card/decisions" />
+
+## Media
+
+Put images, audio, video and files in a `ChatMedia` in the message's children.
+It takes a list of items, each with a `kind` and a `src`.
+The source is a URL or an object URL, and the part doesn't fetch anything.
+
+Media fill the width of the column, as the reply does.
+
+- One image takes the full width at its own aspect ratio, up to 480px high.
+  Pass `width` and `height` so the space is kept before it loads.
+- A pair of images sit side by side.
+  Three or four form one row, and more show four with the count of the rest on the last.
+- Video takes the full width too.
+- Audio and file cards are smaller, with the same box and height. They share rows that wrap, and grow to fill each row.
+- An image shows a shimmer while it loads, and a message with its alt text when it fails.
+- An item with `pending` is still arriving.
+  It shows a shimmer at its final size, so the message doesn't jump when it arrives.
+- Audio is a row with a round play button, a static wave and the time.
+- Video uses the browser's controls, with a `poster`.
+- A file is a card with its name, type and size.
+  Its action downloads the `src`, or calls `onOpen` when you pass it.
+
+A click on an image opens `MediaViewer`, a dialog with the image large.
+The arrow keys step between images, Escape closes it and focus returns to the image.
+On a phone a sideways swipe steps between images, and pinch zoom works as in the browser.
+`MediaViewer` is exported for images outside a message.
+
+<Example id="chat-message/media" />
 
 ## Composer
 
@@ -33,9 +62,13 @@ While recording, the bottom row shows the red dot, the time and the wave, up to 
 The text heard so far sits where the typed text goes.
 A notice about the input, such as a blocked microphone or a rate limit, sits in a strip on the top edge of the composer, outside its box.
 Pass your own as `notice`.
+An attachment with `kind: "image"` and a `preview` URL shows as a thumbnail with a remove button.
+Other attachments are chips.
+A file pasted or dropped into the composer, such as a screenshot, goes to `onAttachFiles`, and the app adds it to `attachments`.
 
 <Example id="composer/live" />
 <Example id="composer/chips" />
+<Example id="composer/attachments" />
 <Example id="composer/dictation" />
 <Example id="composer/dictation-states" />
 <Example id="composer/blocked" />

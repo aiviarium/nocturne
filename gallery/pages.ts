@@ -319,8 +319,12 @@ export const PAGES: GalleryPage[] = [
     id: "chat-message",
     title: "ChatMessage",
     group: "AI",
-    lead: "The person writes in a bubble; the assistant writes on the page. Tool steps are expandable rows, and only the running step glows. Decisions are approval cards.",
-    sections: ["chat-message/conversation", ["tool-steps/states", "approval-card/decisions"]],
+    lead: "The person writes in a bubble; the assistant writes on the page. Tool steps are expandable rows, and only the running step glows. Decisions are approval cards. Images, audio, video and files go in a ChatMedia.",
+    sections: [
+      "chat-message/conversation",
+      ["tool-steps/states", "approval-card/decisions"],
+      "chat-message/media",
+    ],
   },
   {
     id: "composer",
@@ -330,6 +334,7 @@ export const PAGES: GalleryPage[] = [
     sections: [
       "composer/live",
       ["token/inline", "composer/chips"],
+      "composer/attachments",
       ["composer/dictation", "composer/blocked"],
       "composer/dictation-states",
     ],

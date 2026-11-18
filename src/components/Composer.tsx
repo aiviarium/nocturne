@@ -65,6 +65,10 @@ export interface ComposerAttachment {
   name: string
   /** A core icon for the type. Default `file`. */
   icon?: IconName
+  /** `image` with a `preview` draws a thumbnail in place of the chip. Default `file`. */
+  kind?: "image" | "file"
+  /** Image only: the URL or object URL of the thumbnail. */
+  preview?: string
 }
 
 export interface ComposerOption {
@@ -112,12 +116,17 @@ export interface ComposerProps {
   onPick?: (pick: { trigger: TriggerChar; item: ComposerItem }) => void
   /** Called as the text after a trigger changes, so items can be looked up (`@` search); `null` when no trigger is open. */
   onQuery?: (q: { trigger: TriggerChar; query: string } | null) => void
-  /** Attachment chips above the text. */
+  /** Attachments above the text: chips, and thumbnails for images with a `preview`. */
   attachments?: ComposerAttachment[]
   /** The plus button. Hidden when not set. */
   onAttach?: () => void
   /** The close button on a chip. */
   onRemoveAttachment?: (id: string) => void
+  /**
+   * Files pasted or dropped into the composer, such as a screenshot. Add them to `attachments` (an image with a
+   * `preview` object URL shows as a thumbnail). Without it, pasting keeps only the text and drops are ignored.
+   */
+  onAttachFiles?: (files: File[]) => void
   /** Model choices. Hidden when not set. */
   models?: ComposerOption[]
   model?: string
@@ -437,9 +446,27 @@ export function Composer(props: ComposerProps): JSX.Element {
     }
   }
   const onPaste = (event: ClipboardEvent) => {
-    // Plain text only: no markup, no images, no styles from wherever it was copied.
+    // Plain text only: no markup, no styles from wherever it was copied. Files (a pasted screenshot) go to
+    // onAttachFiles.
     event.preventDefault()
-    insertText(cleanPlainText(event.clipboardData?.getData("text/plain") ?? ""))
+    const files = Array.from(event.clipboardData?.files ?? [])
+    if (files.length && props.onAttachFiles) props.onAttachFiles(files)
+    const text = event.clipboardData?.getData("text/plain") ?? ""
+    if (text) insertText(cleanPlainText(text))
+  }
+  const [dropping, setDropping] = createSignal(false)
+  const hasFiles = (e: DragEvent) => Array.from(e.dataTransfer?.types ?? []).includes("Files")
+  const onDragOver = (e: DragEvent) => {
+    if (!props.onAttachFiles || !hasFiles(e)) return
+    e.preventDefault()
+    setDropping(true)
+  }
+  const onDrop = (e: DragEvent) => {
+    setDropping(false)
+    if (!props.onAttachFiles || !hasFiles(e)) return
+    e.preventDefault()
+    const files = Array.from(e.dataTransfer?.files ?? [])
+    if (files.length) props.onAttachFiles(files)
   }
   const onInput = () => {
     setDismissed(null)
@@ -509,23 +536,49 @@ export function Composer(props: ComposerProps): JSX.Element {
             <Show when={dictation()}>{(d) => <DictationBar dictation={d()} part="notice" />}</Show>
           </div>
         </Show>
-        <div class="nc-composer" data-dictation={dictState()}>
+        <div
+          class="nc-composer"
+          data-dictation={dictState()}
+          data-dropping={dropping() ? "" : undefined}
+          onDragOver={onDragOver}
+          onDragLeave={() => setDropping(false)}
+          onDrop={onDrop}
+        >
           <Show when={(props.attachments?.length ?? 0) > 0}>
             <div class="nc-composer__attachments" role="list" aria-label="Attachments">
               <For each={props.attachments}>
                 {(a) => (
-                  <span class="nc-token nc-token--ref" role="listitem">
-                    <Icon name={a.icon ?? "file"} size="sm" />
-                    {a.name}
-                    <button
-                      type="button"
-                      class="nc-token__remove"
-                      aria-label={`Remove ${a.name}`}
-                      onClick={() => props.onRemoveAttachment?.(a.id)}
-                    >
-                      <Icon name="close" size="sm" />
-                    </button>
-                  </span>
+                  <Show
+                    when={a.kind === "image" && a.preview}
+                    fallback={
+                      <span class="nc-token nc-token--ref" role="listitem">
+                        <Icon name={a.icon ?? "file"} size="sm" />
+                        {a.name}
+                        <button
+                          type="button"
+                          class="nc-token__remove"
+                          aria-label={`Remove ${a.name}`}
+                          onClick={() => props.onRemoveAttachment?.(a.id)}
+                        >
+                          <Icon name="close" size="sm" />
+                        </button>
+                      </span>
+                    }
+                  >
+                    {(preview) => (
+                      <span class="nc-composer__thumb" role="listitem" data-kind="image" title={a.name}>
+                        <img class="nc-composer__thumb-img" src={preview()} alt={a.name} draggable={false} />
+                        <button
+                          type="button"
+                          class="nc-composer__thumb-remove"
+                          aria-label={`Remove ${a.name}`}
+                          onClick={() => props.onRemoveAttachment?.(a.id)}
+                        >
+                          <Icon name="close" size="sm" />
+                        </button>
+                      </span>
+                    )}
+                  </Show>
                 )}
               </For>
             </div>
