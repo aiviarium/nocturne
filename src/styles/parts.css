@@ -440,6 +440,7 @@ button.nc-lrow__toggle:hover { color: var(--text-1); }
    under it and it never drops to the last line. */
 .nc-filterbar__row[data-end] { position: relative; padding-right: calc(var(--nc-filterbar-end, 0px) + var(--space-2)); }
 .nc-filterbar__end { position: absolute; top: 0; right: 0; display: flex; align-items: center; gap: var(--space-2); height: var(--control-md); color: var(--text-3); font-size: var(--nc-type-label); white-space: nowrap; }
+.nc-filtercount { display: inline-flex; align-items: center; gap: var(--space-1); color: var(--text-3); }
 
 /* ---------- On a phone ----------
    The phone's row height and type (docs/phone.md): one line 44px, two 58px, body 15px, secondary 13px,

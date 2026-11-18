@@ -1,4 +1,4 @@
-import { FilterBar, Select, Switch, Tabs, TextField } from "@aiviarium/nocturne"
+import { FilterBar, FilterCount, Select, Switch, Tabs, TextField } from "@aiviarium/nocturne"
 import { createSignal } from "solid-js"
 import type { ExampleMeta } from "../_kit/types"
 
@@ -10,7 +10,7 @@ export default function IssueFilters() {
   return (
     <FilterBar
       search={<TextField variant="search" label="Search issues" placeholder="Search issues" />}
-      end={<span>40 issues</span>}
+      end={<FilterCount value={40} icon="list" unit="Issues" />}
     >
       <Tabs
         label="Scope"
