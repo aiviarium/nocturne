@@ -4,6 +4,11 @@ type Navigate = (href: string) => void
 
 const LinkContext = createContext<Navigate>()
 
+/** The provider's navigate function, for a link chosen from a menu rather than clicked. */
+export function useNavigate(): Navigate | undefined {
+  return useContext(LinkContext)
+}
+
 /**
  * Tells every `NavItem` and `Button` with an `href` below it how to move around without a page load. An app
  * with a router passes its navigate function; without one, links are plain links.

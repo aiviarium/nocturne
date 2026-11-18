@@ -1,6 +1,6 @@
 import { createContext, For, type JSX, onCleanup, Show, useContext } from "solid-js"
 import { cx } from "../lib/cx"
-import { useLinkClick } from "../lib/link"
+import { useLinkClick, useNavigate } from "../lib/link"
 import { Button } from "./Button"
 import { Icon, type IconName } from "./Icon"
 import { IconButton } from "./IconButton"
@@ -54,7 +54,21 @@ export interface ViewChromeValue {
 export const ViewChrome = createContext<ViewChromeValue>()
 
 export interface ViewHeaderProps {
+  /**
+   * The path to where the view is. Every crumb but the last is a link; the last is the page. A label that does
+   * not fit is cut and shows its full text on hover. To strip the path, pass only the crumbs that help.
+   */
   crumbs?: ViewCrumb[]
+  /**
+   * Fold this many leading crumbs into one `…` crumb that opens a menu of them: the path stays short and its
+   * start stays one click away. The view picks it per target.
+   */
+  fold?: number
+  /**
+   * A back control in place of the crumbs, for a target reached from one list that has no useful path (a chat
+   * opened from the session list). It names where it goes. The crumbs are not shown with it.
+   */
+  back?: ViewCrumb
   /** Short context after the crumbs: a state that is out of the ordinary, a chip. */
   context?: JSX.Element
   /** Free content in the middle: a search field, view switches. */
@@ -127,14 +141,29 @@ export function ViewHeader(props: ViewHeaderProps): JSX.Element {
   const chrome = useContext(ViewChrome)
   const layout = useViewLayout()
   const linkClick = useLinkClick()
+  const navigate = useNavigate()
   const actions = () => props.actions ?? []
+  const fold = () => Math.max(0, Math.min(props.fold ?? 0, (props.crumbs?.length ?? 0) - 1))
+  const folded = () => props.crumbs?.slice(0, fold()) ?? []
+  const path = () => props.crumbs?.slice(fold()) ?? []
+  /** A folded crumb chosen from its menu: its own handler, else the app's router, else the address. */
+  const go = (c: ViewCrumb) => {
+    if (c.onClick) return c.onClick()
+    if (!c.href) return
+    if (navigate && c.href.startsWith("/") && !c.href.startsWith("//")) navigate(c.href)
+    else location.assign(c.href)
+  }
   const icons = () => actions().filter((a) => !a.primary && !a.overflow)
   const overflow = () => actions().filter((a) => a.overflow)
   const primary = () => actions().filter((a) => a.primary && !a.overflow)
   const asideToggle = () => Boolean(layout?.hasAside())
   // The pin alone is not something to say: without other content the header stays away, and the tab's menu pins.
   const content = () =>
-    present(props.crumbs) || present(props.context) || present(props.children) || actions().length > 0
+    Boolean(props.back) ||
+    present(props.crumbs) ||
+    present(props.context) ||
+    present(props.children) ||
+    actions().length > 0
   const shown = () => content() || asideToggle()
   const pin = () => content() && !props.noPin && chrome?.pinnable()
   const menu = (): MenuEntry[] =>
@@ -149,50 +178,100 @@ export function ViewHeader(props: ViewHeaderProps): JSX.Element {
   return (
     <Show when={shown()}>
       <header class={cx("nc-view-header body", props.class)} data-part="view-header">
-        <Show when={present(props.crumbs)}>
-          <nav class="nc-view-header__crumbs" aria-label="Breadcrumbs" data-part="breadcrumbs">
-            <For each={props.crumbs}>
-              {(c, i) => (
-                <>
-                  <Show when={i() > 0}>
-                    <span class="nc-view-header__sep" aria-hidden="true">
-                      /
-                    </span>
-                  </Show>
-                  <Show
-                    when={(c.href || c.onClick) && i() < props.crumbs!.length - 1}
-                    fallback={
-                      <span
-                        class="nc-view-header__crumb"
-                        aria-current={i() === props.crumbs!.length - 1 ? "page" : undefined}
+        <Show
+          when={props.back}
+          fallback={
+            <Show when={present(props.crumbs)}>
+              <nav class="nc-view-header__crumbs" aria-label="Breadcrumbs" data-part="breadcrumbs">
+                <Show when={folded().length}>
+                  <DropdownMenu
+                    label="Earlier in the path"
+                    matchWidth={false}
+                    items={folded().map((c, i) => ({ id: String(i), label: c.label, icon: c.icon }))}
+                    onSelect={(id) => go(folded()[Number(id)]!)}
+                    trigger={(t) => (
+                      <button
+                        {...t}
+                        type="button"
+                        class="nc-view-header__crumb nc-view-header__crumb--link nc-view-header__fold"
+                        aria-label="Earlier in the path"
+                        title={folded()
+                          .map((c) => c.label)
+                          .join(" / ")}
+                        data-part="crumbs-fold"
                       >
-                        <Show when={c.icon}>
-                          <Icon name={c.icon} size="sm" />
-                        </Show>
-                        {c.label}
-                      </span>
-                    }
-                  >
-                    <a
-                      class="nc-view-header__crumb nc-view-header__crumb--link"
-                      href={c.href ?? "#"}
-                      onClick={(e) => {
-                        if (c.onClick) {
-                          e.preventDefault()
-                          c.onClick()
-                        } else linkClick(e, c.href)
-                      }}
-                    >
-                      <Show when={c.icon}>
-                        <Icon name={c.icon} size="sm" />
+                        …
+                      </button>
+                    )}
+                  />
+                </Show>
+                <For each={path()}>
+                  {(c, i) => (
+                    <>
+                      <Show when={i() > 0 || folded().length > 0}>
+                        <span class="nc-view-header__sep" aria-hidden="true">
+                          /
+                        </span>
                       </Show>
-                      {c.label}
-                    </a>
-                  </Show>
-                </>
-              )}
-            </For>
-          </nav>
+                      <Show
+                        when={(c.href || c.onClick) && i() < path().length - 1}
+                        fallback={
+                          <span
+                            class="nc-view-header__crumb"
+                            aria-current={i() === path().length - 1 ? "page" : undefined}
+                          >
+                            <Show when={c.icon}>
+                              <Icon name={c.icon} size="sm" />
+                            </Show>
+                            <span class="nc-view-header__label" title={c.label}>
+                              {c.label}
+                            </span>
+                          </span>
+                        }
+                      >
+                        <a
+                          class="nc-view-header__crumb nc-view-header__crumb--link"
+                          href={c.href ?? "#"}
+                          onClick={(e) => {
+                            if (c.onClick) {
+                              e.preventDefault()
+                              c.onClick()
+                            } else linkClick(e, c.href)
+                          }}
+                        >
+                          <Show when={c.icon}>
+                            <Icon name={c.icon} size="sm" />
+                          </Show>
+                          <span class="nc-view-header__label" title={c.label}>
+                            {c.label}
+                          </span>
+                        </a>
+                      </Show>
+                    </>
+                  )}
+                </For>
+              </nav>
+            </Show>
+          }
+        >
+          {(b) => (
+            <a
+              class="nc-view-header__back"
+              href={b().href ?? "#"}
+              data-part="view-back"
+              title={`Back to ${b().label}`}
+              onClick={(e) => {
+                const run = b().onClick
+                if (run) {
+                  e.preventDefault()
+                  run()
+                } else linkClick(e, b().href)
+              }}
+            >
+              <Icon name="chevron-left" size="sm" />
+              <span class="nc-view-header__label">{b().label}</span>
+            </a>
+          )}
         </Show>
         <Show when={props.context}>
           <span class="nc-view-header__context">{props.context}</span>

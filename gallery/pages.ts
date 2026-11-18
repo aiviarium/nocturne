@@ -363,6 +363,19 @@ export const PAGES: GalleryPage[] = [
     sections: ["app-shell/two-frames"],
   },
   {
+    id: "navigation",
+    title: "Navigation",
+    group: "Layout",
+    lead: "How the shared sidebar, the view's columns, the header and the stack work together. Going deeper changes the main column, not the sidebar. A domain with enough nested data drills down; the rest nests in place. The crumbs show a full path, a stripped path or only a back control, as the target needs.",
+    sections: [
+      "navigation/drilldown",
+      ["navigation/back-only", "navigation/page-tree"],
+      "navigation/columns",
+      ["navigation/crumbs-stripped", "navigation/crumbs-full"],
+      "navigation/phone-drilldown",
+    ],
+  },
+  {
     id: "split",
     title: "Split",
     group: "Layout",
@@ -388,7 +401,7 @@ export const PAGES: GalleryPage[] = [
     title: "Phone navigation",
     group: "Phone",
     lead: "A tab bar, a navigation stack per tab, one navigation bar per screen with the back control, the title and at most two actions, large titles on list and root screens. An app builds its phone layout from these; a view built from ViewLayout and ViewHeader gets it for free.",
-    sections: ["navigation-stack/inbox", "foundations/phone-scale"],
+    sections: ["navigation-stack/inbox", "navigation/phone-drilldown", "foundations/phone-scale"],
   },
   {
     id: "phone-sheets",

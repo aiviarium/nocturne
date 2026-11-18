@@ -489,6 +489,10 @@ button.nc-effort:focus-visible { outline: none; box-shadow: var(--focus-ring); }
 .nc-shell__topbar { grid-area: top; display: none; align-items: center; gap: var(--space-2); min-height: var(--header); padding: 0 var(--space-1); }
 .nc-shell__scrim { display: none; padding: 0; border: 0; }
 .nc-shell__sidebar { grid-area: side; box-sizing: border-box; display: flex; flex-direction: column; gap: var(--space-3); min-height: 0; padding: var(--space-3) var(--space-2) var(--space-2); overflow: auto; background: var(--bg-0); }
+/* The edge of a resizable sidebar: a line that shows on hover, drag or focus, over the sidebar's right edge. */
+.nc-shell__edge { grid-area: side; justify-self: end; z-index: 3; width: 1px; margin-right: -4px; padding: 0 3px; background: transparent; background-clip: content-box; cursor: col-resize; outline: none; }
+.nc-shell__edge:hover, .nc-shell__edge:active { background-color: var(--accent-line); }
+.nc-shell__edge:focus-visible { background-color: var(--accent-strong); }
 .nc-shell__content { grid-area: main; display: flex; flex-wrap: wrap; align-items: stretch; gap: var(--space-2); min-width: 0; padding: var(--space-2) var(--space-2) var(--space-2) 0; }
 .nc-shell__content > .nc-frame, .nc-shell__content > .nc-panel { flex: 1 1 320px; }
 .nc-shell[data-fill] > .nc-shell__content { flex-wrap: nowrap; min-height: 0; padding-bottom: 0; }
@@ -496,6 +500,7 @@ button.nc-effort:focus-visible { outline: none; box-shadow: var(--focus-ring); }
 @media (max-width: 720px) {
   .nc-shell { grid-template-columns: minmax(0, 1fr); grid-template-areas: "top" "main" "status"; }
   .nc-shell__topbar { display: flex; }
+  .nc-shell__edge { display: none; }
   .nc-shell__sidebar { position: fixed; inset: 0 auto 0 0; z-index: 75; width: min(280px, 85vw); border-right: 1px solid var(--line-soft); transform: translateX(-100%); transition: transform 160ms ease; }
   .nc-shell[data-drawer="open"] > .nc-shell__sidebar { transform: none; }
   .nc-shell[data-drawer="open"] > .nc-shell__scrim { display: block; position: fixed; inset: 0; z-index: 74; background: color-mix(in srgb, var(--bg-0) 60%, transparent); }
@@ -639,6 +644,14 @@ button.nc-effort:focus-visible { outline: none; box-shadow: var(--focus-ring); }
 .nc-view-header__crumb--link:hover { color: var(--text-1); }
 .nc-view-header__crumb--link:focus-visible { outline: none; box-shadow: var(--focus-ring-inset); border-radius: var(--radius-xs); }
 .nc-view-header__sep { flex: none; color: var(--text-3); }
+/* A cut crumb ends in an ellipsis and shows its full text as its title. The fold is the folded start of the path. */
+.nc-view-header__label { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.nc-view-header__fold { flex: none; padding: 0 var(--space-1); border: 0; border-radius: var(--radius-xs); background: none; cursor: pointer; font: inherit; }
+.nc-view-header__fold:hover, .nc-view-header__fold[aria-expanded="true"] { background: var(--bg-3); }
+/* The back control in place of the crumbs: the way back to the list a target was opened from. */
+.nc-view-header__back { display: inline-flex; align-items: center; gap: var(--space-1); min-width: 0; margin-left: calc(-1 * var(--space-1)); padding: 0 var(--space-1); border-radius: var(--radius-xs); color: var(--text-2); text-decoration: none; white-space: nowrap; }
+.nc-view-header__back:hover { color: var(--text-1); }
+.nc-view-header__back:focus-visible { outline: none; box-shadow: var(--focus-ring-inset); }
 .nc-view-header__context { display: inline-flex; align-items: center; gap: var(--space-2); min-width: 0; }
 .nc-view-header__middle { display: flex; flex: 1; align-items: center; gap: var(--space-2); min-width: 0; }
 .nc-view-header__middle:empty { min-width: 0; }

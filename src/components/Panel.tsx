@@ -110,6 +110,11 @@ export interface AppShellProps extends Omit<JSX.HTMLAttributes<HTMLDivElement>, 
   sidebarLabel?: string
   /** Sidebar width in px. Default 232. */
   sidebarWidth?: number
+  /**
+   * Makes the sidebar resizable: its edge drags, and the arrow keys move it when focused. Called with the new
+   * width (180 to 420 px); the app keeps it and passes it back as `sidebarWidth`.
+   */
+  onSidebarResize?: (width: number) => void
   /** A bar across the top at phone width only, with the button that opens the drawer. */
   topbar?: JSX.Element
   /** A bar of small indicators along the bottom. */
@@ -131,6 +136,7 @@ export function AppShell(props: AppShellProps): JSX.Element {
     "sidebar",
     "sidebarLabel",
     "sidebarWidth",
+    "onSidebarResize",
     "topbar",
     "statusbar",
     "drawerOpen",
@@ -145,14 +151,19 @@ export function AppShell(props: AppShellProps): JSX.Element {
   const topbar = createMemo(() => local.topbar)
   const sidebar = createMemo(() => local.sidebar)
   const statusbar = createMemo(() => local.statusbar)
+  const width = () => local.sidebarWidth ?? 232
+  const resize = (w: number) => local.onSidebarResize?.(Math.max(180, Math.min(420, Math.round(w))))
+  let root!: HTMLDivElement
+  let dragging = false
   return (
     <div
+      ref={root}
       data-part="app-shell"
       data-fill={local.fill ? "" : undefined}
       data-drawer={local.drawerOpen ? "open" : undefined}
       class={cx("nc-shell", local.class)}
       style={{
-        "--nc-sidebar-width": `${local.sidebarWidth ?? 232}px`,
+        "--nc-sidebar-width": `${width()}px`,
         ...(typeof local.style === "object" ? local.style : {}),
       }}
       {...rest}
@@ -176,6 +187,40 @@ export function AppShell(props: AppShellProps): JSX.Element {
         <aside data-part="sidebar" aria-label={local.sidebarLabel ?? "Sidebar"} class="nc-shell__sidebar">
           {sidebar()}
         </aside>
+        <Show when={local.onSidebarResize}>
+          <div
+            role="separator"
+            tabindex="0"
+            aria-orientation="vertical"
+            aria-label="Resize the sidebar"
+            aria-valuenow={width()}
+            aria-valuemin={180}
+            aria-valuemax={420}
+            title="Drag to resize"
+            class="nc-shell__edge"
+            data-part="sidebar-edge"
+            onPointerDown={(e) => {
+              e.preventDefault()
+              e.currentTarget.setPointerCapture?.(e.pointerId)
+              dragging = true
+            }}
+            onPointerMove={(e) => {
+              if (dragging) resize(e.clientX - root.getBoundingClientRect().left)
+            }}
+            onPointerUp={() => {
+              dragging = false
+            }}
+            onPointerCancel={() => {
+              dragging = false
+            }}
+            onKeyDown={(e) => {
+              const step = e.key === "ArrowRight" ? 16 : e.key === "ArrowLeft" ? -16 : 0
+              if (!step) return
+              e.preventDefault()
+              resize(width() + step)
+            }}
+          />
+        </Show>
       </Show>
       <main data-part="shell-content" class="nc-shell__content">
         {local.children}
