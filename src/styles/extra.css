@@ -321,6 +321,10 @@ button.nc-effort:focus-visible { outline: none; box-shadow: var(--focus-ring); }
 .nc-dictation__time { color: var(--text-1); }
 .nc-wave { display: flex; align-items: center; gap: 2px; flex: 1; height: 30px; }
 .nc-wave__bar { flex: 1; max-width: 3px; min-height: 2px; border-radius: var(--radius-xs); background: var(--accent-text); }
+/* While recording, the bars keep their width and the newest sit at the end: a wider row shows more history, a
+   narrower one cuts the oldest. */
+.nc-dictation .nc-wave { justify-content: flex-end; min-width: 0; overflow: hidden; }
+.nc-dictation .nc-wave__bar { flex: none; width: 3px; }
 .nc-dictation__live { margin: 0; padding: 0 12px 4px; color: var(--text-2); white-space: pre-wrap; }
 /* In the composer the status fills the bottom row up to Cancel and Finish, and the live text sits where typed text
    would, with the editor's padding. */

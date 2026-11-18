@@ -33,7 +33,7 @@ Media fill the width of the column, as the reply does.
 - An image shows a shimmer while it loads, and a message with its alt text when it fails.
 - An item with `pending` is still arriving.
   It shows a shimmer at its final size, so the message doesn't jump when it arrives.
-- Audio is a row with a round play button, a static wave and the time.
+- Audio is a card with a play button, a static wave and the time.
 - Video uses the browser's controls, with a `poster`.
 - A file is a card with its name, type and size.
   Its action downloads the `src`, or calls `onOpen` when you pass it.
@@ -59,6 +59,7 @@ The component only exposes callbacks.
 It doesn't talk to the network or the microphone.
 Dictation comes in through `TranscriberProvider`.
 While recording, the bottom row shows the red dot, the time and the wave, up to Cancel and Finish.
+The wave fills that space, with the newest level at the end.
 The text heard so far sits where the typed text goes.
 A notice about the input, such as a blocked microphone or a rate limit, sits in a strip on the top edge of the composer, outside its box.
 Pass your own as `notice`.
