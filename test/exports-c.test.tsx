@@ -9,6 +9,7 @@ import {
   ScreenRefresh,
   ScreenSearch,
   Sheet,
+  SidebarHeader,
   Skeleton,
   State,
   StatusDot,
@@ -747,6 +748,37 @@ describe("ViewHeader", () => {
     const { root } = track(mount(() => <ViewHeader variant="shell" crumbs={[{ label: "Projects" }]} />))
     expect(one("[data-part=view-header]", root).getAttribute("data-variant")).toBe("shell")
   })
+
+  test("a crumb with a switcher opens the other places of its kind", async () => {
+    const chosen: string[] = []
+    const { root } = track(
+      mount(() => (
+        <ViewHeader
+          crumbs={[
+            {
+              label: "Acme",
+              switcher: {
+                label: "Switch workspace",
+                items: [
+                  { id: "acme", label: "Acme" },
+                  { id: "personal", label: "Personal" },
+                ],
+                onSelect: (id) => chosen.push(id),
+              },
+            },
+            { label: "Projects" },
+          ]}
+        />
+      )),
+    )
+    const button = one("[data-part=crumb-switcher]", root)
+    expect(button.textContent).toBe("Acme")
+    click(button)
+    await tick()
+    const personal = all("[role=menuitem]").find((m) => m.textContent?.includes("Personal"))!
+    click(personal)
+    expect(chosen).toEqual(["personal"])
+  })
 })
 
 describe("ViewLayout", () => {
@@ -1216,5 +1248,57 @@ describe("RateWidget", () => {
     setSize("lg")
     expect(one(".nc-widget__eyebrow", root).textContent).toBe("Output")
     expect(root.querySelectorAll("[data-part=widget-stats] dt")).toHaveLength(2)
+  })
+})
+
+describe("SidebarHeader", () => {
+  test("holds back, the place, the command palette and the toggle in one row, and search under it", () => {
+    const calls: string[] = []
+    const { root } = track(
+      mount(() => (
+        <SidebarHeader
+          title="Atlas web"
+          back={{ to: "Projects", onClick: () => calls.push("back") }}
+          onCommand={() => calls.push("command")}
+          onHideSidebar={() => calls.push("hide")}
+        >
+          <input aria-label="Search" />
+        </SidebarHeader>
+      )),
+    )
+    const header = one("[data-part=sidebar-header]", root)
+    const row = one(".nc-sidebar-header__row", header)
+    const part = (c: Element) =>
+      (c.matches("[data-part^=sidebar]") ? c : c.querySelector("[data-part^=sidebar]"))?.getAttribute(
+        "data-part",
+      ) ?? c.textContent
+    expect(Array.from(row.children).map(part)).toEqual([
+      "sidebar-back",
+      "Atlas web",
+      "sidebar-command",
+      "sidebar-toggle",
+    ])
+    expect(one("[data-part=sidebar-back]", header).getAttribute("aria-label")).toBe("Back to Projects")
+    click(one("[data-part=sidebar-back]", header))
+    click(one("[data-part=sidebar-command]", header))
+    click(one("[data-part=sidebar-toggle]", header))
+    expect(calls).toEqual(["back", "command", "hide"])
+    expect(header.querySelector("input[aria-label=Search]")).not.toBeNull()
+  })
+
+  test("AppShell hides the sidebar and puts the header across the window when asked", () => {
+    const [hidden, setHidden] = createSignal(false)
+    const { root } = track(
+      mount(() => (
+        <AppShell headerPlacement="across" sidebarHidden={hidden()} sidebar={<SidebarHeader title="Acme" />}>
+          <ViewHeader variant="shell" crumbs={[{ label: "Projects" }]} />
+        </AppShell>
+      )),
+    )
+    const shell = one("[data-part=app-shell]", root)
+    expect(shell.getAttribute("data-header")).toBe("across")
+    expect(shell.hasAttribute("data-sidebar")).toBe(false)
+    setHidden(true)
+    expect(shell.getAttribute("data-sidebar")).toBe("hidden")
   })
 })

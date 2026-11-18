@@ -374,6 +374,7 @@ export const PAGES: GalleryPage[] = [
     lead: "How the shared sidebar, the view's columns, the header and the stack work together. Going deeper changes the main column, not the sidebar. A domain with enough nested data drills down; the rest nests in place. The crumbs show a full path, a stripped path or only a back control, as the target needs.",
     sections: [
       "navigation/drilldown",
+      "navigation/topbar",
       ["navigation/back-only", "navigation/page-tree"],
       "navigation/columns",
       ["navigation/crumbs-stripped", "navigation/crumbs-full"],

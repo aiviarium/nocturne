@@ -124,6 +124,13 @@ export interface AppShellProps extends Omit<JSX.HTMLAttributes<HTMLDivElement>, 
    * shows here by itself; this slot is for content the app puts there.
    */
   header?: JSX.Element
+  /**
+   * Where the header bar goes. `beside` (default): at the top of the main column, beside the sidebar. `across`: a
+   * top bar over the whole window, sidebar included, with the product at its start and search in its middle.
+   */
+  headerPlacement?: "beside" | "across"
+  /** Hides the sidebar on a desktop: the frames take its room. The app keeps a way to bring it back. */
+  sidebarHidden?: boolean
   /** A bar of small indicators along the bottom. */
   statusbar?: JSX.Element
   /** Whether the sidebar drawer is open at phone width. Setting it turns on the scrim. */
@@ -146,6 +153,8 @@ export function AppShell(props: AppShellProps): JSX.Element {
     "onSidebarResize",
     "topbar",
     "header",
+    "headerPlacement",
+    "sidebarHidden",
     "statusbar",
     "drawerOpen",
     "onDrawerClose",
@@ -180,6 +189,8 @@ export function AppShell(props: AppShellProps): JSX.Element {
       data-part="app-shell"
       data-fill={local.fill ? "" : undefined}
       data-drawer={local.drawerOpen ? "open" : undefined}
+      data-header={local.headerPlacement === "across" ? "across" : undefined}
+      data-sidebar={local.sidebarHidden ? "hidden" : undefined}
       class={cx("nc-shell", local.class)}
       style={{
         "--nc-sidebar-width": `${width()}px`,

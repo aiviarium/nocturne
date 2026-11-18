@@ -83,24 +83,9 @@ export function NavItem(props: NavItemProps): JSX.Element {
   )
 }
 
-export interface NavBack {
-  /** The place the sidebar shows now: "Atlas web", "Settings". */
-  label: string
-  /** Where the back control returns to, for its accessible name: "Projects". */
-  to: string
-  href?: string
-  onClick?: (event: MouseEvent) => void
-}
-
 export interface NavProps {
   /** Accessible name of the navigation landmark. */
   label: string
-  /**
-   * A drilled-down sidebar: a header row at the top with a back chevron and the name of the place, over the
-   * place's own navigation. It returns to the app's navigation. The main column changes with it, and the path
-   * shows in the app's header.
-   */
-  back?: NavBack
   /** Groups of items, each with an optional sentence-case heading. */
   groups?: Array<{ label?: string; items: NavItemProps[] }>
   /** Free-form content instead of `groups`. */
@@ -114,44 +99,8 @@ export interface NavProps {
  * rebuilt, and the sidebar keeps its scroll position and focus.
  */
 export function Nav(props: NavProps): JSX.Element {
-  const linkClick = useLinkClick()
   return (
     <nav data-part="nav" aria-label={props.label} class={cx("nc-nav", props.class)}>
-      <Show when={props.back}>
-        {(b) => (
-          <Show
-            when={b().href}
-            fallback={
-              <button
-                type="button"
-                data-part="nav-back"
-                class="nc-nav__back"
-                aria-label={`Back to ${b().to}`}
-                title={`Back to ${b().to}`}
-                onClick={(e) => callClick(b().onClick, e)}
-              >
-                <Icon name="chevron-left" size="sm" />
-                <span class="nc-nav__back-label">{b().label}</span>
-              </button>
-            }
-          >
-            <a
-              data-part="nav-back"
-              class="nc-nav__back"
-              href={b().href}
-              aria-label={`Back to ${b().to}`}
-              title={`Back to ${b().to}`}
-              onClick={(e) => {
-                callClick(b().onClick, e)
-                linkClick(e, b().href)
-              }}
-            >
-              <Icon name="chevron-left" size="sm" />
-              <span class="nc-nav__back-label">{b().label}</span>
-            </a>
-          </Show>
-        )}
-      </Show>
       <Index each={props.groups ?? []}>
         {(group) => (
           <>

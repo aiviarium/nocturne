@@ -16,26 +16,43 @@ The width runs from 180px to 420px.
 
 Going deeper drills down the sidebar with the main column.
 Inside a domain of its own, such as a project, the sidebar shows that domain's places.
-Pass `back` to its `Nav`: a header row at the top shows a back chevron and the name of the domain, and it returns to the app's places.
 The sidebar keeps its width while it drills down.
 
-## The app's header
+## The top of the app
 
-Most apps put the path in a header beside the sidebar, above the content, with the actions at its end.
-`AppShell` has that bar.
-A view fills it with a `ViewHeader` with `variant="shell"`.
-The header is still part of its view, so the inspector toggle and the pin work as before.
-The bar takes no room when no view fills it.
+An app puts its navigation controls in one of two places.
+Pick one for the whole app.
 
-- The crumbs are at the start of the bar, at the left edge of the frame under it.
-- `up` adds an arrow before the crumbs that goes to the level above, named after it.
-  Give it to every level below the top, so going up is one click at the same place.
-- The view's actions are at the end of the bar.
-  The frame has no second header under it.
+### The sidebar header
 
-Use the view's own header in place of the app's when the shell shows more than one frame side by side, and each frame has its own path.
+Most apps use this one.
+`SidebarHeader` is the first thing in the sidebar.
+Its row holds, from left to right:
+
+- `back`, once you have drilled into a domain. A chevron goes to the place above, and its name says where.
+- The place the sidebar shows, with its mark. With `switcher` it opens a menu of the other places of that kind, such as workspaces or projects.
+- The command palette, with `onCommand`.
+- The toggle that hides the sidebar, with `onHideSidebar`. The app passes `sidebarHidden` to `AppShell`, and the view's header gets an action that brings the sidebar back.
+
+A search field goes under the row, as the children.
+There is no bar across the top.
+The frames start at the top of the window, and each view keeps its crumbs and actions in its own `ViewHeader`.
 
 <Example id="navigation/drilldown" />
+
+### A top bar
+
+A workspace that needs room for columns of its own, such as an editor, puts the controls in a bar across the whole window.
+Pass `headerPlacement="across"` to `AppShell`.
+The view fills it with a `ViewHeader` with `variant="shell"`.
+Its crumbs start with the workspace, a crumb with a `mark` and a `switcher` that opens the other workspaces.
+Its actions end the bar, with its children, such as search, in the middle.
+The header is still part of its view, so the inspector toggle and the pin work as before.
+
+Without `headerPlacement`, the bar is beside the sidebar, over the frames.
+`up` adds an arrow before the crumbs that goes to the level above.
+
+<Example id="navigation/topbar" />
 
 ## Columns
 
@@ -69,9 +86,10 @@ Escape in a column opened over the main column closes it and returns focus to it
 | Bar | What belongs in it |
 | --- | --- |
 | Top bar | On a phone, the control that opens the drawer. Nothing on a desktop |
-| App header | The path to the open view with its up arrow, and the view's actions. A `ViewHeader` with `variant="shell"` fills it |
+| Sidebar header | Back, the place and its switcher, the command palette, the sidebar toggle, and search |
+| App header | In a top bar, the path from the workspace on, search, and the view's actions |
 | `TabStrip` of a `Frame` | One tab for each open view, with the name of the view |
-| `ViewHeader` | The crumbs or a back control, short context, and the actions of the view, when the app's header doesn't hold them |
+| `ViewHeader` | The crumbs or a back control, short context, and the actions of the view, when there is no top bar |
 | Status bar | Only what is out of the ordinary, such as a lost connection |
 
 Each thing goes in one bar, and the other bars don't repeat it.

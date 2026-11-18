@@ -23,6 +23,13 @@ export interface ViewCrumb {
   href?: string
   onClick?: () => void
   icon?: IconName
+  /** A mark before the label, such as the workspace's logo on the first crumb of a top bar. */
+  mark?: JSX.Element
+  /**
+   * Makes the crumb a menu button that switches to another place of the same kind: the workspace at the start
+   * of a top bar, a project. It shows a chevron after the label.
+   */
+  switcher?: { label: string; items: MenuEntry[]; onSelect: (id: string) => void }
 }
 
 export interface ViewAction {
@@ -260,39 +267,47 @@ function DesktopViewHeader(props: ViewHeaderProps): JSX.Element {
                           /
                         </span>
                       </Show>
-                      <Show
-                        when={(c.href || c.onClick) && i() < path().length - 1}
-                        fallback={
-                          <span
-                            class="nc-view-header__crumb"
-                            aria-current={i() === path().length - 1 ? "page" : undefined}
+                      <Show when={!c.switcher} fallback={<CrumbSwitcher crumb={c} />}>
+                        <Show
+                          when={(c.href || c.onClick) && i() < path().length - 1}
+                          fallback={
+                            <span
+                              class="nc-view-header__crumb"
+                              aria-current={i() === path().length - 1 ? "page" : undefined}
+                            >
+                              <Show when={c.mark}>
+                                <span class="nc-view-header__mark">{c.mark}</span>
+                              </Show>
+                              <Show when={c.icon}>
+                                <Icon name={c.icon} size="sm" />
+                              </Show>
+                              <span class="nc-view-header__label" title={c.label}>
+                                {c.label}
+                              </span>
+                            </span>
+                          }
+                        >
+                          <a
+                            class="nc-view-header__crumb nc-view-header__crumb--link"
+                            href={c.href ?? "#"}
+                            onClick={(e) => {
+                              if (c.onClick) {
+                                e.preventDefault()
+                                c.onClick()
+                              } else linkClick(e, c.href)
+                            }}
                           >
+                            <Show when={c.mark}>
+                              <span class="nc-view-header__mark">{c.mark}</span>
+                            </Show>
                             <Show when={c.icon}>
                               <Icon name={c.icon} size="sm" />
                             </Show>
                             <span class="nc-view-header__label" title={c.label}>
                               {c.label}
                             </span>
-                          </span>
-                        }
-                      >
-                        <a
-                          class="nc-view-header__crumb nc-view-header__crumb--link"
-                          href={c.href ?? "#"}
-                          onClick={(e) => {
-                            if (c.onClick) {
-                              e.preventDefault()
-                              c.onClick()
-                            } else linkClick(e, c.href)
-                          }}
-                        >
-                          <Show when={c.icon}>
-                            <Icon name={c.icon} size="sm" />
-                          </Show>
-                          <span class="nc-view-header__label" title={c.label}>
-                            {c.label}
-                          </span>
-                        </a>
+                          </a>
+                        </Show>
                       </Show>
                     </>
                   )}
@@ -428,5 +443,37 @@ function DesktopViewHeader(props: ViewHeaderProps): JSX.Element {
         </span>
       </header>
     </Show>
+  )
+}
+
+/** A crumb that opens a menu of the other places of its kind. */
+function CrumbSwitcher(props: { crumb: ViewCrumb }): JSX.Element {
+  const s = () => props.crumb.switcher!
+  return (
+    <DropdownMenu
+      label={s().label}
+      items={s().items}
+      matchWidth={false}
+      onSelect={(id) => s().onSelect(id)}
+      trigger={(t) => (
+        <button
+          {...t}
+          type="button"
+          class="nc-view-header__crumb nc-view-header__crumb--link nc-view-header__switcher"
+          data-part="crumb-switcher"
+        >
+          <Show when={props.crumb.mark}>
+            <span class="nc-view-header__mark">{props.crumb.mark}</span>
+          </Show>
+          <Show when={props.crumb.icon}>
+            <Icon name={props.crumb.icon} size="sm" />
+          </Show>
+          <span class="nc-view-header__label" title={props.crumb.label}>
+            {props.crumb.label}
+          </span>
+          <Icon name="chevron-down" size="sm" />
+        </button>
+      )}
+    />
   )
 }

@@ -10,7 +10,10 @@ import {
   PropertyList,
   RowList,
   SectionHeading,
+  SidebarHeader,
   State,
+  TextField,
+  type ViewAction,
   ViewHeader,
   ViewLayout,
 } from "@aiviarium/nocturne"
@@ -21,7 +24,7 @@ import type { ExampleMeta } from "../_kit/types"
 
 export const meta: ExampleMeta = {
   title: "Drilling down from projects to an issue",
-  note: "Open Atlas web, then open an issue with its arrow. The left column drills down with the main column: inside a project it shows the project's own places under a header with its name, and that header goes back to the app's places. The sidebar keeps its width (drag its edge). The path and the view's actions sit in the app's header above the view, with an up arrow below the top level. A selected row fills the inspector without changing the path.",
+  note: "Open Atlas web, then open an issue with its arrow. The sidebar drills down with the main column. Its header row has back once you are inside a project, the place as a switcher, the command palette and the toggle that hides the sidebar, with search under it. Inside a project the sidebar shows the project's places. The frames start at the top, and each view keeps its crumbs and actions in its own header.",
   surface: "none",
   frame: "A whole app window: the shared sidebar and a view beside it.",
   height: 560,
@@ -53,7 +56,7 @@ function Properties(props: { issue: Issue }) {
 
 export default function Drilldown() {
   const [place, setPlace] = createSignal<Place>({ at: "projects" })
-  const [width, setWidth] = createSignal(200)
+  const [width, setWidth] = createSignal(240)
   const [selected, setSelected] = createSignal("1")
   const project = PROJECTS[0]!
   const issueOf = (id: string) => ISSUES.find((i) => i.id === id)
@@ -66,12 +69,47 @@ export default function Drilldown() {
     { label: project.name, onClick: () => toIssues() },
   ]
 
-  // The shared sidebar drills down with the main column: inside a project it shows the project's own places,
-  // under a header that names the project and goes back to the app's places.
+  // The sidebar drills down with the main column. Its header row holds back (inside a project), the place it
+  // shows as a switcher, the command palette and the toggle; search sits under it. The frames start at the top.
+  const [hidden, setHidden] = createSignal(false)
   const view = () => {
     const p = place()
     return p.at === "issues" ? p.view : undefined
   }
+  const inside = () => place().at !== "projects"
+  const header = () => (
+    <SidebarHeader
+      title={inside() ? project.name : "Acme"}
+      mark={<span class="nc-nav-item__mark">{inside() ? project.key[0] : "A"}</span>}
+      back={inside() ? { to: "Projects", onClick: toProjects } : undefined}
+      switcher={
+        inside()
+          ? {
+              label: "Switch project",
+              items: PROJECTS.map((p) => ({ id: p.id, label: p.name })),
+              onSelect: () => toIssues(),
+            }
+          : {
+              label: "Switch workspace",
+              items: [
+                { id: "acme", label: "Acme" },
+                { id: "personal", label: "Personal" },
+              ],
+              onSelect: () => {},
+            }
+      }
+      onCommand={() => {}}
+      commandShortcut="Ctrl K"
+      onHideSidebar={() => setHidden(true)}
+    >
+      <TextField
+        variant="search"
+        label="Search"
+        placeholder={inside() ? `Search ${project.name}` : "Search"}
+        kbd="/"
+      />
+    </SidebarHeader>
+  )
   const appNav = () => (
     <Nav
       label="Workspace"
@@ -90,7 +128,6 @@ export default function Drilldown() {
   const projectNav = () => (
     <Nav
       label={project.name}
-      back={{ label: project.name, to: "Projects", onClick: toProjects }}
       groups={[
         {
           label: "Issues",
@@ -111,6 +148,14 @@ export default function Drilldown() {
       ]}
     />
   )
+  /** With the sidebar hidden, the view's header brings it back. */
+  const withShow = (actions: ViewAction[]): ViewAction[] =>
+    hidden()
+      ? [
+          { id: "sidebar", label: "Show the sidebar", icon: "sidebar", onClick: () => setHidden(false) },
+          ...actions,
+        ]
+      : actions
 
   return (
     <div class="ex-screen">
@@ -119,7 +164,13 @@ export default function Drilldown() {
         sidebarLabel="Workspace"
         sidebarWidth={width()}
         onSidebarResize={setWidth}
-        sidebar={place().at === "projects" ? appNav() : projectNav()}
+        sidebarHidden={hidden()}
+        sidebar={
+          <>
+            {header()}
+            {inside() ? projectNav() : appNav()}
+          </>
+        }
       >
         <Frame flush class="ex-app-frame">
           <Switch>
@@ -128,9 +179,8 @@ export default function Drilldown() {
                 id="nav-drill-projects"
                 header={
                   <ViewHeader
-                    variant="shell"
                     crumbs={[{ label: "Projects" }]}
-                    actions={[{ id: "new", label: "New project", icon: "plus", onClick: () => {} }]}
+                    actions={withShow([{ id: "new", label: "New project", icon: "plus", onClick: () => {} }])}
                   />
                 }
               >
@@ -156,13 +206,11 @@ export default function Drilldown() {
                   minMain={360}
                   header={
                     <ViewHeader
-                      variant="shell"
-                      up
                       crumbs={[
                         ...projectCrumbs,
                         { label: ISSUE_VIEWS.find((v) => v.id === current())!.label },
                       ]}
-                      actions={[{ id: "new", label: "New issue", icon: "plus", onClick: () => {} }]}
+                      actions={withShow([{ id: "new", label: "New issue", icon: "plus", onClick: () => {} }])}
                     />
                   }
                   asideLabel="Issue"
@@ -219,11 +267,11 @@ export default function Drilldown() {
                   reading
                   header={
                     <ViewHeader
-                      variant="shell"
-                      up
                       fold={1}
                       crumbs={[...projectCrumbs, { label: i().key }]}
-                      actions={[{ id: "copy", label: "Copy link", icon: "link", onClick: () => {} }]}
+                      actions={withShow([
+                        { id: "copy", label: "Copy link", icon: "link", onClick: () => {} },
+                      ])}
                     />
                   }
                   asideLabel="Properties"
