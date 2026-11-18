@@ -1,0 +1,3 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+  <path fill="#8F8FFA" fill-rule="evenodd" d="M2 33C5 25 5 17 12 11C19 4 28 6 34 13Q44 16 47 23Q39 22 32 25Q30 32 24 36L25 33Q19 43 12 41Q6 39 2 33Z"/><path fill="#C0C0FF" fill-rule="evenodd" d="M11 17Q18 4 29 11L34 15Q29 13 25 13Q28 13 29 15Q21 12 16 18Q18 14 20 13Q15 14 11 17Z"/><path fill="#353564" fill-rule="evenodd" d="M30 16Q41 16 46 22Q37 20 32 23Q33 20 30 16Z"/><path fill="#C0C0FF" fill-rule="evenodd" d="M19 17.8C21 15 24.8 13.5 28.2 14.4C26.7 17.9 22.7 19.7 19 17.8Z"/><ellipse cx="24.4" cy="16.4" rx="1.95" ry="1.35" transform="rotate(-15 24.4 16.4)" fill="#353564"/>
+</svg>

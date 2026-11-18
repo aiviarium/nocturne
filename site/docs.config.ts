@@ -104,10 +104,9 @@ const config: DocsConfig = {
     { text: 'Which part for what', url: '/docs/parts' },
   ],
   assets: {
-    // The Aiviarium mark stands in until Nocturne has an icon.
-    icon: { dark: '/brand/aiviarium.svg', light: '/brand/aiviarium-light.svg' },
-    navIcon: { dark: '/brand/aiviarium-icon.svg', light: '/brand/aiviarium-icon-light.svg' },
-    favicon: { dark: '/brand/aiviarium-16.svg', light: '/brand/aiviarium-16-light.svg' },
+    icon: { dark: '/brand/nocturne.svg', light: '/brand/nocturne-light.svg' },
+    navIcon: { dark: '/brand/nocturne-icon.svg', light: '/brand/nocturne-icon-light.svg' },
+    favicon: { dark: '/brand/nocturne-16.svg', light: '/brand/nocturne-16-light.svg' },
     wordmark: {
       dark: '/brand/nocturne-wordmark.svg',
       light: '/brand/nocturne-wordmark-light.svg',
