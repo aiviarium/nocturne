@@ -36,7 +36,7 @@ export default function FillingCards() {
           signal={<Delta direction="down" value="8" sentiment="good" />}
           caption="Against last week"
         >
-          <WidgetSparkline values={OPEN_ISSUES} label="Open issues per day, last three weeks" live={1} />
+          <WidgetSparkline values={OPEN_ISSUES} label="Open issues per day, last three weeks" />
         </Stat>
       </Card>
       <StatCard
@@ -47,7 +47,7 @@ export default function FillingCards() {
         signal={<span class="nc-meta">of 16 GB</span>}
         meter={{ value: 70 }}
       />
-      <Widget fill title="Uploading 24 files" value="ETA 2 min" caption="16 of 24 · 148 MB">
+      <Widget fill title="Upload" value="16 / 24">
         <WidgetProgress value={66} label="Upload progress" />
       </Widget>
     </div>

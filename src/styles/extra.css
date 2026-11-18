@@ -311,8 +311,7 @@ button.nc-effort:focus-visible { outline: none; box-shadow: var(--focus-ring); }
 .nc-dictation--blocked { color: var(--danger); }
 .nc-dictation__time { color: var(--text-1); }
 .nc-wave { display: flex; align-items: center; gap: 2px; flex: 1; height: 30px; }
-.nc-wave__bar { flex: 1; max-width: 3px; min-height: 2px; border-radius: var(--radius-xs); background: var(--accent-line); }
-.nc-wave__bar--recent { background: var(--accent-text); }
+.nc-wave__bar { flex: 1; max-width: 3px; min-height: 2px; border-radius: var(--radius-xs); background: var(--accent-text); }
 .nc-dictation__live { margin: 0; padding: 0 12px 4px; color: var(--text-2); white-space: pre-wrap; }
 /* A text area with dictation: the mic sits in the bottom corner, the strip below. */
 .nc-textarea { position: relative; display: flex; }
@@ -334,35 +333,126 @@ button.nc-effort:focus-visible { outline: none; box-shadow: var(--focus-ring); }
 .nc-widget[data-hue="warning"] { --w-hue: var(--warning); --w-glow: 0 0 10px var(--warning-line); --w-tint: var(--warning-tint); --w-text: var(--warning); --w-line: var(--warning-line); }
 .nc-widget[data-hue="danger"] { --w-hue: var(--danger); --w-glow: 0 0 10px var(--danger-line); --w-tint: var(--danger-tint); --w-text: var(--danger); --w-line: var(--danger-line); }
 .nc-widget[data-hue="info"] { --w-hue: var(--info); --w-glow: 0 0 10px var(--info-line); --w-tint: var(--info-tint); --w-text: var(--info); --w-line: var(--info-line); }
-.nc-widget__head { display: flex; justify-content: space-between; align-items: baseline; gap: var(--space-2); }
-.nc-widget__title { font-weight: 500; }
-.nc-widget__value { color: var(--text-3); }
-.nc-widget__value--large { color: var(--w-text); text-shadow: 0 0 16px var(--w-line); }
-.nc-wprogress { position: relative; height: 10px; border-radius: var(--radius-full); background: var(--bg-3); }
-.nc-wprogress__bar { position: absolute; inset: 0 auto 0 0; border-radius: inherit; background: var(--w-hue); box-shadow: var(--w-glow); }
-.nc-wspark { display: flex; align-items: flex-end; gap: 3px; height: 60px; }
-.nc-wspark__bar { flex: 1; border-radius: var(--radius-xs); background: color-mix(in srgb, var(--w-hue) 22%, transparent); }
-.nc-wspark__bar--live { background: var(--w-hue); box-shadow: var(--w-glow); }
+/* The head is one row: the title or a figure at the left, the value at the right, on one baseline. */
+.nc-widget__head { display: flex; justify-content: space-between; align-items: baseline; gap: var(--space-2); min-width: 0; }
+.nc-widget__title { color: var(--text-1); font-size: var(--nc-type-label); font-weight: 500; line-height: var(--nc-type-label-line); }
+.nc-widget__value { color: var(--text-2); font-size: var(--nc-type-label); line-height: var(--nc-type-label-line); }
+.nc-widget__value--large, .nc-widget__figure { color: var(--w-text); font-size: var(--nc-type-figure); font-weight: 500; line-height: var(--nc-type-figure-line); letter-spacing: -0.01em; text-shadow: 0 0 16px var(--w-line); }
+.nc-widget__unit { margin-left: var(--space-1); color: var(--text-3); font-size: var(--nc-type-label); font-weight: 400; letter-spacing: 0; text-shadow: none; }
+.nc-widget__axis { display: flex; justify-content: space-between; gap: var(--space-2); color: var(--text-3); font-size: var(--nc-type-section); line-height: var(--nc-type-label-line); }
+.nc-widget__caption { overflow: hidden; color: var(--text-3); font-size: var(--nc-type-label); line-height: var(--nc-type-label-line); text-overflow: ellipsis; white-space: nowrap; }
+/* A row widget: one line, the live part first. */
+.nc-widget[data-size="row"] { flex-direction: row; align-items: center; gap: var(--space-2); padding: var(--space-2) 14px; }
+.nc-widget[data-size="row"] > .nc-widget__title, .nc-widget[data-size="row"] > .nc-widget__figure { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nc-widget[data-size="row"] > .nc-widget__value { flex: none; margin-left: auto; white-space: nowrap; }
+.nc-widget[data-size="row"] > .nc-widget__value:not(.nc-widget__value--large) { color: var(--text-1); }
+.nc-widget[data-size="row"] > .nc-icon { flex: none; color: var(--w-text); }
+.nc-widget[data-size="row"] > .nc-wspark { flex: none; width: 44px; height: 20px; }
+.nc-widget[data-size="row"] > .nc-widget__figure { font-size: var(--nc-type-body); line-height: var(--nc-type-body-line); text-shadow: none; }
+/* sm: the head and a slim live part. */
+.nc-widget[data-size="sm"] { gap: 6px; padding: var(--space-3) 14px; }
+.nc-widget[data-size="sm"] .nc-widget__figure, .nc-widget[data-size="sm"] .nc-widget__value--large { font-size: var(--nc-type-heading); line-height: var(--nc-type-heading-line); }
+.nc-widget[data-size="sm"] > .nc-wspark { height: 20px; }
+.nc-widget[data-size="sm"] .nc-wsegments__bar, .nc-widget[data-size="sm"] > .nc-wprogress { height: 6px; }
+.nc-widget[data-size="sm"] > .nc-wprogress > .nc-wprogress__bar::after { display: none; }
+/* lg: a larger figure, a taller chart, the detail. */
+.nc-widget[data-size="lg"] { gap: var(--space-3); padding: var(--space-4) var(--space-5); }
+.nc-widget[data-size="lg"] .nc-widget__figure, .nc-widget[data-size="lg"] .nc-widget__value--large { font-size: var(--nc-type-figure-xl); line-height: var(--nc-type-figure-xl-line); }
+.nc-widget[data-size="lg"] > .nc-wspark { height: 72px; }
+.nc-widget[data-size="lg"] > .nc-widget__head { align-items: flex-end; margin-top: calc(var(--space-2) * -1); }
+.nc-widget__eyebrow { color: var(--text-2); font-size: var(--nc-type-label); font-weight: 500; line-height: var(--nc-type-label-line); }
+/* Progress: a glowing bar with a knob at its head. */
+.nc-wprogress { position: relative; flex: none; min-width: 0; height: 8px; border-radius: var(--radius-full); background: var(--bg-3); }
+.nc-wprogress__bar { position: absolute; inset: 0 auto 0 0; min-width: 8px; border-radius: inherit; background: var(--w-hue); box-shadow: var(--w-glow); }
+.nc-wprogress__bar::after { content: ""; position: absolute; top: 50%; right: 0; width: 12px; height: 12px; border: 2px solid var(--w-hue); border-radius: var(--radius-full); background: var(--text-1); transform: translate(2px, -50%); box-sizing: border-box; }
+.nc-wprogress-route { display: flex; align-items: center; gap: var(--space-3); min-width: 0; }
+.nc-wprogress-route > .nc-wprogress { flex: 1 1 auto; }
+.nc-wprogress-route__end { flex: none; color: var(--text-1); font-size: var(--nc-type-heading); font-weight: 500; line-height: var(--nc-type-heading-line); }
+/* Sparkline: thin rounded bars; the wave is centred. */
+.nc-wspark { display: flex; align-items: flex-end; justify-content: space-between; gap: 2px; height: 40px; min-width: 0; }
+.nc-wspark__bar { flex: 0 1 4px; min-width: 2px; border-radius: var(--radius-full); background: var(--w-hue); }
+.nc-wspark[data-variant="wave"] { align-items: center; }
+/* Gauge: a shallow arc with the value under its middle. */
 .nc-wgauge { position: relative; }
-.nc-wgauge__svg { display: block; width: 100%; height: 112px; overflow: visible; }
-.nc-wgauge__track, .nc-wgauge__fill { fill: none; stroke-width: 12; stroke-linecap: round; }
+.nc-wgauge__svg { display: block; width: 100%; height: 56px; overflow: visible; }
+.nc-wgauge__track, .nc-wgauge__fill { fill: none; stroke-width: 8; stroke-linecap: round; vector-effect: non-scaling-stroke; }
 .nc-wgauge__track { stroke: var(--bg-4); }
-.nc-wgauge__fill { stroke: var(--w-hue); filter: drop-shadow(0 0 6px var(--w-hue)); }
-.nc-wgauge__value { position: absolute; left: 0; right: 0; bottom: 2px; text-align: center; }
-.nc-wuptime { display: flex; gap: 2px; height: 28px; }
-.nc-wuptime__cell { flex: 1; border-radius: var(--radius-xs); background: var(--bg-4); }
+.nc-wgauge__fill { stroke: var(--w-hue); filter: drop-shadow(0 0 5px var(--w-hue)); }
+.nc-wgauge__value { position: absolute; left: 0; right: 0; bottom: 0; color: var(--text-1); font-size: var(--nc-type-heading); font-weight: 500; line-height: var(--nc-type-heading-line); text-align: center; }
+/* Uptime: a strip of day cells. */
+.nc-wuptime { display: flex; gap: 2px; height: 20px; }
+.nc-wuptime__cell { flex: 1; min-width: 2px; border-radius: var(--radius-full); background: var(--bg-4); }
 .nc-wuptime__cell--up { background: var(--w-hue); }
 .nc-wuptime__cell--down { background: var(--danger); }
-.nc-wtimer__scale { display: flex; justify-content: space-between; color: var(--text-3); }
-.nc-wtimer__row { display: flex; align-items: center; gap: 14px; }
-.nc-wtimer__title { color: var(--w-text); }
-.nc-wtimer__ticks { display: flex; align-items: center; gap: 3px; flex: 1; height: 30px; min-width: 0; }
-.nc-wtimer__tick { flex: none; width: 3px; border-radius: var(--radius-xs); background: var(--w-tint); }
+/* Ring: a small circle of progress. */
+.nc-wring { position: relative; flex: none; width: 20px; height: 20px; }
+.nc-wring[data-size="md"] { width: 36px; height: 36px; }
+.nc-wring__svg { display: block; width: 100%; height: 100%; transform: rotate(-90deg); overflow: visible; }
+.nc-wring__track, .nc-wring__fill { fill: none; stroke-width: 4; }
+.nc-wring__track { stroke: var(--bg-4); }
+.nc-wring__fill { stroke: var(--w-hue); stroke-linecap: round; filter: drop-shadow(0 0 3px var(--w-line)); }
+.nc-wring__value { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: var(--text-1); font-size: var(--nc-type-section); font-weight: 500; }
+/* Segments: the parts of one whole in steps of the hue, the free part as the track, names under their parts. */
+.nc-wsegments { display: flex; flex-direction: column; gap: var(--space-2); min-width: 0; }
+.nc-wsegments__parts { display: flex; gap: 3px; min-width: 0; }
+.nc-wsegments__part { display: flex; flex: 1 1 0; flex-direction: column; gap: 6px; min-width: 6px; }
+.nc-wsegments__bar, .nc-wsegments__swatch { height: 10px; border-radius: var(--radius-full); background: var(--nc-part, var(--w-hue)); }
+.nc-wsegments__swatch { flex: none; width: 8px; height: 8px; }
+.nc-wsegments__part[data-free] > .nc-wsegments__bar { background: var(--bg-3); }
+.nc-wsegments__key[data-free] > .nc-wsegments__swatch { background: var(--bg-4); }
+.nc-wsegments__label { overflow: hidden; color: var(--text-3); font-size: var(--nc-type-section); line-height: var(--nc-type-label-line); text-overflow: clip; white-space: nowrap; }
+.nc-wsegments__legend { display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-3); }
+.nc-wsegments__key { display: inline-flex; align-items: center; gap: 6px; color: var(--text-3); font-size: var(--nc-type-section); line-height: var(--nc-type-label-line); white-space: nowrap; }
+.nc-wsegments__value { color: var(--text-1); }
+.nc-wsegments__list { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; align-items: center; gap: 6px var(--space-3); }
+.nc-wsegments__item { display: contents; }
+.nc-wsegments__item > .nc-wsegments__swatch { width: 8px; height: 8px; }
+.nc-wsegments__name { overflow: hidden; color: var(--text-2); font-size: var(--nc-type-label); line-height: var(--nc-type-label-line); text-overflow: ellipsis; white-space: nowrap; }
+.nc-wsegments__item > .nc-wsegments__value { font-size: var(--nc-type-label); line-height: var(--nc-type-label-line); text-align: right; }
+.nc-wsegments__share { color: var(--text-3); font-size: var(--nc-type-label); line-height: var(--nc-type-label-line); text-align: right; }
+.nc-wsegments__item[data-free] > .nc-wsegments__swatch { background: var(--bg-4); }
+/* Stats: a few readings, each a name over its value. */
+.nc-wstats { display: flex; gap: var(--space-5); margin: 0; }
+.nc-wstats__item { display: flex; flex-direction: column; min-width: 0; }
+.nc-wstats__label { color: var(--text-3); font-size: var(--nc-type-section); line-height: var(--nc-type-label-line); }
+.nc-wstats__value { margin: 0; color: var(--text-1); font-size: var(--nc-type-body); font-weight: 500; line-height: var(--nc-type-body-line); }
+/* Steps: stops on a track, done in the hue, the current one glowing. */
+.nc-wsteps { --nc-steps-fill: 0; }
+.nc-wsteps__list { position: relative; display: flex; justify-content: space-between; margin: 0; padding: 0; list-style: none; }
+.nc-wsteps__list::before, .nc-wsteps__list::after { content: ""; position: absolute; top: 4px; left: 5px; height: 6px; border-radius: var(--radius-full); }
+.nc-wsteps__list::before { right: 5px; background: var(--bg-3); }
+.nc-wsteps__list::after { width: calc((100% - 10px) * var(--nc-steps-fill)); background: linear-gradient(to right, var(--w-line), var(--w-hue)); box-shadow: var(--w-glow); }
+.nc-wsteps__step { position: relative; z-index: 1; display: flex; flex: 0 1 auto; flex-direction: column; align-items: center; gap: 6px; min-width: 0; }
+.nc-wsteps__step:first-child { align-items: flex-start; }
+.nc-wsteps__step:last-child { align-items: flex-end; }
+.nc-wsteps__dot { width: 14px; height: 14px; box-sizing: border-box; border: 3px solid var(--bg-1); border-radius: var(--radius-full); background: var(--bg-4); }
+.nc-wsteps__step[data-state="done"] > .nc-wsteps__dot { background: var(--w-hue); }
+.nc-wsteps__step[data-state="current"] > .nc-wsteps__dot { background: var(--text-1); box-shadow: 0 0 0 2px var(--w-hue), var(--w-glow); }
+.nc-wsteps__label { overflow: hidden; color: var(--text-3); font-size: var(--nc-type-section); line-height: var(--nc-type-label-line); text-overflow: ellipsis; white-space: nowrap; }
+.nc-wsteps__step[data-state="current"] > .nc-wsteps__label { color: var(--text-1); font-weight: 500; }
+/* Meters: a label, a thin bar and a reading per row. */
+.nc-wmeters { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 6px var(--space-3); }
+.nc-wmeters__row { display: contents; }
+.nc-wmeters__label { color: var(--text-2); font-size: var(--nc-type-label); line-height: var(--nc-type-label-line); }
+.nc-wmeters__track { position: relative; height: 4px; border-radius: var(--radius-full); background: var(--bg-3); }
+.nc-wmeters__bar { position: absolute; inset: 0 auto 0 0; border-radius: inherit; background: var(--nc-part, var(--w-hue)); }
+.nc-wmeters__value { color: var(--text-1); font-size: var(--nc-type-label); line-height: var(--nc-type-label-line); text-align: right; }
+/* Timer: the scale, the ticks across the width, then the title and the large time. */
+.nc-wtimer__scale { display: flex; justify-content: space-between; color: var(--text-3); font-size: var(--nc-type-section); line-height: var(--nc-type-label-line); }
+.nc-wtimer__ticks { display: flex; align-items: center; justify-content: space-between; gap: 2px; height: 26px; min-width: 0; }
+.nc-wtimer__tick { flex: 0 1 4px; min-width: 2px; border-radius: var(--radius-full); background: var(--w-tint); }
 .nc-wtimer__tick--on { background: var(--w-hue); }
 .nc-wtimer__tick--live { box-shadow: var(--w-glow); }
-.nc-wtimer__value { color: var(--w-text); text-shadow: 0 0 18px var(--w-line); }
-.nc-wcontrols { display: flex; justify-content: center; gap: var(--space-2); }
-.nc-wcontrols .nc-icon-btn { width: 48px; height: var(--control-lg); border-radius: var(--radius-full); background: var(--w-tint); color: var(--w-text); }
+.nc-wtimer__row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-3); }
+.nc-wtimer__title { flex: 1 1 auto; min-width: 0; color: var(--w-text); font-size: var(--nc-type-body); font-weight: 500; line-height: var(--nc-type-body-line); }
+.nc-wtimer__value { margin-left: auto; color: var(--w-text); font-size: var(--nc-type-figure); font-weight: 500; line-height: var(--nc-type-figure-line); text-shadow: 0 0 18px var(--w-line); }
+.nc-wtimer__row > .nc-wcontrols { order: 3; flex: 1 0 100%; }
+.nc-wtimer__row > .nc-icon-btn { flex: none; border-radius: var(--radius-full); background: var(--w-tint); color: var(--w-text); }
+/* Controls: pills on the hue's tint, sharing the width. */
+.nc-wcontrols { display: flex; gap: var(--space-2); }
+.nc-wcontrols .nc-icon-btn { flex: 1 1 0; max-width: 96px; width: auto; height: var(--control-lg); border-radius: var(--radius-full); background: var(--w-tint); color: var(--w-text); }
+.nc-wcontrols .nc-icon-btn:first-child { margin-left: auto; }
+.nc-wcontrols .nc-icon-btn:last-child { margin-right: auto; }
 .nc-wcontrols .nc-wcontrols__primary { background: var(--w-hue); color: var(--bg-0); box-shadow: 0 0 14px var(--w-line); }
 
 /* ---------- Layout ---------- */

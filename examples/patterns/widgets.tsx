@@ -74,7 +74,7 @@ export default function Dashboard() {
           signal={<Delta direction="down" value="8" sentiment="good" />}
           caption="Against last week"
         >
-          <WidgetSparkline values={OPEN_ISSUES} label="Open issues per day, last three weeks" live={1} />
+          <WidgetSparkline values={OPEN_ISSUES} label="Open issues per day, last three weeks" />
         </Stat>
       </Card>
     ),
@@ -89,12 +89,12 @@ export default function Dashboard() {
       />
     ),
     upload: () => (
-      <Widget fill title="Uploading 24 files" value="ETA 2 min" caption="16 of 24 · 148 MB">
+      <Widget fill title="Upload" value="16 / 24">
         <WidgetProgress value={66} label="Upload progress" />
       </Widget>
     ),
     requests: () => (
-      <Widget fill title="Requests" value="1,284 / min" caption="−60m … Now">
+      <Widget fill title="Requests" value="1,284" unit="/ min" axis={["-60m", "-30m", "Now"]}>
         <WidgetSparkline values={REQUESTS} label="Requests per minute, last hour" />
       </Widget>
     ),

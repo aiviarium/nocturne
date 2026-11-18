@@ -338,8 +338,8 @@ export const PAGES: GalleryPage[] = [
     id: "widget",
     title: "Widget",
     group: "Live",
-    lead: "A card with one live value. One hue per widget: the accent or a status colour. Only the moving part gets the hue and its glow.",
-    sections: ["widget/progress", "widget/charts"],
+    lead: "A compact card with one live value, for a dashboard, a status column or the side of a chat. The head is one row and the live part does the talking. One hue per widget, the accent or a status colour, on the moving part; segments and meters take a colour per part.",
+    sections: ["widget/progress", "widget/charts", "widget/sizes", "widget/segments", "widget/agent"],
   },
   {
     id: "stream-state",

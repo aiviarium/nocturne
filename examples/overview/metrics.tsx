@@ -27,7 +27,7 @@ export default function MetricsAndLive() {
         <StreamState state="dropped" lost="12 KB" />
         <StreamState state="error" code="504 timeout" />
       </div>
-      <Widget title="Uploading 24 files" value="ETA 2 min" caption="16 of 24 · 148 MB">
+      <Widget title="Upload" value="16 / 24">
         <WidgetProgress value={66} label="Upload progress" />
       </Widget>
     </div>
