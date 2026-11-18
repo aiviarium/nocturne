@@ -1,4 +1,4 @@
-# Nocturne
+<h1><picture><source media="(prefers-color-scheme: dark)" srcset="site/public/brand/nocturne-wordmark.svg"><img src="site/public/brand/nocturne-wordmark-light.svg" alt="Nocturne" height="56"></picture></h1>
 
 Nocturne is a dark-first design system for dense tool interfaces, and `@aiviarium/nocturne` is its SolidJS
 component library: typed wrappers over the `nc-*` classes, plus layout, overlay, data, form and phone
