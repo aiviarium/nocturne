@@ -88,8 +88,7 @@ and [Sizes](site/content/docs/tokens/sizes.mdx).
 
 ## Documentation site
 
-`site/` is the documentation site, published at https://aiviarium.github.io/nocturne/ once the repository is on
-GitHub. It follows [aiviarium/docs-base](https://github.com/aiviarium/docs-base) at commit dcffeac. Its token
+`site/` is the documentation site, published at https://nocturne.helight.dev/. It follows [aiviarium/docs-base](https://github.com/aiviarium/docs-base) at commit dcffeac. Its token
 tables are made from `src/styles/tokens.css` at build time, and its examples are frames of the gallery, which the
 site's build compiles into its output. See [site/README.md](site/README.md).
 
@@ -122,3 +121,7 @@ cursors and the rest).
 ## Third-party code
 
 `src/components/lucide-data.ts` holds icon data from [Lucide](https://lucide.dev), ISC licence.
+
+## License
+
+Licensed under either of [Apache License, Version 2.0](LICENSE-APACHE) or [MIT license](LICENSE-MIT), at your option.

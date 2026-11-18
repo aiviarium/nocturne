@@ -1,6 +1,6 @@
 # Nocturne docs
 
-The documentation site of Nocturne, served at https://aiviarium.github.io/nocturne/ once the repository is published.
+The documentation site of Nocturne, served at https://nocturne.helight.dev/.
 It follows [aiviarium/docs-base](https://github.com/aiviarium/docs-base) at commit dcffeac: a static site built with Fumadocs and Next.js.
 
 The token tables are made from `../src/styles/tokens.css` when the site is built.
