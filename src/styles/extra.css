@@ -264,7 +264,11 @@ button.nc-menu__item { box-sizing: border-box; width: 100%; border: 0; backgroun
 /* ---------- Chat ---------- */
 /* Steps are rows on the page, not a box: a step is one line, and its output a block sized to what it holds. */
 .nc-steps { border: 0; border-radius: 0; overflow: visible; gap: 0; }
-.nc-step { height: 28px; padding: 0; border-bottom: 0; }
+.nc-step { height: 28px; box-sizing: border-box; padding: 6px 0; border-bottom: 0; }
+/* The verb, its argument and the meta share one baseline (Inter beside mono at another size); icons and the dot stay
+   centred on the row. */
+.nc-step > * { align-self: center; }
+.nc-step > :is(.nc-step__verb, .nc-step__arg, .nc-step__meta) { align-self: baseline; line-height: 16px; }
 .nc-step--running, .nc-step--button.nc-step--running { background: transparent; color: var(--text-3); }
 .nc-step--running .nc-step__verb { color: var(--accent-text); }
 .nc-step-wrap .nc-step { border-bottom: 0; }
