@@ -1,0 +1,127 @@
+---
+title: Lists
+description: RowList and ListRow, for a list of things with one title each.
+---
+
+Use `RowList` with `ListRow` for a list of things.
+A table of columns is a `DataTable`, see [Records](./records.mdx#datatable).
+
+<Example id="list-row/one-line" />
+
+## Sizes
+
+| Setting | Row height |
+| --- | --- |
+| `density="compact"`, the default | 30px |
+| `density="comfortable"` | 36px |
+| `lines={2}` or `lines={3}` | Rows with more text |
+| On a phone | 44px for one line, 58px for two |
+
+A row of two or three lines has its title at 13/20 and its secondary text at 12/16, with 6px vertical padding.
+The time ends the first line, and the state ends the second.
+
+<Example id="list-row/multi-line" />
+
+## The parts of a row
+
+In order:
+
+1. `icon` (16px) or `leading` (an `Avatar size="sm"`), in a fixed 20px box
+2. `title`
+3. `secondary`
+4. `status`, one `State`
+5. `meta`, a time or a count in `text-3`
+6. `actions` or `persistentActions`
+
+`actions` are `IconButton size="sm"`.
+They show on hover, focus and selection.
+On a phone or a touch screen they take no width, and are a left swipe and a long press menu away.
+`persistentActions` are always shown, such as answer buttons.
+
+`leadingActions` and `trailingActions` are swipe actions.
+`menu` is the context menu.
+
+<Example id="list-row/avatars" />
+<Example id="list-row/actions" />
+
+## Columns line up
+
+The rows of a `RowList` share one grid, each row a subgrid.
+Icons, titles, states, times and actions line up down the list.
+
+The title keeps the width of the longest title, up to 40% of the row, before the trailing columns take theirs.
+The secondary text gives way first.
+
+<Example id="list-row/long" />
+<Example id="design/aligned-edges" />
+<Example id="design/ragged-edges" />
+
+## Row states
+
+- `selected` is the inset fill, `bg-4`, 6px from the edge of the list.
+- `unread` bolds the title and puts a dot at the leading edge of the row, inside the fill. In a list that tracks it, pass `unread={false}` on the read rows, so the column of the dot stays and nothing moves.
+- `muted` dims the row.
+- `movable={false}` pins a row in a list with `onReorder`.
+
+No row has a grip or a delete button.
+You drag the row itself, and Delete is in its menu and on the Delete key.
+
+<Example id="design/drag-the-row" />
+<Example id="design/grip-and-delete" />
+<Example id="design/selection-neutral" />
+<Example id="design/selection-accent" />
+
+## Links and long lists
+
+With `href` or `onClick` the whole row is one link or button.
+
+`RowList items={…}` renders only the visible rows past 150 rows.
+Give it a height.
+Its rows then take the widest trailing cell seen so far for each column.
+
+`divided` adds hairlines between rows of several lines.
+
+## Variants
+
+`density` and `variant` belong to the list.
+
+| Variant | Where |
+| --- | --- |
+| `inset` | In a card, panel or inspector at any depth. Titles sit on the text edge of the container, and the fill is 6px from its edge |
+| `inline` | In a property value or a form. 28px rows on the edge of the content |
+| `boxed` | A group of its own |
+
+<Example id="list-row/inspector" />
+
+## Keys and gestures
+
+The arrow keys, Home and End move between rows.
+The list is one tab stop.
+
+With `items` and `getKey` a list can do more.
+
+- `onReorder(from, to)` moves rows. Drag the row itself past 4px, or on touch move it after the long press that opened its menu. Alt and an arrow key move it too. A line shows where it drops, and the list scrolls at its edges. The indices are those of `items`, so this works on long lists.
+- `selectable` lets the person select rows. A click opens, Cmd or Ctrl and a click toggles, and Shift and a click selects a range. Shift and an arrow key extend it. Space, Cmd or Ctrl and A, and Escape work as usual. A bar at the foot shows only while something is selected, with `bulkActions`.
+- `onRemove` removes rows, by the Delete key, Delete in the menu, or a swipe. Return an undo for a toast.
+- `onAdd` adds an add row.
+- `editing` is the iOS edit mode: a selection circle, then the content.
+- `rowMenu` is the context menu. It opens with a right click, the Menu key, Shift and F10, or a long press. The default items are Open, the row's actions, Rename and Delete.
+
+On a row of a selection of several, the menu acts on the selection, with the bar's actions and "Delete 3".
+Any other row is selected alone first.
+
+A row's `onRename` edits its title in place, by F2 or a double click.
+A row's `children` nest under it as a tree.
+
+<Example id="list-row/reorder" />
+<Example id="list-row/managed" />
+<Example id="list-row/context-menu" />
+<Example id="design/menu-on-selection" />
+<Example id="design/menu-on-one-row" />
+<Example id="design/selection-bar" />
+<Example id="design/selection-toolbar" />
+<Example id="list-row/tree" />
+<Example id="list-row/touch-actions" />
+<Example id="list-row/phone-edit" />
+
+<GalleryLink page="list-row" />

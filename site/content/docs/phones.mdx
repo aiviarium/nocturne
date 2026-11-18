@@ -1,0 +1,82 @@
+---
+title: Phones
+description: When a window counts as a phone, the compact phone scale and the keyboard.
+icon: Smartphone
+---
+
+## Phone mode
+
+`PHONE_QUERY` in `src/lib/phone.ts` decides when a window counts as a phone.
+That is a window at most 720px wide, or a touch screen in landscape under 500px tall.
+A narrow desktop window gets the same layout without touch.
+
+In phone mode `lib/phone.ts` sets `data-phone` on the document element, and `usePhone()` returns true.
+`PhoneOverride` forces either answer for a subtree.
+
+## The compact phone scale
+
+Every part takes this scale by itself on a phone.
+A view built from the parts doesn't need phone code.
+
+The numbers are `PHONE_SCALE` in `src/lib/phone.ts` and the `--phone-*` variables in `src/styles/phone.css`.
+Change both together.
+Sizes are CSS pixels, the points of iOS.
+
+| What | Size |
+| --- | --- |
+| Navigation bar | 44px, 36px in landscape |
+| Tab bar | 50px without the home indicator, 36px in landscape |
+| Smallest hit area | 44px. The visible control may be smaller |
+| Bar button glyph, compact control | 30px |
+| List row | 44px for one line, 58px for two |
+| Side gutter | 12px |
+| Gap between groups | 20px |
+| Large title | 26/32, weight 700 |
+| Bar title | 15/20, weight 600 |
+| Body | 15/20 |
+| Secondary text | 13/18 |
+| Caption | 11/14, weight 500 |
+| Tab label | 10/12, weight 500 |
+| Text fields | 16/22, so Safari does not zoom in |
+
+<Example id="foundations/phone-scale" />
+
+## Proportions
+
+`PHONE_BOUNDS` holds the proportions a phone screen keeps, for browser tests to check.
+
+- With the keyboard closed, the navigation bar and the tab bar together take at most 12% of the height of the screen in portrait, and 20% in landscape, not counting the safe-area insets.
+- The title of a bar is no larger than the body text and no heavier than 600. A large title is at most 1.8 times the body size.
+- There is one bar at the top and one at the bottom. A second bar never stacks on either.
+
+## Navigation
+
+A phone app has a tab bar, a navigation stack for each tab, and one navigation bar for each screen.
+The bar has the back control, the title and at most two actions.
+List and root screens have large titles.
+A view built from `ViewLayout` and `ViewHeader` gets this with no extra code.
+
+<Example id="navigation-stack/inbox" />
+
+## Sheets and lists
+
+Sheets come from the bottom with a grab handle and rest at their detents.
+A short sheet rests at the height of its content, and a tall one at medium and large.
+Drag between them, or down to dismiss.
+Destructive confirmations and short choices are action sheets.
+Grouped inset lists hold settings and pickers.
+
+<Example id="sheet/sheets" />
+<Example id="inset-list/settings" />
+
+## The on-screen keyboard
+
+`trackViewport()` follows the visual viewport and keeps `--nc-keyboard`, `--nc-vv-height` and `--nc-vv-top` on the document element.
+`BottomArea` stays above the keyboard.
+`keyboardOpen()` and `keyboardInset()` give the same facts to code.
+
+A test that swaps in a visual viewport of its own can dispatch an `nc:viewport` event on `window` to make the module read it.
+
+<Example id="pull-to-refresh/list" />
+
+<GalleryLink page="phone-navigation" />

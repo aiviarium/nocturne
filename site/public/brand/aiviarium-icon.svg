@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+  <defs><clipPath id="occupant"><path clip-rule="evenodd" d="M-4 -4H132V132H-4Z M9 36L16 25Q18 22 23 21Q24 15 31 15Q36 16 37 20L42 24L37 27Q34 35 26 35L20 37Z"/></clipPath></defs>
+  <g clip-path="url(#occupant)"><path fill="#3FCF8E" fill-rule="evenodd" d="M4 37V23C4 13 12 6 21 5Q20 2 24 1Q28 2 27 5C36 6 44 13 44 23V37H41V23Q40 10 25 8Q33 13 34 21H31Q30 13 24 8Q18 13 17 21H14Q15 13 22 8Q8 10 7 23V37Z"/>
+  <path fill="#3FCF8E" fill-rule="evenodd" d="M4 20Q24 18 44 20V23Q24 21 4 23Z"/>
+  <path fill="#3FCF8E" fill-rule="evenodd" d="M3 36Q23 39 45 35Q44 44 25 45Q7 45 3 38Z"/>
+  <path fill="#3FCF8E" fill-rule="evenodd" d="M6 35L42 30V32L6 37Z"/></g><path fill="#A4EBCB" fill-rule="evenodd" d="M11 36L17 27Q19 24 23 24C26 23 24 18 30 18Q34 18 35 22L39 24L35 25Q34 32 25 32L23 35H21L22 32Z"/>
+</svg>

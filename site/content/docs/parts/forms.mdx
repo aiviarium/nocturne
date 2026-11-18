@@ -1,0 +1,88 @@
+---
+title: Forms
+description: InlineField, the form fields, NumberField, Slider and PropertyList.
+---
+
+## InlineField
+
+`InlineField` is text edited where it is shown.
+
+| Variant | Use |
+| --- | --- |
+| `title` | A title, 20/28. `multiline` wraps it |
+| `text` | A property value, 28px |
+| `mono` | An ID or a path |
+
+At rest it reads as text.
+On hover it has a `bg-3` fill, and on focus it shows its edge and the focus ring.
+Enter commits, Escape reverts, and leaving the field commits.
+Do not use a raw `<input>` styled flat.
+
+<Example id="inline-field/variants" />
+
+## Form fields
+
+`TextField`, `TextArea`, `Select`, `Switch` and `SchemaForm` are 30px fields, with the label above in 12px `text-2`.
+
+- A `Switch` applies at once.
+- A `Checkbox` is part of a form, with a mixed state for select-all.
+- A `RadioGroup` picks one of a few visible options.
+- A `Select` is for long or changing sets, such as hosts or scopes. It is a button with `aria-haspopup` and a menu of radio items.
+
+<Example id="text-field/states" />
+<Example id="select/default" minHeight={240} />
+<Example id="switch/default" />
+
+`SchemaForm` builds a form from a JSON Schema.
+See [Fields](../fields.mdx).
+
+## NumberField
+
+`NumberField` is 30px like the other fields.
+`variant="inline"` is 28px, for a `PropertyList` or a table cell.
+
+- It takes sums: `12*4`, `100-15%`, `+5` from the value, and `1.5h` with `units`.
+- The arrow keys step. Shift steps by ten, and Alt by a tenth.
+- Drag the label, or the field at rest with a mouse, to scrub.
+- A click places the caret, and Tab selects the value.
+- `steppers` sit stacked at the end on a desktop, and as − and + around the value on a phone.
+- The unit is `unit`, after the number, never in the label.
+- Input it cannot read keeps the old value and says why.
+
+The arithmetic is `evaluateExpression` in `src/lib/expression.ts`, a parser with no `eval`.
+
+<Example id="number-field/variants" />
+<Example id="number-field/expressions" />
+<Example id="number-field/inline" />
+<Example id="design/number-inline" />
+<Example id="design/number-boxed" />
+
+## Slider
+
+`Slider` and `RangeSlider` set a bounded value roughly.
+
+- A 28px row, a 4px track and a 14px thumb, with the value at the right of the label.
+- `ticks` and `marks` name the steps.
+- `field` adds a field for the exact number.
+- On a phone the hit area is 44px and the thumb 22px.
+
+They are not for exact numbers over a large range.
+
+<Example id="slider/default" />
+<Example id="slider/stepped" />
+<Example id="slider/field" />
+<Example id="design/slider-readout" />
+<Example id="design/slider-exact" />
+
+## PropertyList
+
+`PropertyList` shows label and value pairs.
+
+- The label column is 120px, or `labelWidth="auto"`, in 12px `text-3`.
+- Values are `text-1`.
+- Rows are 28px, so an `InlineField` or a `Select` keeps the row height.
+- An empty value is an em dash, never "None".
+
+<Example id="property-list/variants" />
+
+<GalleryLink page="text-field" />

@@ -1,0 +1,13 @@
+node_modules/
+.next/
+out/
+.source/
+*.tsbuildinfo
+next-env.d.ts
+
+# Local screenshots, never committed
+screens/
+
+# Made by the build from the library: the gallery and the token and example data.
+public/gallery/
+src/generated/

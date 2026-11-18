@@ -1,0 +1,80 @@
+---
+title: Views
+description: The frame of a view, cards, panels, section headings and the layout parts.
+---
+
+## The frame of a view
+
+Use `ViewLayout` and `ViewHeader`.
+The header is 38px.
+
+Header actions come in one order:
+
+1. icon actions
+2. pin
+3. overflow
+4. the primary action
+5. the panel toggle
+
+The name of the view is in its tab.
+Never repeat it as a heading.
+
+<Example id="design/compact-header" />
+<Example id="design/inflated-header" />
+
+## Card
+
+A `Card` is a box of content.
+It has 12px padding (`--nc-pad`), radius 8, a `line-soft` edge and a `bg-1` fill.
+A `nested` card is `bg-2`.
+
+- A card is as tall as its content.
+- `fill` makes it use a box that a grid gives it, and the body takes the height. A `RowList` scrolls inside it and an `EmptyState` centres in it. A card with one `Stat` keeps its label and figure at the top. The figure is 32px in a tall box, and its chart takes the rest.
+- `title`, `count` and `action` put a `SectionHeading` inside.
+- `padding="none"` is for media or tables that reach the edges.
+- `href` or `onClick` make the whole card one link.
+- A card inside a card, or a list in a card, does not add a second padding.
+
+<Example id="card/sized" />
+<Example id="card/fill" />
+<Example id="design/list-in-card" />
+<Example id="design/list-double-inset" />
+
+## Panel
+
+A `Panel` is a tool region with a header.
+The header is 38px, with the title, a `state` and `actions`.
+The body has 12px padding.
+
+- `footer` is only for totals or pagination.
+- `fill` works as for `Card`.
+- `flush` is for a table or a terminal.
+
+<Example id="panel/variants" />
+
+## Section heading
+
+`SectionHeading` is the one treatment for a section inside a view or card.
+It is 13px semibold `text-1`, in a 24px row.
+
+- `count` is a total in `text-3`.
+- One `action` goes at the right. It is a ghost `Button size="sm"`, an `IconButton size="sm"`, a link or a `State`.
+- It is never 16, 20 or 26px.
+- Group labels in a sidebar or menu are the nav label, 11px in `text-3`. They are not section headings.
+
+<Example id="section-heading/variants" />
+<Example id="design/one-heading" />
+<Example id="design/mixed-headings" />
+
+## Layout parts
+
+- `AppShell` holds the sidebar, the top bar, the status bar and the phone drawer. The sidebar is on `bg-0`, and content is in `bg-1` frames with radius 8 and an 8px gap.
+- `Frame` has a `TabStrip` header.
+- `Split` and `SplitGroup` have dividers you can drag. A divider is a focusable separator. The arrow keys, Home and End move it. A double click resets it.
+- `Dialog` is centred, bare, near the top, or a bottom sheet.
+- `LinkProvider` sends `NavItem` and `Button` links through your router.
+
+<Example id="app-shell/two-frames" />
+<Example id="split/horizontal" />
+
+<GalleryLink page="app-shell">The layout parts in the gallery</GalleryLink>

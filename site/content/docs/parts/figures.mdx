@@ -1,0 +1,52 @@
+---
+title: Figures
+description: Stat and StatCard, Widget and WidgetGrid.
+---
+
+## Stat and StatCard
+
+A figure is a `Stat` in a `Card`, or a `StatCard`.
+
+- The value is 24px with tabular digits, or 32px when it fills a tall box.
+- The unit is 12px `text-3`, and the label 12px `text-2`, with a signal at the right of the label.
+- In a box it fills, the label and figure stay at the top. A chart (`WidgetSparkline`) or a meter takes the rest of the height. There is never a gap above the figure. This holds for a `fill` card with one `Stat` and for `StatCard fill`.
+
+Cards in a row share edges and baselines.
+
+<Example id="stat-card/row" />
+<Example id="card/stat" />
+<Example id="design/padded-card" />
+
+## Widget
+
+A `Widget` shows a live value.
+
+- Radius 20.
+- One hue, the accent or a status colour. Only the moving part has the hue and its glow.
+- With `fill` in a grid cell, the title is at the top and a sparkline or list grows to fill the cell. A bar, strip or gauge goes at the bottom with the caption.
+
+<Example id="widget/progress" />
+<Example id="widget/charts" />
+<Example id="design/coloured-card" />
+<Example id="design/icon-tile" />
+
+## WidgetGrid
+
+`WidgetGrid` is a page of widgets: 12 columns of 80px rows.
+While `editing`, items drag and resize.
+
+Outside editing it draws the stored layout compacted.
+
+- Items in `empty`, with nothing to show, take no space.
+- Each item is as tall as its content, up to its size. This is `fit`, on by default.
+- Items of one height on one row end on one line.
+- Everything moves up.
+
+Cards on a `WidgetGrid` take the widget frame, with 18 or 20px padding and radius 20.
+
+<Example id="patterns/widgets" />
+<Example id="design/grid-compacted" />
+<Example id="design/grid-hidden-hole" />
+<Example id="design/fits-content" />
+
+<GalleryLink page="widget" />

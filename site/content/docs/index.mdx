@@ -1,0 +1,82 @@
+---
+title: Getting started
+description: What Nocturne is, and how to add it to an app.
+icon: Rocket
+---
+
+Nocturne is a dark-first design system for dense tool interfaces.
+`@aiviarium/nocturne` is its SolidJS component library.
+
+The library has typed wrappers over the `nc-*` classes.
+It adds layout, overlay, data, form and phone components, and a collaborative rich text editor.
+The stylesheets in `src/styles/` are the design system itself.
+`tokens.css` holds the tokens and `bundle.css` the base classes.
+
+<Example id="overview/buttons-inputs" />
+
+## Install
+
+The package is not published to a registry yet.
+Add it from a Git checkout or a packed tarball.
+
+```sh
+bun add solid-js
+bun add @aiviarium/nocturne@file:../nocturne   # or a tarball from `bun pm pack`
+```
+
+`solid-js` 1.9 is a peer dependency.
+The package contains TypeScript sources, and `exports` points at `src/index.ts`.
+Build it with a bundler that compiles Solid JSX, such as Vite with `vite-plugin-solid`.
+
+## Import
+
+```ts
+import "@aiviarium/nocturne/styles/index.css"
+import { Button, DataTable, Composer } from "@aiviarium/nocturne"
+```
+
+`styles/index.css` loads `tokens.css`, `bundle.css` and `extra.css` in cascade layers.
+The order is `reset`, `tokens`, `components`, then `app` for your own CSS.
+Import each file yourself if you manage layers another way.
+
+Then put `class="nc"` and a `data-theme` on the root of the app.
+See [Theming](./theming.mdx).
+
+## What is in it
+
+| Area | Parts |
+| --- | --- |
+| Layout | `AppShell` with sidebar, top bar, status bar and phone drawer. `Frame` with a `TabStrip` header. `ViewLayout`, `ViewHeader`, `Panel`, `Split`, `SplitGroup` and `Dialog` |
+| Lists and data | `RowList` and `ListRow`, `DataTable`, `DataList`, `Board`, `List` |
+| Forms | `TextField`, `TextArea`, `Select`, `Switch`, `NumberField`, `Slider`, `SchemaForm` and the field kinds |
+| Display | `Badge`, `State`, `Avatar`, `Callout`, `Icon`, `Stat`, `StatCard`, `Widget`, `WidgetGrid` |
+| Text | `RichTextEditor`, `Composer`, `CodeBlock`, `DiffView` |
+| Filters | `FilterBar`, `QueryBuilder` |
+| Phone | Navigation stacks, tab bars, sheets, inset lists and the phone scale |
+
+`LinkProvider` sends `NavItem` and `Button` links through your router.
+Component roots have a stable `data-part` attribute.
+Props are documented with TSDoc.
+
+## The gallery
+
+The gallery shows every example, with a theme switch and the six accent presets.
+Run it with `bun run gallery` on `127.0.0.1:4800`, or open the <GalleryLink page="overview">copy built with this site</GalleryLink>.
+The examples on these pages are the same examples, shown in frames.
+
+## Commands
+
+| Command | What it does |
+| --- | --- |
+| `bun install` | Installs the dependencies |
+| `bun run gallery` | Runs the gallery on `127.0.0.1:4800` |
+| `bun run gallery:build` | Builds the gallery into `gallery/dist` |
+| `bun test` | Runs the behaviour tests with happy-dom, which has no layout, caret or IME |
+| `bun run typecheck` | Runs `tsc --noEmit` |
+| `bun run lint` | Runs Biome |
+| `bun run lint:tokens [path ...]` | Fails on literal colours, radii or font sizes in `.css`, `.tsx` and `.ts` files |
+| `bun run gen:icons` | Writes `src/components/icon-data.ts` from `icons/*.svg` |
+
+`lint:tokens` checks `src`, `gallery` and `examples` by default.
+A line with `lint-tokens-ignore` is skipped.
+Apps can run it on their own folders.

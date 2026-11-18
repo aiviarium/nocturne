@@ -1,0 +1,68 @@
+---
+title: Actions
+description: Button and IconButton.
+---
+
+## Button
+
+| Size | Height | Use |
+| --- | --- | --- |
+| `md` | 28px | Forms, panels, dialogs |
+| `sm` | 24px | Dense rows, list rows, table bars, toolbars |
+| `lg` | 32px | Empty states |
+
+Radius 6 at every size.
+
+<Example id="button/variants" />
+<Example id="button/sizes" />
+
+- `primary` is for the one action that completes a flow, such as the last button of a dialog or a form. The answer on a row and a sign-in are primary too.
+- `accent` starts AI work.
+- `danger` destroys.
+
+Adding an item is a ghost plus `IconButton` among the header actions of the view.
+On a phone it is among the trailing actions of the navigation bar.
+It is never a primary or text button.
+The starting action of an empty state is a secondary `Button`.
+
+Labels say what happens.
+Use one primary for each region.
+
+<Example id="design/add-quiet" />
+<Example id="design/add-loud" />
+<Example id="design/danger-button" />
+<Example id="design/outlined-danger" />
+<Example id="button/details" />
+
+<GalleryLink page="button" />
+
+## IconButton
+
+An `IconButton` is 28px with a 16px icon.
+`size="sm"` is 24px with a 13px icon.
+
+`label` is required.
+It is the accessible name and the tooltip, so every icon-only control has words.
+Never use a bare `<button>` with an icon.
+
+<Example id="icon-button/states" />
+<Example id="tooltip/default" />
+
+<GalleryLink page="icon-button" />
+
+## Menus
+
+A `DropdownMenu` is a trigger and its `Menu` in a popover.
+Arrow Down opens it, and Escape closes it and returns focus.
+It flips when there is no room.
+
+The `Menu` surface is shared by dropdowns, context menus and the command palette.
+Arrow Up and Down move with wrapping, and Home, End and typing a letter move too.
+
+Rare actions go behind the overflow button.
+
+<Example id="menu/items" minHeight={260} />
+<Example id="design/overflow-menu" minHeight={260} />
+<Example id="design/entry-row" />
+
+<GalleryLink page="menu" />

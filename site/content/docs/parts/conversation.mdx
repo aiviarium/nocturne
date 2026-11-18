@@ -1,0 +1,49 @@
+---
+title: Conversation and code
+description: ChatMessage, Composer, CodeBlock and DiffView.
+---
+
+## ChatMessage
+
+The person writes in a bubble, and the assistant writes on the page.
+Tool steps are rows that expand.
+The running step glows, and finished steps do not.
+Decisions are approval cards.
+
+<Example id="chat-message/conversation" />
+<Example id="tool-steps/states" />
+<Example id="approval-card/decisions" />
+
+## Composer
+
+`Composer` is the AI input, a `contenteditable` field.
+
+- `/` at the start of a line picks a command.
+- `@` adds context.
+- `$` adds a skill.
+
+Picked commands, mentions and skills are atomic chips.
+The value is a list of text and chip segments, `ComposerValue`.
+The component only exposes callbacks.
+It doesn't talk to the network or the microphone.
+Dictation comes in through `TranscriberProvider`.
+
+<Example id="composer/live" />
+<Example id="composer/chips" />
+<Example id="composer/dictation" />
+
+<GalleryLink page="composer" />
+
+## CodeBlock
+
+`CodeBlock` shows code with line numbers and the colours of the `syn` tokens.
+The bar shows the file name, with Copy and an optional Apply.
+
+<Example id="code-block/typescript" />
+
+## DiffView
+
+`DiffView` shows a split or unified diff, with changes marked by word, and controls to accept or reject.
+It takes two strings or a unified patch.
+
+<Example id="diff-view/strings" />

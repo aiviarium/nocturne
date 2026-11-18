@@ -1,0 +1,35 @@
+---
+title: Icons
+description: The 48 core icons, and any Lucide icon for what the set lacks.
+icon: Shapes
+---
+
+The core icons are drawn on a 16px grid with a 1.5 stroke, in `currentColor`.
+The files are in `icons/`, and `bun run gen:icons` writes `src/components/icon-data.ts` from them.
+
+```tsx
+import { Icon } from "@aiviarium/nocturne"
+import { Camera } from "lucide"
+
+<Icon name="home" />
+<Icon node={Camera} />
+```
+
+`name` takes a core icon.
+`node` takes any icon from `lucide`, for what the core set lacks.
+
+## The core set
+
+Drawn from the files in `icons/` when the site is built.
+
+<IconGrid />
+
+## Sizes and pairs
+
+<Example id="icon/sizes" />
+<Example id="icon/pairs" />
+
+An `IconButton` holds a 16px icon at 28px, and a 13px icon at 24px.
+See [Actions](./parts/actions.mdx#iconbutton).
+
+<GalleryLink page="icon" />

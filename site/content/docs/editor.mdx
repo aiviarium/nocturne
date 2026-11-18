@@ -1,0 +1,59 @@
+---
+title: Rich text editor
+description: One editor for every rich text, with no network code of its own.
+icon: FileText
+---
+
+`RichTextEditor` is one editor for every rich text: documents, descriptions, comments and `richtext` fields.
+It is ProseMirror with one schema, `richTextSchema`.
+It binds to a collaborative Yjs document (`provider`) or to a JSON value (`value` and `onChange`).
+
+<Example id="rich-text-editor/page" />
+
+## What it has
+
+- Block handles and a block menu
+- The `/` insert menu
+- A format bar, with the writing assistant
+- `@` mentions and `[[` page links
+- Markdown shortcuts, and Markdown on paste
+- Tables, images and files
+- Block types the app adds
+- Remote cursors
+- A read-only mode
+- `page`, `field` and `comment` variants
+- A phone layout
+
+<Example id="rich-text-editor/collab" />
+<Example id="rich-text-editor/field-comment" />
+
+## Block widths
+
+Top-level blocks of a `page` editor are `reading`, `wide` or `full`, from `src/editor/width.ts`.
+The host sets the text column with `--nc-editor-measure` and the side space with `--nc-editor-inset`.
+
+<Example id="rich-text-editor/widths" />
+
+## Services
+
+The editor has no network code.
+These come from `EditorServices`, through `EditorServicesProvider` or the `services` prop:
+
+- mentions, chips and previews
+- uploads
+- the call to the model of the writing assistant, and its wording, `aiCopy`
+- dictation
+- block types the app adds
+
+## Markdown
+
+`toMarkdown` and `parseMarkdown` convert documents to and from Markdown.
+
+## Styles
+
+The styles are in `src/styles/editor.css`.
+The classes are `nc-editor`, `nc-editor__content` and `nc-editor-*`, for callouts, code blocks, images, cursors and the rest.
+
+<Example id="rich-text-editor/read-only" />
+
+<GalleryLink page="rich-text-editor" />

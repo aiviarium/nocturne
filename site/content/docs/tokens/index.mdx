@@ -1,0 +1,34 @@
+---
+title: Overview
+description: The tokens of Nocturne, and the rule that code uses them.
+---
+
+The tokens are CSS custom properties in `src/styles/tokens.css`.
+The colours have a value for each theme.
+The scales and the type classes are the same in both.
+
+The tables on these pages are made from `tokens.css` when the site is built.
+
+| Page | Tokens |
+| --- | --- |
+| [Colour](./colour.mdx) | Surfaces, hairlines, text, the accent, status, labels, code and diffs |
+| [Type](./type.mdx) | The type classes and the font stacks |
+| [Sizes](./sizes.mdx) | Spacing, radii, controls, rows and the header |
+| [Shadows](./shadows.mdx) | The overlay shadow, the focus rings and the glows |
+
+## Use the tokens
+
+Use tokens for colours, radii and font sizes.
+`bun run lint:tokens` fails on a literal colour, radius or font size in `.css`, `.tsx` and `.ts` files.
+Add `lint-tokens-ignore` to a line to skip it.
+
+```css
+.my-row {
+  height: var(--row-compact);
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-sm);
+  color: var(--text-2);
+}
+```
+
+<Example id="foundations/density" />

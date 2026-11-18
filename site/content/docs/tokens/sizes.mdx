@@ -1,0 +1,52 @@
+---
+title: Sizes
+description: Spacing, radii, controls, rows and the header.
+---
+
+## Spacing
+
+Spacing is the 4px grid.
+
+<LengthScale prefix="space" kind="space" />
+
+The library also uses three values on purpose.
+
+| Value | Use |
+| --- | --- |
+| 6px | The selection inset, the inner padding of a row, the gap in a `MetaLine`, the radius of controls |
+| 10px | The gap between an icon and its label in navigation and menus |
+| 14px | The larger widget and panel insets |
+
+Any other spacing is a mistake.
+
+## Radius
+
+<LengthScale prefix="radius" kind="radius" />
+
+| Token | Use |
+| --- | --- |
+| `--radius-xs` | `kbd`, inline code, marks |
+| `--radius-sm` | Buttons and fields at every size |
+| `--radius-md` | Cards, frames, code blocks |
+| `--radius-lg` | Menus, popovers and board lanes |
+| `--radius-xl` | The composer |
+| `--radius-2xl` | Widgets and the cards on a `WidgetGrid` |
+
+## Controls
+
+<LengthScale names={['control-sm', 'control-md', 'control-lg']} kind="height" />
+
+`sm` is for dense rows, list rows, table bars and toolbars.
+`md` is for forms, panels and dialogs.
+`lg` is for empty states.
+Fields are 30px, the height of a compact row.
+
+## Rows and headers
+
+<LengthScale names={['row-compact', 'row-default', 'header']} kind="height" />
+
+Lists and tables are compact by default, 30px, and comfortable at 36px.
+The header of a view or a panel is 38px.
+On a phone, rows are 44px and 58px, see [Phones](../phones.mdx).
+
+<Example id="foundations/density" />

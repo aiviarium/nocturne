@@ -1,0 +1,5 @@
+{
+  "title": "Tokens",
+  "icon": "Palette",
+  "pages": ["index", "colour", "type", "sizes", "shadows"]
+}

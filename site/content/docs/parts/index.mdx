@@ -1,0 +1,48 @@
+---
+title: Overview
+description: The part to use for each thing a view shows.
+---
+
+Build every view from these parts.
+Views then look and behave alike, however many teams or modules write them.
+
+Do not restyle a part for one view.
+If a part lacks something, add a variant to it.
+
+Sizes are the tokens in `src/styles/tokens.css`: `--control-*`, `--row-*`, `--header`, `--space-*` and `--radius-*`.
+On a phone each part takes the phone scale by itself, see [Phones](../phones.mdx).
+
+| You are showing | Use | Page |
+| --- | --- | --- |
+| The frame of a view | `ViewLayout`, `ViewHeader` | [Views](./views.mdx#the-frame-of-a-view) |
+| A box of content | `Card` | [Views](./views.mdx#card) |
+| A tool region with a header | `Panel` | [Views](./views.mdx#panel) |
+| The heading of a section | `SectionHeading` | [Views](./views.mdx#section-heading) |
+| A list of things | `RowList` and `ListRow` | [Lists](./lists.mdx) |
+| Records in lanes | `Board`, `BoardLane`, `BoardCard` | [Records](./records.mdx#board) |
+| A table of records | `DataTable` | [Records](./records.mdx#datatable) |
+| Records edited in place | `DataList` | [Records](./records.mdx#datalist) |
+| An action | `Button` | [Actions](./actions.mdx#button) |
+| An action shown as an icon | `IconButton` | [Actions](./actions.mdx#iconbutton) |
+| Text edited in place | `InlineField` | [Forms](./forms.mdx#inlinefield) |
+| A form field | `TextField`, `TextArea`, `Select`, `Switch`, `SchemaForm` | [Forms](./forms.mdx#form-fields) |
+| A number | `NumberField` | [Forms](./forms.mdx#numberfield) |
+| A bounded value, roughly | `Slider`, `RangeSlider` | [Forms](./forms.mdx#slider) |
+| Label and value pairs | `PropertyList` | [Forms](./forms.mdx#propertylist) |
+| Search and filters | `FilterBar` | [Filters](./filters.mdx#filterbar) |
+| Filters over the fields of a list | `QueryBuilder` | [Filters](./filters.mdx#querybuilder) |
+| The state of an item | `State` | [Status](./status.mdx#state) |
+| A kind, category or count | `Badge`, `LabelChip`, `Count` | [Status](./status.mdx#badge-labelchip-and-count) |
+| Facts about an item | `MetaLine` | [Status](./status.mdx#metaline) |
+| Nothing to show | `EmptyState` | [Status](./status.mdx#emptystate) |
+| Text that may not fit | `Truncate` | [Status](./status.mdx#truncate) |
+| A figure | `Stat`, `StatCard` | [Figures](./figures.mdx#stat-and-statcard) |
+| A live value | `Widget` | [Figures](./figures.mdx#widget) |
+| A page of widgets | `WidgetGrid` | [Figures](./figures.mdx#widgetgrid) |
+| A conversation with the assistant | `ChatMessage`, `Composer` | [Conversation and code](./conversation.mdx) |
+| Code and changes | `CodeBlock`, `DiffView` | [Conversation and code](./conversation.mdx#codeblock) |
+
+The rules for focus, contrast, colour and spacing hold for every part.
+See [Focus](../focus.mdx), [Colour](../tokens/colour.mdx#neutral-fills) and [Sizes](../tokens/sizes.mdx#spacing).
+
+<Example id="patterns/view" />

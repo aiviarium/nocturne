@@ -1,0 +1,283 @@
+/*
+ * What the Nocturne pages add to the docs base: token tables, scales, the icon
+ * grid and the frames of the live examples. Surfaces stay the neutral greys of
+ * global.css; the colours drawn here are the token values themselves.
+ */
+
+.tk-table-wrap {
+  margin: 16px 0 24px;
+  overflow-x: auto;
+  border: 1px solid var(--line-soft);
+  border-radius: 8px;
+}
+.tk-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.tk-table th {
+  background: var(--soft);
+  color: var(--text-3);
+  font-size: 12px;
+  font-weight: 500;
+  text-align: left;
+  padding: 6px 12px;
+  border-bottom: 1px solid var(--line-soft);
+}
+.tk-table td {
+  padding: 6px 12px;
+  border-top: 1px solid var(--line-subtle);
+  white-space: nowrap;
+  vertical-align: middle;
+}
+.tk-table tr:first-child td {
+  border-top: 0;
+}
+.tk-table code,
+.tk-table :not(pre) > code {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  padding: 0;
+  border: 0;
+  background: none;
+}
+.tk-value {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.tk-swatch {
+  display: inline-block;
+  flex: none;
+  width: 28px;
+  height: 20px;
+  border: 1px solid;
+  border-radius: 4px;
+}
+.tk-preview {
+  width: 50%;
+}
+.tk-bar {
+  display: block;
+  height: 8px;
+  border-radius: 2px;
+  background: var(--text-4);
+}
+.tk-corner {
+  display: block;
+  width: 40px;
+  height: 28px;
+  border-top: 1.5px solid var(--muted);
+  border-left: 1.5px solid var(--muted);
+  border-bottom-right-radius: 0 !important;
+  border-top-right-radius: 0 !important;
+  border-bottom-left-radius: 0 !important;
+}
+.tk-height {
+  display: block;
+  width: 96px;
+  border: 1px solid var(--line-strong);
+  border-radius: 6px;
+  background: var(--bg-3);
+}
+
+.tk-type {
+  margin: 16px 0 24px;
+  border: 1px solid var(--line-soft);
+  border-radius: 8px;
+}
+.tk-type-row {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: 16px;
+  align-items: center;
+  padding: 12px 16px;
+  border-top: 1px solid var(--line-subtle);
+}
+.tk-type-row:first-child {
+  border-top: 0;
+}
+.tk-type-name {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 12px;
+  color: var(--text-3);
+}
+.tk-type-name code {
+  font-family: var(--font-mono);
+  color: var(--fg);
+}
+.tk-type-sample {
+  color: var(--fg);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+@media (max-width: 640px) {
+  .tk-type-row {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+}
+
+.tk-shadows {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin: 16px 0 24px;
+}
+.tk-shadow-name {
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+.tk-shadow-tiles {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 6px;
+}
+.tk-shadow-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 28px 12px 12px;
+  border: 1px solid;
+  border-radius: 8px;
+  min-width: 0;
+}
+.tk-shadow-tile code {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 16px;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+.tk-shadow-box {
+  display: block;
+  width: 96px;
+  height: 40px;
+  border: 1px solid;
+  border-radius: 8px;
+}
+.tk-glow {
+  display: block;
+  width: 8px;
+  height: 8px;
+  margin: 16px 0;
+  border-radius: 999px;
+}
+@media (max-width: 640px) {
+  .tk-shadow-tiles {
+    grid-template-columns: 1fr;
+  }
+}
+
+.tk-icons {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
+  gap: 8px;
+  margin: 16px 0 24px;
+}
+.tk-icon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 6px 10px;
+  border: 1px solid var(--line-soft);
+  border-radius: 8px;
+  background: var(--up);
+  min-width: 0;
+}
+.tk-icon-glyph {
+  display: block;
+  width: 16px;
+  height: 16px;
+  color: var(--fg);
+}
+.tk-icon-glyph > svg {
+  display: block;
+  width: 16px;
+  height: 16px;
+}
+.tk-icon code {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--muted);
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Live examples. */
+.ex {
+  margin: 20px 0 28px;
+}
+.ex-caption {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 8px;
+}
+.ex-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fg);
+}
+.ex-note {
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--muted);
+}
+.ex-stage {
+  border: 1px solid var(--line-soft);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--up);
+}
+.ex-stage[data-phone] {
+  padding: 16px 0;
+  background: var(--soft);
+}
+.ex-frame {
+  display: block;
+  width: 100%;
+  border: 0;
+  background: transparent;
+}
+.ex-placeholder {
+  display: block;
+}
+.ex-device-box {
+  display: flex;
+  justify-content: center;
+  overflow: hidden;
+}
+.ex-device {
+  flex: none;
+  transform-origin: top center;
+  padding: 10px;
+  border-radius: 56px;
+  background: #050506;
+  box-shadow: 0 0 0 1px var(--line-strong);
+}
+.ex-device-screen {
+  display: block;
+  border: 0;
+  border-radius: 46px;
+  background: #000;
+}
+.ex-open {
+  display: inline-block;
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--text-3);
+  text-decoration: none;
+}
+.ex-open:hover {
+  color: var(--brand);
+}

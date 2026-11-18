@@ -1,0 +1,64 @@
+---
+title: Theming
+description: The root class, the dark and light themes, and the accent.
+icon: SunMoon
+---
+
+## The root
+
+```html
+<div class="nc" data-theme="dark" style="--accent: #8b7cf6">…</div>
+```
+
+- Put `class="nc"` on the root of the app.
+- Set `data-theme="dark"` or `data-theme="light"` on the same element.
+- Set `--accent` on that element to change the accent.
+
+The tokens for each theme are on `[data-theme]`, so a subtree can take the other theme.
+Dark is the default: `tokens.css` declares the dark values on `:root` as well.
+
+<Example id="overview/chips" />
+
+## The accent
+
+`--accent` is the one colour an app sets.
+The default is Iris.
+`ACCENTS` lists the six presets the gallery offers, and `accentValue(id, theme)` gives the value of a preset in a theme.
+
+```ts
+import { accentValue } from "@aiviarium/nocturne"
+
+root.style.setProperty("--accent", accentValue("jade", "dark"))
+```
+
+<AccentTable />
+
+The other accent tokens (`--accent-strong`, `--accent-text`, the tint, line and glow) hold the Iris values in `tokens.css`.
+See [Colour](./tokens/colour.mdx#accent).
+
+<Example id="foundations/accents" />
+
+## Overlays take the theme
+
+Popovers, menus, dialogs, tooltips and toasts mount inside the nearest `[data-theme]` element.
+They inherit its theme and accent.
+See [Overlays](./overlays.mdx).
+
+## Parts and props
+
+Each component root has a stable `data-part` attribute, such as `data-part="list-row"`.
+Tests and app CSS can find a part by it.
+Props are documented with TSDoc in the sources.
+
+## Earlier names
+
+These older names still work alongside the new ones.
+
+| New | Also read |
+| --- | --- |
+| `--nc-editor-measure`, `--nc-editor-inset`, `--nc-editor-gutter-start`, `--nc-editor-gutter-end` | The `--crow-editor-*` properties of the same names |
+| `localStorage` key `nc.viewLayout.v1` | `crow.viewLayout.v1`, while the new key is empty |
+| Cascade layer `app` | `shell` and `plugins`, which stay in the layer order after `app` |
+
+The editor's classes are `nc-editor`, `nc-editor__content` and `nc-editor-*`.
+The older `crow-*` classes are no longer added.

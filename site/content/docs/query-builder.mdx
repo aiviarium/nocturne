@@ -1,0 +1,58 @@
+---
+title: Query builder
+description: The query model, its conversions and its text form.
+icon: Funnel
+---
+
+`QueryBuilder` edits a `QueryGroup` from `src/lib/query.ts`.
+In a view it is part of the `FilterBar`, see [Filters](./parts/filters.mdx#querybuilder).
+
+<Example id="query-builder/builder" minHeight={360} />
+
+## The model
+
+A query is a group of rules joined by AND or OR, with groups one level deep.
+Each rule has a field, an operator and a value.
+Fields are typed by a schema, `QueryField`.
+
+| Field type | Operators |
+| --- | --- |
+| `text` | `contains`, `notContains`, `is`, `isNot`, `isEmpty`, `isNotEmpty` |
+| `number` | `is`, `isNot`, `gt`, `gte`, `lt`, `lte`, `between`, `isEmpty`, `isNotEmpty` |
+| `date` | `is`, `before`, `after`, `between`, `withinLast`, `isEmpty`, `isNotEmpty` |
+| `enum`, `person`, `relation` | `is`, `isNot`, `anyOf`, `noneOf`, `isEmpty`, `isNotEmpty` |
+| `boolean` | `is` |
+
+A field with `multiple` holds a list of references, and has no empty tests.
+
+## Conversions
+
+- `toWhere` turns a query into a structured `where` filter.
+- Text `contains` comes back as a `residual`, for `matchQuery`.
+- Relative dates resolve against `now`.
+- `fromWhere` reads a `where` filter back.
+
+## The text form
+
+`parseQueryText` and `printQueryText` read and write the text form of a query bar.
+`parseQueryText(printQueryText(q))` gives `q` back.
+
+| Text | Meaning |
+| --- | --- |
+| `field:value` | is |
+| `field:a,b` | is any of |
+| `-field:value` | is not, or is none of |
+| `field:>3`, `>=`, `<`, `<=` | Comparisons |
+| `field:1..5` | is between |
+| `field:-7d` | is within the last 7 days |
+| `field:none`, `field:any` | is empty, is not empty |
+| `field:yes`, `field:no` | A boolean |
+| Free words | The text field must contain them |
+
+The result is one AND group.
+The text form has no OR.
+
+<Example id="query-builder/chips" minHeight={320} />
+<Example id="query-builder/phone" />
+
+<GalleryLink page="query-builder" />

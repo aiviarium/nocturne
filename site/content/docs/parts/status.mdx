@@ -1,0 +1,72 @@
+---
+title: Status
+description: State, badges, the metadata line, empty states and cut text.
+---
+
+## State
+
+`State` is a dot and a word, everywhere.
+
+- The word has a colour only for warn and error.
+- Only `live` and `ai` glow.
+- A row has one, in the `status` of a `ListRow`.
+- Show it only when it is out of the ordinary. No "Live", "Idle" or "Ready" on every row.
+
+<Example id="state/all" />
+<Example id="design/exceptional-status" />
+<Example id="design/permanent-status" />
+<Example id="design/state-foreground" />
+<Example id="design/tinted-rows" />
+
+## Badge, LabelChip and Count
+
+- A `Badge` is for a kind, such as "Draft" or "Admin", or a category. It never shows a state that a `State` shows.
+- A `LabelChip` is a label, in one of the label colours.
+- `Count` is an attention count, drawn in the accent. Totals are plain numbers in `text-3`.
+
+One list never has two treatments for the same fact.
+
+<Example id="badge/status" />
+<Example id="badge/labels" />
+<Example id="design/fact-once" />
+<Example id="design/fact-repeated" />
+<Example id="design/chip-tint" />
+<Example id="design/solid-chip" />
+
+## MetaLine
+
+`MetaLine` is one line of facts about an item, in 12px `text-3`, joined by " · ".
+Empty parts are dropped.
+It is cut at the end, with the full line as its title.
+It has no state, and nothing that is always true, such as "Created today".
+
+<Example id="meta-line/default" />
+
+## EmptyState
+
+`EmptyState` is `md` for a whole view or main column, and `sm` in a card, panel or section.
+Only a whole view, or a list the person filtered, gets one.
+An empty part of a view is not drawn.
+
+<Example id="empty-state/default" />
+<Example id="design/empty-nothing" />
+<Example id="design/empty-boxes" />
+
+## Truncate
+
+`Truncate` is one line, or `lines`, with an ellipsis and the full text as its title.
+Every part on these pages that cuts text already does this, such as row titles, meta lines and crumbs.
+
+<Example id="truncate/default" />
+
+## Other display parts
+
+- `Avatar` is initials in a circle for people, a rounded square for agents, and the sparkle mark for the assistant.
+- `Callout` is an inline message in a neutral grey box. The hue is in its icon. It has one or two sentences: what happened and what to do next.
+- `Toast` shows short notices in a live region at the bottom right. Danger toasts are announced assertively, and hover pauses the timer.
+- `Skeleton` holds the place of content while it loads.
+
+<Example id="avatar/kinds" />
+<Example id="callout/tones" />
+
+<GalleryLink page="status-meta" />

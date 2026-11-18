@@ -1,0 +1,21 @@
+---
+title: Shadows
+description: The overlay shadow, the focus rings and the glows.
+---
+
+Nocturne has few shadows.
+Surfaces are separated by their grey steps and hairlines.
+A shadow marks what floats, the ring marks keyboard focus, and the glows mark what moves.
+
+<ShadowTable />
+
+| Token | Use |
+| --- | --- |
+| `--shadow-overlay` | Menus, tooltips and the card being dragged on a board |
+| `--focus-ring` | Keyboard focus on any interactive element, see [Focus](../focus.mdx) |
+| `--focus-ring-inset` | Focus on tabs, sidebar items and the tab strip, drawn inside the edge |
+| `--glow-live` | The dot of a live state |
+| `--glow-ai` | The dot of the assistant's state |
+
+Only `live` and `ai` states glow.
+The moving part of a `Widget` has the hue and its glow.

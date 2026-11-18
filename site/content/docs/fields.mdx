@@ -1,0 +1,64 @@
+---
+title: Fields
+description: SchemaForm, and the field kinds that tables, lists and forms use.
+icon: TextCursorInput
+---
+
+## SchemaForm
+
+`SchemaForm` builds a form from a JSON Schema.
+It says what is wrong under each field that does not fit.
+
+It handles these types:
+
+- strings, numbers and booleans
+- enums
+- optional fields
+- nested objects
+- arrays of scalars
+- arrays of small records, as a `DataList`
+
+Some strings and numbers get their own control.
+
+| In the schema | Control |
+| --- | --- |
+| `writeOnly`, `format: "password"`, or a name in `secretFields` | A password input |
+| A name in `storedSecrets` | A secret the app has stored. It is not required, and left out when blank |
+| `x-multiline` | A text area |
+| A number | A `NumberField`. `x-unit` sets the unit |
+| A number with both bounds and `"x-control": "slider"` | A `Slider` with its field |
+
+<Example id="schema-form/connect" />
+<Example id="schema-form/numbers" />
+<Example id="patterns/form" />
+
+## Field kinds
+
+Each kind of value is written once.
+Tables, lists, record pages, create dialogs, settings, connection forms, the dialogs for parameters and filters all draw values through it.
+
+The kinds are in `src/fields/kinds/`:
+
+| Kind | Value |
+| --- | --- |
+| `text`, `longtext` | One line, or several |
+| `richtext` | A `RichTextEditor` document, see [Rich text editor](./editor.mdx) |
+| `number`, `currency`, `bytes` | Numbers, with a unit or a currency |
+| `boolean` | Yes or no |
+| `enum` | One of a set of values, as a chip or a dot and its word |
+| `date`, `datetime` | A day, or a day and a time |
+| `tags` | A list of strings |
+| `ref` | A reference to another record |
+| `secret` | A value that is written and not read back |
+| `json`, `blob`, `vector` | Structured data, files and vectors |
+
+A kind draws its value in a cell, a row or a chip line when `compact` is set.
+Its editor is `inline` on a record page, or `boxed` in a dialog or form.
+Inline editors hand over the value when the person leaves them or presses Enter, and boxed editors hand over every change.
+
+The field runtime is a provider, so the fields have no network code.
+
+<Example id="fields/kinds" />
+<Example id="fields/form" />
+
+<GalleryLink page="fields" />

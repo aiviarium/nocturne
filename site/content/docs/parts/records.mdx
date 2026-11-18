@@ -1,0 +1,71 @@
+---
+title: Records
+description: Board, DataTable and DataList.
+---
+
+## Board
+
+Use `Board`, `BoardLane` and `BoardCard` for records in lanes.
+
+- Lanes are 272px wide and never squeezed, and the board scrolls sideways when they do not fit.
+- The head of a lane is 30px high. It has a dot or icon, the name, a count and an add control, and it highlights when a card is dragged over it.
+- A card is a fixed 112px slot. It has a top row with a key and a person, a title cut to two lines, and the meta row on its bottom edge. `BoardCardTop`, `BoardCardTitle` and `BoardCardMeta` build the card of an entity.
+- In a board view, `fill` makes lanes scroll inside, and `placed` cards let a lane render only what is visible.
+- In a document, lanes are as tall as their cards.
+- Below 560px of the board's own width the board is grouped lists with 44px rows. This is a container query, and `useBoard().stacked()` reports it.
+- Selection is a neutral fill, and the cursor is the focus ring.
+
+<Example id="board/lanes" />
+<Example id="board/card" />
+<Example id="board/phone" />
+
+<GalleryLink page="board" />
+
+## DataTable
+
+Use `DataTable` for a table of records.
+Rows are 30px compact and 36px comfortable, and columns can sort.
+
+- `selectable` works as in a list. A click opens a row, and a click with Cmd, Ctrl or Shift selects. Checkboxes show on hover, on focus, and while something is selected. There is a select-all box. Selection is a neutral fill. The toolbar becomes the bulk bar only while something is selected.
+- `onReorder` moves rows. Drag the row itself, or use Alt and an arrow key. A line shows where it drops, and the table scrolls at its edges. It works only while the table is not sorted by a column.
+- `onRemove` removes rows, with Undo.
+- `rowMenu` is the row menu, as a `RowList` has.
+
+The table is one tab stop, and the arrow keys move between rows.
+Use a `RowList` for a list of things with one title each.
+
+<Example id="data-table/interactive" />
+<Example id="data-table/managed" />
+<Example id="data-table/loading" />
+<Example id="data-table/empty" />
+<Example id="data-table/error" />
+
+<GalleryLink page="data-table" />
+
+## DataList
+
+Use `DataList` for records edited in place.
+
+- Tags and URLs, with one field.
+- Environment variables, with `fields` for a name and a value.
+- Any record of a few short fields.
+
+The compact form goes in a form (`boxed`, a box like a field) or in an inspector (`inline`, rows on the edge).
+`variant="table"` adds a header row, for many records.
+
+It selects, reorders, removes with Undo, adds, and moves by keyboard as a `DataTable` does, with the same row menu.
+In a field, Enter, Backspace and the arrow keys work on the caret.
+Escape goes to the row.
+
+On a phone it is an iOS form group.
+`SchemaForm` uses it for arrays of strings and of small records.
+Records that open are a `RowList` with `onAdd`, not a `DataList`.
+
+<Example id="data-list/records" />
+<Example id="data-list/form" />
+<Example id="data-list/inspector" />
+<Example id="data-list/phone" />
+<Example id="design/data-list-group" />
+<Example id="design/data-list-stack" />
+
+<GalleryLink page="data-list" />

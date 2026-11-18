@@ -1,0 +1,52 @@
+---
+title: Overlays
+description: Where popovers, menus, dialogs, tooltips and toasts mount, and how they stack.
+icon: Layers
+---
+
+## Where they mount
+
+Popovers, menus, dialogs, tooltips and toasts mount inside the nearest element with a `data-theme`.
+They inherit its theme and `--accent`.
+With no such element they fall back to `document.body`, in a `div.nc` that copies the theme of the opener and keeps it in step.
+
+## The order
+
+Overlays stack in a fixed order, lowest first:
+
+1. the phone drawer
+2. the scrim of a dialog
+3. popovers
+4. tooltips
+5. toasts
+
+A `Select`, menu or tooltip opened in a `Dialog` shows above it.
+Escape closes only the topmost open layer.
+
+<Example id="patterns/overlay-stack" minHeight={420} />
+
+## Popover
+
+A `Popover` is a box that floats next to an anchor element.
+It flips to the other side when there is no room and stays inside the viewport.
+Escape or a press outside it closes it.
+
+<Example id="popover/anchored" minHeight={300} />
+
+## Dialog
+
+A `Dialog` is centred, bare, near the top, or a bottom sheet.
+Focus moves in when it opens, Tab cycles inside, and Escape closes it.
+Focus then returns to the button that opened it.
+
+<Example id="dialog/confirm" minHeight={300} />
+
+## Tooltips and toasts
+
+A tooltip shows the label of an `IconButton` with its shortcut.
+
+Toasts are short notices in a live region at the bottom right.
+Danger toasts are announced assertively, and hover pauses the timer.
+Put a `ToastRegion` next to the root of the app.
+
+<Example id="toast/tones" minHeight={260} />

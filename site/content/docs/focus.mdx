@@ -1,0 +1,43 @@
+---
+title: Focus and contrast
+description: The focus ring on every interactive element, and the faintest readable text.
+icon: Focus
+---
+
+## The focus ring
+
+Every interactive element shows the focus ring, `--focus-ring`, on keyboard focus.
+The parts draw it themselves.
+A global rule in `src/styles/parts.css` gives it to any other button, link, tab or field inside `.nc`.
+
+Do not set `outline: none` without a replacement.
+
+- The global rule leaves out parts that draw their own focus. Fields show it on their edge and menus with their highlight. A list row draws the ring around the full row.
+- Inside a list, a grid, a tree, a tab list or breadcrumbs, the ring is drawn inside the element with `--focus-ring-inset`. Drawn outside, the edge of the list would cut it off.
+- Focus scrolls a little past an element, so the ring is not cut at the edge of a scroll area.
+- A separator, such as the divider of a `Split`, shows focus by its colour.
+
+The ring values are on [Shadows](./tokens/shadows.mdx).
+
+<Example id="icon-button/states" />
+
+## Keyboard
+
+- Lists and tables are one tab stop. The arrow keys, Home and End move between rows.
+- Menus move with Arrow Up and Down, which wrap, and with Home, End and typing a letter.
+- A `Dialog` moves focus in when it opens. Tab cycles inside, Escape closes it, and focus returns to the button that opened it.
+- Escape closes only the topmost open layer.
+
+## Contrast
+
+`text-3` is the faintest text colour for anything a person reads.
+`text-4` is for disabled and decorative marks only, such as separators and the dash of an empty value.
+Status text uses the `-ink` shades, see [Colour](./tokens/colour.mdx#text).
+
+## Hit areas on touch
+
+On a phone the smallest hit area is 44px.
+The visible control may be smaller.
+
+<Example id="design/hit-area" />
+<Example id="design/inflated-control" />
