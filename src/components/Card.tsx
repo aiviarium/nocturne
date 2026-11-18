@@ -367,6 +367,34 @@ export function MetaLine(props: MetaLineProps): JSX.Element {
 
 // ── Filter bar ───────────────────────────────────────────────────────────────────────────────────────────
 
+export interface FilterCountProps {
+  /** The number of results. */
+  value: number
+  /** An icon for what is counted, when the list doesn't make it plain: `list` for issues, `server` for hosts. */
+  icon?: IconName
+  /** What is counted, for screen readers: "Issues", read as "Issues: 3". */
+  unit: string
+  class?: string
+}
+
+/**
+ * The number of results in a `FilterBar`'s `end`: the bare number in tabular digits, after an optional icon for
+ * its unit. Screen readers hear the number and the unit; on screen there is no sentence to pluralise.
+ */
+export function FilterCount(props: FilterCountProps): JSX.Element {
+  return (
+    <span
+      data-part="filter-count"
+      class={cx("nc-filtercount", props.class)}
+      role="status"
+      aria-label={`${props.unit}: ${props.value}`}
+    >
+      <Show when={props.icon}>{(name) => <Icon name={name()} size="sm" />}</Show>
+      <span class="nc-num">{props.value}</span>
+    </span>
+  )
+}
+
 export interface FilterBarProps extends JSX.HTMLAttributes<HTMLDivElement> {
   /** Accessible name of the group. Default "Filters". */
   label?: string
@@ -374,7 +402,10 @@ export interface FilterBarProps extends JSX.HTMLAttributes<HTMLDivElement> {
   search?: JSX.Element
   /** The filters: `Tabs` (segmented), `Select`s with `aria-label`, `Switch`es with a short label. */
   children?: JSX.Element
-  /** At the right of the first line, however the filters wrap: a count of results, a Clear button, a view switch. */
+  /**
+   * At the right of the first line, however the filters wrap: the number of results as a `FilterCount` (the bare
+   * number, with an icon for its unit if it needs one), or a view switch. Never a sentence such as "3 issues".
+   */
   end?: JSX.Element
 }
 

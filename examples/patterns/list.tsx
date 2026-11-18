@@ -2,6 +2,7 @@ import {
   Avatar,
   EmptyState,
   FilterBar,
+  FilterCount,
   ListRow,
   RowList,
   Select,
@@ -43,7 +44,7 @@ export default function IssueList() {
             onInput={(e) => setQuery(e.currentTarget.value)}
           />
         }
-        end={<span>{rows().length} issues</span>}
+        end={<FilterCount value={rows().length} unit="Issues" />}
       >
         <Tabs
           label="Scope"

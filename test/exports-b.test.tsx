@@ -9,6 +9,7 @@ import {
   FieldEmpty,
   FieldValue,
   FilterBar,
+  FilterCount,
   IdBadge,
   InfoTip,
   InsetGroup,
@@ -205,6 +206,17 @@ describe("FilterBar", () => {
     expect(row.style.getPropertyValue("--nc-filterbar-end")).toMatch(/^\d+px$/)
     setLabel("Issue filters")
     expect(bar.getAttribute("aria-label")).toBe("Issue filters")
+  })
+
+  test("FilterCount shows the bare number, with the unit for screen readers", () => {
+    const [n, setN] = createSignal(3)
+    const { root } = track(mount(() => <FilterCount value={n()} icon="list" unit="Issues" />))
+    const count = one("[data-part=filter-count]", root)
+    expect(count.textContent).toBe("3")
+    expect(count.getAttribute("aria-label")).toBe("Issues: 3")
+    expect(count.querySelector("svg")).toBeTruthy()
+    setN(1)
+    expect(count.getAttribute("aria-label")).toBe("Issues: 1")
   })
 
   test("leaves out the slots it is not given", () => {

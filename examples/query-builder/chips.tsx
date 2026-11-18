@@ -1,5 +1,6 @@
 import {
   FilterBar,
+  FilterCount,
   ListRow,
   matchQuery,
   QueryBuilder,
@@ -41,7 +42,7 @@ export default function QueryChips() {
             onInput={(e) => setSearch(e.currentTarget.value)}
           />
         }
-        end={<span>{rows().length === 1 ? "1 issue" : `${rows().length} issues`}</span>}
+        end={<FilterCount value={rows().length} icon="list" unit="Issues" />}
       >
         <QueryBuilder
           fields={ISSUE_FIELDS}

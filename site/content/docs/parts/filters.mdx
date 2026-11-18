@@ -9,9 +9,15 @@ description: FilterBar and QueryBuilder.
 
 1. `search` comes first and grows, from 220 to 420px.
 2. Segmented `Tabs`, `Select`s and `Switch`es follow at their width.
-3. `end` sits at the right of the first line, for a count or Clear, however the filters wrap.
+3. `end` sits at the right of the first line, however the filters wrap.
+   It holds the number of results as a `FilterCount`, or a view switch.
 
 Filters that don't fit wrap onto the next line from the left edge of the bar, under the search field.
+
+`FilterCount` is the bare number in tabular digits.
+An icon before it, such as `list` for issues, says what is counted when the list doesn't make it plain.
+Screen readers hear its `unit` and the number, such as "Issues: 40".
+Never write the count as a sentence, such as "40 issues", in the bar.
 
 The name of a filter is inside the control, as its value or its `aria-label`.
 It is never a caption above it.
