@@ -133,6 +133,12 @@ describe("dictation", () => {
         await tick()
       }
       expect(where === "composer" ? value() : text()).toEqual(where === "composer" ? [] : "")
+      expect(one("[data-part=dictation-live]").textContent).toBe(said)
+      // The dot, time and wave sit with Cancel and Finish: the composer's bottom row, the text area's corner.
+      const status = one("[data-part=dictation][aria-label=Recording]")
+      expect(
+        status.closest(where === "composer" ? ".nc-composer__bar" : ".nc-textarea__tools"),
+      ).not.toBeNull()
       click(one("button[aria-label='Finish dictation']"))
       await tick()
       f.answer()
@@ -231,6 +237,25 @@ describe("dictation", () => {
     await tick()
     expect(f.calls).toEqual(["start", "settings"])
     expect(one("[data-part=text-area]").dataset.dictation).toBe("idle")
+  })
+
+  test("the composer shows a blocked microphone above its box, with any notice of its own", async () => {
+    const f = fake()
+    f.block()
+    const m = mount(() => (
+      <TranscriberProvider transcriber={f.t}>
+        <Composer notice={<span>Rate limited until 14:00</span>} />
+      </TranscriberProvider>
+    ))
+    cleanup.push(m.dispose)
+    await tick()
+    const notice = one("[data-part=composer-notice]")
+    expect(notice.textContent).toContain("Rate limited")
+    expect(notice.closest(".nc-composer")).toBeNull()
+    click(one("button[aria-label='Start dictation']"))
+    await tick(3)
+    expect(one("[data-part=dictation]").closest("[data-part=composer-notice]")).not.toBeNull()
+    expect(one("[data-part=dictation]").getAttribute("role")).toBe("alert")
   })
 
   test("a failed transcription shows why", async () => {

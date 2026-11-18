@@ -115,6 +115,7 @@ export function TextArea(props: TextAreaProps): JSX.Element {
                 />
               }
             >
+              <DictationBar dictation={state()} part="status" compact class="nc-textarea__status" />
               <IconButton round icon="close" label="Cancel dictation" onClick={() => state().onCancel?.()} />
               <button
                 type="button"
@@ -129,7 +130,11 @@ export function TextArea(props: TextAreaProps): JSX.Element {
         </Show>
       </div>
       <Show when={shown()}>
-        <DictationBar dictation={state()} compact class="nc-textarea__dictation" />
+        <Show when={state().state === "transcribing"}>
+          <DictationBar dictation={state()} part="status" class="nc-textarea__dictation" />
+        </Show>
+        <DictationBar dictation={state()} part="live" />
+        <DictationBar dictation={state()} part="notice" class="nc-textarea__dictation" />
       </Show>
       <Show when={message()}>
         <span id={helpId} class="nc-field__help" classList={{ "nc-field__help--error": invalid() }}>

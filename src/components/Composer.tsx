@@ -97,6 +97,11 @@ export interface ComposerProps {
   onSubmit?: (submit: ComposerSubmit) => void
   /** Placeholder text. Default "Ask anything…". */
   placeholder?: string
+  /**
+   * A notice about the input, in a strip on the composer's top edge, outside its box: a rate limit, a lost
+   * connection. A blocked microphone or a failed dictation shows there too.
+   */
+  notice?: JSX.Element
   /** `/` commands, run now. They start a line. */
   commands?: ComposerItem[]
   /** `@` context: files, docs and people. */
@@ -466,6 +471,11 @@ export function Composer(props: ComposerProps): JSX.Element {
       .join(", ")
   const dictState = () => dictation()?.state ?? "idle"
   const hasText = () => dictState() === "idle" || dictState() === "blocked"
+  /** A blocked microphone or a failed dictation, shown above the composer. */
+  const dictNotice = () =>
+    dictState() === "blocked" || (dictState() === "idle" && Boolean(dictation()?.error))
+  /** Recording or transcribing: the bottom row shows the dictation's status in place of the options. */
+  const dictBusy = () => dictState() === "recording" || dictState() === "transcribing"
 
   return (
     <div
@@ -493,6 +503,12 @@ export function Composer(props: ComposerProps): JSX.Element {
           </div>
         }
       >
+        <Show when={props.notice || dictNotice()}>
+          <div class="nc-composer__notice" data-part="composer-notice">
+            {props.notice}
+            <Show when={dictation()}>{(d) => <DictationBar dictation={d()} part="notice" />}</Show>
+          </div>
+        </Show>
         <div class="nc-composer" data-dictation={dictState()}>
           <Show when={(props.attachments?.length ?? 0) > 0}>
             <div class="nc-composer__attachments" role="list" aria-label="Attachments">
@@ -515,7 +531,14 @@ export function Composer(props: ComposerProps): JSX.Element {
             </div>
           </Show>
 
-          <Show when={dictation()}>{(d) => <DictationBar dictation={d()} />}</Show>
+          <Show when={dictation()}>
+            {(d) => (
+              <>
+                {/* The text heard so far takes the field's place, where the typed text will go. */}
+                <DictationBar dictation={d()} part="live" class="nc-composer__live body-lg" />
+              </>
+            )}
+          </Show>
 
           <div class="nc-composer__field" hidden={!hasText()}>
             <Show when={isBlank(value()) && !composing}>
@@ -559,152 +582,159 @@ export function Composer(props: ComposerProps): JSX.Element {
           </div>
 
           <div class="nc-composer__bar">
-            <Show when={props.onAttach}>
-              <IconButton label="Attach" icon="plus" onClick={() => props.onAttach?.()} />
-            </Show>
-            <Show when={phone() && hasOptions()}>
-              <button
-                type="button"
-                class="nc-composer__options"
-                data-part="composer-options"
-                aria-label={`Options: ${optionsSummary()}`}
-                aria-haspopup="dialog"
-                aria-expanded={options()}
-                onClick={() => setOptions(true)}
-              >
-                <Icon name="sliders-horizontal" size="sm" />
-                <span class="nc-composer__options-text">
-                  {props.models?.length ? optionLabel(props.models, props.model) : optionsSummary()}
-                </span>
-                <Show when={props.onEffortChange}>
-                  <Bars level={effortIndex()} />
-                </Show>
-              </button>
-              <Sheet open={options()} title="Options" flush onClose={() => setOptions(false)}>
-                <InsetList class="nc-composer__sheet">
-                  <Show when={props.models?.length}>
-                    <InsetGroup title="Model">
-                      <For each={props.models}>
-                        {(m) => (
-                          <InsetRow
-                            label={m.label}
-                            detail={m.description}
-                            checked={m.id === chosen(props.models, props.model)}
-                            onClick={() => props.onModelChange?.(m.id)}
-                          />
-                        )}
-                      </For>
-                    </InsetGroup>
-                  </Show>
-                  <Show when={props.modes?.length}>
-                    <InsetGroup title="Mode">
-                      <For each={props.modes}>
-                        {(m) => (
-                          <InsetRow
-                            label={m.label}
-                            detail={m.description}
-                            checked={m.id === chosen(props.modes, props.mode)}
-                            onClick={() => props.onModeChange?.(m.id)}
-                          />
-                        )}
-                      </For>
-                    </InsetGroup>
-                  </Show>
+            <Show
+              when={!dictBusy()}
+              fallback={
+                <DictationBar dictation={dictation()!} part="status" class="nc-composer__dictation" />
+              }
+            >
+              <Show when={props.onAttach}>
+                <IconButton label="Attach" icon="plus" onClick={() => props.onAttach?.()} />
+              </Show>
+              <Show when={phone() && hasOptions()}>
+                <button
+                  type="button"
+                  class="nc-composer__options"
+                  data-part="composer-options"
+                  aria-label={`Options: ${optionsSummary()}`}
+                  aria-haspopup="dialog"
+                  aria-expanded={options()}
+                  onClick={() => setOptions(true)}
+                >
+                  <Icon name="sliders-horizontal" size="sm" />
+                  <span class="nc-composer__options-text">
+                    {props.models?.length ? optionLabel(props.models, props.model) : optionsSummary()}
+                  </span>
                   <Show when={props.onEffortChange}>
-                    <InsetGroup title="Effort">
-                      <For each={EFFORTS}>
-                        {(e, i) => (
-                          <InsetRow
-                            label={e.label}
-                            detail={e.description}
-                            leading={<Bars level={i()} />}
-                            checked={i() === effortIndex()}
-                            onClick={() => props.onEffortChange?.(e.id)}
-                          />
-                        )}
-                      </For>
-                    </InsetGroup>
-                  </Show>
-                </InsetList>
-              </Sheet>
-            </Show>
-            <Show when={!phone() && props.models?.length}>
-              <DropdownMenu
-                label="Model"
-                radio
-                placement="top-start"
-                items={(props.models ?? []).map((m) => ({
-                  id: m.id,
-                  label: m.label,
-                  description: m.description,
-                  checked: m.id === (props.model ?? props.models?.[0]?.id),
-                }))}
-                onSelect={(id) => props.onModelChange?.(id)}
-                trigger={(tp) => (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    iconEnd="chevron-down"
-                    aria-label={`Model: ${optionLabel(props.models, props.model)}`}
-                    {...tp}
-                  >
-                    {optionLabel(props.models, props.model)}
-                  </Button>
-                )}
-              />
-            </Show>
-            <Show when={!phone() && props.modes?.length}>
-              <DropdownMenu
-                label="Mode"
-                radio
-                placement="top-start"
-                items={(props.modes ?? []).map((m) => ({
-                  id: m.id,
-                  label: m.label,
-                  description: m.description,
-                  checked: m.id === (props.mode ?? props.modes?.[0]?.id),
-                }))}
-                onSelect={(id) => props.onModeChange?.(id)}
-                trigger={(tp) => (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    iconEnd="chevron-down"
-                    aria-label={`Mode: ${optionLabel(props.modes, props.mode)}`}
-                    {...tp}
-                  >
-                    {optionLabel(props.modes, props.mode)}
-                  </Button>
-                )}
-              />
-            </Show>
-            <Show when={!phone() && props.onEffortChange}>
-              <DropdownMenu
-                label="Effort"
-                radio
-                placement="top-start"
-                items={EFFORTS.map((e, i) => ({
-                  id: e.id,
-                  label: e.label,
-                  description: e.description,
-                  checked: i === effortIndex(),
-                  leading: <Bars level={i} />,
-                }))}
-                onSelect={(id) => props.onEffortChange?.(id as EffortLevel)}
-                trigger={(tp) => (
-                  <button
-                    type="button"
-                    class="nc-effort"
-                    aria-label={`Effort: ${EFFORTS[effortIndex()]?.label}`}
-                    {...tp}
-                  >
                     <Bars level={effortIndex()} />
-                    {EFFORTS[effortIndex()]?.label}
-                  </button>
-                )}
-              />
+                  </Show>
+                </button>
+                <Sheet open={options()} title="Options" flush onClose={() => setOptions(false)}>
+                  <InsetList class="nc-composer__sheet">
+                    <Show when={props.models?.length}>
+                      <InsetGroup title="Model">
+                        <For each={props.models}>
+                          {(m) => (
+                            <InsetRow
+                              label={m.label}
+                              detail={m.description}
+                              checked={m.id === chosen(props.models, props.model)}
+                              onClick={() => props.onModelChange?.(m.id)}
+                            />
+                          )}
+                        </For>
+                      </InsetGroup>
+                    </Show>
+                    <Show when={props.modes?.length}>
+                      <InsetGroup title="Mode">
+                        <For each={props.modes}>
+                          {(m) => (
+                            <InsetRow
+                              label={m.label}
+                              detail={m.description}
+                              checked={m.id === chosen(props.modes, props.mode)}
+                              onClick={() => props.onModeChange?.(m.id)}
+                            />
+                          )}
+                        </For>
+                      </InsetGroup>
+                    </Show>
+                    <Show when={props.onEffortChange}>
+                      <InsetGroup title="Effort">
+                        <For each={EFFORTS}>
+                          {(e, i) => (
+                            <InsetRow
+                              label={e.label}
+                              detail={e.description}
+                              leading={<Bars level={i()} />}
+                              checked={i() === effortIndex()}
+                              onClick={() => props.onEffortChange?.(e.id)}
+                            />
+                          )}
+                        </For>
+                      </InsetGroup>
+                    </Show>
+                  </InsetList>
+                </Sheet>
+              </Show>
+              <Show when={!phone() && props.models?.length}>
+                <DropdownMenu
+                  label="Model"
+                  radio
+                  placement="top-start"
+                  items={(props.models ?? []).map((m) => ({
+                    id: m.id,
+                    label: m.label,
+                    description: m.description,
+                    checked: m.id === (props.model ?? props.models?.[0]?.id),
+                  }))}
+                  onSelect={(id) => props.onModelChange?.(id)}
+                  trigger={(tp) => (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      iconEnd="chevron-down"
+                      aria-label={`Model: ${optionLabel(props.models, props.model)}`}
+                      {...tp}
+                    >
+                      {optionLabel(props.models, props.model)}
+                    </Button>
+                  )}
+                />
+              </Show>
+              <Show when={!phone() && props.modes?.length}>
+                <DropdownMenu
+                  label="Mode"
+                  radio
+                  placement="top-start"
+                  items={(props.modes ?? []).map((m) => ({
+                    id: m.id,
+                    label: m.label,
+                    description: m.description,
+                    checked: m.id === (props.mode ?? props.modes?.[0]?.id),
+                  }))}
+                  onSelect={(id) => props.onModeChange?.(id)}
+                  trigger={(tp) => (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      iconEnd="chevron-down"
+                      aria-label={`Mode: ${optionLabel(props.modes, props.mode)}`}
+                      {...tp}
+                    >
+                      {optionLabel(props.modes, props.mode)}
+                    </Button>
+                  )}
+                />
+              </Show>
+              <Show when={!phone() && props.onEffortChange}>
+                <DropdownMenu
+                  label="Effort"
+                  radio
+                  placement="top-start"
+                  items={EFFORTS.map((e, i) => ({
+                    id: e.id,
+                    label: e.label,
+                    description: e.description,
+                    checked: i === effortIndex(),
+                    leading: <Bars level={i} />,
+                  }))}
+                  onSelect={(id) => props.onEffortChange?.(id as EffortLevel)}
+                  trigger={(tp) => (
+                    <button
+                      type="button"
+                      class="nc-effort"
+                      aria-label={`Effort: ${EFFORTS[effortIndex()]?.label}`}
+                      {...tp}
+                    >
+                      <Bars level={effortIndex()} />
+                      {EFFORTS[effortIndex()]?.label}
+                    </button>
+                  )}
+                />
+              </Show>
+              <span class="nc-composer__spacer" />
             </Show>
-            <span class="nc-composer__spacer" />
             <Show when={dictation()}>
               <Show
                 when={dictState() === "recording"}

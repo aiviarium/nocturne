@@ -27,10 +27,16 @@ The value is a list of text and chip segments, `ComposerValue`.
 The component only exposes callbacks.
 It doesn't talk to the network or the microphone.
 Dictation comes in through `TranscriberProvider`.
+While recording, the bottom row shows the red dot, the time and the wave, up to Cancel and Finish.
+The text heard so far sits where the typed text goes.
+A notice about the input, such as a blocked microphone or a rate limit, sits in a strip on the top edge of the composer, outside its box.
+Pass your own as `notice`.
 
 <Example id="composer/live" />
 <Example id="composer/chips" />
 <Example id="composer/dictation" />
+<Example id="composer/dictation-states" />
+<Example id="composer/blocked" />
 
 <GalleryLink page="composer" />
 

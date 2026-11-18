@@ -269,12 +269,18 @@ export const formatElapsed = (s: number) =>
 /**
  * The dictation strip as Nocturne draws it: recording (rose dot, timer, waveform, live text), transcribing,
  * microphone blocked with a way to fix it, and the last error.
+ *
+ * `part` draws one piece, for an input that places them apart: `status` (the dot, time and wave, or
+ * "Transcribing"), `live` (the text heard so far, or "Listening…" before there is any) and `notice` (blocked or
+ * the last error). Without it, all three in a column.
  */
 export function DictationBar(props: {
   dictation: DictationState
   compact?: boolean
+  part?: "status" | "live" | "notice"
   class?: string
 }): JSX.Element {
+  const shows = (part: "status" | "live" | "notice") => !props.part || props.part === part
   const levels = createSignal<number[]>(Array.from({ length: WAVE_SAMPLES }, () => 0.1))
   createEffect(
     on(
@@ -285,10 +291,10 @@ export function DictationBar(props: {
       },
     ),
   )
-  const samples = () => (props.compact ? levels[0]().slice(-48) : levels[0]())
+  const samples = () => (props.compact ? levels[0]().slice(-24) : levels[0]())
   return (
     <>
-      <Show when={props.dictation.state === "recording"}>
+      <Show when={props.dictation.state === "recording" && shows("status")}>
         <div
           class={cx("nc-dictation", props.class)}
           data-part="dictation"
@@ -303,19 +309,37 @@ export function DictationBar(props: {
             </For>
           </div>
         </div>
-        <Show when={props.dictation.partial}>
-          <p class="nc-dictation__live body" data-part="dictation-live" aria-live="polite">
+      </Show>
+      <Show when={props.dictation.state === "recording" && shows("live")}>
+        <Show
+          when={props.dictation.partial}
+          fallback={
+            <Show when={props.part === "live"}>
+              <p
+                class={cx("nc-dictation__live nc-dictation__live--empty", props.class)}
+                data-part="dictation-live"
+              >
+                Listening…
+              </p>
+            </Show>
+          }
+        >
+          <p
+            class={cx("nc-dictation__live", props.part ? props.class : "body")}
+            data-part="dictation-live"
+            aria-live="polite"
+          >
             {props.dictation.partial}
           </p>
         </Show>
       </Show>
-      <Show when={props.dictation.state === "transcribing"}>
+      <Show when={props.dictation.state === "transcribing" && shows("status")}>
         <div class={cx("nc-dictation", props.class)} data-part="dictation" role="status">
           <StatusDot status="ai" />
           <span class="nc-muted">Transcribing…</span>
         </div>
       </Show>
-      <Show when={props.dictation.state === "blocked"}>
+      <Show when={props.dictation.state === "blocked" && shows("notice")}>
         <div class={cx("nc-dictation nc-dictation--blocked", props.class)} data-part="dictation" role="alert">
           <span>Microphone access is blocked.</span>
           <Button variant="ghost" size="sm" onClick={() => props.dictation.onOpenSettings?.()}>
@@ -323,7 +347,7 @@ export function DictationBar(props: {
           </Button>
         </div>
       </Show>
-      <Show when={props.dictation.state === "idle" && props.dictation.error}>
+      <Show when={props.dictation.state === "idle" && props.dictation.error && shows("notice")}>
         <div class={cx("nc-dictation nc-dictation--blocked", props.class)} data-part="dictation" role="alert">
           <span>Dictation failed: {props.dictation.error}</span>
         </div>
