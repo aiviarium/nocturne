@@ -517,7 +517,10 @@ describe("ChatMessage", () => {
     const msg = one("[data-part=chat-message]", root)
     expect(msg.getAttribute("data-role")).toBe("assistant")
     expect(one("[data-part=avatar]", msg).getAttribute("data-kind")).toBe("ai")
-    expect(one(".nc-msg-ai__body", msg).textContent).toBe("Thought for 9sHere it is.")
+    // The avatar and the thought head the reply; the body under them isn't indented beside the avatar.
+    expect(one(".nc-msg-ai__head", msg).textContent).toBe("Thought for 9s")
+    expect(one(".nc-msg-ai__head [data-part=avatar]", msg)).toBeTruthy()
+    expect(one(".nc-msg-ai__body", msg).textContent).toBe("Here it is.")
   })
 
   test("a custom avatar replaces the assistant mark", () => {

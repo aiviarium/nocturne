@@ -262,7 +262,6 @@ button.nc-menu__item { box-sizing: border-box; width: 100%; border: 0; backgroun
 .nc-diff__hunk--none { background: var(--bg-1); color: var(--text-3); }
 
 /* ---------- Chat ---------- */
-.nc-msg-ai__body { flex: 1; }
 /* Steps are rows on the page, not a box: a step is one line, and its output a block sized to what it holds. */
 .nc-steps { border: 0; border-radius: 0; overflow: visible; gap: 0; }
 .nc-step { height: 28px; padding: 0; border-bottom: 0; }

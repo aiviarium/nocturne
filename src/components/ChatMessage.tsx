@@ -7,7 +7,10 @@ import { Icon, type IconName } from "./Icon"
 import { State, StatusDot } from "./StatusDot"
 
 export interface ChatMessageProps extends Omit<JSX.HTMLAttributes<HTMLDivElement>, "role"> {
-  /** `user` is a right-aligned bubble; `assistant` writes on the page next to the AI avatar. */
+  /**
+   * `user` is a right-aligned bubble; `assistant` writes on the page at the column's full width, under a line with
+   * the AI avatar (and the thought). Neither is indented.
+   */
   role: "user" | "assistant"
   /** Assistant only: a collapsed "Thought for 9s" line above the reply. */
   thought?: string
@@ -28,13 +31,14 @@ export function ChatMessage(props: ChatMessageProps): JSX.Element {
       }
     >
       <div data-part="chat-message" data-role="assistant" class={cx("nc-msg-ai", local.class)} {...rest}>
-        {local.avatar ?? <Avatar kind="ai" />}
-        <div class="nc-msg-ai__body">
+        {/* The avatar heads the reply instead of taking a column of its own: the body starts at the left edge. */}
+        <div class="nc-msg-ai__head">
+          {local.avatar ?? <Avatar kind="ai" />}
           <Show when={local.thought}>
             <span class="nc-meta">{local.thought}</span>
           </Show>
-          {local.children}
         </div>
+        <div class="nc-msg-ai__body">{local.children}</div>
       </div>
     </Show>
   )
