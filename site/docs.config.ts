@@ -86,14 +86,14 @@ const config: DocsConfig = {
   slug: 'nocturne',
   description: 'A dark-first design system for dense tool interfaces, with its SolidJS components.',
   area: 'Design system',
-  // Iris, Nocturne's default accent family. Nocturne has no colour of its own yet.
+  // Iris, Nocturne's default accent family.
   colour: { dark: '#8F8FFA', light: '#4A4AC8' },
   repo: 'https://github.com/aiviarium/nocturne',
   repoDocsPath: 'site/content/docs',
   chip: { label: 'version', value: 'v0.1' },
   badges: {
-    // The endpoint has no nocturne project yet, so the site shows no endpoint badges.
     host: 'https://aiviarium-badges.helight.workers.dev',
+    ci: 'ci.yml',
   },
   install: {
     label: 'Add it from a checkout',
