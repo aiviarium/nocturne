@@ -374,7 +374,7 @@ export interface FilterBarProps extends JSX.HTMLAttributes<HTMLDivElement> {
   search?: JSX.Element
   /** The filters: `Tabs` (segmented), `Select`s with `aria-label`, `Switch`es with a short label. */
   children?: JSX.Element
-  /** At the right, after the filters: a count of results, a Clear button, a view switch. */
+  /** At the right of the first line, however the filters wrap: a count of results, a Clear button, a view switch. */
   end?: JSX.Element
 }
 
@@ -405,6 +405,15 @@ export function FilterBar(props: FilterBarProps): JSX.Element {
       ro?.disconnect()
     })
   }
+  // `end` is pinned to the first line's right; the row keeps its width free on every line so nothing runs under it.
+  const [endWidth, setEndWidth] = createSignal(0)
+  const watchEnd = (el: HTMLDivElement) => {
+    const update = () => setEndWidth(Math.ceil(el.getBoundingClientRect().width))
+    const ro = typeof ResizeObserver === "function" ? new ResizeObserver(update) : undefined
+    ro?.observe(el)
+    queueMicrotask(update)
+    onCleanup(() => ro?.disconnect())
+  }
   return (
     <div
       data-part="filter-bar"
@@ -413,7 +422,11 @@ export function FilterBar(props: FilterBarProps): JSX.Element {
       class={cx("nc-filterbar", local.class)}
       {...rest}
     >
-      <div class="nc-filterbar__row">
+      <div
+        class="nc-filterbar__row"
+        data-end={local.end ? "" : undefined}
+        style={local.end ? { "--nc-filterbar-end": `${endWidth()}px` } : undefined}
+      >
         <Show when={local.search}>
           <div class="nc-filterbar__search">{local.search}</div>
         </Show>
@@ -428,7 +441,9 @@ export function FilterBar(props: FilterBarProps): JSX.Element {
           </div>
         </Show>
         <Show when={local.end}>
-          <div class="nc-filterbar__end">{local.end}</div>
+          <div ref={watchEnd} class="nc-filterbar__end">
+            {local.end}
+          </div>
         </Show>
       </div>
     </div>
