@@ -722,7 +722,7 @@ describe("DictationBar", () => {
 
   test("compact keeps fewer waveform samples", () => {
     const { root } = track(mount(() => <DictationBar compact dictation={{ state: "recording" }} />))
-    expect(root.querySelectorAll(".nc-wave__bar").length).toBe(48)
+    expect(root.querySelectorAll(".nc-wave__bar").length).toBe(24)
   })
 
   test("a blocked microphone offers to open settings", () => {

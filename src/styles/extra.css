@@ -313,12 +313,20 @@ button.nc-effort:focus-visible { outline: none; box-shadow: var(--focus-ring); }
 .nc-wave { display: flex; align-items: center; gap: 2px; flex: 1; height: 30px; }
 .nc-wave__bar { flex: 1; max-width: 3px; min-height: 2px; border-radius: var(--radius-xs); background: var(--accent-text); }
 .nc-dictation__live { margin: 0; padding: 0 12px 4px; color: var(--text-2); white-space: pre-wrap; }
-/* A text area with dictation: the mic sits in the bottom corner, the strip below. */
+/* In the composer the status fills the bottom row up to Cancel and Finish, and the live text sits where typed text
+   would, with the editor's padding. */
+.nc-composer__dictation { flex: 1; min-width: 0; min-height: var(--control-md); padding: 0 var(--space-1); }
+.nc-composer__live { max-height: 200px; padding: 10px 12px 2px; overflow-y: auto; color: var(--text-1); }
+.nc-dictation__live--empty { color: var(--text-3); }
+/* A text area with dictation: the mic, and while recording the dot, time and wave, sit in the bottom corner; the
+   live text and any notice go below. */
 .nc-textarea { position: relative; display: flex; }
 .nc-textarea__input { height: auto; min-height: 96px; padding: 8px 10px; resize: vertical; }
 .nc-textarea--dictation .nc-textarea__input { padding-bottom: 40px; }
 .nc-textarea__tools { position: absolute; right: 6px; bottom: 6px; display: flex; gap: 4px; align-items: center; }
 .nc-textarea__dictation { padding: 4px 2px 0; }
+.nc-textarea__status { min-height: 0; padding: 0 var(--space-1) 0 0; }
+.nc-textarea__status .nc-wave { flex: none; width: 96px; height: 20px; }
 .nc-field[data-dictation="recording"] .nc-textarea__input { border-color: var(--accent-line); box-shadow: 0 0 0 3px var(--accent-tint); }
 @media (max-width: 720px) {
   .nc-textarea__tools .nc-icon-btn, .nc-textarea__tools .nc-send { min-width: 44px; min-height: 44px; }

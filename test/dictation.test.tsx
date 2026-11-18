@@ -133,6 +133,12 @@ describe("dictation", () => {
         await tick()
       }
       expect(where === "composer" ? value() : text()).toEqual(where === "composer" ? [] : "")
+      expect(one("[data-part=dictation-live]").textContent).toBe(said)
+      // The dot, time and wave sit with Cancel and Finish: the composer's bottom row, the text area's corner.
+      const status = one("[data-part=dictation][aria-label=Recording]")
+      expect(
+        status.closest(where === "composer" ? ".nc-composer__bar" : ".nc-textarea__tools"),
+      ).not.toBeNull()
       click(one("button[aria-label='Finish dictation']"))
       await tick()
       f.answer()
