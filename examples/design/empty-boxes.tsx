@@ -3,6 +3,7 @@ import type { ExampleMeta } from "../_kit/types"
 
 export const meta: ExampleMeta = {
   title: "A titled box for each empty section",
+  verdict: "dont",
   note: "Two boxes that say there is nothing, taking more room than the one with content.",
   surface: "well",
 }

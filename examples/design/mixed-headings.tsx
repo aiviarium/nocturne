@@ -3,6 +3,7 @@ import type { ExampleMeta } from "../_kit/types"
 
 export const meta: ExampleMeta = {
   title: "Each module its own heading",
+  verdict: "dont",
   note: "A 20px title from one module, a 16px one from another, a capitalised label from a third: the page reads as three apps.",
   surface: "well",
 }

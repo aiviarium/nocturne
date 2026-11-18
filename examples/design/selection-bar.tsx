@@ -3,6 +3,7 @@ import type { ExampleMeta } from "../_kit/types"
 
 export const meta: ExampleMeta = {
   title: "A bar while something is selected",
+  verdict: "do",
   note: "Nothing about selection shows until a row is selected; then the count and what can be done with it, at the list's foot.",
 }
 

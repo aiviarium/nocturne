@@ -4,6 +4,7 @@ import type { ExampleMeta } from "../_kit/types"
 
 export const meta: ExampleMeta = {
   title: "A row of rare buttons",
+  verdict: "dont",
   note: "A toolbar for things done twice a year, every time the section is shown.",
 }
 

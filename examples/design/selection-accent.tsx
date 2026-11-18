@@ -4,6 +4,7 @@ import type { ExampleMeta } from "../_kit/types"
 
 export const meta: ExampleMeta = {
   title: "Selection in the accent",
+  verdict: "dont",
   note: "Rows, checkboxes and the bar in the accent's tint: the selection outshouts the primary button and the unread dots, and a list with many rows selected turns into a block of colour.",
   surface: "none",
 }

@@ -3,6 +3,7 @@ import type { ExampleMeta } from "../_kit/types"
 
 export const meta: ExampleMeta = {
   title: "As tall as its content",
+  verdict: "do",
   note: "Two recent pages, a card that ends where they end.",
   surface: "well",
 }

@@ -4,6 +4,7 @@ import type { ExampleMeta } from "../_kit/types"
 
 export const meta: ExampleMeta = {
   title: "The row is what moves",
+  verdict: "do",
   note: "No grip and no delete button: press a row and move it to drag it (a press that does not move opens it), Alt and an arrow moves it from the keyboard, and Delete is in its context menu and on the Delete key, with Undo. On a touch screen a long press opens the menu, and moving the finger then picks the row up.",
 }
 

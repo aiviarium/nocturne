@@ -12,6 +12,7 @@ import { asset } from '@/lib/site';
 interface Meta {
   title: string;
   note?: string;
+  verdict?: 'do' | 'dont';
   phone?: boolean;
   height?: number;
 }
@@ -150,10 +151,13 @@ export function Example({ id, minHeight = 0, caption = true }: ExampleProps) {
   if (!meta) throw new Error(`No Nocturne example ${id}`);
   const phoneHeight = Math.min(IPHONE.height, Math.max(640, meta.height ?? IPHONE.height));
   return (
-    <figure className="ex not-prose" data-example={id}>
+    <figure className="ex not-prose" data-example={id} data-verdict={meta.verdict}>
       {caption && (
         <figcaption className="ex-caption">
-          <span className="ex-title">{meta.title}</span>
+          <span className="ex-title">
+            {meta.verdict && <span className="ex-verdict">{meta.verdict === 'do' ? 'Do' : "Don't"}</span>}
+            {meta.title}
+          </span>
           {meta.note && <span className="ex-note">{meta.note}</span>}
         </figcaption>
       )}
@@ -170,6 +174,25 @@ export function Example({ id, minHeight = 0, caption = true }: ExampleProps) {
         Open the example ↗
       </a>
     </figure>
+  );
+}
+
+/**
+ * A design rule as one comparison: the right way, then the wrong way it replaces. Both are labelled, and the wrong
+ * one has a danger edge, so neither reads as a pattern on its own.
+ */
+export function DoDont({ do: right, dont: wrong, minHeight }: { do: string; dont: string; minHeight?: number }) {
+  for (const [id, verdict] of [
+    [right, 'do'],
+    [wrong, 'dont'],
+  ] as const) {
+    if (examples[id]?.verdict !== verdict) throw new Error(`DoDont: ${id} is not marked verdict "${verdict}"`);
+  }
+  return (
+    <div className="ex-pair not-prose" data-part="do-dont">
+      <Example id={right} minHeight={minHeight} />
+      <Example id={wrong} minHeight={minHeight} />
+    </div>
   );
 }
 

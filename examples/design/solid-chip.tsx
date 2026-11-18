@@ -2,6 +2,7 @@ import type { ExampleMeta } from "../_kit/types"
 
 export const meta: ExampleMeta = {
   title: "Saturated pills",
+  verdict: "dont",
   note: "Full-strength fills with white text: each label is louder than the title it belongs to.",
 }
 

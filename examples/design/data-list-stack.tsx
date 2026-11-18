@@ -3,6 +3,7 @@ import type { ExampleMeta } from "../_kit/types"
 
 export const meta: ExampleMeta = {
   title: "A stack of fields and buttons",
+  verdict: "dont",
   note: "Each item a labelled field of its own with a Remove button, and a big Add under them: three times the height, no order, and no keyboard between the rows.",
 }
 

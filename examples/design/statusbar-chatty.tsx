@@ -3,6 +3,7 @@ import type { ExampleMeta } from "../_kit/types"
 
 export const meta: ExampleMeta = {
   title: "A status bar of things that are fine",
+  verdict: "dont",
   note: "Connected, synced, a version and a count, all the time: when something does go wrong it is one more item in the strip.",
   surface: "none",
 }

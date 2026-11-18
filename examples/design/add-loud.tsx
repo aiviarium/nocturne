@@ -3,6 +3,7 @@ import type { ExampleMeta } from "../_kit/types"
 
 export const meta: ExampleMeta = {
   title: "A filled button with a plus to add",
+  verdict: "dont",
   note: "The loudest control on the screen starts something small, and says in words what its icon and tooltip already say.",
   surface: "well",
 }

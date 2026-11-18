@@ -4,6 +4,7 @@ import type { ExampleMeta } from "../_kit/types"
 
 export const meta: ExampleMeta = {
   title: "A menu that ignores the selection",
+  verdict: "dont",
   note: "Three rows are selected, but the right-clicked row's menu says Archive and Delete for that row alone: the person cannot tell whether Delete takes one row or three.",
 }
 

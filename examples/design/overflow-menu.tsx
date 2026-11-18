@@ -3,6 +3,7 @@ import type { ExampleMeta } from "../_kit/types"
 
 export const meta: ExampleMeta = {
   title: "Rare actions behind the overflow",
+  verdict: "do",
   note: "Export, import and settings are used a few times a year: one icon button in the row that is already there.",
 }
 

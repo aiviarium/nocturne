@@ -6,7 +6,7 @@ import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
 import { TypeTable } from 'fumadocs-ui/components/type-table';
 import type { MDXComponents } from 'mdx/types';
 import { Badge } from '@/components/badge';
-import { Example, GalleryLink } from '@/components/example';
+import { DoDont, Example, GalleryLink } from '@/components/example';
 import {
   AccentTable,
   ColourTable,
@@ -24,6 +24,7 @@ export function getMDXComponents(components?: MDXComponents) {
     Accordion,
     AccentTable,
     ColourTable,
+    DoDont,
     Example,
     FontTable,
     GalleryLink,

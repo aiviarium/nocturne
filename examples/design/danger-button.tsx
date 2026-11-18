@@ -3,6 +3,7 @@ import type { ExampleMeta } from "../_kit/types"
 
 export const meta: ExampleMeta = {
   title: "A button may be coloured; it has no hue edge",
+  verdict: "do",
   note: "Danger and accent buttons are fills. Hue fills belong to buttons and icon tiles only.",
 }
 

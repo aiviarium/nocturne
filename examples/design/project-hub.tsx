@@ -3,6 +3,7 @@ import type { ExampleMeta } from "../_kit/types"
 
 export const meta: ExampleMeta = {
   title: "The project is the hub",
+  verdict: "do",
   note: "Issues, docs, agent sessions and environments sit inside the project, contributed by the modules that own them.",
   surface: "well",
 }

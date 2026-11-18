@@ -3,6 +3,7 @@ import type { ExampleMeta } from "../_kit/types"
 
 export const meta: ExampleMeta = {
   title: "A quiet plus to add; a filled button to finish",
+  verdict: "do",
   note: "New issue is a ghost plus with its label as the tooltip, among the header's other actions. Create, in the dialog that follows, is the one primary.",
   surface: "well",
 }

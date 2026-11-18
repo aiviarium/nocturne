@@ -3,6 +3,7 @@ import type { ExampleMeta } from "../_kit/types"
 
 export const meta: ExampleMeta = {
   title: "A hue outline around a hue fill",
+  verdict: "dont",
   note: "The snapshot's danger button: a red line around a red tint. The edge adds weight and says nothing new.",
 }
 

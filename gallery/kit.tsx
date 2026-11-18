@@ -31,8 +31,11 @@ export function ExampleSection(props: { id: string }): JSX.Element {
     )
   }
   return (
-    <section class="g-section ex-host" data-example={props.id}>
-      <h2 class="g-section__title label">{meta.title}</h2>
+    <section class="g-section ex-host" data-example={props.id} data-verdict={meta.verdict}>
+      <h2 class="g-section__title label">
+        {meta.verdict ? <span class="g-verdict">{meta.verdict === "do" ? "Do" : "Don't"}</span> : null}
+        {meta.title}
+      </h2>
       {meta.note ? <p class="g-section__note nc-meta">{meta.note}</p> : null}
       {body()}
     </section>

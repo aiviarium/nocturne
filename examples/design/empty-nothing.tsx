@@ -3,6 +3,7 @@ import type { ExampleMeta } from "../_kit/types"
 
 export const meta: ExampleMeta = {
   title: "Empty sections are not drawn",
+  verdict: "do",
   note: "Home with no pins and no widgets shows what it has; adding a first widget is one small control.",
   surface: "well",
 }

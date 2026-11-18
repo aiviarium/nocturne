@@ -3,6 +3,7 @@ import type { ExampleMeta } from "../_kit/types"
 
 export const meta: ExampleMeta = {
   title: "A form of every filter",
+  verdict: "dont",
   note: "A captioned field for every possible filter, most of them empty, takes rows above the list and still cannot say “or”.",
 }
 

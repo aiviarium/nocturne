@@ -3,6 +3,7 @@ import type { ExampleMeta } from "../_kit/types"
 
 export const meta: ExampleMeta = {
   title: "Holes, restated normal states and short content in tall cells",
+  verdict: "dont",
   note: "Every cell keeps its stored size: the empty inbox leaves a hole, a widget says nothing is failing, and two rows sit at the top of a cell sized for six.",
   surface: "well",
 }

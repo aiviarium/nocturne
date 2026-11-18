@@ -3,6 +3,7 @@ import type { ExampleMeta } from "../_kit/types"
 
 export const meta: ExampleMeta = {
   title: "A list set into its card",
+  verdict: "do",
   note: "variant=\"inset\": the titles start on the card's text edge, under the property labels, and the selection fill is 6px from the card's edge.",
   surface: "well",
 }

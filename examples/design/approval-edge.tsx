@@ -3,6 +3,7 @@ import type { ExampleMeta } from "../_kit/types"
 
 export const meta: ExampleMeta = {
   title: "A hue edge as the mark of a state",
+  verdict: "dont",
   note: "A coloured border and bar for “waiting”: colour alone carries the state, and the card outshouts the conversation.",
 }
 

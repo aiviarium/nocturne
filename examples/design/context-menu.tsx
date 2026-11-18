@@ -4,6 +4,7 @@ import type { ExampleMeta } from "../_kit/types"
 
 export const meta: ExampleMeta = {
   title: "The row's menu is where the row is",
+  verdict: "do",
   note: "Right-click a row (or press the menu key on it). On a phone the same menu opens on a long press.",
   toasts: true,
 }

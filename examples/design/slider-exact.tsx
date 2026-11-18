@@ -3,6 +3,7 @@ import type { ExampleMeta } from "../_kit/types"
 
 export const meta: ExampleMeta = {
   title: "A slider for an exact number",
+  verdict: "dont",
   note: "A port from 1 to 65535 on a track, with no readout: a pixel is hundreds of ports, and nothing says which one is set.",
 }
 

@@ -7,6 +7,11 @@ export interface ExampleMeta {
   /** One or two sentences under the title. */
   note?: string
   /**
+   * For the design rules' pairs: `do` is the right way, `dont` the wrong way it is compared with. The site and the
+   * gallery label each one and edge a `dont` in the danger colour. Every example in `examples/design/` sets it.
+   */
+  verdict?: "do" | "dont"
+  /**
    * What the example sits on. `card` (default): a padded bg-1 surface, as in a view. `well`: a padded bg-0
    * surface, as the canvas between frames. `none`: the example brings its own surface (a table, a panel).
    */

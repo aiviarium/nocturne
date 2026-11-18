@@ -3,6 +3,7 @@ import type { ExampleMeta } from "../_kit/types"
 
 export const meta: ExampleMeta = {
   title: "A title bar and a toolbar",
+  verdict: "dont",
   note: "The view's name again at 26px, actions in a row of their own: two bars before the first issue.",
   surface: "well",
 }

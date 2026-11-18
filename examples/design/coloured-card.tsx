@@ -3,6 +3,7 @@ import type { ExampleMeta } from "../_kit/types"
 
 export const meta: ExampleMeta = {
   title: "Colour on the card",
+  verdict: "dont",
   note: "Tinted cards with hue edges, one colour per kind: the grid turns into a patchwork and nothing on it reads as signal.",
   surface: "well",
 }

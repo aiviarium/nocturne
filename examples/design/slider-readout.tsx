@@ -3,6 +3,7 @@ import type { ExampleMeta } from "../_kit/types"
 
 export const meta: ExampleMeta = {
   title: "A bounded value with its readout",
+  verdict: "do",
   note: "A slider for a value where roughly right is right; the value at the label's right, a field when it must be exact.",
 }
 

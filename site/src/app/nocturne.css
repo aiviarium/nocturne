@@ -271,6 +271,36 @@
   border-radius: 46px;
   background: #000;
 }
+/* The design rules' pairs: a label before the title, and a danger edge on the wrong way. */
+.ex-verdict {
+  display: inline-block;
+  margin-right: 8px;
+  padding: 0 6px;
+  border: 1px solid currentColor;
+  border-radius: 4px;
+  font-size: 11px;
+  line-height: 16px;
+  font-weight: 600;
+  vertical-align: 1px;
+}
+.ex[data-verdict='do'] .ex-verdict {
+  color: var(--color-fd-success);
+}
+.ex[data-verdict='dont'] .ex-verdict {
+  color: var(--color-fd-error);
+}
+.ex[data-verdict='dont'] .ex-stage {
+  border-color: color-mix(in srgb, var(--color-fd-error) 55%, transparent);
+}
+.ex-pair {
+  margin: 20px 0 28px;
+  padding: 16px 16px 4px;
+  border: 1px solid var(--line-soft);
+  border-radius: 8px;
+}
+.ex-pair > .ex {
+  margin: 0 0 16px;
+}
 .ex-open {
   display: inline-block;
   margin-top: 6px;

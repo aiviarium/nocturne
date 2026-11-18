@@ -3,6 +3,7 @@ import type { ExampleMeta } from "../_kit/types"
 
 export const meta: ExampleMeta = {
   title: "Form fields in a property list",
+  verdict: "dont",
   note: "Boxed 30px fields with steppers outweigh the values around them, push the rows apart and break the value edge.",
 }
 
