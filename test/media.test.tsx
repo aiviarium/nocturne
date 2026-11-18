@@ -42,14 +42,7 @@ describe("ChatMedia images", () => {
     expect(grid.dataset.layout).toBe("single")
     expect(tiles()).toHaveLength(1)
     expect(tiles()[0]?.style.aspectRatio).toBe("1280 / 800")
-    // 480px wide at most, and 360px high at most: 1280×800 fits 480 wide.
-    expect(grid.getAttribute("style")).toContain("480px")
     expect(one<HTMLImageElement>("img", root).alt).toBe("Image 1")
-  })
-
-  test("a tall image is held to the height limit", () => {
-    track(mount(() => <ChatMedia items={[image(1, { width: 600, height: 1200 })]} />))
-    expect(one(".nc-media__images").getAttribute("style")).toContain("180px")
   })
 
   test("two images sit side by side, three in a row", () => {
@@ -235,7 +228,6 @@ describe("ChatMedia audio, video and files", () => {
     expect(video.hasAttribute("controls")).toBe(true)
     expect(video.getAttribute("poster")).toBe("blob:poster")
     expect(video.style.aspectRatio).toBe("1920 / 1080")
-    expect(video.getAttribute("style")).toContain("480px")
   })
 
   test("a file is a card with name, type and size, and its action", () => {

@@ -22,10 +22,14 @@ Put images, audio, video and files in a `ChatMedia` in the message's children.
 It takes a list of items, each with a `kind` and a `src`.
 The source is a URL or an object URL, and the part doesn't fetch anything.
 
-- One image fits the message column at its own aspect ratio.
+Media fill the width of the column, as the reply does.
+
+- One image takes the full width at its own aspect ratio, up to 480px high.
   Pass `width` and `height` so the space is kept before it loads.
 - A pair of images sit side by side.
-  Three or more form a grid of at most four, and the last one shows how many more there are.
+  Three or four form one row, and more show four with the count of the rest on the last.
+- Video takes the full width too.
+- Audio and file cards are smaller. They share rows that wrap, and grow to fill each row.
 - An image shows a shimmer while it loads, and a message with its alt text when it fails.
 - An item with `pending` is still arriving.
   It shows a shimmer at its final size, so the message doesn't jump when it arrives.

@@ -55,9 +55,6 @@ export interface ChatMediaProps extends Omit<JSX.HTMLAttributes<HTMLDivElement>,
   onOpen?: (item: ChatMediaItem, index: number) => void
 }
 
-/** The largest a single image or video is drawn in the message column, in px. */
-const MAX_WIDTH = 480
-const MAX_HEIGHT = 360
 /** How many images a grid shows; the last one shown carries "+N" for the rest. */
 const GRID_MAX = 4
 
@@ -92,14 +89,6 @@ function fileIcon(item: ChatMediaItem): IconName {
 
 const ratioOf = (item: ChatMediaItem) =>
   item.width && item.height ? `${item.width} / ${item.height}` : undefined
-
-/** The widest a single image or video is drawn: its own width, no more than MAX_WIDTH or MAX_HEIGHT allows. The CSS
- * also holds it to the column. */
-function singleWidth(item: ChatMediaItem): string {
-  if (!item.width || !item.height) return `${MAX_WIDTH}px`
-  const w = Math.min(item.width, MAX_WIDTH, (MAX_HEIGHT * item.width) / item.height)
-  return `${Math.round(w)}px`
-}
 
 /** A run of images next to each other, or one other item. `view` is an image's place in the viewer. */
 type Shown = { item: ChatMediaItem; index: number; view: number }
@@ -185,7 +174,6 @@ function ImageGrid(props: { items: Shown[]; onOpen: (view: number) => void }): J
       data-count={count()}
       role="group"
       aria-label={count() === 1 ? "Image" : `${count()} images`}
-      style={count() === 1 ? { "--nc-media-w": singleWidth((props.items[0] as Shown).item) } : undefined}
     >
       <Index each={shown()}>
         {(entry, i) => (
@@ -372,7 +360,7 @@ function MediaVideo(props: { item: ChatMediaItem }): JSX.Element {
           role="img"
           aria-label={`${props.item.alt || props.item.name || "Video"}, still arriving`}
           aria-busy="true"
-          style={{ "--nc-media-w": singleWidth(props.item), "aspect-ratio": ratioOf(props.item) ?? "16 / 9" }}
+          style={{ "aspect-ratio": ratioOf(props.item) ?? "16 / 9" }}
         />
       }
     >
@@ -385,7 +373,7 @@ function MediaVideo(props: { item: ChatMediaItem }): JSX.Element {
         controls
         preload="metadata"
         aria-label={props.item.alt || props.item.name}
-        style={{ "--nc-media-w": singleWidth(props.item), "aspect-ratio": ratioOf(props.item) ?? "16 / 9" }}
+        style={{ "aspect-ratio": ratioOf(props.item) ?? "16 / 9" }}
       />
     </Show>
   )

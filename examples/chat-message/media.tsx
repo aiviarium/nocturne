@@ -41,6 +41,7 @@ export default function ChatMessageMedia() {
             { kind: "image", src: picture(800, 600, 320), alt: "Layout 6", width: 800, height: 600 },
             { kind: "audio", src: voice, name: "Review notes", duration: 4 },
             { kind: "file", name: "signup-steps.csv", type: "text/csv", size: CSV.length, src: csvUrl },
+            { kind: "file", name: "review-notes.pdf", type: "application/pdf", size: 184_320, src: csvUrl },
           ]}
         />
         <span>Rendering the chart of drop-off by step.</span>
