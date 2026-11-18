@@ -307,6 +307,7 @@ button.nc-menu__item { box-sizing: border-box; width: 100%; border: 0; backgroun
 .nc-composer--bar { flex-direction: row; align-items: center; gap: 10px; padding: var(--space-2) var(--space-2) var(--space-2) 14px; }
 .nc-composer__status { flex: 1; }
 .nc-composer[data-dictation="recording"] { border-color: var(--accent-line); box-shadow: 0 0 0 3px var(--accent-tint); }
+.nc-composer[data-dropping] { border-color: var(--accent-line); border-style: dashed; }
 .nc-send:focus-visible { outline: none; box-shadow: var(--focus-ring); }
 .nc-send[disabled] { background: var(--bg-4); color: var(--text-4); cursor: not-allowed; }
 .nc-send--stop { background: var(--bg-4); color: var(--text-1); }

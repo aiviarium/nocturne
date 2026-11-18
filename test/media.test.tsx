@@ -317,4 +317,26 @@ describe("Composer image attachments", () => {
     expect(all(".nc-composer__thumb")).toHaveLength(0)
     expect(list().map((a) => a.id)).toEqual(["doc", "nopreview"])
   })
+
+  test("a pasted or dropped file goes to onAttachFiles; pasted text still goes in as text", () => {
+    const got: string[] = []
+    track(mount(() => <Composer onAttachFiles={(files) => got.push(...files.map((f) => f.name))} />))
+    const editor = one("[data-part=composer-input]")
+    const file = new File(["png"], "screenshot.png", { type: "image/png" })
+    const paste = new Event("paste", { bubbles: true, cancelable: true })
+    Object.defineProperty(paste, "clipboardData", { value: { files: [file], getData: () => "" } })
+    editor.dispatchEvent(paste)
+    expect(paste.defaultPrevented).toBe(true)
+    const box = one(".nc-composer")
+    const data = { types: ["Files"], files: [new File(["csv"], "steps.csv", { type: "text/csv" })] }
+    const over = new Event("dragover", { bubbles: true, cancelable: true })
+    Object.defineProperty(over, "dataTransfer", { value: data })
+    box.dispatchEvent(over)
+    expect(box.hasAttribute("data-dropping")).toBe(true)
+    const drop = new Event("drop", { bubbles: true, cancelable: true })
+    Object.defineProperty(drop, "dataTransfer", { value: data })
+    box.dispatchEvent(drop)
+    expect(box.hasAttribute("data-dropping")).toBe(false)
+    expect(got).toEqual(["screenshot.png", "steps.csv"])
+  })
 })

@@ -122,6 +122,11 @@ export interface ComposerProps {
   onAttach?: () => void
   /** The close button on a chip. */
   onRemoveAttachment?: (id: string) => void
+  /**
+   * Files pasted or dropped into the composer, such as a screenshot. Add them to `attachments` (an image with a
+   * `preview` object URL shows as a thumbnail). Without it, pasting keeps only the text and drops are ignored.
+   */
+  onAttachFiles?: (files: File[]) => void
   /** Model choices. Hidden when not set. */
   models?: ComposerOption[]
   model?: string
@@ -441,9 +446,27 @@ export function Composer(props: ComposerProps): JSX.Element {
     }
   }
   const onPaste = (event: ClipboardEvent) => {
-    // Plain text only: no markup, no images, no styles from wherever it was copied.
+    // Plain text only: no markup, no styles from wherever it was copied. Files (a pasted screenshot) go to
+    // onAttachFiles.
     event.preventDefault()
-    insertText(cleanPlainText(event.clipboardData?.getData("text/plain") ?? ""))
+    const files = Array.from(event.clipboardData?.files ?? [])
+    if (files.length && props.onAttachFiles) props.onAttachFiles(files)
+    const text = event.clipboardData?.getData("text/plain") ?? ""
+    if (text) insertText(cleanPlainText(text))
+  }
+  const [dropping, setDropping] = createSignal(false)
+  const hasFiles = (e: DragEvent) => Array.from(e.dataTransfer?.types ?? []).includes("Files")
+  const onDragOver = (e: DragEvent) => {
+    if (!props.onAttachFiles || !hasFiles(e)) return
+    e.preventDefault()
+    setDropping(true)
+  }
+  const onDrop = (e: DragEvent) => {
+    setDropping(false)
+    if (!props.onAttachFiles || !hasFiles(e)) return
+    e.preventDefault()
+    const files = Array.from(e.dataTransfer?.files ?? [])
+    if (files.length) props.onAttachFiles(files)
   }
   const onInput = () => {
     setDismissed(null)
@@ -513,7 +536,14 @@ export function Composer(props: ComposerProps): JSX.Element {
             <Show when={dictation()}>{(d) => <DictationBar dictation={d()} part="notice" />}</Show>
           </div>
         </Show>
-        <div class="nc-composer" data-dictation={dictState()}>
+        <div
+          class="nc-composer"
+          data-dictation={dictState()}
+          data-dropping={dropping() ? "" : undefined}
+          onDragOver={onDragOver}
+          onDragLeave={() => setDropping(false)}
+          onDrop={onDrop}
+        >
           <Show when={(props.attachments?.length ?? 0) > 0}>
             <div class="nc-composer__attachments" role="list" aria-label="Attachments">
               <For each={props.attachments}>
