@@ -113,6 +113,7 @@ export default function Drilldown() {
                 id="nav-drill-projects"
                 header={
                   <ViewHeader
+                    crumbs={[{ label: "Projects" }]}
                     actions={[{ id: "new", label: "New project", icon: "plus", onClick: () => {} }]}
                   />
                 }
