@@ -651,7 +651,7 @@ describe("WidgetTimer", () => {
     expect(ticks.filter((t) => t.classList.contains("nc-wtimer__tick--on"))).toHaveLength(5)
     expect(ticks.filter((t) => t.classList.contains("nc-wtimer__tick--live"))).toEqual([ticks[4]])
     // Elapsed ticks are a wave, remaining ones are flat.
-    expect(new Set(ticks.slice(5).map((t) => (t as HTMLElement).style.height))).toEqual(new Set(["10px"]))
+    expect(new Set(ticks.slice(5).map((t) => (t as HTMLElement).style.height))).toEqual(new Set(["14px"]))
     expect(new Set(ticks.slice(0, 5).map((t) => (t as HTMLElement).style.height)).size).toBeGreaterThan(1)
     const bar = one("[role=progressbar]", root)
     expect(bar.getAttribute("aria-valuenow")).toBe("50")

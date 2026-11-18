@@ -233,7 +233,7 @@
 .nc-approval { display: flex; flex-direction: column; gap: 10px; padding: 12px; border: 1px solid var(--warning-line); border-radius: var(--radius-md); background: var(--bg-2); }
 
 /* Live */
-.nc-widget { display: flex; flex-direction: column; gap: 12px; padding: 18px 20px; border: 1px solid var(--line-soft); border-radius: var(--radius-2xl); background: var(--bg-1); }
+.nc-widget { display: flex; flex-direction: column; gap: var(--space-2); min-width: 0; padding: 14px var(--space-4); border: 1px solid var(--line-soft); border-radius: var(--radius-2xl); background: var(--bg-1); }
 .nc-stream { display: inline-flex; align-items: center; gap: 7px; height: 26px; padding: 0 10px; border: 1px solid var(--line-soft); border-radius: var(--radius-full); background: var(--bg-1); color: var(--text-2); font-size: 12px; white-space: nowrap; }
 .nc-stream__meta { color: var(--text-3); font: 400 10.5px/16px var(--font-mono); }
 .nc-terminal { margin: 0; padding: 10px 14px; background: var(--bg-0); color: var(--syn-plain); font: 400 12px/19px var(--font-mono); white-space: pre; overflow-x: auto; }

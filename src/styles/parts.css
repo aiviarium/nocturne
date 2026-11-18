@@ -137,20 +137,20 @@ a.nc-ccard, button.nc-ccard { text-decoration: none; cursor: pointer; font: inhe
 .nc-stat[data-fill] > .nc-stat__footer { flex: 1; }
 .nc-stat[data-fill] > .nc-meter + .nc-stat__footer { flex: none; margin-top: var(--space-2); }
 :is(.nc-ccard[data-fill] .nc-statv__chart, .nc-stat[data-fill] > .nc-stat__footer) > .nc-wspark { flex: 1 1 auto; min-height: 24px; max-height: 120px; }
-/* A widget that fills its box: the title at the top, a sparkline or list grows, and a bar, strip or gauge
-   that cannot grow sits with the caption at the bottom edge. Other content stays under the title: height left
-   over goes between the content and the caption, never above the content or around a centred part. */
-/* A widget's title gives way to its value, which never wraps. */
-.nc-widget__head > .nc-widget__title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* A widget that fills its box: the head at the top, a sparkline or list grows, and a part that cannot grow
+   (a bar, strip, gauge, segments, steps, meters) sits with its axis and caption at the bottom edge. */
+.nc-widget__head > :is(.nc-widget__title, .nc-widget__figure) { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .nc-widget__head > .nc-widget__value { flex: none; white-space: nowrap; }
 .nc-widget[data-fill] { box-sizing: border-box; height: 100%; min-height: 0; overflow: hidden; }
-.nc-widget[data-fill] > .nc-widget__head + :is(.nc-wprogress, .nc-wuptime, .nc-wgauge) { margin-top: auto; }
+.nc-widget[data-fill]:not([data-size="row"]) > .nc-widget__head + :is(.nc-wprogress, .nc-wprogress-route, .nc-wuptime, .nc-wgauge, .nc-wsegments, .nc-wsteps, .nc-wmeters) { margin-top: auto; }
 .nc-widget[data-fill] > .nc-widget__caption { margin-top: auto; }
-.nc-widget[data-fill] > :is(.nc-wprogress, .nc-wuptime, .nc-wgauge) ~ .nc-widget__caption { margin-top: 0; }
+.nc-widget[data-fill] > :is(.nc-wprogress, .nc-wprogress-route, .nc-wuptime, .nc-wgauge, .nc-wsegments, .nc-wsteps, .nc-wmeters, .nc-wspark) ~ .nc-widget__caption { margin-top: 0; }
 /* Rows in a widget start their text on the title's edge, as in a card: the row's own inset hangs into the padding. */
 .nc-widget > .nc-rows { margin-inline: calc(var(--nc-inset) * -1); padding-inline: 0; }
 .nc-widget[data-fill] > :is(.nc-wspark, .nc-rows) { flex: 1 1 auto; min-height: 24px; }
-.nc-widget[data-fill] > .nc-wspark { max-height: 160px; }
+.nc-widget[data-fill] > .nc-wspark { max-height: 120px; }
+/* The axis sits right under a chart. */
+.nc-widget > .nc-wspark + .nc-widget__axis { margin-top: calc(var(--space-1) * -1); }
 
 /* ---------- List rows ----------
    A row is a grid of named columns: check, unread, lead (a fixed box, so icons and avatars of any glyph start titles on

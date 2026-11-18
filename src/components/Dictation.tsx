@@ -299,12 +299,7 @@ export function DictationBar(props: {
           <span class="nc-mono nc-num nc-dictation__time">{formatElapsed(props.dictation.elapsed ?? 0)}</span>
           <div class="nc-wave" aria-hidden="true">
             <For each={samples()}>
-              {(v, i) => (
-                <span
-                  class={cx("nc-wave__bar", i() >= samples().length - 12 && "nc-wave__bar--recent")}
-                  style={{ height: `${Math.round(v * 100)}%` }}
-                />
-              )}
+              {(v) => <span class="nc-wave__bar" style={{ height: `${Math.round(v * 100)}%` }} />}
             </For>
           </div>
         </div>

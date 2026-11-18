@@ -1,7 +1,10 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test"
 import { createSignal, Show } from "solid-js"
 import {
+  ContextWidget,
+  compactCount,
   NavigationScreen,
+  RateWidget,
   ScreenRefresh,
   ScreenSearch,
   Sheet,
@@ -23,10 +26,16 @@ import {
   Tooltip,
   ViewHeader,
   ViewLayout,
+  Widget,
   WidgetControls,
   WidgetGauge,
+  WidgetMeters,
   WidgetProgress,
+  WidgetRing,
+  WidgetSegments,
   WidgetSparkline,
+  WidgetStats,
+  WidgetSteps,
   WidgetUptime,
 } from "../src"
 import { all, click, mount, one, press, tick } from "./dom"
@@ -754,22 +763,15 @@ describe("WidgetProgress", () => {
 })
 
 describe("WidgetSparkline", () => {
-  test("draws a bar per value and marks the newest ones live", () => {
-    const { root } = track(
-      mount(() => <WidgetSparkline values={[1, 2, 3, 4, 5]} label="Requests" live={2} />),
-    )
+  test("draws a bar per value scaled to the largest, none marked apart", () => {
+    const { root } = track(mount(() => <WidgetSparkline values={[1, 2, 3, 4, 5]} label="Requests" />))
     const spark = one("[data-part=widget-sparkline]", root)
     expect(spark.getAttribute("aria-label")).toBe("Requests")
     const bars = Array.from(spark.querySelectorAll<HTMLElement>(".nc-wspark__bar"))
     expect(bars).toHaveLength(5)
-    expect(bars.map((b) => b.classList.contains("nc-wspark__bar--live"))).toEqual([
-      false,
-      false,
-      false,
-      true,
-      true,
-    ])
+    expect(bars.every((b) => b.className === "nc-wspark__bar")).toBe(true)
     expect(bars[4]!.style.height).toBe("100%")
+    expect(bars[0]!.style.height).toBe("20%")
   })
 })
 
@@ -780,5 +782,335 @@ describe("WidgetUptime", () => {
     expect(strip.getAttribute("aria-label")).toBe("Last 3 days")
     const cells = Array.from(strip.querySelectorAll(".nc-wuptime__cell"))
     expect(cells.map((c) => c.className.split("--")[1])).toEqual(["up", "down", "none"])
+  })
+})
+
+describe("Widget", () => {
+  test("leads with a figure and its unit, and names itself by its label", () => {
+    const { root } = track(
+      mount(() => <Widget figure="48" unit="tok/s" value="p50 41" label="Output rate" />),
+    )
+    const widget = one("[data-part=widget]", root)
+    expect(widget.getAttribute("role")).toBe("group")
+    expect(widget.getAttribute("aria-label")).toBe("Output rate")
+    expect(one(".nc-widget__figure", widget).textContent).toBe("48tok/s")
+    expect(one(".nc-widget__value", widget).textContent).toBe("p50 41")
+    expect(widget.querySelector(".nc-widget__title")).toBeNull()
+  })
+
+  test("puts the unit on the value when there is no figure, and spreads the axis under the live part", () => {
+    const { root } = track(
+      mount(() => (
+        <Widget title="Requests" value="1,284" unit="/ min" axis={["-60m", "Now"]}>
+          <span class="live">bars</span>
+        </Widget>
+      )),
+    )
+    const widget = one("[data-part=widget]", root)
+    expect(one(".nc-widget__value", widget).textContent).toBe("1,284/ min")
+    expect(Array.from(widget.children).map((c) => c.className)).toEqual([
+      "nc-widget__head",
+      "live",
+      "nc-widget__axis nc-num",
+    ])
+    expect(widget.querySelectorAll(".nc-widget__axis span")).toHaveLength(2)
+  })
+
+  test("a row widget draws the live part, the title and the value on one line", () => {
+    const { root } = track(
+      mount(() => (
+        <Widget size="row" title="Context" value="124k / 200k">
+          <WidgetRing value={62} label="Context used" />
+        </Widget>
+      )),
+    )
+    const widget = one("[data-part=widget]", root)
+    expect(widget.getAttribute("data-size")).toBe("row")
+    expect(widget.querySelector(".nc-widget__head")).toBeNull()
+    expect(Array.from(widget.children).map((c) => c.getAttribute("data-part") ?? c.className)).toEqual([
+      "widget-ring",
+      "nc-widget__title",
+      "nc-widget__value nc-num",
+    ])
+  })
+})
+
+describe("WidgetProgress ends", () => {
+  test("names where the bar starts and ends on its line", () => {
+    const { root } = track(
+      mount(() => <WidgetProgress value={40} label="Sync" start="local" end="atlas-02" />),
+    )
+    const ends = Array.from(root.querySelectorAll(".nc-wprogress-route__end")).map((e) => e.textContent)
+    expect(ends).toEqual(["local", "atlas-02"])
+    expect(one("[data-part=widget-progress]", root).getAttribute("aria-valuenow")).toBe("40")
+  })
+})
+
+describe("WidgetSparkline wave", () => {
+  test("marks the wave variant", () => {
+    const { root } = track(mount(() => <WidgetSparkline values={[1, 2]} label="Rate" variant="wave" />))
+    expect(one("[data-part=widget-sparkline]", root).getAttribute("data-variant")).toBe("wave")
+  })
+})
+
+describe("WidgetRing", () => {
+  test("is a progress bar whose value is clamped, with the number inside at md", () => {
+    const [value, setValue] = createSignal(62.4)
+    const { root } = track(mount(() => <WidgetRing value={value()} label="Context used" size="md" />))
+    const ring = one("[data-part=widget-ring]", root)
+    expect(ring.getAttribute("role")).toBe("progressbar")
+    expect(ring.getAttribute("aria-valuenow")).toBe("62")
+    expect(one(".nc-wring__value", ring).textContent).toBe("62")
+    setValue(140)
+    expect(ring.getAttribute("aria-valuenow")).toBe("100")
+    const small = track(mount(() => <WidgetRing value={10} label="Quota" />))
+    expect(small.root.querySelector(".nc-wring__value")).toBeNull()
+  })
+})
+
+describe("WidgetSegments", () => {
+  const segments = [
+    { label: "System", value: 9, display: "9k" },
+    { label: "Tools", value: 21, display: "21k" },
+  ]
+  test("draws a part per segment in steps, the rest as the free part, and names them all", () => {
+    const { root } = track(
+      mount(() => (
+        <WidgetSegments segments={segments} total={100} free="Free" freeDisplay="70k" label="Context" />
+      )),
+    )
+    const bar = one("[data-part=widget-segments]", root)
+    expect(bar.getAttribute("aria-label")).toBe("Context: System 9k, Tools 21k, Free 70k")
+    const parts = Array.from(bar.querySelectorAll<HTMLElement>(".nc-wsegments__part"))
+    expect(parts.map((p) => p.style.getPropertyValue("--nc-part") || "free")).toEqual([
+      "var(--accent-strong)",
+      "var(--label-sky)",
+      "free",
+    ])
+    expect(parts[2]!.hasAttribute("data-free")).toBe(true)
+    expect(parts.map((p) => p.style.flexGrow)).toEqual(["9", "21", "70"])
+    expect(bar.querySelectorAll(".nc-wsegments__label")).toHaveLength(3)
+    expect(bar.querySelector(".nc-wsegments__legend")).toBeNull()
+  })
+
+  test("moves the names into a legend, takes a part's own hue, and has no free part when they fill the whole", () => {
+    const parts = [segments[0]!, { ...segments[1]!, hue: "amber" as const }]
+    const { root } = track(
+      mount(() => <WidgetSegments labels="legend" segments={parts} total={30} label="Context" />),
+    )
+    const bar = one("[data-part=widget-segments]", root)
+    expect(bar.querySelectorAll(".nc-wsegments__part")).toHaveLength(2)
+    expect(bar.querySelectorAll(".nc-wsegments__label")).toHaveLength(0)
+    expect(Array.from(bar.querySelectorAll(".nc-wsegments__key")).map((k) => k.textContent)).toEqual([
+      "System 9k",
+      "Tools 21k",
+    ])
+    const swatches = Array.from(bar.querySelectorAll<HTMLElement>(".nc-wsegments__key"))
+    expect(swatches.map((k) => k.style.getPropertyValue("--nc-part"))).toEqual([
+      "var(--accent-strong)",
+      "var(--label-amber)",
+    ])
+  })
+})
+
+describe("WidgetSteps", () => {
+  test("marks the stops before the current one done and the current one as the step", () => {
+    const [current, setCurrent] = createSignal(1)
+    const { root } = track(
+      mount(() => <WidgetSteps steps={["Read", "Edit", "Test"]} current={current()} label="Plan" />),
+    )
+    const steps = one("[data-part=widget-steps]", root)
+    expect(one("ol", steps).getAttribute("aria-label")).toBe("Plan")
+    const states = () => Array.from(steps.querySelectorAll("li")).map((li) => li.getAttribute("data-state"))
+    expect(states()).toEqual(["done", "current", null])
+    expect(one("[aria-current=step]", steps).textContent).toBe("Edit")
+    expect(steps.style.getPropertyValue("--nc-steps-fill")).toBe("0.5")
+    setCurrent(9)
+    expect(states()).toEqual(["done", "done", "done"])
+    expect(steps.querySelector("[aria-current]")).toBeNull()
+  })
+})
+
+describe("WidgetMeters", () => {
+  test("draws a row per meter with a clamped bar and its reading", () => {
+    const { root } = track(
+      mount(() => (
+        <WidgetMeters
+          label="atlas-02"
+          items={[
+            { label: "CPU", value: 64.2 },
+            { label: "Memory", value: 120, display: "16 GB", hue: "info" },
+          ]}
+        />
+      )),
+    )
+    const meters = one("[data-part=widget-meters]", root)
+    expect(meters.getAttribute("aria-label")).toBe("atlas-02")
+    const bars = Array.from(meters.querySelectorAll("[role=progressbar]"))
+    expect(bars.map((b) => [b.getAttribute("aria-label"), b.getAttribute("aria-valuenow")])).toEqual([
+      ["CPU", "64"],
+      ["Memory", "100"],
+    ])
+    expect(Array.from(meters.querySelectorAll(".nc-wmeters__value")).map((v) => v.textContent)).toEqual([
+      "64%",
+      "16 GB",
+    ])
+    const rows = Array.from(meters.querySelectorAll<HTMLElement>(".nc-wmeters__row"))
+    expect(rows.map((r) => r.style.getPropertyValue("--nc-part"))).toEqual([
+      "var(--accent-strong)",
+      "var(--info)",
+    ])
+  })
+})
+
+describe("Widget sizes", () => {
+  test("marks its size, md by default, and puts the title above a figure at lg", () => {
+    const { root } = track(mount(() => <Widget title="Context" figure="62" unit="%" size="lg" />))
+    const widget = one("[data-part=widget]", root)
+    expect(widget.getAttribute("data-size")).toBe("lg")
+    expect(one(".nc-widget__eyebrow", widget).textContent).toBe("Context")
+    expect(one(".nc-widget__figure", widget).textContent).toBe("62%")
+    const plain = track(mount(() => <Widget title="Upload" />))
+    expect(one("[data-part=widget]", plain.root).getAttribute("data-size")).toBe("md")
+    expect(plain.root.querySelector(".nc-widget__eyebrow")).toBeNull()
+  })
+
+  test("draws its foot after the axis", () => {
+    const { root } = track(
+      mount(() => (
+        <Widget title="Rate" axis={["-5m", "Now"]} foot={<span class="foot">stats</span>}>
+          <span class="live">bars</span>
+        </Widget>
+      )),
+    )
+    expect(Array.from(one("[data-part=widget]", root).children).map((c) => c.className)).toEqual([
+      "nc-widget__head",
+      "live",
+      "nc-widget__axis nc-num",
+      "foot",
+    ])
+  })
+})
+
+describe("WidgetSegments label modes", () => {
+  const segments = [
+    { label: "System", value: 10, display: "10k" },
+    { label: "Chat", value: 30, display: "30k" },
+  ]
+  test("a list gives each part a row with its value and share; none draws the bar alone", () => {
+    const { root } = track(
+      mount(() => (
+        <WidgetSegments labels="list" segments={segments} total={100} free="Free" label="Context" />
+      )),
+    )
+    const rows = Array.from(root.querySelectorAll(".nc-wsegments__item")).map((r) =>
+      Array.from(r.querySelectorAll("span:not(.nc-wsegments__swatch)")).map((c) => c.textContent),
+    )
+    expect(rows).toEqual([
+      ["System", "10k", "10%"],
+      ["Chat", "30k", "30%"],
+      ["Free", "60", "60%"],
+    ])
+    const bare = track(
+      mount(() => <WidgetSegments labels="none" segments={segments} total={100} label="Context" />),
+    )
+    expect(
+      bare.root.querySelectorAll(".nc-wsegments__label, .nc-wsegments__key, .nc-wsegments__item"),
+    ).toHaveLength(0)
+    expect(one("[data-part=widget-segments]", bare.root).getAttribute("aria-label")).toBe(
+      "Context: System 10k, Chat 30k",
+    )
+  })
+})
+
+describe("WidgetStats", () => {
+  test("lists each reading as a name over its value", () => {
+    const { root } = track(
+      mount(() => (
+        <WidgetStats
+          items={[
+            { label: "p50", value: "48" },
+            { label: "Peak", value: "82" },
+          ]}
+        />
+      )),
+    )
+    const stats = one("[data-part=widget-stats]", root)
+    expect(Array.from(stats.querySelectorAll("dt")).map((d) => d.textContent)).toEqual(["p50", "Peak"])
+    expect(Array.from(stats.querySelectorAll("dd")).map((d) => d.textContent)).toEqual(["48", "82"])
+  })
+})
+
+describe("compactCount", () => {
+  test("shortens counts of tokens", () => {
+    expect([999, 1234, 9_950, 124_000, 1_500_000].map(compactCount)).toEqual([
+      "999",
+      "1.2k",
+      "10k",
+      "124k",
+      "1.5M",
+    ])
+  })
+})
+
+describe("ContextWidget", () => {
+  const parts = [
+    { label: "System", value: 9_000 },
+    { label: "Chat", value: 115_000 },
+  ]
+  test("is a ring and the share at row, one bar at sm, and the full account at lg", () => {
+    const [size, setSize] = createSignal<"row" | "sm" | "lg">("row")
+    const { root } = track(
+      mount(() => <ContextWidget size={size()} used={124_000} total={200_000} parts={parts} />),
+    )
+    const widget = () => one("[data-part=widget]", root)
+    expect(widget().getAttribute("data-size")).toBe("row")
+    expect(one("[data-part=widget-ring]", root).getAttribute("aria-valuenow")).toBe("62")
+    expect(one(".nc-widget__value", root).textContent).toBe("62%")
+    setSize("sm")
+    expect(widget().getAttribute("data-size")).toBe("sm")
+    expect(one("[data-part=widget-segments]", root).getAttribute("data-labels")).toBe("none")
+    setSize("lg")
+    expect(widget().getAttribute("data-size")).toBe("lg")
+    expect(one(".nc-widget__figure", root).textContent).toBe("62%")
+    expect(one(".nc-widget__value", root).textContent).toBe("124k / 200k")
+    expect(Array.from(root.querySelectorAll(".nc-wsegments__name")).map((n) => n.textContent)).toEqual([
+      "System",
+      "Chat",
+      "Free",
+    ])
+  })
+
+  test("shows a plain bar without parts", () => {
+    const { root } = track(mount(() => <ContextWidget used={50} total={200} />))
+    expect(one("[data-part=widget]", root).getAttribute("data-size")).toBe("sm")
+    expect(one("[data-part=widget-progress]", root).getAttribute("aria-valuenow")).toBe("25")
+  })
+})
+
+describe("RateWidget", () => {
+  const values = Array.from({ length: 30 }, (_, i) => i + 1)
+  const stats = [
+    { label: "p50", value: "41" },
+    { label: "Peak", value: "82" },
+  ]
+  test("is one line at row, the rate over the wave at md, and adds the readings at lg", () => {
+    const [size, setSize] = createSignal<"row" | "md" | "lg" | undefined>("row")
+    const { root } = track(
+      mount(() => (
+        <RateWidget size={size()} title="Output" value="48" unit="tok/s" values={values} stats={stats} />
+      )),
+    )
+    expect(one("[data-part=widget]", root).getAttribute("aria-label")).toBe("Output")
+    expect(root.querySelectorAll(".nc-wspark__bar")).toHaveLength(12)
+    expect(one(".nc-widget__value", root).textContent).toBe("48tok/s")
+    setSize(undefined)
+    expect(one("[data-part=widget]", root).getAttribute("data-size")).toBe("md")
+    expect(root.querySelectorAll(".nc-wspark__bar")).toHaveLength(30)
+    expect(one(".nc-widget__value", root).textContent).toBe("p50 41")
+    expect(root.querySelector("[data-part=widget-stats]")).toBeNull()
+    setSize("lg")
+    expect(one(".nc-widget__eyebrow", root).textContent).toBe("Output")
+    expect(root.querySelectorAll("[data-part=widget-stats] dt")).toHaveLength(2)
   })
 })
