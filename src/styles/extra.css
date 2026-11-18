@@ -87,8 +87,8 @@ button.nc-nav-item { display: flex; width: 100%; gap: 10px; justify-content: fle
 /* The top of the app's sidebar: back, the place (a switcher), the command palette and the toggle, search under them. */
 .nc-sidebar-header { display: flex; flex-direction: column; gap: var(--space-2); }
 .nc-sidebar-header__row { display: flex; align-items: center; gap: 2px; min-width: 0; height: var(--control-md); }
-.nc-sidebar-header__place { display: flex; flex: 1; align-items: center; gap: var(--space-2); min-width: 0; height: var(--control-md); padding: 0 var(--space-2); border: 0; border-radius: var(--radius-sm); background: transparent; color: var(--text-1); font-family: inherit; font-size: var(--nc-type-body); font-weight: 600; line-height: var(--nc-type-label-line); text-align: left; }
-.nc-sidebar-header__place--menu { cursor: pointer; }
+.nc-sidebar-header__place { display: flex; flex: 1; align-items: center; justify-content: flex-start; gap: var(--space-2); min-width: 0; height: var(--control-md); padding: 0 var(--space-2); border: 0; border-radius: var(--radius-sm); background: transparent; color: var(--text-1); font-family: inherit; font-size: var(--nc-type-body); font-weight: 600; line-height: var(--nc-type-label-line); text-align: left; }
+button.nc-sidebar-header__place--menu { justify-content: flex-start; cursor: pointer; }
 .nc-sidebar-header__place--menu:hover, .nc-sidebar-header__place--menu[aria-expanded="true"] { background: var(--bg-3); }
 .nc-sidebar-header__place--menu:focus-visible { outline: none; box-shadow: var(--focus-ring-inset); }
 .nc-sidebar-header__place > .nc-icon { flex: none; color: var(--text-3); }
