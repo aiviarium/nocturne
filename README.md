@@ -114,18 +114,10 @@ bun run build    # writes site/out/
 | `scripts/screenshots.py`, `scripts/screenshot-states.py` | Playwright (Python) screenshots of every gallery page and of interactive states into a folder you name. `--chrome PATH` uses an installed Chrome. Screenshots are not committed |
 | `cd site && bun run check` | Typecheck, lint, link check, Vale and build of the documentation site |
 
-## Moving from earlier names
-
-These older names still work alongside the new ones:
-
-| New | Also read |
-| --- | --- |
-| `--nc-editor-measure`, `--nc-editor-inset`, `--nc-editor-gutter-start`, `--nc-editor-gutter-end` | `--crow-editor-*` of the same names |
-| `localStorage` key `nc.viewLayout.v1` | `crow.viewLayout.v1`, while the new key is empty |
-| Cascade layer `app` | `shell` and `plugins`, which stay in the layer order after `app` |
+## Editor classes
 
 The editor's classes are `nc-editor`, `nc-editor__content` and `nc-editor-*` (callouts, code blocks, images,
-cursors and the rest). The older `crow-*` classes are no longer added.
+cursors and the rest).
 
 ## Third-party code
 

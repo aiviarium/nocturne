@@ -104,8 +104,6 @@ export interface ViewLayoutProps {
 }
 
 const KEY = "nc.viewLayout.v1"
-/** The key an earlier version stored the layouts under; read while KEY has nothing, so widths carry over. */
-const LEGACY_KEY = "crow.viewLayout.v1"
 const SIDEBAR = { min: 180, max: 420, fallback: 240 }
 const ASIDE = { min: 200, max: 360, fallback: 260 }
 const EDGE = 1
@@ -126,7 +124,7 @@ interface Saved {
 
 function readAll(): Record<string, Saved> {
   try {
-    return JSON.parse(localStorage.getItem(KEY) ?? localStorage.getItem(LEGACY_KEY) ?? "{}") ?? {}
+    return JSON.parse(localStorage.getItem(KEY) ?? "{}") ?? {}
   } catch {
     return {}
   }

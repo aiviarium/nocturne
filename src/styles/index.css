@@ -1,8 +1,7 @@
 /* The whole Nocturne stylesheet, in cascade layers. Import this once. Loading tokens.css, bundle.css and
    extra.css yourself works too.
-   Layers, lowest first: reset, tokens, components (this library), then app for the app's own CSS. shell and
-   plugins sit after app for apps that already put their CSS in those layers; theme and user come last. */
-@layer reset, tokens, components, app, shell, plugins, theme, user;
+   Layers, lowest first: reset, tokens, components (this library), then app for the app's own CSS; theme and user come last. */
+@layer reset, tokens, components, app, theme, user;
 @import "./tokens.css" layer(tokens);
 @import "./bundle.css" layer(components);
 @import "./extra.css" layer(components);

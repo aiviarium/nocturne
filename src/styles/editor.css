@@ -23,18 +23,17 @@
    least the handles' gutter before it and `--nc-editor-inset` on both sides. Top-level blocks wider than the
    column (width.ts) break out of it: `wide` to the editor's width less the gutter (or the inset) on each side,
    `full` to its edges. Elsewhere (fields, comments) every block fits its container. The host may also set
-   `--nc-editor-gutter-start` and `--nc-editor-gutter-end`. The older `--crow-editor-*` names of these four are
-   read when the `--nc-editor-*` ones are unset. */
+   `--nc-editor-gutter-start` and `--nc-editor-gutter-end`. */
 .nc-editor--page {
   container-type: inline-size;
   --nc-editor-gutter-start-default: calc(var(--space-10) + var(--space-1));
   --nc-editor-gutter-end-default: var(--space-2);
 }
 .nc-editor--page .nc-editor__content {
-  --nc-editor-gutter-start-used: var(--nc-editor-gutter-start, var(--crow-editor-gutter-start, var(--nc-editor-gutter-start-default)));
-  --nc-editor-gutter-end-used: var(--nc-editor-gutter-end, var(--crow-editor-gutter-end, var(--nc-editor-gutter-end-default)));
-  --nc-editor-inset-used: var(--nc-editor-inset, var(--crow-editor-inset, 0px));
-  --nc-editor-mid: calc((100cqw - var(--nc-editor-measure, var(--crow-editor-measure, 100cqw))) / 2);
+  --nc-editor-gutter-start-used: var(--nc-editor-gutter-start, var(--nc-editor-gutter-start-default));
+  --nc-editor-gutter-end-used: var(--nc-editor-gutter-end, var(--nc-editor-gutter-end-default));
+  --nc-editor-inset-used: var(--nc-editor-inset, 0px);
+  --nc-editor-mid: calc((100cqw - var(--nc-editor-measure, 100cqw)) / 2);
   --nc-editor-start: max(var(--nc-editor-gutter-start-used), var(--nc-editor-inset-used), var(--nc-editor-mid));
   --nc-editor-end: max(var(--nc-editor-gutter-end-used), var(--nc-editor-inset-used), var(--nc-editor-mid));
   padding: var(--space-1) var(--nc-editor-end) var(--space-10) var(--nc-editor-start);

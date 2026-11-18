@@ -688,39 +688,6 @@ describe("ViewLayout", () => {
     expect(JSON.parse(localStorage.getItem("nc.viewLayout.v1") as string)["test.keys"].w).toBe(256)
   })
 
-  test("honours a collapsed sidebar stored under the older key and saves a change under the new one", () => {
-    localStorage.setItem("crow.viewLayout.v1", JSON.stringify({ "test.legacy": { collapsed: true, w: 300 } }))
-    const { root } = track(
-      mount(() => (
-        <ViewLayout id="test.legacy" sidebar={<nav>Tree</nav>}>
-          <p>Main</p>
-        </ViewLayout>
-      )),
-    )
-    const layout = one("[data-part=view-layout]", root)
-    expect(layout.getAttribute("data-sidebar")).toBe("collapsed")
-    expect(layout.querySelector("[data-part=view-sidebar]")).toBeNull()
-    expect(layout.style.getPropertyValue("--nc-view-sidebar")).toBe("300px")
-    click(one("[data-part=view-sidebar-toggle]", layout))
-    expect(layout.getAttribute("data-sidebar")).toBe("open")
-    expect(one("[data-part=view-sidebar]", layout).textContent).toBe("Tree")
-    const saved = JSON.parse(localStorage.getItem("nc.viewLayout.v1") as string)
-    expect(saved["test.legacy"]).toEqual({ collapsed: false, w: 300 })
-  })
-
-  test("the new key wins over the older one once it has something", () => {
-    localStorage.setItem("crow.viewLayout.v1", JSON.stringify({ "test.both": { collapsed: true } }))
-    localStorage.setItem("nc.viewLayout.v1", JSON.stringify({ "test.both": { collapsed: false } }))
-    const { root } = track(
-      mount(() => (
-        <ViewLayout id="test.both" sidebar={<nav>Tree</nav>}>
-          <p>Main</p>
-        </ViewLayout>
-      )),
-    )
-    expect(one("[data-part=view-layout]", root).getAttribute("data-sidebar")).toBe("open")
-  })
-
   test("on a phone screen at a view's start the sidebar is the screen", () => {
     const { root } = track(
       mount(() => (
