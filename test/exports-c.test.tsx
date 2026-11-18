@@ -641,6 +641,54 @@ describe("ViewHeader", () => {
     expect(calls).toEqual(["crumb", "filter", "publish"])
   })
 
+  test("folds the start of the path into a menu, and every crumb shows its full text", async () => {
+    const went: string[] = []
+    const { root } = track(
+      mount(() => (
+        <ViewHeader
+          fold={2}
+          crumbs={[
+            { label: "Workspace", onClick: () => went.push("workspace") },
+            { label: "Projects", onClick: () => went.push("projects") },
+            { label: "Atlas web", onClick: () => went.push("atlas") },
+            { label: "WEB-142" },
+          ]}
+        />
+      )),
+    )
+    const crumbs = one("[data-part=breadcrumbs]", root)
+    const fold = one("[data-part=crumbs-fold]", crumbs)
+    expect(fold.getAttribute("title")).toBe("Workspace / Projects")
+    expect(crumbs.querySelectorAll("a").length).toBe(1)
+    expect(one("a", crumbs).textContent).toBe("Atlas web")
+    expect(one("[aria-current=page]", crumbs).textContent).toBe("WEB-142")
+    expect(one("[aria-current=page] [title]", crumbs).getAttribute("title")).toBe("WEB-142")
+    click(fold)
+    await tick()
+    const items = Array.from(document.querySelectorAll("[role=menuitem]"))
+    expect(items.map((e) => e.textContent?.trim())).toEqual(["Workspace", "Projects"])
+    click(items[1]!)
+    expect(went).toEqual(["projects"])
+  })
+
+  test("a back control takes the place of the crumbs", () => {
+    let back = 0
+    const { root } = track(
+      mount(() => (
+        <ViewHeader
+          back={{ label: "Sessions", onClick: () => back++ }}
+          crumbs={[{ label: "Agents" }, { label: "Fix the redirect" }]}
+        />
+      )),
+    )
+    expect(root.querySelector("[data-part=breadcrumbs]")).toBeNull()
+    const control = one("[data-part=view-back]", root)
+    expect(control.textContent).toBe("Sessions")
+    expect(control.getAttribute("title")).toBe("Back to Sessions")
+    click(control)
+    expect(back).toBe(1)
+  })
+
   test("inside a layout with a side panel it shows the panel's toggle", () => {
     const { root } = track(
       mount(() => (

@@ -38,6 +38,13 @@ Change both together. Sizes are CSS pixels (iOS points).
   the body size.
 - There is one bar at the top and one at the bottom, never a second bar stacked on either.
 
+## Navigation
+
+A drill-down on a desktop is a stack on a phone. The shared sidebar of `AppShell` is a drawer, and the
+inspector of `ViewLayout` is a sheet behind a button in the bar. Each drill level is a screen of a
+`NavigationStack`, and the back control shows the title of the screen before. `ViewHeader` doesn't show
+crumbs or a `back` control there, because the stack is the way back. List screens have a large title.
+
 ## The on-screen keyboard
 
 `trackViewport()` follows the visual viewport and keeps `--nc-keyboard`, `--nc-vv-height` and `--nc-vv-top` on

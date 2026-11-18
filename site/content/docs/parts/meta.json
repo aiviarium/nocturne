@@ -1,5 +1,5 @@
 {
   "title": "Which part for what",
   "icon": "LayoutGrid",
-  "pages": ["index", "views", "lists", "records", "actions", "forms", "filters", "status", "figures", "widgets", "conversation"]
+  "pages": ["index", "views", "navigation", "lists", "records", "actions", "forms", "filters", "status", "figures", "widgets", "conversation"]
 }

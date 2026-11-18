@@ -1001,6 +1001,26 @@ describe("Dialog placements, AppShell and Frame", () => {
     expect(closed).toBe(1)
   })
 
+  test("AppShell's sidebar resizes by its edge only when the app keeps the width", () => {
+    const plain = track(mount(() => <AppShell sidebar="nav">body</AppShell>))
+    expect(plain.root.querySelector("[data-part=sidebar-edge]")).toBeNull()
+    const [width, setWidth] = createSignal(232)
+    const { root } = track(
+      mount(() => (
+        <AppShell sidebar="nav" sidebarWidth={width()} onSidebarResize={setWidth}>
+          body
+        </AppShell>
+      )),
+    )
+    const edge = one("[data-part=sidebar-edge]", root)
+    expect(edge.getAttribute("role")).toBe("separator")
+    press(edge, "ArrowRight")
+    expect(width()).toBe(248)
+    expect(one("[data-part=app-shell]", root).style.getPropertyValue("--nc-sidebar-width")).toBe("248px")
+    for (let i = 0; i < 30; i++) press(edge, "ArrowRight")
+    expect(width()).toBe(420)
+  })
+
   test("Frame with a header puts the content in a scrolling body, and focused is a data attribute", () => {
     const { root } = track(
       mount(() => (

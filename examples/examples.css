@@ -450,3 +450,25 @@ form.ex-form {
   margin-top: var(--space-3);
   max-width: 28rem;
 }
+
+/* The navigation examples: a view inside a frame of the app shell takes the whole frame. */
+.ex-app-frame {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+.ex-app-frame > [data-part="view-layout"] {
+  flex: 1;
+  min-height: 0;
+}
+/* A frame of the width the column states example picks. */
+.ex-columns {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.ex-columns > .ex-view {
+  align-self: flex-start;
+  width: 100%;
+}
