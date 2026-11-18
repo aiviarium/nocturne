@@ -28,7 +28,7 @@ export default function WidgetSizes() {
     <div class="ex-grid ex-grid--2">
       <div class="ex-col">
         <ContextWidget size="row" used={124_000} total={200_000} parts={PARTS} />
-        <ContextWidget size="sm" used={124_000} total={200_000} parts={PARTS} />
+        <ContextWidget used={124_000} total={200_000} parts={PARTS} />
         <ContextWidget size="lg" used={124_000} total={200_000} parts={PARTS} />
       </div>
       <div class="ex-col">
