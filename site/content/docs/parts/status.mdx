@@ -19,7 +19,9 @@ description: State, badges, the metadata line, empty states and cut text.
 ## Badge, LabelChip and Count
 
 - A `Badge` is for a kind, such as "Draft" or "Admin", or a category. It never shows a state that a `State` shows.
-- A `LabelChip` is a label, in one of the label colours.
+- A label on a card, row or table, such as "Bug", is a toned `Badge`. It is more compact than a chip and fits the record.
+  Give it a status tone only when the label means one, such as `danger` for a bug. Other labels stay `neutral`.
+- A `LabelChip` is a tag outside a record, such as a project or area in a picker, in one of the label colours.
 - `Count` is an attention count, drawn in the accent. Totals are plain numbers in `text-3`.
 
 One list never has two treatments for the same fact.

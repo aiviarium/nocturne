@@ -1,6 +1,6 @@
 // The issue board the Board examples share: lanes by state, cards with the key, the assignee, the title and
 // the labels, a click selects, and a card dragged to another lane moves there.
-import { Avatar, Board, BoardCard, BoardLane, LabelChip } from "@aiviarium/nocturne"
+import { Avatar, Badge, Board, BoardCard, BoardLane } from "@aiviarium/nocturne"
 import { createSignal, For, Show } from "solid-js"
 import { ISSUES, type Issue, STATE_NAME } from "./issues"
 
@@ -69,9 +69,7 @@ export function IssueBoardExample() {
                       </>
                     }
                     title={i.title}
-                    meta={
-                      <For each={i.labels}>{([hue, name]) => <LabelChip hue={hue}>{name}</LabelChip>}</For>
-                    }
+                    meta={<For each={i.labels}>{([tone, name]) => <Badge tone={tone}>{name}</Badge>}</For>}
                   />
                 )}
               </For>

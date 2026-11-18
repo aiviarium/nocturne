@@ -1,4 +1,4 @@
-import { Avatar, BoardCard, LabelChip } from "@aiviarium/nocturne"
+import { Avatar, Badge, BoardCard } from "@aiviarium/nocturne"
 import type { ExampleMeta } from "../_kit/types"
 
 export const meta: ExampleMeta = {
@@ -20,15 +20,15 @@ export default function Cards() {
         title="Sign-in loops behind a path-prefixed proxy when the cookie path is the proxy's own prefix"
         meta={
           <>
-            <LabelChip hue="danger">Bug</LabelChip>
-            <LabelChip hue="teal">Auth</LabelChip>
+            <Badge tone="danger">Bug</Badge>
+            <Badge tone="info">Auth</Badge>
           </>
         }
       />
       <BoardCard
         top={<span class="nc-meta mono">WEB-137</span>}
         title="Contrast of muted labels"
-        meta={<LabelChip hue="orchid">Design</LabelChip>}
+        meta={<Badge>Design</Badge>}
       />
       <BoardCard selected top={<span class="nc-meta mono">WEB-130</span>} title="Selected" />
     </div>
