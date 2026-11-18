@@ -261,7 +261,7 @@ export function joinDictated(before: string, text: string, after: string): strin
   return `${lead}${text}${trail}`
 }
 
-const WAVE_SAMPLES = 120
+const WAVE_SAMPLES = 240
 
 export const formatElapsed = (s: number) =>
   `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`

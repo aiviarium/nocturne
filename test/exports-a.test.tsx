@@ -714,7 +714,7 @@ describe("DictationBar", () => {
     const bar = one("[data-part=dictation]", root)
     expect(bar.getAttribute("aria-label")).toBe("Recording")
     expect(one(".nc-dictation__time", bar).textContent).toBe("1:15")
-    expect(bar.querySelectorAll(".nc-wave__bar").length).toBe(120)
+    expect(bar.querySelectorAll(".nc-wave__bar").length).toBe(240)
     expect(one("[data-part=dictation-live]", root).textContent).toBe("hello there")
     setState("transcribing")
     expect(one("[data-part=dictation]", root).textContent).toContain("Transcribing")
