@@ -593,6 +593,8 @@ button.nc-effort:focus-visible { outline: none; box-shadow: var(--focus-ring); }
 .nc-view-layout[data-dragging] { cursor: col-resize; user-select: none; }
 .nc-view-layout__sidebar { position: relative; display: flex; flex-direction: column; flex: none; box-sizing: border-box; width: var(--nc-view-sidebar, 240px); min-height: 0; overflow: visible; background: var(--bg-1); }
 .nc-view-layout__sidebar > :not(.nc-tooltip-anchor) { min-height: 0; overflow: auto; }
+/* The content scrolls inside its own padding, so a selected item's fill is an inset pill, as in the shell's sidebar. */
+.nc-view-layout__sidebar > :not(.nc-tooltip-anchor):not(.nc-view-layout__over-head) { box-sizing: border-box; padding: var(--space-2); }
 .nc-view-layout__sidebar--over { position: absolute; inset: 0 auto 0 0; z-index: 30; max-width: 85%; border-right: 1px solid var(--line); box-shadow: var(--shadow-overlay); }
 .nc-view-layout__rail { display: flex; flex: none; flex-direction: column; align-items: center; box-sizing: border-box; width: 36px; padding-top: var(--space-1); border-right: 1px solid var(--line-soft); }
 .nc-view-layout__activity { display: flex; flex: none; flex-direction: column; align-items: center; gap: var(--space-1); box-sizing: border-box; width: 36px; padding: var(--space-1) 0; border-right: 1px solid var(--line-soft); }

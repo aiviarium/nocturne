@@ -59,7 +59,7 @@ export default function AgentChat() {
         sidebarLabel="Sessions"
         sidebarWidth={260}
         sidebar={
-          <div class="ex-col ex-pad">
+          <div class="ex-col">
             <SectionHeading title="Sessions" count={4} />
             <RowList label="Sessions">
               <For each={SESSIONS}>
