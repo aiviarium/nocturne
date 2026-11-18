@@ -1,5 +1,5 @@
 // Issues of a project, for the patterns and blocks that list them.
-import type { DotStatus, LabelHue } from "@aiviarium/nocturne"
+import type { BadgeTone, DotStatus } from "@aiviarium/nocturne"
 
 export interface Issue {
   id: string
@@ -7,7 +7,7 @@ export interface Issue {
   title: string
   state: "backlog" | "todo" | "progress" | "review" | "blocked" | "done"
   assignee?: string
-  labels: Array<[LabelHue, string]>
+  labels: Array<[BadgeTone, string]>
   updated: string
   unread?: boolean
 }
@@ -40,7 +40,7 @@ export const ISSUES: Issue[] = [
     assignee: "Sarah Chen",
     labels: [
       ["danger", "Bug"],
-      ["teal", "Auth"],
+      ["info", "Auth"],
     ],
     updated: "3h",
   },
@@ -49,7 +49,7 @@ export const ISSUES: Issue[] = [
     key: "WEB-137",
     title: "Contrast of muted labels in light mode",
     state: "todo",
-    labels: [["orchid", "Design"]],
+    labels: [["neutral", "Design"]],
     updated: "1d",
   },
   {
@@ -58,7 +58,7 @@ export const ISSUES: Issue[] = [
     title: "Move the read replicas behind the shared load balancer",
     state: "todo",
     assignee: "Jonas Lindqvist",
-    labels: [["ember", "Infra"]],
+    labels: [["neutral", "Infra"]],
     updated: "2d",
   },
   {

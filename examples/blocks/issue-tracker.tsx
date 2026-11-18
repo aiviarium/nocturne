@@ -1,10 +1,10 @@
 import {
   Avatar,
+  Badge,
   Button,
   FilterBar,
   FilterCount,
   InlineField,
-  LabelChip,
   ListRow,
   MetaLine,
   Nav,
@@ -106,9 +106,7 @@ export default function IssueTracker() {
                       label: "Labels",
                       value: (
                         <span class="nc-row nc-row--tight">
-                          <For each={i().labels}>
-                            {([hue, name]) => <LabelChip hue={hue}>{name}</LabelChip>}
-                          </For>
+                          <For each={i().labels}>{([tone, name]) => <Badge tone={tone}>{name}</Badge>}</For>
                         </span>
                       ),
                     },
