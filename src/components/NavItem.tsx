@@ -1,4 +1,4 @@
-import { For, type JSX, Show, splitProps } from "solid-js"
+import { Index, type JSX, Show, splitProps } from "solid-js"
 import { cx } from "../lib/cx"
 import { callClick, useLinkClick } from "../lib/link"
 import { Icon, type IconName, type LucideNode } from "./Icon"
@@ -93,20 +93,24 @@ export interface NavProps {
   class?: string
 }
 
-/** A sidebar navigation landmark that lays out NavItem groups. */
+/**
+ * A sidebar navigation landmark that lays out NavItem groups. Groups and items are kept by position, so a router
+ * that builds them afresh on every navigation (to move `current`) updates the items in place: the list isn't
+ * rebuilt, and the sidebar keeps its scroll position and focus.
+ */
 export function Nav(props: NavProps): JSX.Element {
   return (
     <nav data-part="nav" aria-label={props.label} class={cx("nc-nav", props.class)}>
-      <For each={props.groups ?? []}>
+      <Index each={props.groups ?? []}>
         {(group) => (
           <>
-            <Show when={group.label}>
-              <span class="nc-nav__label">{group.label}</span>
+            <Show when={group().label}>
+              <span class="nc-nav__label">{group().label}</span>
             </Show>
-            <For each={group.items}>{(item) => <NavItem {...item} />}</For>
+            <Index each={group().items}>{(item) => <NavItem {...item()} />}</Index>
           </>
         )}
-      </For>
+      </Index>
       {props.children}
     </nav>
   )

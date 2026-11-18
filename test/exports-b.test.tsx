@@ -473,6 +473,31 @@ describe("Nav", () => {
     click(items[1]!)
     expect(clicked).toEqual(["atlas"])
   })
+
+  test("groups built afresh on navigation move current without rebuilding the items", () => {
+    const [page, setPage] = createSignal("a")
+    const { root } = track(
+      mount(() => (
+        <Nav
+          label="Pages"
+          groups={[
+            {
+              items: ["a", "b", "c"].map((id) => ({
+                label: id.toUpperCase(),
+                href: `#${id}`,
+                current: id === page(),
+              })),
+            },
+          ]}
+        />
+      )),
+    )
+    const before = all("[data-part=nav-item]")
+    setPage("c")
+    const after = all("[data-part=nav-item]")
+    expect(after.every((el, i) => el === before[i])).toBe(true)
+    expect(after.map((el) => el.getAttribute("aria-current"))).toEqual([null, null, "page"])
+  })
 })
 
 describe("NavigationBar", () => {
