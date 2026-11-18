@@ -96,5 +96,5 @@ Nocturne's radii, mapped onto the Tailwind names Fumadocs uses in `global.css`.
 - Body text is Inter, code is JetBrains Mono. Both are self-hosted from `src/fonts/`, under the OFL. No web font service.
 - Project names in the header and the hero are wordmark SVGs, never live text.
 - The header lockup is the `-icon` file at 1.5 times an 18 px word with a 0.25 em gap, and the plain `-mono` wordmark in the project colour. The faceted wordmark is for 24 px and above.
-- The landing hero follows the README heading. It has a mono label "Aiviarium / area", then the lockup (the master icon left of the wordmark, in the proportions of the brand lockups), the badges under it, the description, the install command in a box and two centred buttons.
+- The landing hero follows the README heading. It starts with a mono label "Aiviarium / area" and the lockup: the master icon left of the wordmark, in the proportions of the brand lockups. The badges, the description, the install command in a box and two centred buttons follow.
 - Light mode uses the `-light` files. The favicon is the `-16` file.
