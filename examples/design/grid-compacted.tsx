@@ -3,6 +3,7 @@ import type { ExampleMeta } from "../_kit/types"
 
 export const meta: ExampleMeta = {
   title: "Only what has something to say, as tall as it needs",
+  verdict: "do",
   note: "The same layout: the empty inbox and the all-clear checks render nothing and take no space, the list's cell shrinks to its two rows, and everything moves up. The stored layout is unchanged; editing shows it.",
   surface: "well",
 }

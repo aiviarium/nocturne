@@ -3,6 +3,7 @@ import type { ExampleMeta } from "../_kit/types"
 
 export const meta: ExampleMeta = {
   title: "Shared edges",
+  verdict: "do",
   note: "Every row is a ListRow: icons on one edge, titles on one edge, status and meta on one trailing edge.",
 }
 

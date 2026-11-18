@@ -4,6 +4,7 @@ import type { ExampleMeta } from "../_kit/types"
 
 export const meta: ExampleMeta = {
   title: "A status item only while it matters",
+  verdict: "do",
   note: "Nothing while connected. Drop the connection: a word appears, and goes when it is back.",
   surface: "none",
 }

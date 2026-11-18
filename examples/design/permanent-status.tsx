@@ -3,6 +3,7 @@ import type { ExampleMeta } from "../_kit/types"
 
 export const meta: ExampleMeta = {
   title: "A state on every row, and a banner for the normal case",
+  verdict: "dont",
   note: "“All good”, “Connected”, “Idle” and “Ready” on everything: the one row that needs you is one dot among many.",
 }
 

@@ -3,6 +3,7 @@ import type { ExampleMeta } from "../_kit/types"
 
 export const meta: ExampleMeta = {
   title: "Hue in the dot and the word",
+  verdict: "do",
   note: "The rows stay on the neutral surface; a failing check is a red dot and a red word.",
 }
 

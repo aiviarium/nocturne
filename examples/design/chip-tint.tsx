@@ -3,6 +3,7 @@ import type { ExampleMeta } from "../_kit/types"
 
 export const meta: ExampleMeta = {
   title: "A slight tint, a stronger ink",
+  verdict: "do",
   note: "Small inline chips may carry a tint of their hue, with text in a stronger shade of the same hue.",
 }
 

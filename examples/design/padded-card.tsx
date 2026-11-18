@@ -3,6 +3,7 @@ import type { ExampleMeta } from "../_kit/types"
 
 export const meta: ExampleMeta = {
   title: "Content stuck to the top of a box",
+  verdict: "dont",
   note: "Cards given a height they do not fill: the empty half says nothing.",
   surface: "well",
 }

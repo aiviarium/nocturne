@@ -3,6 +3,7 @@ import type { ExampleMeta } from "../_kit/types"
 
 export const meta: ExampleMeta = {
   title: "The state is a dot and a word",
+  verdict: "do",
   note: "An approval card keeps the hairline edge of every card.",
 }
 

@@ -3,6 +3,7 @@ import type { ExampleMeta } from "../_kit/types"
 
 export const meta: ExampleMeta = {
   title: "The same fact three ways",
+  verdict: "dont",
   note: "Blocked as a badge, a state and a line of meta; the assignee twice; “None” for an empty value; a badge saying it is an issue.",
 }
 

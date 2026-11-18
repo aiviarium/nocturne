@@ -3,6 +3,7 @@ import type { ExampleMeta } from "../_kit/types"
 
 export const meta: ExampleMeta = {
   title: "Each module its own section",
+  verdict: "dont",
   note: "The same things, filed by the module that made them: the person has to know which module holds the project's issues.",
   surface: "well",
 }

@@ -19,8 +19,7 @@ Header actions come in one order:
 The name of the view is in its tab.
 Never repeat it as a heading.
 
-<Example id="design/compact-header" />
-<Example id="design/inflated-header" />
+<DoDont do="design/compact-header" dont="design/inflated-header" />
 
 ## Card
 
@@ -37,8 +36,7 @@ A `nested` card is `bg-2`.
 
 <Example id="card/sized" />
 <Example id="card/fill" />
-<Example id="design/list-in-card" />
-<Example id="design/list-double-inset" />
+<DoDont do="design/list-in-card" dont="design/list-double-inset" />
 
 ## Panel
 
@@ -63,8 +61,7 @@ It is 13px semibold `text-1`, in a 24px row.
 - Group labels in a sidebar or menu are the nav label, 11px in `text-3`. They are not section headings.
 
 <Example id="section-heading/variants" />
-<Example id="design/one-heading" />
-<Example id="design/mixed-headings" />
+<DoDont do="design/one-heading" dont="design/mixed-headings" />
 
 ## Layout parts
 
@@ -76,5 +73,16 @@ It is 13px semibold `text-1`, in a 24px row.
 
 <Example id="app-shell/two-frames" />
 <Example id="split/horizontal" />
+
+The project is the hub.
+Issues, docs, agent sessions and environments sit inside it, and each module adds its part there.
+A module doesn't get a section of its own.
+
+<DoDont do="design/project-hub" dont="design/plugin-silos" />
+
+The status bar shows an item only while it matters, such as a lost connection.
+It doesn't list the things that are fine.
+
+<DoDont do="design/statusbar-quiet" dont="design/statusbar-chatty" />
 
 <GalleryLink page="app-shell">The layout parts in the gallery</GalleryLink>

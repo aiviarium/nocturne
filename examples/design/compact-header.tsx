@@ -3,6 +3,7 @@ import type { ExampleMeta } from "../_kit/types"
 
 export const meta: ExampleMeta = {
   title: "One 38px bar, then content",
+  verdict: "do",
   note: "The tab names the view; the header holds where it is and its actions.",
   surface: "well",
 }

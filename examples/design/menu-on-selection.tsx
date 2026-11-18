@@ -4,6 +4,7 @@ import type { ExampleMeta } from "../_kit/types"
 
 export const meta: ExampleMeta = {
   title: "The menu acts on the selection",
+  verdict: "do",
   note: "Three rows are selected; a right click on any of them opens a menu that says what it acts on: “3 selected”, Archive 3, Delete 3. A right click outside the selection selects that row alone first.",
 }
 

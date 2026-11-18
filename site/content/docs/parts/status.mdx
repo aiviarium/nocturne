@@ -13,10 +13,8 @@ description: State, badges, the metadata line, empty states and cut text.
 - Show it only when it is out of the ordinary. No "Live", "Idle" or "Ready" on every row.
 
 <Example id="state/all" />
-<Example id="design/exceptional-status" />
-<Example id="design/permanent-status" />
-<Example id="design/state-foreground" />
-<Example id="design/tinted-rows" />
+<DoDont do="design/exceptional-status" dont="design/permanent-status" />
+<DoDont do="design/state-foreground" dont="design/tinted-rows" />
 
 ## Badge, LabelChip and Count
 
@@ -28,10 +26,8 @@ One list never has two treatments for the same fact.
 
 <Example id="badge/status" />
 <Example id="badge/labels" />
-<Example id="design/fact-once" />
-<Example id="design/fact-repeated" />
-<Example id="design/chip-tint" />
-<Example id="design/solid-chip" />
+<DoDont do="design/fact-once" dont="design/fact-repeated" />
+<DoDont do="design/chip-tint" dont="design/solid-chip" />
 
 ## MetaLine
 
@@ -49,8 +45,7 @@ Only a whole view, or a list the person filtered, gets one.
 An empty part of a view is not drawn.
 
 <Example id="empty-state/default" />
-<Example id="design/empty-nothing" />
-<Example id="design/empty-boxes" />
+<DoDont do="design/empty-nothing" dont="design/empty-boxes" />
 
 ## Truncate
 

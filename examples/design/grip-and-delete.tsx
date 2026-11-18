@@ -4,6 +4,7 @@ import type { ExampleMeta } from "../_kit/types"
 
 export const meta: ExampleMeta = {
   title: "A grip and a delete button on every row",
+  verdict: "dont",
   note: "Controls that repeat on every row: a grip to drag it by and a delete button beside its time. They crowd the row, put a destructive action one stray click away, and say what the row itself, its menu and the Delete key already do.",
 }
 

@@ -4,6 +4,7 @@ import type { ExampleMeta } from "../_kit/types"
 
 export const meta: ExampleMeta = {
   title: "One field-like group",
+  verdict: "do",
   note: "The list is one box like a field: each row a field and a quiet remove, the add row last.",
 }
 

@@ -92,6 +92,24 @@ body {
   margin: 0;
   color: var(--text-3);
 }
+/* The design rules' pairs: a label before the title, and a danger edge around the wrong way. */
+.g-verdict {
+  display: inline-block;
+  margin-right: var(--space-2);
+  padding: 0 6px;
+  border: 1px solid currentColor;
+  border-radius: var(--radius-xs);
+  font-weight: 600;
+}
+.g-section[data-verdict="do"] .g-verdict {
+  color: var(--success);
+}
+.g-section[data-verdict="dont"] .g-verdict {
+  color: var(--danger);
+}
+.g-section[data-verdict="dont"] > :last-child {
+  outline: 1px solid var(--danger-line);
+}
 .g-section__note {
   margin: 0;
   color: var(--text-3);

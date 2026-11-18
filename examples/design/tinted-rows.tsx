@@ -3,6 +3,7 @@ import type { ExampleMeta } from "../_kit/types"
 
 export const meta: ExampleMeta = {
   title: "The row's background says the state",
+  verdict: "dont",
   note: "Status tints behind whole rows with an edge bar: the list turns into a colour chart, and the state has no word.",
 }
 

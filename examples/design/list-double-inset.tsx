@@ -3,6 +3,7 @@ import type { ExampleMeta } from "../_kit/types"
 
 export const meta: ExampleMeta = {
   title: "A list padded twice",
+  verdict: "dont",
   note: "The same list without its variant: the card's padding and the list's own inset add up, so the titles sit 12px in from everything else and the fill floats inside the content.",
   surface: "well",
 }

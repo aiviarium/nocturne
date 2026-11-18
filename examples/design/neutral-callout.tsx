@@ -3,6 +3,7 @@ import type { ExampleMeta } from "../_kit/types"
 
 export const meta: ExampleMeta = {
   title: "Neutral surface, hue in the icon",
+  verdict: "do",
   note: "Callout as @aiviarium/nocturne draws it: a bg step and a hairline; the tone is the icon's colour and the code.",
 }
 

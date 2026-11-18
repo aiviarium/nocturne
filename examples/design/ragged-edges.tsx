@@ -3,6 +3,7 @@ import type { ExampleMeta } from "../_kit/types"
 
 export const meta: ExampleMeta = {
   title: "Hand-built rows",
+  verdict: "dont",
   note: "Three modules, three row recipes: the icons, titles and trailing text each start somewhere else.",
 }
 

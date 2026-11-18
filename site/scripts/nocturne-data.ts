@@ -104,6 +104,7 @@ for (const folder of readdirSync(join(repo, 'examples'), { withFileTypes: true }
     examples[id] = {
       title: meta.title,
       ...(meta.note ? { note: meta.note } : {}),
+      ...(meta.verdict ? { verdict: meta.verdict } : {}),
       ...(meta.phone ? { phone: true } : {}),
       ...(meta.height ? { height: meta.height } : {}),
     };

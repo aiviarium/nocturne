@@ -3,6 +3,7 @@ import type { ExampleMeta } from "../_kit/types"
 
 export const meta: ExampleMeta = {
   title: "A tinted box with a hue edge",
+  verdict: "dont",
   note: "The Nocturne snapshot's callout: a status tint behind the text and a status line around it, so two warnings shout louder than the content.",
 }
 

@@ -3,6 +3,7 @@ import type { ExampleMeta } from "../_kit/types"
 
 export const meta: ExampleMeta = {
   title: "One section heading, everywhere",
+  verdict: "do",
   note: "SectionHeading: 13px semibold in a 24px row, a total in text-3, one action at the right.",
   surface: "well",
 }

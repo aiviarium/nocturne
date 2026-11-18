@@ -3,6 +3,7 @@ import type { ExampleMeta } from "../_kit/types"
 
 export const meta: ExampleMeta = {
   title: "Colour on the tile behind an icon",
+  verdict: "do",
   note: "The card stays neutral; its kind is a small coloured tile.",
   surface: "well",
 }

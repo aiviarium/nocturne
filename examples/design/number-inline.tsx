@@ -3,6 +3,7 @@ import type { ExampleMeta } from "../_kit/types"
 
 export const meta: ExampleMeta = {
   title: "Inline numbers in a property list",
+  verdict: "do",
   note: "The inline variant reads as a value, keeps the 28px row and lines up with the text values.",
 }
 

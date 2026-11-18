@@ -3,6 +3,7 @@ import type { ExampleMeta } from "../_kit/types"
 
 export const meta: ExampleMeta = {
   title: "A toolbar that is always there",
+  verdict: "dont",
   note: "A row of disabled bulk buttons and a checkbox on every row, for a selection nobody has made: chrome for the rare case, taking room in the normal one.",
 }
 

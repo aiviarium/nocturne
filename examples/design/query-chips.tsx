@@ -4,6 +4,7 @@ import type { ExampleMeta } from "../_kit/types"
 
 export const meta: ExampleMeta = {
   title: "Filters as chips in the bar",
+  verdict: "do",
   note: "Only the filters in use take room, each says what it does, and the rest is one Filter button away.",
 }
 

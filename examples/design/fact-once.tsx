@@ -3,6 +3,7 @@ import type { ExampleMeta } from "../_kit/types"
 
 export const meta: ExampleMeta = {
   title: "Each fact once",
+  verdict: "do",
   note: "The state is in its row; the assignee once; nothing restates that this is an issue.",
 }
 

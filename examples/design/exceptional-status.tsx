@@ -3,6 +3,7 @@ import type { ExampleMeta } from "../_kit/types"
 
 export const meta: ExampleMeta = {
   title: "Only what is out of the ordinary",
+  verdict: "do",
   note: "One session needs you and one is working; the rest say nothing, so the two stand out.",
 }
 
