@@ -23,6 +23,7 @@ Never repeat it as a heading.
 <DoDont do="design/compact-header" dont="design/inflated-header" />
 
 The header shows a full path, a stripped path with `fold`, or only a back control with `back`.
+With `variant="shell"` it shows in the app's header beside the sidebar, and `up` adds an arrow to the level above.
 [Navigation](./navigation.mdx) says which to use, and how the columns, bars and drill levels work together.
 
 ## Card
@@ -69,7 +70,7 @@ It is 13px semibold `text-1`, in a 24px row.
 
 ## Layout parts
 
-- `AppShell` holds the sidebar, the top bar, the status bar and the phone drawer. The sidebar is on `bg-0`, and content is in `bg-1` frames with radius 8 and an 8px gap.
+- `AppShell` holds the sidebar, the app's header, the top bar, the status bar and the phone drawer. The sidebar is on `bg-0`, and content is in `bg-1` frames with radius 8 and an 8px gap.
 - `Frame` has a `TabStrip` header.
 - `Split` and `SplitGroup` have dividers you can drag. A divider is a focusable separator. The arrow keys, Home and End move it. A double click resets it.
 - `Dialog` is centred, bare, near the top, or a bottom sheet.

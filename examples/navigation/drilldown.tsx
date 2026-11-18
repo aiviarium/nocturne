@@ -21,7 +21,7 @@ import type { ExampleMeta } from "../_kit/types"
 
 export const meta: ExampleMeta = {
   title: "Drilling down from projects to an issue",
-  note: "Open Atlas web, then open an issue with its arrow. The shared sidebar stays and keeps its width (drag its edge); only the main column changes. The issues view has its own sidebar of saved views, and a selected row fills the inspector without changing the path. The crumbs show the full path on the list and a folded one on the issue.",
+  note: "Open Atlas web, then open an issue with its arrow. The path and the view's actions sit in the app's header, beside the shared sidebar and above the view, with an up arrow once you are below the top level. The sidebar stays and keeps its width (drag its edge); only the main column changes. The issues view has its own sidebar of saved views, and a selected row fills the inspector without changing the path. The crumbs show the full path on the list and a folded one on the issue.",
   surface: "none",
   frame: "A whole app window: the shared sidebar and a view beside it.",
   height: 560,
@@ -113,6 +113,7 @@ export default function Drilldown() {
                 id="nav-drill-projects"
                 header={
                   <ViewHeader
+                    variant="shell"
                     crumbs={[{ label: "Projects" }]}
                     actions={[{ id: "new", label: "New project", icon: "plus", onClick: () => {} }]}
                   />
@@ -143,6 +144,8 @@ export default function Drilldown() {
                   sidebar={views(view())}
                   header={
                     <ViewHeader
+                      variant="shell"
+                      up
                       crumbs={[...projectCrumbs, { label: ISSUE_VIEWS.find((v) => v.id === view())!.label }]}
                       actions={[{ id: "new", label: "New issue", icon: "plus", onClick: () => {} }]}
                     />
@@ -204,6 +207,8 @@ export default function Drilldown() {
                   reading
                   header={
                     <ViewHeader
+                      variant="shell"
+                      up
                       fold={1}
                       crumbs={[...projectCrumbs, { label: i().key }]}
                       actions={[{ id: "copy", label: "Copy link", icon: "link", onClick: () => {} }]}

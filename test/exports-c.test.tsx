@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test"
 import { createSignal, Show } from "solid-js"
 import {
+  AppShell,
   ContextWidget,
   compactCount,
   NavigationScreen,
@@ -699,6 +700,52 @@ describe("ViewHeader", () => {
     )
     const toggle = one("[data-part=view-aside-toggle]", root)
     expect(toggle.getAttribute("aria-label")).toBe("Show outline")
+  })
+
+  test("goes up one level from its arrow, named after the level above", () => {
+    const went: string[] = []
+    const { root } = track(
+      mount(() => (
+        <ViewHeader
+          up
+          crumbs={[
+            { label: "Projects", onClick: () => went.push("projects") },
+            { label: "Atlas web", onClick: () => went.push("atlas") },
+            { label: "WEB-142" },
+          ]}
+        />
+      )),
+    )
+    const up = one("[data-part=view-up]", root)
+    expect(up.getAttribute("aria-label")).toBe("Back to Atlas web")
+    click(up)
+    expect(went).toEqual(["atlas"])
+  })
+
+  test("the shell variant shows in the AppShell's header and keeps the bar hidden without it", () => {
+    const [deep, setDeep] = createSignal(true)
+    const { root } = track(
+      mount(() => (
+        <AppShell sidebar={<span>nav</span>}>
+          <Show when={deep()}>
+            <ViewHeader variant="shell" crumbs={[{ label: "Projects" }]} />
+          </Show>
+        </AppShell>
+      )),
+    )
+    const bar = one("[data-part=shell-header]", root)
+    expect(bar.hidden).toBe(false)
+    const header = one("[data-part=view-header]", bar)
+    expect(header.getAttribute("data-variant")).toBe("shell")
+    expect(one("[data-part=shell-content]", root).querySelector("[data-part=view-header]")).toBeNull()
+    setDeep(false)
+    expect(bar.hidden).toBe(true)
+    expect(bar.querySelector("[data-part=view-header]")).toBeNull()
+  })
+
+  test("the shell variant shows in place outside an AppShell", () => {
+    const { root } = track(mount(() => <ViewHeader variant="shell" crumbs={[{ label: "Projects" }]} />))
+    expect(one("[data-part=view-header]", root).getAttribute("data-variant")).toBe("shell")
   })
 })
 

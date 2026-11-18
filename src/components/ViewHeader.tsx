@@ -1,4 +1,5 @@
 import { createContext, For, type JSX, onCleanup, Show, useContext } from "solid-js"
+import { Portal } from "solid-js/web"
 import { cx } from "../lib/cx"
 import { useLinkClick, useNavigate } from "../lib/link"
 import { Button } from "./Button"
@@ -6,6 +7,7 @@ import { Icon, type IconName } from "./Icon"
 import { IconButton } from "./IconButton"
 import { DropdownMenu, type MenuEntry } from "./Menu"
 import { type BarAction, useScreen } from "./NavigationBar"
+import { useShellHeader } from "./ShellHeader"
 import { useViewLayout } from "./ViewLayout"
 
 // The standard header of a view. It never repeats the view's title (the tab shows it): it holds breadcrumbs or
@@ -69,6 +71,17 @@ export interface ViewHeaderProps {
    * opened from the session list). It names where it goes. The crumbs are not shown with it.
    */
   back?: ViewCrumb
+  /**
+   * An up control before the crumbs: an arrow back to the crumb before the last, named after it. Use it on a
+   * drilled-down target, so the level above is one click at the same place on every level.
+   */
+  up?: boolean
+  /**
+   * `view` (default): the header at the top of the view. `shell`: the header shows in the `AppShell`'s header
+   * bar, beside the sidebar and above the frames, as most apps place the path. It stays part of its view, so
+   * the inspector toggle and the pin still work. Outside an `AppShell` it shows as `view`.
+   */
+  variant?: "view" | "shell"
   /** Short context after the crumbs: a state that is out of the ordinary, a chip. */
   context?: JSX.Element
   /** Free content in the middle: a search field, view switches. */
@@ -138,6 +151,19 @@ function PhoneViewHeader(props: ViewHeaderProps): JSX.Element {
 
 export function ViewHeader(props: ViewHeaderProps): JSX.Element {
   if (useScreen()) return <PhoneViewHeader {...props} />
+  const shell = useShellHeader()
+  if (props.variant === "shell" && shell) {
+    onCleanup(shell.claim())
+    return (
+      <Portal mount={shell.mount()} ref={(el: HTMLDivElement) => el.classList.add("nc-shell__header-slot")}>
+        <DesktopViewHeader {...props} />
+      </Portal>
+    )
+  }
+  return <DesktopViewHeader {...props} />
+}
+
+function DesktopViewHeader(props: ViewHeaderProps): JSX.Element {
   const chrome = useContext(ViewChrome)
   const layout = useViewLayout()
   const linkClick = useLinkClick()
@@ -158,6 +184,12 @@ export function ViewHeader(props: ViewHeaderProps): JSX.Element {
   const primary = () => actions().filter((a) => a.primary && !a.overflow)
   const asideToggle = () => Boolean(layout?.hasAside())
   // The pin alone is not something to say: without other content the header stays away, and the tab's menu pins.
+  /** Where the up control goes: the crumb before the last, when it leads somewhere. */
+  const upTo = () => {
+    if (!props.up || props.back) return undefined
+    const c = props.crumbs?.at(-2)
+    return c && (c.href || c.onClick) ? c : undefined
+  }
   const content = () =>
     Boolean(props.back) ||
     present(props.crumbs) ||
@@ -177,7 +209,22 @@ export function ViewHeader(props: ViewHeaderProps): JSX.Element {
     }))
   return (
     <Show when={shown()}>
-      <header class={cx("nc-view-header body", props.class)} data-part="view-header">
+      <header
+        class={cx("nc-view-header body", props.variant === "shell" && "nc-view-header--shell", props.class)}
+        data-part="view-header"
+        data-variant={props.variant ?? "view"}
+      >
+        <Show when={upTo()}>
+          {(c) => (
+            <IconButton
+              label={`Back to ${c().label}`}
+              icon="chevron-left"
+              data-part="view-up"
+              class="nc-view-header__up"
+              onClick={() => go(c())}
+            />
+          )}
+        </Show>
         <Show
           when={props.back}
           fallback={

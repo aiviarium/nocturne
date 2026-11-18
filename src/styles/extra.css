@@ -489,7 +489,7 @@ button.nc-effort:focus-visible { outline: none; box-shadow: var(--focus-ring); }
 .nc-frame__header { display: flex; align-items: center; min-height: var(--header); border-bottom: 1px solid var(--line-soft); }
 .nc-frame__body { flex: 1; min-height: 0; overflow: auto; }
 .nc-frame__body--padded { padding: var(--space-4); }
-.nc-shell { display: grid; grid-template-columns: var(--nc-sidebar-width, 232px) minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr) auto; grid-template-areas: "top top" "side main" "status status"; min-height: 100%; background: var(--bg-0); color: var(--text-1); }
+.nc-shell { display: grid; grid-template-columns: var(--nc-sidebar-width, 232px) minmax(0, 1fr); grid-template-rows: auto auto minmax(0, 1fr) auto; grid-template-areas: "top top" "side head" "side main" "status status"; min-height: 100%; background: var(--bg-0); color: var(--text-1); }
 .nc-shell[data-fill] { height: 100%; }
 .nc-shell__topbar { grid-area: top; display: none; align-items: center; gap: var(--space-2); min-height: var(--header); padding: 0 var(--space-1); }
 .nc-shell__scrim { display: none; padding: 0; border: 0; }
@@ -498,12 +498,21 @@ button.nc-effort:focus-visible { outline: none; box-shadow: var(--focus-ring); }
 .nc-shell__edge { grid-area: side; justify-self: end; z-index: 3; width: 1px; margin-right: -4px; padding: 0 3px; background: transparent; background-clip: content-box; cursor: col-resize; outline: none; }
 .nc-shell__edge:hover, .nc-shell__edge:active { background-color: var(--accent-line); }
 .nc-shell__edge:focus-visible { background-color: var(--accent-strong); }
+/* The app's header: the path to the open view and its actions, on bg-0 beside the sidebar and above the frames.
+   It lines up with the frames' left edge, and the frames start right under it. */
+.nc-shell__header { grid-area: head; display: flex; align-items: center; min-width: 0; min-height: var(--header); padding-right: var(--space-2); }
+.nc-shell__header[hidden] { display: none; }
+.nc-shell__header-slot { display: contents; }
+.nc-shell:has(> .nc-shell__header:not([hidden])) > .nc-shell__content { padding-top: 0; }
+.nc-shell__header .nc-view-header--shell { flex: 1; min-width: 0; padding: 0; border-bottom: 0; }
+.nc-view-header__up { flex: none; margin-right: calc(-1 * var(--space-1)); }
 .nc-shell__content { grid-area: main; display: flex; flex-wrap: wrap; align-items: stretch; gap: var(--space-2); min-width: 0; padding: var(--space-2) var(--space-2) var(--space-2) 0; }
 .nc-shell__content > .nc-frame, .nc-shell__content > .nc-panel { flex: 1 1 320px; }
 .nc-shell[data-fill] > .nc-shell__content { flex-wrap: nowrap; min-height: 0; padding-bottom: 0; }
 .nc-shell__status { grid-area: status; display: flex; align-items: center; gap: var(--space-4); min-height: var(--control-md); padding: 0 var(--space-3); }
 @media (max-width: 720px) {
-  .nc-shell { grid-template-columns: minmax(0, 1fr); grid-template-areas: "top" "main" "status"; }
+  .nc-shell { grid-template-columns: minmax(0, 1fr); grid-template-areas: "top" "head" "main" "status"; }
+  .nc-shell__header { padding: 0 var(--space-2); }
   .nc-shell__topbar { display: flex; }
   .nc-shell__edge { display: none; }
   .nc-shell__sidebar { position: fixed; inset: 0 auto 0 0; z-index: 75; width: min(280px, 85vw); border-right: 1px solid var(--line-soft); transform: translateX(-100%); transition: transform 160ms ease; }

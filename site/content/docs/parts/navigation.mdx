@@ -17,6 +17,22 @@ The width runs from 180px to 420px.
 Going deeper changes the main column, not the sidebar.
 The sidebar keeps its width, its scroll and its current item while you drill down.
 
+## The app's header
+
+Most apps put the path in a header beside the sidebar, above the content, with the actions at its end.
+`AppShell` has that bar.
+A view fills it with a `ViewHeader` with `variant="shell"`.
+The header is still part of its view, so the inspector toggle and the pin work as before.
+The bar takes no room when no view fills it.
+
+- The crumbs are at the start of the bar, at the left edge of the frame under it.
+- `up` adds an arrow before the crumbs that goes to the level above, named after it.
+  Give it to every level below the top, so going up is one click at the same place.
+- The view's actions are at the end of the bar.
+  The frame has no second header under it.
+
+Use the view's own header in place of the app's when the shell shows more than one frame side by side, and each frame has its own path.
+
 <Example id="navigation/drilldown" />
 
 ## Columns
@@ -51,8 +67,9 @@ Escape in a column opened over the main column closes it and returns focus to it
 | Bar | What belongs in it |
 | --- | --- |
 | Top bar | On a phone, the control that opens the drawer. Nothing on a desktop |
+| App header | The path to the open view with its up arrow, and the view's actions. A `ViewHeader` with `variant="shell"` fills it |
 | `TabStrip` of a `Frame` | One tab for each open view, with the name of the view |
-| `ViewHeader` | The crumbs or a back control, short context, and the actions of the view |
+| `ViewHeader` | The crumbs or a back control, short context, and the actions of the view, when the app's header doesn't hold them |
 | Status bar | Only what is out of the ordinary, such as a lost connection |
 
 Each thing goes in one bar, and the other bars don't repeat it.
