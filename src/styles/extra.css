@@ -705,3 +705,20 @@ button.nc-effort:focus-visible { outline: none; box-shadow: var(--focus-ring); }
 .nc-callout--warning, .nc-callout--danger, .nc-callout--info { background: var(--bg-2); }
 /* An open approval is marked by its dot and word, on a neutral card: no hue outline. */
 .nc-approval { border-color: var(--line); }
+
+/* Log viewer: scrollable monospace stream surface with optional timestamps and level accents. */
+.nc-log { display: flex; flex-direction: column; min-width: 0; overflow: hidden; }
+.nc-log--fill { flex: 1; min-height: 0; height: 100%; }
+.nc-log__header { flex: none; }
+.nc-log__stage { position: relative; display: flex; flex-direction: column; flex: 1; min-height: 0; }
+.nc-log__body { flex: 1; min-height: 0; overflow: auto; }
+.nc-log__body--wrap { white-space: pre-wrap; overflow-wrap: anywhere; }
+.nc-log__line { display: flex; align-items: baseline; gap: var(--space-3); min-width: 0; }
+.nc-log__time { flex: none; color: var(--text-3); user-select: none; font-variant-numeric: tabular-nums; }
+.nc-log__text { flex: 1; min-width: 0; }
+.nc-log__line--debug .nc-log__text { color: var(--text-3); }
+.nc-log__line--warn .nc-log__text { color: var(--warning); }
+.nc-log__line--error .nc-log__text { color: var(--danger); }
+.nc-log__line--state .nc-log__text { color: var(--accent-text); }
+.nc-log__empty { color: var(--text-3); }
+.nc-log__jump { position: absolute; right: var(--space-3); bottom: var(--space-3); box-shadow: var(--shadow-overlay); }
