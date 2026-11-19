@@ -354,6 +354,13 @@ export const PAGES: GalleryPage[] = [
     sections: ["stream-state/states"],
   },
   {
+    id: "log-viewer",
+    title: "LogViewer",
+    group: "Live",
+    lead: "Scrollable monospace log output for live and completed streams. Sticks to the bottom while following, pauses when scrolled up, and pairs with StreamState.",
+    sections: ["log-viewer/live"],
+  },
+  {
     id: "panel",
     title: "Panel and Frame",
     group: "Layout",
