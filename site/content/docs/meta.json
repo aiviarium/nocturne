@@ -13,6 +13,7 @@
     "phones",
     "fields",
     "query-builder",
-    "editor"
+    "editor",
+    "from-the-prototype"
   ]
 }
