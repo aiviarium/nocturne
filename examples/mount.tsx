@@ -3,8 +3,8 @@
 import "@aiviarium/nocturne/styles/index.css"
 import "./examples.css"
 import { accentValue, PhoneOverride, type RowDensity, ToastRegion } from "@aiviarium/nocturne"
-import { createSignal, onMount, Show } from "solid-js"
-import { render } from "solid-js/web"
+import { render } from "@solidjs/web"
+import { createSignal, onSettled, Show } from "solid-js"
 import { ExampleScreen, needsScreen } from "./_kit/screen"
 import { ExampleSettingsContext } from "./_kit/settings"
 import { EXAMPLES } from "./registry"
@@ -67,7 +67,9 @@ export function mount(id: string, element: Element | ShadowRoot, options: MountO
     // The toast region looks for the root's data-theme, which is set once the root has rendered.
     let element!: HTMLDivElement
     const [root, setRoot] = createSignal<HTMLDivElement>()
-    onMount(() => setRoot(element))
+    onSettled(() => {
+      setRoot(element)
+    })
     return (
       <div
         ref={element}
@@ -78,9 +80,9 @@ export function mount(id: string, element: Element | ShadowRoot, options: MountO
         data-phone={phone ? "" : undefined}
         style={{ "--accent": accentFor(accent(), theme()) }}
       >
-        <PhoneOverride.Provider value={phone ? true : undefined}>
-          <ExampleSettingsContext.Provider value={{ density }}>{body()}</ExampleSettingsContext.Provider>
-        </PhoneOverride.Provider>
+        <PhoneOverride value={phone ? true : null}>
+          <ExampleSettingsContext value={{ density }}>{body()}</ExampleSettingsContext>
+        </PhoneOverride>
         <Show when={example.meta.toasts && root()}>{(anchor) => <ToastRegion anchor={anchor()} />}</Show>
       </div>
     )

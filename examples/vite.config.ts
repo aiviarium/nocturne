@@ -1,8 +1,8 @@
 // The examples as a library for a docs site: one ES module (`nocturne-examples.js`) and its stylesheet
 // (`nocturne-examples.css`), written to EXAMPLES_OUT (default `examples/dist`).
 import { fileURLToPath } from "node:url"
+import solid from "@solidjs/vite-plugin"
 import { defineConfig } from "vite"
-import solid from "vite-plugin-solid"
 
 const here = (path: string) => fileURLToPath(new URL(path, import.meta.url))
 

@@ -1,4 +1,5 @@
-import { type JSX, Show, splitProps } from "solid-js"
+import type { JSX } from "@solidjs/web"
+import { omit, Show } from "solid-js"
 import { createTallBox } from "../lib/box"
 import { cx } from "../lib/cx"
 
@@ -25,44 +26,35 @@ export interface StatCardProps extends Omit<JSX.HTMLAttributes<HTMLDivElement>, 
 
 /** A single metric: label and signal, the value with its unit, then a meter or sparkline. */
 export function StatCard(props: StatCardProps): JSX.Element {
-  const [local, rest] = splitProps(props, [
-    "label",
-    "signal",
-    "value",
-    "unit",
-    "meter",
-    "footer",
-    "fill",
-    "class",
-  ])
+  const rest = omit(props, "label", "signal", "value", "unit", "meter", "footer", "fill", "class")
   let el: HTMLDivElement | undefined
   const tall = createTallBox(() => el)
   return (
     <div
       ref={el}
       data-part="stat-card"
-      data-fill={local.fill ? "" : undefined}
+      data-fill={props.fill ? "" : undefined}
       data-tall={tall() ? "" : undefined}
-      class={cx("nc-stat", local.class)}
+      class={cx("nc-stat", props.class)}
       {...rest}
     >
       <div class="nc-stat__label">
-        <span>{local.label}</span>
-        <Show when={local.signal}>{local.signal}</Show>
+        <span>{props.label}</span>
+        <Show when={props.signal}>{props.signal}</Show>
       </div>
       <div class="nc-stat__value">
-        {local.value}
-        <Show when={local.unit}>
-          <span class="nc-stat__unit">{local.unit}</span>
+        {props.value}
+        <Show when={props.unit}>
+          <span class="nc-stat__unit">{props.unit}</span>
         </Show>
       </div>
-      <Show when={local.meter}>
+      <Show when={props.meter}>
         {(meter) => (
           <div
             class="nc-meter"
             data-tone={meter().tone}
             role="progressbar"
-            aria-label={meter().label ?? local.label}
+            aria-label={meter().label ?? props.label}
             aria-valuemin={0}
             aria-valuemax={100}
             aria-valuenow={Math.round(meter().value)}
@@ -71,8 +63,8 @@ export function StatCard(props: StatCardProps): JSX.Element {
           </div>
         )}
       </Show>
-      <Show when={local.footer}>
-        <div class="nc-stat__footer">{local.footer}</div>
+      <Show when={props.footer}>
+        <div class="nc-stat__footer">{props.footer}</div>
       </Show>
     </div>
   )

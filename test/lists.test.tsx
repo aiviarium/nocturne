@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, test } from "bun:test"
-import { createSignal } from "solid-js"
+import { createSignal, flush } from "solid-js"
 import {
   autoScrollSpeed,
   clearToasts,
@@ -150,6 +150,7 @@ describe("RowList reordering", () => {
           onReorder={(from, to) => {
             props.onMove?.(from, to)
             setItems(reorderItems(items(), from, to))
+            flush()
           }}
         >
           {(s) => <ListRow title={s} />}
@@ -213,6 +214,7 @@ describe("RowList selection and removal", () => {
           props.onRemove?.(keys)
           const before = items()
           setItems(before.filter((s) => !keys.includes(s)))
+          flush()
           return props.undo ? () => setItems(before) : undefined
         }}
       >
@@ -228,8 +230,10 @@ describe("RowList selection and removal", () => {
     const m = mains()
     click(m[0] as HTMLElement)
     ;(m[2] as HTMLElement).dispatchEvent(new MouseEvent("click", { bubbles: true, ctrlKey: true }))
+    flush()
     expect(seen.at(-1)).toEqual(["Alpha", "Gamma"])
     ;(m[3] as HTMLElement).dispatchEvent(new MouseEvent("click", { bubbles: true, shiftKey: true }))
+    flush()
     expect(seen.at(-1)).toEqual(["Gamma", "Delta"])
     expect(all("[data-part=list-row][data-selected]").length).toBe(2)
     expect(one(".nc-rows__count").textContent).toBe("2 selected")
@@ -265,6 +269,7 @@ describe("RowList selection and removal", () => {
     m = mains()
     click(m[0] as HTMLElement)
     ;(m[1] as HTMLElement).dispatchEvent(new MouseEvent("click", { bubbles: true, metaKey: true }))
+    flush()
     m[1]?.focus()
     press(m[1] as HTMLElement, "Backspace")
     expect(removed.at(-1)).toEqual(["Alpha", "Gamma"])
@@ -350,6 +355,7 @@ describe("ListRow rename and tree", () => {
               onRename={(t) => {
                 names.push(t)
                 setTitle(t)
+                flush()
               }}
             />
           </RowList>
@@ -365,6 +371,7 @@ describe("ListRow rename and tree", () => {
     expect(input.getAttribute("aria-label")).toBe("Rename Launch plan")
     input.value = "Launch plan v2"
     input.dispatchEvent(new InputEvent("input", { bubbles: true }))
+    flush()
     press(input, "Enter")
     await tick()
     expect(names).toEqual(["Launch plan v2"])
@@ -421,6 +428,7 @@ describe("DataList", () => {
         onChange={(next) => {
           props.seen?.push(next)
           setTags(next)
+          flush()
         }}
         invalid={(t) => (t.includes(" ") ? "No spaces" : undefined)}
       />
@@ -443,6 +451,7 @@ describe("DataList", () => {
     const input = inputs()[0] as HTMLInputElement
     input.value = "web app"
     input.dispatchEvent(new InputEvent("input", { bubbles: true }))
+    flush()
     expect(seen.at(-1)).toEqual(["web app", "auth"])
     expect(one(".nc-datalist__error").textContent).toBe("No spaces")
     expect(inputs()[0]?.getAttribute("aria-invalid")).toBe("true")
@@ -505,6 +514,7 @@ describe("DataList", () => {
             onChange={(n) => {
               seen.push(n)
               setEnv(n)
+              flush()
             }}
           >
             {(item, set) => (
@@ -521,6 +531,7 @@ describe("DataList", () => {
     const value = one<HTMLInputElement>("[aria-label=Value]")
     value.value = "2"
     value.dispatchEvent(new InputEvent("input", { bubbles: true }))
+    flush()
     expect(seen.at(-1)).toEqual([{ k: "A", v: "2" }])
   })
 

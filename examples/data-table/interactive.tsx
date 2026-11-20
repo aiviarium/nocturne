@@ -13,7 +13,9 @@ export const meta: ExampleMeta = {
 export default function SessionsTable() {
   const pageDensity = useDensity()
   const [density, setDensity] = createSignal<RowDensity>(pageDensity())
-  createEffect(() => setDensity(pageDensity()))
+  createEffect(pageDensity, (density) => {
+    setDensity(density)
+  })
   const [query, setQuery] = createSignal("")
   const rows = () => HOST_SESSIONS.filter((s) => s.title.toLowerCase().includes(query().toLowerCase()))
   return (

@@ -1,8 +1,12 @@
 // A reference to an entity (`ref`) or several (`refs`): each as the entity's chip; editing opens a search of the
 // entities the field points at, and picking one again takes it out of a list.
-import { createResource, createSignal, For, type JSX, Show } from "solid-js"
+
+import type { JSX } from "@solidjs/web"
+import { createSignal, For, Show } from "solid-js"
 import { Icon } from "../../components/Icon"
 import { TextField } from "../../components/TextField"
+import { aria } from "../../lib/aria"
+import { createLoaded } from "../../lib/resource"
 import { Empty } from "../Empty"
 import type { EditorProps, FieldKind, ValueProps } from "../kind"
 import { PickerSurface } from "../parts/PickerSurface"
@@ -44,9 +48,9 @@ function Editor(props: EditorProps): JSX.Element {
   const [open, setOpen] = createSignal(false)
   const [text, setText] = createSignal("")
   const [anchor, setAnchor] = createSignal<HTMLElement>()
-  const [found] = createResource(
+  const found = createLoaded(
     () => (open() ? { text: text(), scheme: props.spec.scheme } : null),
-    async (q) => (await fieldRuntime().searchRefs?.(q)) ?? [],
+    (q) => fieldRuntime().searchRefs?.(q),
   )
   const pick = (uri: string) => {
     if (multi()) {
@@ -72,8 +76,8 @@ function Editor(props: EditorProps): JSX.Element {
           }
           aria-label={values().length ? `Change ${props.spec.title}` : props.spec.title}
           aria-haspopup="listbox"
-          aria-expanded={open()}
-          aria-invalid={props.error ? true : undefined}
+          aria-expanded={aria(open())}
+          aria-invalid={props.error ? "true" : undefined}
           onClick={() => {
             setText("")
             setOpen((o) => !o)
@@ -105,12 +109,12 @@ function Editor(props: EditorProps): JSX.Element {
               onInput={(e) => setText(e.currentTarget.value)}
             />
             <div class="nc-field-results" role="listbox" aria-label={props.spec.title}>
-              <For each={found.latest ?? []}>
+              <For each={found.value() ?? []}>
                 {(e) => (
                   <button
                     type="button"
                     role="option"
-                    aria-selected={values().includes(e.uri)}
+                    aria-selected={aria(values().includes(e.uri))}
                     class="nc-field-result"
                     onClick={() => pick(e.uri)}
                   >
@@ -121,7 +125,7 @@ function Editor(props: EditorProps): JSX.Element {
                   </button>
                 )}
               </For>
-              <Show when={!found.loading && (found.latest ?? []).length === 0}>
+              <Show when={!found.loading() && (found.value() ?? []).length === 0}>
                 <div class="nc-meta nc-field-none">No matches</div>
               </Show>
             </div>

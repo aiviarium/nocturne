@@ -1,4 +1,5 @@
-import { type JSX, splitProps } from "solid-js"
+import type { JSX } from "@solidjs/web"
+import { omit } from "solid-js"
 import { cx } from "../lib/cx"
 
 export interface TruncateProps extends Omit<JSX.HTMLAttributes<HTMLSpanElement>, "children"> {
@@ -16,24 +17,24 @@ export interface TruncateProps extends Omit<JSX.HTMLAttributes<HTMLSpanElement>,
  * titles, paths, breadcrumbs, metadata. Never cut text without it.
  */
 export function Truncate(props: TruncateProps): JSX.Element {
-  const [local, rest] = splitProps(props, ["text", "lines", "mono", "class", "style"])
+  const rest = omit(props, "text", "lines", "mono", "class", "style")
   return (
     <span
       data-part="truncate"
       class={cx(
         "nc-truncate",
-        (local.lines ?? 1) > 1 && "nc-truncate--clamp",
-        local.mono && "nc-mono",
-        local.class,
+        (props.lines ?? 1) > 1 && "nc-truncate--clamp",
+        props.mono && "nc-mono",
+        props.class,
       )}
       style={{
-        ...((local.lines ?? 1) > 1 ? { "-webkit-line-clamp": String(local.lines) } : {}),
-        ...(typeof local.style === "object" ? local.style : {}),
+        ...((props.lines ?? 1) > 1 ? { "-webkit-line-clamp": String(props.lines) } : {}),
+        ...(typeof props.style === "object" ? props.style : {}),
       }}
-      title={local.text}
+      title={props.text}
       {...rest}
     >
-      {local.text}
+      {props.text}
     </span>
   )
 }

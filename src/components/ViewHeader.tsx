@@ -1,5 +1,7 @@
-import { createContext, For, type JSX, onCleanup, Show, useContext } from "solid-js"
-import { Portal } from "solid-js/web"
+import type { JSX } from "@solidjs/web"
+import { Portal } from "@solidjs/web"
+import { createContext, For, onCleanup, Show, useContext } from "solid-js"
+import { aria } from "../lib/aria"
 import { cx } from "../lib/cx"
 import { useLinkClick, useNavigate } from "../lib/link"
 import { Button } from "./Button"
@@ -60,7 +62,8 @@ export interface ViewChromeValue {
   togglePin: () => void
 }
 
-export const ViewChrome = createContext<ViewChromeValue>()
+// `null` is "no view chrome above": in Solid 2 a default-less context throws instead of reading as undefined.
+export const ViewChrome = createContext<ViewChromeValue | null>(null)
 
 export interface ViewHeaderProps {
   /**
@@ -350,7 +353,7 @@ function DesktopViewHeader(props: ViewHeaderProps): JSX.Element {
                     variant="ghost"
                     icon={a.icon}
                     aria-label={a.label}
-                    aria-pressed={a.pressed}
+                    aria-pressed={aria(a.pressed)}
                     title={a.label}
                     disabled={a.disabled}
                     data-action={a.id}

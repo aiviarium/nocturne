@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, test } from "bun:test"
+import { render } from "@solidjs/web"
 import { EditorState, TextSelection } from "prosemirror-state"
-import { createSignal } from "solid-js"
-import { render } from "solid-js/web"
+import { createSignal, flush } from "solid-js"
 import { prosemirrorJSONToYDoc, yXmlFragmentToProsemirrorJSON } from "y-prosemirror"
 import * as awarenessProtocol from "y-protocols/awareness"
 import * as Y from "yjs"
@@ -201,6 +201,7 @@ describe("RichTextEditor", () => {
     handle.view.dispatch(handle.view.state.tr.insertText(" world", 6))
     expect(changes.at(-1)?.content?.[0]?.content?.[0]?.text).toBe("hello world")
     setValue(doc(para("replaced")))
+    flush()
     await tick()
     expect(handle.getJSON().content?.[0]?.content?.[0]?.text).toBe("replaced")
     expect(changes.length).toBe(1)
@@ -462,6 +463,7 @@ describe("RichTextEditor", () => {
     expect(d.textBetween(r.from, r.to)).toBe("plan")
     expect(quoteOf(d, r.from, r.to)).toEqual({ quote: "plan", prefix: "New first " })
     setList([{ id: "c2", quote: "gone", prefix: "" }])
+    flush()
     await tick()
     expect(marks()).toEqual([])
   })

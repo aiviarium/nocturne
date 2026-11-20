@@ -1,7 +1,7 @@
 // What the kinds need from the app that shows them and cannot know: how an entity reference is drawn and how the
 // entities a reference may point at are found. The app sets it once at start; without it a reference shows its id
 // and cannot be searched.
-import type { JSX } from "solid-js"
+import type { JSX } from "@solidjs/web"
 
 export interface RefHit {
   uri: string

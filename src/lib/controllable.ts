@@ -1,4 +1,4 @@
-import { type Accessor, createSignal } from "solid-js"
+import { type Accessor, createSignal, untrack } from "solid-js"
 
 /**
  * A value that is controlled when `value()` is not undefined and local otherwise.
@@ -9,7 +9,10 @@ export function createControllable<T>(options: {
   defaultValue: T
   onChange?: (next: T) => void
 }): [Accessor<T>, (next: T) => void] {
-  const [local, setLocal] = createSignal<T>(options.defaultValue)
+  // The default is read once: a later change to it must not replace what the person chose. The cast is the
+  // signal's own narrowing: a value a caller passes is never a write function, but a bare `T` may be.
+  // biome-ignore lint/complexity/noBannedTypes: the signature of `createSignal` excludes callables
+  const [local, setLocal] = createSignal<T>(untrack(() => options.defaultValue) as Exclude<T, Function>)
   const current = () => {
     const controlled = options.value()
     return controlled === undefined ? local() : controlled

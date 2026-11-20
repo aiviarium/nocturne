@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, test } from "bun:test"
-import { createSignal } from "solid-js"
+import { createSignal, flush } from "solid-js"
 import { type GridItem, WidgetGrid } from "../src"
 import { all, mount, one, press, tick } from "./dom"
 
@@ -26,6 +26,7 @@ function grid(editing: boolean) {
       onChange={(next) => {
         changes.push(next)
         setItems(next)
+        flush()
       }}
     >
       {(item) => <span data-testid={`content-${item().id}`}>{item().id}</span>}
@@ -104,12 +105,15 @@ describe("WidgetGrid", () => {
     expect(cell("b")).toBe("0,2,6,2")
     // Editing shows the stored cells, a included.
     setEditing(true)
+    flush()
     await tick()
     expect(grid.hasAttribute("data-fit")).toBe(false)
     expect(one("[data-widget-id=a]").hasAttribute("data-hidden")).toBe(false)
     // Something to show: a comes back outside editing, and b goes below it.
     setEditing(false)
+    flush()
     setEmpty([])
+    flush()
     await tick()
     expect(one("[data-widget-id=a]").hasAttribute("data-hidden")).toBe(false)
     expect(one("[data-widget-id=b]").style.getPropertyValue("--wg-top")).toBe(`${2 * 80 + 12 + 12}px`)

@@ -1,4 +1,5 @@
-import { Index, type JSX, Show, splitProps } from "solid-js"
+import type { JSX } from "@solidjs/web"
+import { For, omit, Show } from "solid-js"
 import { cx } from "../lib/cx"
 import { callClick, useLinkClick } from "../lib/link"
 import { Icon, type IconName, type LucideNode } from "./Icon"
@@ -16,11 +17,14 @@ export interface NavItemProps extends Omit<JSX.AnchorHTMLAttributes<HTMLAnchorEl
   meta?: JSX.Element
   /** The current page. Sets `aria-current="page"`. */
   current?: boolean
+  /** Where the row goes: rendered as a link. */
+  href?: string
 }
 
 /** A sidebar row. Renders a link when it has an `href`, a button otherwise. */
 export function NavItem(props: NavItemProps): JSX.Element {
-  const [local, rest] = splitProps(props, [
+  const rest = omit(
+    props,
     "label",
     "icon",
     "iconNode",
@@ -30,36 +34,36 @@ export function NavItem(props: NavItemProps): JSX.Element {
     "class",
     "href",
     "onClick",
-  ])
+  )
   const linkClick = useLinkClick()
   const body = (
     <>
       <Show
-        when={local.leading}
+        when={props.leading}
         fallback={
-          <Show when={local.icon || local.iconNode}>
-            <Icon name={local.icon} node={local.iconNode} />
+          <Show when={props.icon || props.iconNode}>
+            <Icon name={props.icon} node={props.iconNode} />
           </Show>
         }
       >
-        {local.leading}
+        {props.leading}
       </Show>
-      <span class="nc-nav-item__label">{local.label}</span>
-      <Show when={local.meta}>
-        <span class="nc-nav-item__meta">{local.meta}</span>
+      <span class="nc-nav-item__label">{props.label}</span>
+      <Show when={props.meta}>
+        <span class="nc-nav-item__meta">{props.meta}</span>
       </Show>
     </>
   )
   return (
     <Show
-      when={local.href}
+      when={props.href}
       fallback={
         <button
           data-part="nav-item"
           type="button"
-          class={cx("nc-nav-item", local.class)}
-          aria-current={local.current ? "page" : undefined}
-          onClick={(e) => callClick(local.onClick, e)}
+          class={cx("nc-nav-item", props.class)}
+          aria-current={props.current ? "page" : undefined}
+          onClick={(e) => callClick(props.onClick, e)}
           {...(rest as JSX.ButtonHTMLAttributes<HTMLButtonElement>)}
         >
           {body}
@@ -68,12 +72,12 @@ export function NavItem(props: NavItemProps): JSX.Element {
     >
       <a
         data-part="nav-item"
-        href={local.href}
-        class={cx("nc-nav-item", local.class)}
-        aria-current={local.current ? "page" : undefined}
+        href={props.href}
+        class={cx("nc-nav-item", props.class)}
+        aria-current={props.current ? "page" : undefined}
         onClick={(e) => {
-          callClick(local.onClick, e)
-          linkClick(e, local.href)
+          callClick(props.onClick, e)
+          linkClick(e, props.href)
         }}
         {...rest}
       >
@@ -101,16 +105,18 @@ export interface NavProps {
 export function Nav(props: NavProps): JSX.Element {
   return (
     <nav data-part="nav" aria-label={props.label} class={cx("nc-nav", props.class)}>
-      <Index each={props.groups ?? []}>
+      <For keyed={false} each={props.groups ?? []}>
         {(group) => (
           <>
             <Show when={group().label}>
               <span class="nc-nav__label">{group().label}</span>
             </Show>
-            <Index each={group().items}>{(item) => <NavItem {...item()} />}</Index>
+            <For keyed={false} each={group().items}>
+              {(item) => <NavItem {...item()} />}
+            </For>
           </>
         )}
-      </Index>
+      </For>
       {props.children}
     </nav>
   )

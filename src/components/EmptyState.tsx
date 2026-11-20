@@ -1,4 +1,5 @@
-import { type JSX, Show, splitProps } from "solid-js"
+import type { JSX } from "@solidjs/web"
+import { omit, Show } from "solid-js"
 import { cx } from "../lib/cx"
 import { Icon, type IconName } from "./Icon"
 
@@ -24,22 +25,22 @@ export interface EmptyStateProps extends Omit<JSX.HTMLAttributes<HTMLDivElement>
  * a view renders nothing instead (README, "Which part for what").
  */
 export function EmptyState(props: EmptyStateProps): JSX.Element {
-  const [local, rest] = splitProps(props, ["icon", "title", "description", "children", "size", "class"])
+  const rest = omit(props, "icon", "title", "description", "children", "size", "class")
   return (
     <div
       data-part="empty-state"
-      class={cx("nc-empty", local.size === "sm" && "nc-empty--sm", local.class)}
+      class={cx("nc-empty", props.size === "sm" && "nc-empty--sm", props.class)}
       {...rest}
     >
-      <Show when={local.icon}>
-        <Icon name={local.icon} size={local.size === "sm" ? undefined : "lg"} class="nc-empty__icon" />
+      <Show when={props.icon}>
+        <Icon name={props.icon} size={props.size === "sm" ? undefined : "lg"} class="nc-empty__icon" />
       </Show>
-      <span class="nc-empty__title label">{local.title}</span>
-      <Show when={local.description}>
-        <span class="nc-empty__desc nc-meta">{local.description}</span>
+      <span class="nc-empty__title label">{props.title}</span>
+      <Show when={props.description}>
+        <span class="nc-empty__desc nc-meta">{props.description}</span>
       </Show>
-      <Show when={local.children}>
-        <div class="nc-empty__actions">{local.children}</div>
+      <Show when={props.children}>
+        <div class="nc-empty__actions">{props.children}</div>
       </Show>
     </div>
   )

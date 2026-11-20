@@ -1,4 +1,5 @@
-import { createEffect, createMemo, createSignal, For, type JSX, on, onCleanup, onMount, Show } from "solid-js"
+import type { JSX } from "@solidjs/web"
+import { createEffect, createMemo, createSignal, For, onCleanup, onSettled, Show } from "solid-js"
 import { cx } from "../lib/cx"
 import { activeElement, focusableIn, trapTab } from "../lib/focus"
 import { type Detent, detentHeights, settleDetent } from "../lib/gestures"
@@ -122,15 +123,18 @@ function SheetSurface(props: SheetProps): JSX.Element {
   )
   // The detent it opens at, once the content is measured. While the keyboard is up for a field in the sheet, the
   // largest, so the field has room above the keyboard.
-  createEffect(
-    on(heights, (h) => {
-      if (keyboardOpen() && surface?.contains(activeElement()) && isField(activeElement()))
-        return setIndex(h.length - 1)
-      if (index() !== null) return setIndex(Math.min(index()!, h.length - 1))
-      if (!natural()) return
-      setIndex(props.initialDetent === "large" ? h.length - 1 : 0)
-    }),
-  )
+  createEffect(heights, (h) => {
+    if (keyboardOpen() && surface?.contains(activeElement()) && isField(activeElement())) {
+      setIndex(h.length - 1)
+      return
+    }
+    if (index() !== null) {
+      setIndex(Math.min(index()!, h.length - 1))
+      return
+    }
+    if (!natural()) return
+    setIndex(props.initialDetent === "large" ? h.length - 1 : 0)
+  })
   // The focused field stays in view: when it is focused, and when the keyboard or the sheet's height changes.
   let revealTimer: ReturnType<typeof setTimeout> | undefined
   const reveal = () => {
@@ -144,7 +148,7 @@ function SheetSurface(props: SheetProps): JSX.Element {
       reduced ? 0 : 280,
     )
   }
-  createEffect(on([keyboardInset, () => index()], reveal, { defer: true }))
+  createEffect(() => [keyboardInset(), index()], reveal, { defer: true })
   onCleanup(() => clearTimeout(revealTimer))
   const height = () => drag() ?? heights()[index() ?? 0] ?? 0
 
@@ -173,7 +177,7 @@ function SheetSurface(props: SheetProps): JSX.Element {
     setNatural(Math.ceil(header + content.offsetHeight + padding + footer + edge))
   }
   let restore = () => {}
-  onMount(() => {
+  onSettled(() => {
     setTop(safeTop(root) + 10)
     restore = inertOthers(root.parentElement as HTMLElement)
     document.addEventListener("keydown", onKeyDown, true)
@@ -192,10 +196,10 @@ function SheetSurface(props: SheetProps): JSX.Element {
     requestAnimationFrame(() => {
       if (!surface.contains(activeElement())) target.focus({ preventScroll: true })
     })
-    onCleanup(() => {
+    return () => {
       ro.disconnect()
       window.removeEventListener("resize", measure)
-    })
+    }
   })
   onCleanup(() => {
     document.removeEventListener("keydown", onKeyDown, true)

@@ -1,12 +1,14 @@
-import { createContext, type JSX, useContext } from "solid-js"
+import type { JSX } from "@solidjs/web"
+import { createContext, useContext } from "solid-js"
 
 type Navigate = (href: string) => void
 
-const LinkContext = createContext<Navigate>()
+// `null` is "no router": in Solid 2 a default-less context throws instead of reading as undefined.
+const LinkContext = createContext<Navigate | null>(null)
 
 /** The provider's navigate function, for a link chosen from a menu rather than clicked. */
 export function useNavigate(): Navigate | undefined {
-  return useContext(LinkContext)
+  return useContext(LinkContext) ?? undefined
 }
 
 /**
@@ -14,7 +16,7 @@ export function useNavigate(): Navigate | undefined {
  * with a router passes its navigate function; without one, links are plain links.
  */
 export function LinkProvider(props: { navigate: Navigate; children: JSX.Element }): JSX.Element {
-  return <LinkContext.Provider value={props.navigate}>{props.children}</LinkContext.Provider>
+  return <LinkContext value={props.navigate}>{props.children}</LinkContext>
 }
 
 /**

@@ -1,4 +1,6 @@
-import { createEffect, createMemo, createSignal, For, type JSX, on, onCleanup, onMount } from "solid-js"
+import type { JSX } from "@solidjs/web"
+import { createEffect, createMemo, createSignal, For, onSettled } from "solid-js"
+import { aria } from "../lib/aria"
 import { cx } from "../lib/cx"
 import { createId } from "../lib/id"
 
@@ -44,7 +46,7 @@ export function List<T>(props: ListProps<T>): JSX.Element {
   const viewport = () => props.height ?? measured()
   let el!: HTMLDivElement
 
-  onMount(() => {
+  onSettled(() => {
     if (props.height !== undefined) return
     setMeasured(el.clientHeight || 400)
     const observer =
@@ -52,7 +54,7 @@ export function List<T>(props: ListProps<T>): JSX.Element {
         ? undefined
         : new ResizeObserver(() => setMeasured(el.clientHeight || 400))
     observer?.observe(el)
-    onCleanup(() => observer?.disconnect())
+    return () => observer?.disconnect()
   })
 
   const range = createMemo(() => {
@@ -84,11 +86,11 @@ export function List<T>(props: ListProps<T>): JSX.Element {
   }
   // A row chosen from outside (the arrow keys of a search box above the list) has to be in view too.
   createEffect(
-    on(
-      () => props.activeIndex,
-      (index) => index !== undefined && index >= 0 && el && scrollIntoView(index),
-      { defer: true },
-    ),
+    () => props.activeIndex,
+    (index) => {
+      if (index !== undefined && index >= 0 && el) scrollIntoView(index)
+    },
+    { defer: true },
   )
   const page = () => Math.max(1, Math.floor(viewport() / rowHeight()) - 1)
   const onKeyDown = (event: KeyboardEvent) => {
@@ -128,7 +130,7 @@ export function List<T>(props: ListProps<T>): JSX.Element {
             <div
               id={`${id}-${index}`}
               role="option"
-              aria-selected={props.isSelected ? props.isSelected(index) : active() === index}
+              aria-selected={aria(props.isSelected ? props.isSelected(index) : active() === index)}
               aria-setsize={props.items.length}
               aria-posinset={index + 1}
               data-index={index}

@@ -1,4 +1,6 @@
-import { createEffect, createMemo, createSignal, For, type JSX, on, onCleanup, onMount, Show } from "solid-js"
+import type { JSX } from "@solidjs/web"
+import { createEffect, createMemo, createSignal, For, onCleanup, onSettled, Show } from "solid-js"
+import { aria } from "../lib/aria"
 import { cx } from "../lib/cx"
 import { createId } from "../lib/id"
 import { Icon, type IconName } from "./Icon"
@@ -161,12 +163,12 @@ export function TabStrip(props: TabStripProps): JSX.Element {
 
   // Overflow: the strip scrolls once the tabs are at their minimum width.
   const measure = () => setOverflow(list.scrollWidth > list.clientWidth + 1)
-  onMount(() => {
+  onSettled(() => {
     measure()
     if (typeof ResizeObserver === "undefined") return
     const observer = new ResizeObserver(measure)
     observer.observe(list)
-    onCleanup(() => observer.disconnect())
+    return () => observer.disconnect()
   })
   const keepActiveInView = () => {
     const el = tabs.get(props.value)
@@ -178,16 +180,14 @@ export function TabStrip(props: TabStripProps): JSX.Element {
     else if (a.right > l.right - margin) list.scrollLeft += a.right - l.right + margin
   }
   createEffect(
-    on(
-      () => [props.value, props.items.length] as const,
-      () =>
-        queueMicrotask(() =>
-          requestAnimationFrame(() => {
-            measure()
-            keepActiveInView()
-          }),
-        ),
-    ),
+    () => [props.value, props.items.length] as const,
+    () =>
+      queueMicrotask(() =>
+        requestAnimationFrame(() => {
+          measure()
+          keepActiveInView()
+        }),
+      ),
   )
   const onWheel = (event: WheelEvent) => {
     if (list.scrollWidth <= list.clientWidth || Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return
@@ -317,7 +317,7 @@ export function TabStrip(props: TabStripProps): JSX.Element {
                   ref={(el) => buttons.set(item.id, el)}
                   type="button"
                   role="tab"
-                  aria-selected={props.value === item.id}
+                  aria-selected={aria(props.value === item.id)}
                   aria-label={item.pinned ? tip(item) : undefined}
                   tabindex={props.value === item.id ? 0 : -1}
                   class="nc-tabstrip__main label"
@@ -452,7 +452,7 @@ function AllTabs(props: {
           label="All tabs"
           icon="chevron-down"
           aria-haspopup="dialog"
-          aria-expanded={open()}
+          aria-expanded={aria(open())}
           onClick={() => setOpen(!open())}
         />
       </span>

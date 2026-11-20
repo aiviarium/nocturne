@@ -78,8 +78,8 @@ function Sheets() {
 /** On a phone the sheets are what Dialog, Select and menus become; PhoneOverride shows them on any screen. */
 export default function PhoneSheets() {
   return (
-    <PhoneOverride.Provider value={true}>
+    <PhoneOverride value={true}>
       <Sheets />
-    </PhoneOverride.Provider>
+    </PhoneOverride>
   )
 }

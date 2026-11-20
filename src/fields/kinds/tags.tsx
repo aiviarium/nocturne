@@ -1,5 +1,7 @@
 // A list of short strings (tags, origins): chips when read, a list of fields, one per row, when edited.
-import { For, type JSX, Show } from "solid-js"
+
+import type { JSX } from "@solidjs/web"
+import { For, Show } from "solid-js"
 import { Badge } from "../../components/Badge"
 import { DataList } from "../../components/DataList"
 import { Empty } from "../Empty"

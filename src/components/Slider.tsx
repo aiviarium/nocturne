@@ -1,4 +1,5 @@
-import { createMemo, createSignal, For, Index, type JSX, Show } from "solid-js"
+import type { JSX } from "@solidjs/web"
+import { createMemo, createSignal, For, Show } from "solid-js"
 import { createControllable } from "../lib/controllable"
 import { cx } from "../lib/cx"
 import { clamp, decimalsOf, snap } from "../lib/expression"
@@ -299,14 +300,14 @@ function SliderCore(props: CoreProps): JSX.Element {
               {(t) => <span class="nc-slider__tick" data-on={inFill(t) || undefined} style={pos(pct(t))} />}
             </For>
             {/* By position, not value: a thumb stays the same element (and keeps focus) as its value changes. */}
-            <Index each={props.values}>
+            <For keyed={false} each={props.values}>
               {(v, index) => {
                 const i = () => index
                 return (
                   <div
                     ref={(el) => (thumbs[i()] = el)}
                     role="slider"
-                    tabIndex={props.disabled ? -1 : 0}
+                    tabindex={props.disabled ? -1 : 0}
                     class="nc-slider__thumb"
                     data-active={active() === i() || undefined}
                     style={pos(pct(v()))}
@@ -315,7 +316,7 @@ function SliderCore(props: CoreProps): JSX.Element {
                     aria-valuenow={v()}
                     aria-valuetext={text(v())}
                     aria-orientation={vertical() ? "vertical" : "horizontal"}
-                    aria-disabled={props.disabled || undefined}
+                    aria-disabled={props.disabled ? "true" : undefined}
                     aria-label={
                       props.thumbLabel(i())
                         ? props.label
@@ -331,7 +332,7 @@ function SliderCore(props: CoreProps): JSX.Element {
                   />
                 )
               }}
-            </Index>
+            </For>
           </div>
           <Show when={props.marks?.length && !vertical()}>
             <div class="nc-slider__marks" aria-hidden="true">

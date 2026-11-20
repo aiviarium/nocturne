@@ -1,5 +1,7 @@
 // A secret: write only. It is never read back or drawn: a stored one shows as set, and a blank field keeps it.
-import { type JSX, Show } from "solid-js"
+
+import type { JSX } from "@solidjs/web"
+import { Show } from "solid-js"
 import { TextField } from "../../components/TextField"
 import { Empty } from "../Empty"
 import type { EditorProps, FieldKind, ValueProps } from "../kind"

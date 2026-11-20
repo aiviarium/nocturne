@@ -1,10 +1,13 @@
 // One of a closed set of values, each with its title and tone: a chip that opens the values. The ones a field's
 // `transitions` do not allow from the current value are greyed out.
-import { For, type JSX, Show } from "solid-js"
+
+import type { JSX } from "@solidjs/web"
+import { For, Show } from "solid-js"
 import { Badge, type BadgeTone } from "../../components/Badge"
 import { Icon } from "../../components/Icon"
 import { DropdownMenu } from "../../components/Menu"
 import { type DotStatus, State } from "../../components/StatusDot"
+import { aria } from "../../lib/aria"
 import { cx } from "../../lib/cx"
 import { Empty } from "../Empty"
 import type { EditorProps, FieldKind, FilterProps, ValueProps } from "../kind"
@@ -59,7 +62,7 @@ function Segmented(props: EditorProps): JSX.Element {
           <button
             type="button"
             class="nc-seg__item"
-            aria-pressed={props.value === o.value}
+            aria-pressed={aria(props.value === o.value)}
             disabled={props.disabled || (props.allowed ? !props.allowed(o.value) : false)}
             onClick={() => props.value !== o.value && props.onCommit(o.value)}
           >
@@ -111,7 +114,7 @@ function Menu(props: EditorProps): JSX.Element {
           class={cx("nc-field-chip", props.variant === "boxed" && "nc-input nc-select nc-field-chip--boxed")}
           data-part="enum-picker"
           aria-label={props.spec.title}
-          aria-invalid={props.error ? true : undefined}
+          aria-invalid={props.error ? "true" : undefined}
           disabled={props.disabled}
         >
           <Show when={current()} fallback={<Empty />}>

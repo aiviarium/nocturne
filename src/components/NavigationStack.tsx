@@ -1,4 +1,5 @@
-import { createEffect, createMemo, createSignal, For, type JSX, on, onCleanup } from "solid-js"
+import type { JSX } from "@solidjs/web"
+import { createEffect, createMemo, createSignal, For, onCleanup, untrack } from "solid-js"
 import { cx } from "../lib/cx"
 import { EDGE_WIDTH, lockDirection, swipeBack } from "../lib/gestures"
 
@@ -28,53 +29,55 @@ const DURATION = 280
 export function NavigationStack<T>(props: NavigationStackProps<T>): JSX.Element {
   // What is rendered, by key: the items, and for a moment after a pop the screens that are leaving.
   const keysOf = (items: readonly T[]) => items.map((x) => props.getKey(x))
-  const keys = createMemo(() => keysOf(props.items), undefined, {
+  const keys = createMemo(() => keysOf(props.items), {
     equals: (a, b) => a.length === b.length && a.every((k, i) => k === b[i]),
   })
   // The latest object for each key, including leaving screens (kept until they are gone).
   const latest = new Map<string, T>()
-  createEffect(() => {
-    for (const x of props.items) latest.set(props.getKey(x), x)
-  })
-  const [rendered, setRendered] = createSignal<readonly string[]>(keys())
+  createEffect(
+    () => props.items,
+    (items) => {
+      for (const x of items) latest.set(props.getKey(x), x)
+    },
+  )
+  // The screens it starts with, read once: from then on the effect below moves `rendered`.
+  const [rendered, setRendered] = createSignal<readonly string[]>(untrack(() => keys()))
   const [leaving, setLeaving] = createSignal<readonly string[]>([])
   const [entering, setEntering] = createSignal<string | null>(null)
   let timer: ReturnType<typeof setTimeout> | undefined
   const reduced = () =>
     typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches
 
-  createEffect(
-    on(keys, (now, prev) => {
-      clearTimeout(timer)
-      const before = prev ?? []
-      const gone = before.filter((x) => !now.includes(x))
-      const top = now[now.length - 1]
-      const pushed = top !== undefined && !before.includes(top) && before.length > 0
-      const done = () => {
-        setLeaving([])
-        for (const k of [...latest.keys()]) if (!keys().includes(k)) latest.delete(k)
-        setRendered(keys())
+  createEffect(keys, (now, prev) => {
+    clearTimeout(timer)
+    const before = prev ?? []
+    const gone = before.filter((x) => !now.includes(x))
+    const top = now[now.length - 1]
+    const pushed = top !== undefined && !before.includes(top) && before.length > 0
+    const done = () => {
+      setLeaving([])
+      for (const k of [...latest.keys()]) if (!keys().includes(k)) latest.delete(k)
+      setRendered(keys())
+    }
+    if (reduced() || props.hidden) {
+      setEntering(null)
+      done()
+      return
+    }
+    if (gone.length && !pushed) {
+      // A pop: keep the leaving screens on top until they have slid out.
+      setLeaving(gone)
+      setRendered([...now, ...gone])
+      timer = setTimeout(done, DURATION)
+    } else {
+      setLeaving([])
+      setRendered(now)
+      if (pushed) {
+        setEntering(top)
+        requestAnimationFrame(() => requestAnimationFrame(() => setEntering(null)))
       }
-      if (reduced() || props.hidden) {
-        setEntering(null)
-        done()
-        return
-      }
-      if (gone.length && !pushed) {
-        // A pop: keep the leaving screens on top until they have slid out.
-        setLeaving(gone)
-        setRendered([...now, ...gone])
-        timer = setTimeout(done, DURATION)
-      } else {
-        setLeaving([])
-        setRendered(now)
-        if (pushed) {
-          setEntering(top)
-          requestAnimationFrame(() => requestAnimationFrame(() => setEntering(null)))
-        }
-      }
-    }),
-  )
+    }
+  })
   onCleanup(() => clearTimeout(timer))
 
   const position = (key: string): "top" | "below" | "hidden" | "leaving" | "entering" => {

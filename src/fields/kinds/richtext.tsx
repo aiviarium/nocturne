@@ -1,7 +1,9 @@
 // Formatted text (ProseMirror JSON): read as its plain text, edited in the shared rich text editor the platform
 // has for every formatted text (`@aiviarium/nocturne` editor, the `field` variant). Inline it hands the document over when the
 // editor is left; in a form it hands over every change.
-import { type JSX, Show } from "solid-js"
+
+import type { JSX } from "@solidjs/web"
+import { Show } from "solid-js"
 import { RichTextEditor, type RichTextJSON } from "../../editor"
 import { cx } from "../../lib/cx"
 import { Empty } from "../Empty"

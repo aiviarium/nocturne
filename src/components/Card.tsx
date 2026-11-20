@@ -1,12 +1,5 @@
-import {
-  createSignal,
-  For,
-  type JSX,
-  onCleanup,
-  children as resolveChildren,
-  Show,
-  splitProps,
-} from "solid-js"
+import type { JSX } from "@solidjs/web"
+import { createSignal, For, omit, onCleanup, children as resolveChildren, Show } from "solid-js"
 import { createTallBox } from "../lib/box"
 import { cx } from "../lib/cx"
 import { callClick, useLinkClick } from "../lib/link"
@@ -32,14 +25,14 @@ export interface SectionHeadingProps extends Omit<JSX.HTMLAttributes<HTMLDivElem
  * own name is in its tab and bar, never repeated as a heading.
  */
 export function SectionHeading(props: SectionHeadingProps): JSX.Element {
-  const [local, rest] = splitProps(props, ["title", "count", "action", "level", "class"])
+  const rest = omit(props, "title", "count", "action", "level", "class")
   const Tag = () => {
-    const level = local.level ?? 2
+    const level = props.level ?? 2
     const content = (
       <>
-        {local.title}
-        <Show when={local.count !== undefined && local.count !== ""}>
-          <span class="nc-section-heading__count">{local.count}</span>
+        {props.title}
+        <Show when={props.count !== undefined && props.count !== ""}>
+          <span class="nc-section-heading__count">{props.count}</span>
         </Show>
       </>
     )
@@ -48,10 +41,10 @@ export function SectionHeading(props: SectionHeadingProps): JSX.Element {
     return <h2 class="nc-section-heading__title">{content}</h2>
   }
   return (
-    <div data-part="section-heading" class={cx("nc-section-heading", local.class)} {...rest}>
+    <div data-part="section-heading" class={cx("nc-section-heading", props.class)} {...rest}>
       <Tag />
-      <Show when={local.action}>
-        <span class="nc-section-heading__action">{local.action}</span>
+      <Show when={props.action}>
+        <span class="nc-section-heading__action">{props.action}</span>
       </Show>
     </div>
   )
@@ -94,7 +87,8 @@ export interface CardProps extends Omit<JSX.HTMLAttributes<HTMLElement>, "title"
  * meets the card's inset. Use `Panel` instead for a tool region with a 38px header and actions.
  */
 export function Card(props: CardProps): JSX.Element {
-  const [local, rest] = splitProps(props, [
+  const rest = omit(
+    props,
     "title",
     "count",
     "action",
@@ -107,26 +101,26 @@ export function Card(props: CardProps): JSX.Element {
     "label",
     "class",
     "children",
-  ])
+  )
   const linkClick = useLinkClick()
-  const body = resolveChildren(() => local.children)
+  const body = resolveChildren(() => props.children)
   const content = () => (
     <>
-      <Show when={local.title || local.action}>
+      <Show when={props.title || props.action}>
         <SectionHeading
           class="nc-card__head"
-          title={local.title}
-          count={local.count}
-          action={local.action}
+          title={props.title}
+          count={props.count}
+          action={props.action}
           level={3}
         />
       </Show>
       <div data-part="card-body" class="nc-card__body">
         {body()}
       </div>
-      <Show when={local.footer}>
+      <Show when={props.footer}>
         <footer data-part="card-footer" class="nc-card__footer">
-          {local.footer}
+          {props.footer}
         </footer>
       </Show>
     </>
@@ -134,40 +128,40 @@ export function Card(props: CardProps): JSX.Element {
   const className = () =>
     cx(
       "nc-card nc-ccard",
-      local.nested && "nc-card--nested",
-      (local.href || local.onClick) && "nc-ccard--action",
-      local.class,
+      props.nested && "nc-card--nested",
+      (props.href || props.onClick) && "nc-ccard--action",
+      props.class,
     )
   const data = () => ({
     "data-part": "card",
-    "data-padding": local.padding ?? "default",
-    "data-fill": local.fill ? "" : undefined,
+    "data-padding": props.padding ?? "default",
+    "data-fill": props.fill ? "" : undefined,
   })
-  if (local.href)
+  if (props.href)
     return (
       <a
         {...data()}
         class={className()}
-        href={local.href}
-        aria-label={local.label}
-        title={titleOf(local.title)}
+        href={props.href}
+        aria-label={props.label}
+        title={titleOf(props.title)}
         onClick={(e) => {
-          callClick(local.onClick, e)
-          linkClick(e, local.href)
+          callClick(props.onClick, e)
+          linkClick(e, props.href)
         }}
         {...(rest as JSX.AnchorHTMLAttributes<HTMLAnchorElement>)}
       >
         {content()}
       </a>
     )
-  if (local.onClick)
+  if (props.onClick)
     return (
       <button
         type="button"
         {...data()}
         class={className()}
-        aria-label={local.label}
-        onClick={(e) => callClick(local.onClick, e)}
+        aria-label={props.label}
+        onClick={(e) => callClick(props.onClick, e)}
         {...(rest as JSX.ButtonHTMLAttributes<HTMLButtonElement>)}
       >
         {content()}
@@ -207,15 +201,7 @@ export interface StatProps extends Omit<JSX.HTMLAttributes<HTMLDivElement>, "tit
  * padding below the group, never a gap above it.
  */
 export function Stat(props: StatProps): JSX.Element {
-  const [local, rest] = splitProps(props, [
-    "label",
-    "value",
-    "unit",
-    "signal",
-    "caption",
-    "children",
-    "class",
-  ])
+  const rest = omit(props, "label", "value", "unit", "signal", "caption", "children", "class")
   let el: HTMLDivElement | undefined
   const tall = createTallBox(() => el)
   return (
@@ -223,24 +209,24 @@ export function Stat(props: StatProps): JSX.Element {
       ref={el}
       data-part="stat"
       data-tall={tall() ? "" : undefined}
-      class={cx("nc-statv", local.class)}
+      class={cx("nc-statv", props.class)}
       {...rest}
     >
       <div class="nc-statv__label">
-        <span>{local.label}</span>
-        <Show when={local.signal}>{local.signal}</Show>
+        <span>{props.label}</span>
+        <Show when={props.signal}>{props.signal}</Show>
       </div>
       <div class="nc-statv__figure">
-        <span class="nc-statv__value">{local.value}</span>
-        <Show when={local.unit}>
-          <span class="nc-statv__unit">{local.unit}</span>
+        <span class="nc-statv__value">{props.value}</span>
+        <Show when={props.unit}>
+          <span class="nc-statv__unit">{props.unit}</span>
         </Show>
       </div>
-      <Show when={local.caption}>
-        <span class="nc-statv__caption">{local.caption}</span>
+      <Show when={props.caption}>
+        <span class="nc-statv__caption">{props.caption}</span>
       </Show>
-      <Show when={local.children}>
-        <div class="nc-statv__chart">{local.children}</div>
+      <Show when={props.children}>
+        <div class="nc-statv__chart">{props.children}</div>
       </Show>
     </div>
   )
@@ -273,18 +259,18 @@ export interface PropertyListProps extends Omit<JSX.HTMLAttributes<HTMLDListElem
  * An empty value shows an em dash, never "None".
  */
 export function PropertyList(props: PropertyListProps): JSX.Element {
-  const [local, rest] = splitProps(props, ["items", "labelWidth", "class", "style"])
+  const rest = omit(props, "items", "labelWidth", "class", "style")
   return (
     <dl
       data-part="property-list"
-      class={cx("nc-props", local.class)}
+      class={cx("nc-props", props.class)}
       style={{
-        "--nc-props-label": local.labelWidth === "auto" ? "max-content" : `${local.labelWidth ?? 120}px`,
-        ...(typeof local.style === "object" ? local.style : {}),
+        "--nc-props-label": props.labelWidth === "auto" ? "max-content" : `${props.labelWidth ?? 120}px`,
+        ...(typeof props.style === "object" ? props.style : {}),
       }}
       {...rest}
     >
-      <For each={local.items}>
+      <For each={props.items}>
         {(item) => (
           <div class="nc-props__row" data-property={item.id ?? item.label}>
             <dt class="nc-props__label" title={item.label}>
@@ -332,9 +318,9 @@ export interface MetaLineProps extends Omit<JSX.HTMLAttributes<HTMLSpanElement>,
  * anything that is always true ("Created today", "Live").
  */
 export function MetaLine(props: MetaLineProps): JSX.Element {
-  const [local, rest] = splitProps(props, ["items", "class"])
+  const rest = omit(props, "items", "class")
   const parts = () =>
-    local.items
+    props.items
       .filter((i): i is MetaItem | string => Boolean(i))
       .map((i) => (typeof i === "string" ? { label: i } : i))
   const full = () =>
@@ -343,7 +329,7 @@ export function MetaLine(props: MetaLineProps): JSX.Element {
       .filter(Boolean)
       .join(" · ")
   return (
-    <span data-part="meta-line" class={cx("nc-metaline", local.class)} title={full()} {...rest}>
+    <span data-part="meta-line" class={cx("nc-metaline", props.class)} title={full()} {...rest}>
       <For each={parts()}>
         {(p, i) => (
           <>
@@ -417,63 +403,74 @@ export interface FilterBarProps extends JSX.HTMLAttributes<HTMLDivElement> {
  * where more filters are hidden.
  */
 export function FilterBar(props: FilterBarProps): JSX.Element {
-  const [local, rest] = splitProps(props, ["label", "search", "children", "end", "class"])
+  const rest = omit(props, "label", "search", "children", "end", "class")
   // Which ends of the filters have more hidden past them, when they scroll sideways.
   const [more, setMore] = createSignal({ start: false, end: false })
-  const watchScroll = (el: HTMLDivElement) => {
-    const update = () => {
-      const max = el.scrollWidth - el.clientWidth
-      const start = max > 1 && el.scrollLeft > 1
-      const end = max > 1 && el.scrollLeft < max - 1
-      if (start !== more().start || end !== more().end) setMore({ start, end })
+  // A ref callback is unowned in Solid 2, so the listening is set up by a factory in the body.
+  const watchScroll = () => {
+    let stop: (() => void) | undefined
+    onCleanup(() => stop?.())
+    return (el: HTMLDivElement) => {
+      stop?.()
+      const update = () => {
+        const max = el.scrollWidth - el.clientWidth
+        const start = max > 1 && el.scrollLeft > 1
+        const end = max > 1 && el.scrollLeft < max - 1
+        if (start !== more().start || end !== more().end) setMore({ start, end })
+      }
+      el.addEventListener("scroll", update, { passive: true })
+      const ro = typeof ResizeObserver === "function" ? new ResizeObserver(update) : undefined
+      ro?.observe(el)
+      queueMicrotask(update)
+      stop = () => {
+        el.removeEventListener("scroll", update)
+        ro?.disconnect()
+      }
     }
-    el.addEventListener("scroll", update, { passive: true })
-    const ro = typeof ResizeObserver === "function" ? new ResizeObserver(update) : undefined
-    ro?.observe(el)
-    queueMicrotask(update)
-    onCleanup(() => {
-      el.removeEventListener("scroll", update)
-      ro?.disconnect()
-    })
   }
   // `end` is pinned to the first line's right; the row keeps its width free on every line so nothing runs under it.
   const [endWidth, setEndWidth] = createSignal(0)
-  const watchEnd = (el: HTMLDivElement) => {
-    const update = () => setEndWidth(Math.ceil(el.getBoundingClientRect().width))
-    const ro = typeof ResizeObserver === "function" ? new ResizeObserver(update) : undefined
-    ro?.observe(el)
-    queueMicrotask(update)
-    onCleanup(() => ro?.disconnect())
+  const watchEnd = () => {
+    let stop: (() => void) | undefined
+    onCleanup(() => stop?.())
+    return (el: HTMLDivElement) => {
+      stop?.()
+      const update = () => setEndWidth(Math.ceil(el.getBoundingClientRect().width))
+      const ro = typeof ResizeObserver === "function" ? new ResizeObserver(update) : undefined
+      ro?.observe(el)
+      queueMicrotask(update)
+      stop = () => ro?.disconnect()
+    }
   }
   return (
     <div
       data-part="filter-bar"
       role="group"
-      aria-label={local.label ?? "Filters"}
-      class={cx("nc-filterbar", local.class)}
+      aria-label={props.label ?? "Filters"}
+      class={cx("nc-filterbar", props.class)}
       {...rest}
     >
       <div
         class="nc-filterbar__row"
-        data-end={local.end ? "" : undefined}
-        style={local.end ? { "--nc-filterbar-end": `${endWidth()}px` } : undefined}
+        data-end={props.end ? "" : undefined}
+        style={props.end ? { "--nc-filterbar-end": `${endWidth()}px` } : undefined}
       >
-        <Show when={local.search}>
-          <div class="nc-filterbar__search">{local.search}</div>
+        <Show when={props.search}>
+          <div class="nc-filterbar__search">{props.search}</div>
         </Show>
-        <Show when={local.children}>
+        <Show when={props.children}>
           <div
-            ref={watchScroll}
+            ref={watchScroll()}
             class="nc-filterbar__filters"
             data-more-start={more().start ? "" : undefined}
             data-more-end={more().end ? "" : undefined}
           >
-            {local.children}
+            {props.children}
           </div>
         </Show>
-        <Show when={local.end}>
-          <div ref={watchEnd} class="nc-filterbar__end">
-            {local.end}
+        <Show when={props.end}>
+          <div ref={watchEnd()} class="nc-filterbar__end">
+            {props.end}
           </div>
         </Show>
       </div>

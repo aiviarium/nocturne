@@ -1,4 +1,4 @@
-import type { JSX } from "solid-js"
+import type { JSX } from "@solidjs/web"
 
 // An iPhone's hardware, drawn over a phone preview so it shows what a real device shows: the status bar with the
 // Dynamic Island at the top and the home indicator at the bottom. The safe-area insets that go with them are the
@@ -9,7 +9,7 @@ import type { JSX } from "solid-js"
 /** The status bar and the home indicator, positioned over the box they are in (or the window, `fixed`). */
 export function DeviceChrome(props: { fixed?: boolean }): JSX.Element {
   return (
-    <div class="g-device" classList={{ "g-device--fixed": props.fixed }} aria-hidden="true">
+    <div class={["g-device", { "g-device--fixed": props.fixed }]} aria-hidden="true">
       <div class="g-device__status">
         <span class="g-device__time">9:41</span>
         <span class="g-device__island" />

@@ -1,5 +1,7 @@
-import { createEffect, createMemo, createSignal, For, type JSX, on, Show, untrack } from "solid-js"
+import type { JSX } from "@solidjs/web"
+import { createEffect, createMemo, createSignal, For, Show, untrack } from "solid-js"
 import { FieldFilter, specOfQueryField } from "../fields/Field"
+import { aria } from "../lib/aria"
 import { createControllable } from "../lib/controllable"
 import { cx } from "../lib/cx"
 import { trapTab } from "../lib/focus"
@@ -296,7 +298,7 @@ function QueryChips(p: { state: QueryState; props: QueryBuilderProps }): JSX.Ele
           // The tooltip would cover the popover it opened.
           tooltip={!advanced()}
           aria-haspopup="dialog"
-          aria-expanded={advanced()}
+          aria-expanded={aria(advanced())}
           onClick={() => setAdvanced(!advanced())}
         />
       </Show>
@@ -385,7 +387,7 @@ function RuleChip(p: {
         data-qchip-focus={p.rule.id}
         data-qchip-removable=""
         aria-haspopup="dialog"
-        aria-expanded={p.open}
+        aria-expanded={aria(p.open)}
         aria-label={complete() ? text() : `${d().field} ${d().op}, no value yet`}
         aria-keyshortcuts="Delete"
         title={text()}
@@ -403,7 +405,7 @@ function RuleChip(p: {
       <button
         type="button"
         class="nc-qchip__remove"
-        tabIndex={-1}
+        tabindex={-1}
         aria-label={`Remove filter: ${text()}`}
         onClick={() => p.onRemove()}
       >
@@ -433,7 +435,7 @@ function GroupChip(p: { group: QueryGroup; onOpen: () => void; onRemove: () => v
       <button
         type="button"
         class="nc-qchip__remove"
-        tabIndex={-1}
+        tabindex={-1}
         aria-label={`Remove ${label()}`}
         onClick={() => p.onRemove()}
       >
@@ -571,7 +573,13 @@ function QueryText(p: { state: QueryState; props: QueryBuilderProps }): JSX.Elem
   const printed = () => printQueryText(p.state.query(), p.props.fields, { textField: p.props.textField })
   const [text, setText] = createSignal(printed() ?? "")
   const [unknown, setUnknown] = createSignal<string[]>([])
-  createEffect(on(printed, (t) => t !== null && setText(t), { defer: true }))
+  createEffect(
+    printed,
+    (t) => {
+      if (t !== null) setText(t)
+    },
+    { defer: true },
+  )
   const apply = () => {
     const r = parseQueryText(text(), p.props.fields, { textField: p.props.textField })
     setUnknown(r.unknown)

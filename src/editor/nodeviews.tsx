@@ -1,10 +1,12 @@
 // Node views: the parts of a document that are more than text. Each renders Solid into ProseMirror's DOM and
 // keeps its attributes in signals, so a remote change re-renders in place.
+
+import type { JSX } from "@solidjs/web"
+import { Dynamic, render } from "@solidjs/web"
 import type { Node as PMNode } from "prosemirror-model"
 import { NodeSelection, TextSelection } from "prosemirror-state"
 import type { EditorView, NodeView, ViewMutationRecord } from "prosemirror-view"
-import { createSignal, For, type JSX, Show } from "solid-js"
-import { Dynamic, render } from "solid-js/web"
+import { createSignal, For, Show } from "solid-js"
 import { Icon, type IconName } from "../components/Icon"
 import type { EditorBlockType, EditorServices, OutlineHeading } from "./services"
 

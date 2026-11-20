@@ -1,4 +1,5 @@
-import { createEffect, createSignal, type JSX, on, onCleanup, Show } from "solid-js"
+import type { JSX } from "@solidjs/web"
+import { createEffect, createMemo, createSignal, onCleanup, Show, untrack } from "solid-js"
 import { caretAt } from "../lib/caret"
 import { createControllable } from "../lib/controllable"
 import { cx } from "../lib/cx"
@@ -79,7 +80,8 @@ const MAX_LOCKED_MOVE = 120
  * lists and table cells.
  */
 export function NumberField(props: NumberFieldProps): JSX.Element {
-  const id = props.id ?? createId("number")
+  // The id must not change while the field lives, so the prop is read once.
+  const id = untrack(() => props.id) ?? createId("number")
   const helpId = `${id}-help`
   const labelId = `${id}-label`
   const phone = usePhone()
@@ -99,6 +101,8 @@ export function NumberField(props: NumberFieldProps): JSX.Element {
     else document.documentElement.removeAttribute("data-nc-scrubbing")
   }
   let input!: HTMLInputElement
+  // A ref callback runs unowned: the caller's handler is read in the body instead.
+  const inputRef = createMemo(() => props.inputRef)
   /** Focus came from a press on the field: the caret goes where it was pressed, nothing is selected. */
   let pointerFocus = false
 
@@ -111,10 +115,12 @@ export function NumberField(props: NumberFieldProps): JSX.Element {
     return String(Number(v.toFixed(Math.min(10, Math.max(decimals(), decimalsOf(v))))))
   }
   // The text follows the value while the person is not typing.
+  // The formatted text is read in the compute: an apply runs unowned, and `format` may be a compiled memo.
   createEffect(
-    on([value, editing], ([v, e]) => {
-      if (!e) setText(shown(v))
-    }),
+    () => ({ text: shown(value()), editing: editing() }),
+    ({ text, editing }) => {
+      if (!editing) setText(text)
+    },
   )
 
   const fit = (v: number): number => {
@@ -323,7 +329,7 @@ export function NumberField(props: NumberFieldProps): JSX.Element {
       type="button"
       class="nc-number__step"
       data-dir={dir > 0 ? "up" : "down"}
-      tabIndex={-1}
+      tabindex={-1}
       aria-label={dir > 0 ? "Increase" : "Decrease"}
       disabled={props.disabled || (dir > 0 ? atMax() : atMin())}
       onPointerDown={(e) => e.preventDefault()}
@@ -351,7 +357,7 @@ export function NumberField(props: NumberFieldProps): JSX.Element {
         id={id}
         ref={(el) => {
           input = el
-          props.inputRef?.(el)
+          inputRef()?.(el)
         }}
         name={props.name}
         class="nc-number__input"
@@ -379,13 +385,13 @@ export function NumberField(props: NumberFieldProps): JSX.Element {
         aria-valuetext={value() === null ? "Empty" : `${shown(value())}${props.unit ? ` ${props.unit}` : ""}`}
         aria-label={props.label ? undefined : props["aria-label"]}
         aria-labelledby={props.label ? labelId : undefined}
-        aria-invalid={invalid() || undefined}
+        aria-invalid={invalid() ? "true" : undefined}
         aria-describedby={message() ? helpId : undefined}
-        aria-required={props.required || undefined}
+        aria-required={props.required ? "true" : undefined}
         title={inline() && typeError() ? typeError()! : undefined}
         placeholder={props.placeholder ?? (inline() ? "—" : undefined)}
         disabled={props.disabled}
-        readOnly={props.readOnly}
+        readonly={props.readOnly}
         value={text()}
         onFocus={() => {
           const byPointer = pointerFocus
@@ -459,10 +465,12 @@ export function NumberField(props: NumberFieldProps): JSX.Element {
         <Show when={message()}>
           <span
             id={helpId}
-            class="nc-field__help"
-            classList={{
-              "nc-field__help--error": invalid() && Boolean(typeError() || typeof props.error === "string"),
-            }}
+            class={[
+              "nc-field__help",
+              {
+                "nc-field__help--error": invalid() && Boolean(typeError() || typeof props.error === "string"),
+              },
+            ]}
             role={typeError() ? "alert" : undefined}
           >
             {message()}

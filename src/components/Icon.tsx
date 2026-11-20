@@ -1,4 +1,5 @@
-import { For, type JSX, Show, splitProps } from "solid-js"
+import type { JSX } from "@solidjs/web"
+import { For, omit, Show } from "solid-js"
 import { cx } from "../lib/cx"
 import { ICON_PATHS as CORE_PATHS, type IconName as CoreIconName } from "./icon-data"
 import { LUCIDE, type LucideName } from "./lucide-data"
@@ -31,23 +32,23 @@ export interface IconProps extends Omit<JSX.SvgSVGAttributes<SVGSVGElement>, "ch
 
 /** A line icon drawn with `stroke: currentColor`, so it takes the surrounding text colour. */
 export function Icon(props: IconProps): JSX.Element {
-  const [local, rest] = splitProps(props, ["name", "node", "size", "label", "class"])
-  const core = () => (local.name && local.name in CORE_PATHS ? (local.name as CoreIconName) : undefined)
+  const rest = omit(props, "name", "node", "size", "label", "class")
+  const core = () => (props.name && props.name in CORE_PATHS ? (props.name as CoreIconName) : undefined)
   const node = () =>
-    core() ? undefined : ((local.name ? LUCIDE[local.name as LucideName] : undefined) ?? local.node)
+    core() ? undefined : ((props.name ? LUCIDE[props.name as LucideName] : undefined) ?? props.node)
   const a11y = () =>
-    local.label ? { role: "img" as const, "aria-label": local.label } : { "aria-hidden": true as const }
+    props.label ? { role: "img" as const, "aria-label": props.label } : { "aria-hidden": "true" as const }
   return (
     <svg
       data-part="icon"
-      data-icon={local.name}
+      data-icon={props.name}
       viewBox={core() || !node() ? "0 0 16 16" : "0 0 24 24"}
       class={cx(
         "nc-icon",
         !core() && node() && "nc-icon--lucide",
-        local.size === "sm" && "nc-icon--sm",
-        local.size === "lg" && "nc-icon--lg",
-        local.class,
+        props.size === "sm" && "nc-icon--sm",
+        props.size === "lg" && "nc-icon--lg",
+        props.class,
       )}
       {...a11y()}
       {...rest}

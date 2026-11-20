@@ -1,7 +1,10 @@
 // A month of days to pick one from, in the person's locale: its week starts where theirs does, its names are theirs.
 // Arrow keys move by a day or a week, Page Up and Down by a month, Home and End to the ends of the week, Enter picks.
-import { createEffect, createMemo, createSignal, For, type JSX, on } from "solid-js"
+
+import type { JSX } from "@solidjs/web"
+import { createEffect, createMemo, createSignal, For } from "solid-js"
 import { IconButton } from "../../components/IconButton"
+import { aria } from "../../lib/aria"
 import { cx } from "../../lib/cx"
 
 const pad = (n: number) => String(n).padStart(2, "0")
@@ -49,7 +52,13 @@ export function Calendar(props: CalendarProps): JSX.Element {
   const today = new Date()
   const picked = () => parseDay(props.value)
   const [focus, setFocus] = createSignal<Date>(picked() ?? today)
-  createEffect(on(picked, (p) => p && setFocus(p), { defer: true }))
+  createEffect(
+    picked,
+    (p) => {
+      if (p) setFocus(p)
+    },
+    { defer: true },
+  )
   // Primitives, so moving the focus inside a month does not draw the month again.
   const year = createMemo(() => focus().getFullYear())
   const mon = createMemo(() => focus().getMonth())
@@ -132,7 +141,7 @@ export function Calendar(props: CalendarProps): JSX.Element {
                   const selected = () => props.value === iso
                   const roving = () => dayOf(focus()) === iso
                   return (
-                    <div role="gridcell" aria-selected={selected()}>
+                    <div role="gridcell" aria-selected={aria(selected())}>
                       <button
                         type="button"
                         class="nc-calendar__day"
@@ -140,7 +149,7 @@ export function Calendar(props: CalendarProps): JSX.Element {
                         data-today={iso === dayOf(today) || undefined}
                         data-outside={!inMonth || undefined}
                         data-selected={selected() || undefined}
-                        tabIndex={roving() ? 0 : -1}
+                        tabindex={roving() ? 0 : -1}
                         ref={(el) => {
                           if (props.autofocus && roving() && !focused) {
                             focused = true

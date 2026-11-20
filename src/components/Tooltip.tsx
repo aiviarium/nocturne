@@ -1,4 +1,5 @@
-import { createSignal, type JSX, onCleanup, Show } from "solid-js"
+import type { JSX } from "@solidjs/web"
+import { createSignal, onCleanup, Show } from "solid-js"
 import { floatTo } from "../lib/floating"
 import { createId } from "../lib/id"
 import { Overlay } from "../lib/overlay"

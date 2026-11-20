@@ -1,7 +1,9 @@
 // What `RowList`, `DataTable` and `DataList` share besides the controllers in lib/: the selection bar at a list's
 // foot, the toast that undoes a removal, and a row's buttons read as menu entries. Internal: not exported from the
 // package.
-import { type JSX, Show } from "solid-js"
+
+import type { JSX } from "@solidjs/web"
+import { Show } from "solid-js"
 import type { RowMenuEntry } from "../lib/rowmenu"
 import { Button } from "./Button"
 import { Kbd } from "./Kbd"

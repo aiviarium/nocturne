@@ -2,7 +2,8 @@
 import { createSignal } from "solid-js"
 
 const stack: symbol[] = []
-const [count, setCount] = createSignal(0)
+// Layers are registered from component bodies, which are owned scopes (a write there is a dev error otherwise).
+const [count, setCount] = createSignal(0, { ownedWrite: true })
 
 /** How many layers are open now; reactive. A page in a frame can ask its host to send it Escape only while one is. */
 export const openLayers = count

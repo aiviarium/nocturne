@@ -1,4 +1,6 @@
-import { createMemo, createSignal, For, type JSX, Match, Show, Switch } from "solid-js"
+import type { JSX } from "@solidjs/web"
+import { createMemo, createSignal, For, Match, Show, Switch } from "solid-js"
+import { aria } from "../lib/aria"
 import { createControllable } from "../lib/controllable"
 import { cx } from "../lib/cx"
 import { cameFrom } from "../lib/events"
@@ -461,7 +463,7 @@ export function DataTable<T>(props: DataTableProps<T>): JSX.Element {
           class={cx("nc-table", props.density === "comfortable" && "nc-table--comfortable")}
           aria-label={props.label}
           aria-rowcount={sorted().length + 1}
-          aria-busy={props.loading || undefined}
+          aria-busy={props.loading ? "true" : undefined}
           id={id}
         >
           <thead>
@@ -558,7 +560,7 @@ export function DataTable<T>(props: DataTableProps<T>): JSX.Element {
                         )}
                       </Show>
                       <tr
-                        aria-selected={props.selectable ? isSelected() : undefined}
+                        aria-selected={props.selectable ? aria(isSelected()) : undefined}
                         data-row-id={rowId()}
                         data-index={index()}
                         data-grabbed={

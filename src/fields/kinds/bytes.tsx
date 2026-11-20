@@ -1,7 +1,9 @@
 // A piece of binary data: read as its size, and where the field is edited uploaded, replaced, cleared and
 // downloaded. The content is read in the browser and handed over as bytes, so the field's limit (`maxBytes`, 1 MiB
 // unless it declares one) is checked before anything is sent.
-import { createSignal, type JSX, Show } from "solid-js"
+
+import type { JSX } from "@solidjs/web"
+import { createSignal, Show } from "solid-js"
 import { Button } from "../../components/Button"
 import { Icon } from "../../components/Icon"
 import { IconButton } from "../../components/IconButton"
@@ -118,7 +120,7 @@ function Editor(props: EditorProps): JSX.Element {
               variant="secondary"
               icon="upload"
               loading={busy()}
-              aria-invalid={props.error ? true : undefined}
+              aria-invalid={props.error ? "true" : undefined}
               data-action="upload"
               onClick={pick}
             >

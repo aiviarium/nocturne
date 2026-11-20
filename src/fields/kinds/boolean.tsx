@@ -1,6 +1,8 @@
 // Yes or no: a switch, with the field's own words for true and false where it declares them ("Needs attention",
 // "Routine"), never a bare button. Read, it is those words, or a check for a table's cell.
-import { type JSX, Show } from "solid-js"
+
+import type { JSX } from "@solidjs/web"
+import { Show } from "solid-js"
 import { Icon } from "../../components/Icon"
 import { Switch } from "../../components/Switch"
 import { Tabs } from "../../components/Tabs"
@@ -25,7 +27,7 @@ function Value(props: ValueProps): JSX.Element {
           </Show>
         }
       >
-        <span classList={{ "nc-meta": !on() }}>{word(props.spec, on())}</span>
+        <span class={{ "nc-meta": !on() }}>{word(props.spec, on())}</span>
       </Show>
     </Show>
   )
@@ -43,9 +45,7 @@ function Editor(props: EditorProps): JSX.Element {
         onChange={(v) => props.onCommit(v)}
       />
       <Show when={declared()}>
-        <span class="nc-field-switch__word" classList={{ "nc-meta": !on() }}>
-          {word(props.spec, on())}
-        </span>
+        <span class={["nc-field-switch__word", { "nc-meta": !on() }]}>{word(props.spec, on())}</span>
       </Show>
     </span>
   )

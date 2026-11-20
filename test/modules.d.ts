@@ -1,8 +1,6 @@
-declare module "@babel/core" {
-  export function transformAsync(
+declare module "@solidjs/compiler" {
+  export function transform(
     code: string,
-    options: Record<string, unknown>,
-  ): Promise<{ code?: string | null } | null>
+    options?: { filename?: string; generate?: "dom" | "ssr" | "universal" | "dynamic"; hydratable?: boolean },
+  ): { code: string; map?: unknown }
 }
-declare module "babel-preset-solid"
-declare module "@babel/preset-typescript"

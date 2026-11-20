@@ -1,4 +1,4 @@
-import type { JSX } from "solid-js"
+import type { JSX } from "@solidjs/web"
 
 /** What an example file exports besides its component. */
 export interface ExampleMeta {

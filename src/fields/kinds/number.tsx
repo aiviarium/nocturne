@@ -1,6 +1,8 @@
 // Numbers: integers, decimals, counters, and the `percent`, `duration` and `progress` formats. A number with both
 // bounds can be a slider. Typed values may be sums (`12*4`); the field says why it cannot read what was typed.
-import { type JSX, Match, Show, Switch } from "solid-js"
+
+import type { JSX } from "@solidjs/web"
+import { Match, Show, Switch } from "solid-js"
 import { NumberField } from "../../components/NumberField"
 import { Slider } from "../../components/Slider"
 import { Empty } from "../Empty"

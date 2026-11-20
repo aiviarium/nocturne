@@ -1,5 +1,6 @@
 import { PhoneOverride } from "@aiviarium/nocturne"
-import { For, type JSX } from "solid-js"
+import type { JSX } from "@solidjs/web"
+import { For } from "solid-js"
 import { ExampleScreen, needsScreen } from "../examples/_kit/screen"
 import { EXAMPLES } from "../examples/registry"
 import { DeviceChrome } from "./device"
@@ -62,11 +63,11 @@ export function Sections(props: { sections: Array<string | string[]> }): JSX.Ele
 /** A phone-sized frame: the pieces inside behave as on a phone. */
 export function Phone(props: { children: JSX.Element; label: string }): JSX.Element {
   return (
-    <PhoneOverride.Provider value={true}>
+    <PhoneOverride value={true}>
       <div class="g-phone" role="group" aria-label={props.label} data-part="gallery-phone">
         {props.children}
         <DeviceChrome />
       </div>
-    </PhoneOverride.Provider>
+    </PhoneOverride>
   )
 }

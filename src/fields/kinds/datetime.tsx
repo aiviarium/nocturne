@@ -1,5 +1,7 @@
 // An instant (RFC 3339): read in the person's locale and time zone, picked as a day and a time.
-import { type JSX, Show } from "solid-js"
+
+import type { JSX } from "@solidjs/web"
+import { Show } from "solid-js"
 import { Empty } from "../Empty"
 import { formatDate } from "../format"
 import type { EditorProps, FieldKind, FilterProps, ValueProps } from "../kind"

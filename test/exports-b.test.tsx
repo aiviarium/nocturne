@@ -1,7 +1,7 @@
 // Exported components, one block each: the root's part, then the prop or interaction that matters most.
 import { afterEach, describe, expect, test } from "bun:test"
 import { TextSelection } from "prosemirror-state"
-import { createSignal } from "solid-js"
+import { createSignal, flush } from "solid-js"
 import {
   AI_COPY_DEFAULTS,
   type AiHandler,
@@ -50,6 +50,7 @@ const touch = (el: Element, type: string, y: number) => {
   const e = new Event(type, { bubbles: true, cancelable: true })
   Object.defineProperty(e, "touches", { value: type === "touchend" ? [] : [{ clientX: 0, clientY: y }] })
   el.dispatchEvent(e)
+  flush()
 }
 
 const noAi: AiHandler = async function* () {}
@@ -173,6 +174,7 @@ describe("FieldValue", () => {
     const link = one<HTMLAnchorElement>("a.nc-field-link", root)
     expect(link.getAttribute("href")).toBe("mailto:hello@example.com")
     setValue(null)
+    flush()
     expect(root.querySelector("a")).toBeNull()
     expect(one(".nc-field-empty", root).getAttribute("aria-label")).toBe("Empty")
   })
@@ -205,6 +207,7 @@ describe("FilterBar", () => {
     expect(row.hasAttribute("data-end")).toBe(true)
     expect(row.style.getPropertyValue("--nc-filterbar-end")).toMatch(/^\d+px$/)
     setLabel("Issue filters")
+    flush()
     expect(bar.getAttribute("aria-label")).toBe("Issue filters")
   })
 
@@ -216,6 +219,7 @@ describe("FilterBar", () => {
     expect(count.getAttribute("aria-label")).toBe("Issues: 3")
     expect(count.querySelector("svg")).toBeTruthy()
     setN(1)
+    flush()
     expect(count.getAttribute("aria-label")).toBe("Issues: 1")
   })
 
@@ -272,9 +276,9 @@ describe("InfoTip", () => {
   test("on a phone it opens a sheet titled with the label", async () => {
     const { root } = track(
       mount(() => (
-        <PhoneOverride.Provider value={true}>
+        <PhoneOverride value={true}>
           <InfoTip label="Retention">Kept for 30 days.</InfoTip>
-        </PhoneOverride.Provider>
+        </PhoneOverride>
       )),
     )
     click(one("[data-part=info-tip] button", root))
@@ -315,6 +319,7 @@ describe("InsetList, InsetGroup and InsetRow", () => {
     expect(one(".nc-inset-group__footer", group).textContent).toBe("Signed in as ada")
     expect(one("[role=list] [data-part=inset-row]", group)).toBeTruthy()
     setTitle(undefined)
+    flush()
     expect(group.querySelector(".nc-inset-group__head")).toBeNull()
   })
 
@@ -342,6 +347,7 @@ describe("InsetList, InsetGroup and InsetRow", () => {
     click(main)
     expect(clicks).toBe(1)
     setChecked(true)
+    flush()
     expect(main.getAttribute("aria-checked")).toBe("true")
     expect(row.querySelector(".nc-inset-row__check")).not.toBeNull()
   })
@@ -397,6 +403,7 @@ describe("Kbd and KbdGroup", () => {
     expect(a.tagName).toBe("KBD")
     expect(a.textContent).toBe("Ctrl K")
     setKeys("Ctrl J")
+    flush()
     expect(a.textContent).toBe("Ctrl J")
     expect(one("[data-part=kbd][data-test=b]", root).textContent).toBe("Esc")
   })
@@ -410,6 +417,7 @@ describe("Kbd and KbdGroup", () => {
       "K",
     ])
     setKeys(["Shift", "Alt", "P"])
+    flush()
     expect(group.querySelectorAll("[data-part=kbd]")).toHaveLength(3)
   })
 })
@@ -423,6 +431,7 @@ describe("LabelChip", () => {
     const dot = one(".nc-chip__dot", chip)
     expect(dot.getAttribute("data-hue")).toBe("accent")
     setHue("sky")
+    flush()
     expect(dot.getAttribute("data-hue")).toBe("sky")
   })
 })
@@ -492,7 +501,7 @@ describe("Nav", () => {
 
   test("groups built afresh on navigation move current without rebuilding the items", () => {
     const [page, setPage] = createSignal("a")
-    const { root } = track(
+    track(
       mount(() => (
         <Nav
           label="Pages"
@@ -510,6 +519,7 @@ describe("Nav", () => {
     )
     const before = all("[data-part=nav-item]")
     setPage("c")
+    flush()
     const after = all("[data-part=nav-item]")
     expect(after.every((el, i) => el === before[i])).toBe(true)
     expect(after.map((el) => el.getAttribute("aria-current"))).toEqual([null, null, "page"])
@@ -561,11 +571,11 @@ describe("NavigationScreen and ScreenOptions", () => {
     const titles: string[] = []
     const { root } = track(
       mount(() => (
-        <PhoneOverride.Provider value={true}>
+        <PhoneOverride value={true}>
           <NavigationScreen title="Settings" largeTitle onTitle={(t) => titles.push(t)}>
             <p data-test="body">Body</p>
           </NavigationScreen>
-        </PhoneOverride.Provider>
+        </PhoneOverride>
       )),
     )
     const screen = one("[data-part=screen]", root)
@@ -593,6 +603,7 @@ describe("NavigationScreen and ScreenOptions", () => {
     expect(titles.at(-1)).toBe("Terminal")
     expect(screen.getAttribute("data-mode")).toBe("scroll")
     setMode("full")
+    flush()
     expect(screen.getAttribute("data-mode")).toBe("full")
     expect(modes.at(-1)).toBe("full")
   })
@@ -617,6 +628,7 @@ describe("NavigationStack", () => {
     expect(stack.getAttribute("aria-label")).toBe("Stack")
     expect(one("[data-part=stack-edge]", stack).hidden).toBe(true)
     setItems([{ id: "home" }, { id: "detail" }])
+    flush()
     await tick()
     const screens = all("[data-part=stack-screen]")
     expect(screens.map((s) => s.getAttribute("data-key"))).toEqual(["home", "detail"])
@@ -636,6 +648,7 @@ describe("NavigationStack", () => {
       )),
     )
     setItems([{ id: "home" }])
+    flush()
     await tick()
     expect(one("[data-part=stack-screen][data-key=detail]").getAttribute("data-position")).toBe("leaving")
     await new Promise((r) => setTimeout(r, 320))
@@ -663,6 +676,7 @@ describe("Panel", () => {
     expect(body.classList.contains("nc-panel__body--flush")).toBe(true)
     expect(panel.querySelector("[data-part=panel-footer]")).toBeNull()
     setFooter("3 of 10")
+    flush()
     expect(one("[data-part=panel-footer]", panel).textContent).toBe("3 of 10")
   })
 
@@ -693,6 +707,7 @@ describe("Popover", () => {
     )
     expect(all("[data-part=popover]")).toHaveLength(0)
     setOpen(true)
+    flush()
     await tick()
     const pop = one("[data-part=popover]")
     expect(root.contains(pop)).toBe(true)
@@ -700,13 +715,17 @@ describe("Popover", () => {
     expect(pop.classList.contains("mine")).toBe(true)
     expect(pop.textContent).toBe("Inside")
     pop.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true }))
+    flush()
     anchor.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true }))
+    flush()
     expect(closes).toEqual([])
     press(document.body, "Escape")
     expect(closes).toEqual(["close"])
     document.body.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true }))
+    flush()
     expect(closes).toEqual(["close", "close"])
     setOpen(false)
+    flush()
     expect(all("[data-part=popover]")).toHaveLength(0)
   })
 })

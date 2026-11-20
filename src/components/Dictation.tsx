@@ -1,10 +1,9 @@
+import type { JSX } from "@solidjs/web"
 import {
   createContext,
   createEffect,
   createSignal,
   For,
-  type JSX,
-  on,
   onCleanup,
   type ParentProps,
   Show,
@@ -51,17 +50,17 @@ export class DictationBlockedError extends Error {
   }
 }
 
-const TranscriberContext = createContext<Transcriber | undefined>()
+const TranscriberContext = createContext<Transcriber | null>(null)
 
 /** Makes dictation available to every text input below it. */
 export function TranscriberProvider(
   props: ParentProps<{ transcriber: Transcriber | undefined }>,
 ): JSX.Element {
-  return <TranscriberContext.Provider value={props.transcriber}>{props.children}</TranscriberContext.Provider>
+  return <TranscriberContext value={props.transcriber ?? null}>{props.children}</TranscriberContext>
 }
 
 export function useTranscriber(): Transcriber | undefined {
-  return useContext(TranscriberContext)
+  return useContext(TranscriberContext) ?? undefined
 }
 
 export type DictationPhase = "idle" | "recording" | "transcribing" | "blocked"
@@ -283,13 +282,11 @@ export function DictationBar(props: {
   const shows = (part: "status" | "live" | "notice") => !props.part || props.part === part
   const levels = createSignal<number[]>(Array.from({ length: WAVE_SAMPLES }, () => 0.1))
   createEffect(
-    on(
-      () => props.dictation.level,
-      (level) => {
-        if (level === undefined) return
-        levels[1]((list) => [...list.slice(1), Math.max(0.08, Math.min(1, level))])
-      },
-    ),
+    () => props.dictation.level,
+    (level) => {
+      if (level === undefined) return
+      levels[1]((list) => [...list.slice(1), Math.max(0.08, Math.min(1, level))])
+    },
   )
   const samples = () => (props.compact ? levels[0]().slice(-24) : levels[0]())
   return (

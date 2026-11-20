@@ -133,19 +133,22 @@ export function createSelection<K>(o: SelectionOptions<K>): SelectionControl<K> 
     o.announce?.(next.length ? `${next.length} selected.` : "Selection cleared.")
   }
   const set_ = createMemo(() => new Set(selected()))
-  const select = (gesture: SelectGesture, at?: K) => {
-    const next = selectRows(o.keys(), { selected: [...selected()], anchor: anchor() }, gesture, at)
+  // A read after a write returns the old value in Solid 2, so the anchor is passed in rather than read back.
+  const apply = (gesture: SelectGesture, at: K | undefined, from: K | null) => {
+    const next = selectRows(o.keys(), { selected: [...selected()], anchor: from }, gesture, at)
     setAnchor(() => next.anchor)
     set(next.selected)
   }
+  const select = (gesture: SelectGesture, at?: K) => apply(gesture, at, anchor())
   return {
     selected,
     anchor,
     setAnchor: (key) => setAnchor(() => key),
     extend: (from, to) => {
       const a = anchor()
-      if (a === null || !o.keys().includes(a)) setAnchor(() => from)
-      select("range", to)
+      const start = a === null || !o.keys().includes(a) ? from : a
+      setAnchor(() => start)
+      apply("range", to, start)
     },
     isSelected: (key) => set_().has(key),
     count: () => selected().length,

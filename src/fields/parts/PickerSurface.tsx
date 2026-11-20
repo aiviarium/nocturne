@@ -1,7 +1,9 @@
 // What a picker (a calendar, a search of entities, a list of options) opens in: a popover hung from its trigger on a
 // desktop, a bottom sheet on a phone, as every other picker and dialog of the product does there. The sheet has the
 // close control and closes on its backdrop and on Escape.
-import { type JSX, Show } from "solid-js"
+
+import type { JSX } from "@solidjs/web"
+import { Show } from "solid-js"
 import { Popover } from "../../components/Popover"
 import { Sheet } from "../../components/Sheet"
 import { usePhone } from "../../lib/phone"

@@ -1,18 +1,18 @@
+import type { JSX } from "@solidjs/web"
 import {
   createContext,
   createEffect,
   createMemo,
   createSignal,
   For,
-  type JSX,
-  on,
+  omit,
   onCleanup,
-  onMount,
+  onSettled,
   Show,
-  splitProps,
   untrack,
   useContext,
 } from "solid-js"
+import { aria } from "../lib/aria"
 import { createControllable } from "../lib/controllable"
 import { cx } from "../lib/cx"
 import { activeElement } from "../lib/focus"
@@ -116,11 +116,12 @@ interface RowListContext {
   register: (entry: RowEntry) => () => void
   tabStop: (entry: RowEntry) => boolean
 }
-const RowListCtx = createContext<RowListContext>()
+// `null` is "not inside one": in Solid 2 a default-less context throws instead of reading as undefined.
+const RowListCtx = createContext<RowListContext | null>(null)
 /** The item a row renders, in a `RowList` given `items`. */
-const RowItem = createContext<{ index: () => number; key: RowKey } | null>()
+const RowItem = createContext<{ index: () => number; key: RowKey } | null>(null)
 /** How deep a row is in a tree of rows, inside the group of a parent row. */
-const RowDepth = createContext<number>()
+const RowDepth = createContext<number | null>(null)
 
 /** Inside a virtualised `RowList` the list is a listbox and each row its option, so a row is no list item. */
 const InListbox = createContext(false)
@@ -237,7 +238,8 @@ export interface ListRowProps
  * trailing cells take their width, and the secondary text gives way first.
  */
 export function ListRow(props: ListRowProps): JSX.Element {
-  const [local, rest] = splitProps(props, [
+  const rest = omit(
+    props,
     "title",
     "secondary",
     "detail",
@@ -270,16 +272,16 @@ export function ListRow(props: ListRowProps): JSX.Element {
     "depth",
     "class",
     "style",
-  ])
+  )
   const linkClick = useLinkClick()
   const inListbox = useContext(InListbox)
   const list = useContext(RowListCtx)
   const item = useContext(RowItem) ?? undefined
-  const parentDepth = useContext(RowDepth)
+  const parentDepth = useContext(RowDepth) ?? undefined
   const phone = usePhone()
-  const lines = () => local.lines ?? 1
-  const titleText = () => titleOf(local.title)
-  const secondaryText = () => titleOf(local.secondary)
+  const lines = () => props.lines ?? 1
+  const titleText = () => titleOf(props.title)
+  const secondaryText = () => titleOf(props.secondary)
   const tooltip = () => [titleText(), secondaryText()].filter(Boolean).join(" · ") || undefined
   // On a phone or a touch screen nothing is revealed by hover: contextual actions go to a swipe and a long press.
   const touch = () => phone() || touchScreen()
@@ -288,11 +290,11 @@ export function ListRow(props: ListRowProps): JSX.Element {
   const index = () => item?.index()
   const managed = () => Boolean(list && item)
   const selected = () =>
-    local.selected ?? (managed() && list?.selectable() ? list.isSelected(item!.key) : undefined)
+    props.selected ?? (managed() && list?.selectable() ? list.isSelected(item!.key) : undefined)
   const removable = () => managed() && Boolean(list?.removable())
-  const reorderable = () => managed() && Boolean(list?.reorderable()) && local.movable !== false
+  const reorderable = () => managed() && Boolean(list?.reorderable()) && props.movable !== false
   const editing = () => Boolean(list?.editing())
-  const interactive = () => Boolean(local.href || local.onClick || (managed() && list?.selectable()))
+  const interactive = () => Boolean(props.href || props.onClick || (managed() && list?.selectable()))
   const remove = () => {
     const i = index()
     if (i !== undefined) list?.remove(i)
@@ -301,21 +303,21 @@ export function ListRow(props: ListRowProps): JSX.Element {
   // ---- Tree ----
   const hasChildren = "children" in props
   const [expanded, setExpanded] = createControllable<boolean>({
-    value: () => local.expanded,
-    defaultValue: untrack(() => local.defaultExpanded ?? false),
-    onChange: (v) => local.onExpandedChange?.(v),
+    value: () => props.expanded,
+    defaultValue: untrack(() => props.defaultExpanded ?? false),
+    onChange: (v) => props.onExpandedChange?.(v),
   })
-  const disclosure = () => hasChildren || local.expanded !== undefined || Boolean(local.onExpandedChange)
-  const depth = () => local.depth ?? parentDepth ?? 0
+  const disclosure = () => hasChildren || props.expanded !== undefined || Boolean(props.onExpandedChange)
+  const depth = () => props.depth ?? parentDepth ?? 0
   const branch = () =>
-    disclosure() || local.depth !== undefined || parentDepth !== undefined || Boolean(list?.tree())
+    disclosure() || props.depth !== undefined || parentDepth !== undefined || Boolean(list?.tree())
   if (hasChildren && list) onCleanup(list.addBranch())
   const groupId = createId("rows")
 
   // ---- Rename ----
   const [renaming, setRenaming] = createSignal(false)
   const startRename = () => {
-    if (local.onRename) setRenaming(true)
+    if (props.onRename) setRenaming(true)
   }
 
   // ---- Swipe and long press ----
@@ -331,9 +333,9 @@ export function ListRow(props: ListRowProps): JSX.Element {
           },
         ]
       : []),
-    ...(local.trailingActions ?? []),
+    ...(props.trailingActions ?? []),
   ]
-  const tray = () => touch() && Boolean(local.actions) && !trailing().length
+  const tray = () => touch() && Boolean(props.actions) && !trailing().length
 
   let row!: HTMLDivElement
   let mainEl: HTMLElement | undefined
@@ -347,20 +349,20 @@ export function ListRow(props: ListRowProps): JSX.Element {
   // The row's own menu: `menu`, or one built from its actions (what a hover shows), Rename and Delete, with Open
   // first on a row that opens something. Read from the buttons when it opens, so it is what the row shows now.
   const ownMenu = (): ResolvedMenu => {
-    if (local.menu?.length)
+    if (props.menu?.length)
       return {
-        entries: local.menu as RowMenuEntry[],
+        entries: props.menu as RowMenuEntry[],
         run: (id) => {
-          const own = entryById(local.menu as RowMenuEntry[], id)
+          const own = entryById(props.menu as RowMenuEntry[], id)
           if (own?.onSelect) own.onSelect()
-          else local.onMenuSelect?.(id)
+          else props.onMenuSelect?.(id)
         },
       }
     const entries = defaultRowMenu({
       count: 1,
-      open: Boolean(local.href || local.onClick),
+      open: Boolean(props.href || props.onClick),
       actions: entriesFromButtons(trayInner ?? menuSource ?? actionsEl),
-      rename: Boolean(local.onRename),
+      rename: Boolean(props.onRename),
       remove: removable(),
     })
     return {
@@ -377,14 +379,14 @@ export function ListRow(props: ListRowProps): JSX.Element {
     }
   }
   const hasMenu = () =>
-    Boolean(local.menu?.length) ||
-    Boolean(local.actions) ||
-    Boolean(local.onRename) ||
+    Boolean(props.menu?.length) ||
+    Boolean(props.actions) ||
+    Boolean(props.onRename) ||
     removable() ||
     Boolean(managed() && list?.hasRowMenu())
   const swipe = createRowSwipe({
     element: () => row,
-    leading: () => (touch() ? (local.leadingActions?.length ?? 0) * SWIPE_ACTION_WIDTH : 0),
+    leading: () => (touch() ? (props.leadingActions?.length ?? 0) * SWIPE_ACTION_WIDTH : 0),
     trailing: () => {
       if (!touch()) return 0
       if (trailing().length) return trailing().length * SWIPE_ACTION_WIDTH
@@ -394,7 +396,7 @@ export function ListRow(props: ListRowProps): JSX.Element {
     onFull: (side) =>
       side === "trailing" && tray()
         ? swipe.setOpen("trailing")
-        : (side === "leading" ? local.leadingActions : trailing())?.[0]?.onAction(),
+        : (side === "leading" ? props.leadingActions : trailing())?.[0]?.onAction(),
     accepts: (e) => e.pointerType !== "mouse" || phone(),
     menu: () => touch() && (hasMenu() || reorderable()),
     onLongPress: (at) => {
@@ -426,15 +428,16 @@ export function ListRow(props: ListRowProps): JSX.Element {
   }
   // The row's cells move with the finger. The shift stays set while they slide back, so the slide animates.
   const [shifted, setShifted] = createSignal(false)
-  createEffect(
-    on(swipe.offset, (x) => {
-      if (x !== 0) return setShifted(true)
-      const t = setTimeout(() => setShifted(false), 240)
-      onCleanup(() => clearTimeout(t))
-    }),
-  )
+  createEffect(swipe.offset, (x) => {
+    if (x !== 0) {
+      setShifted(true)
+      return
+    }
+    const t = setTimeout(() => setShifted(false), 240)
+    return () => clearTimeout(t)
+  })
   // Clicks inside a row that was just dragged, or whose actions are open, only close it.
-  onMount(() => {
+  onSettled(() => {
     const swallow = (e: MouseEvent) => {
       if ((e.target as Element).closest?.(".nc-lrow__tray")) return
       if (holdClick) {
@@ -445,7 +448,7 @@ export function ListRow(props: ListRowProps): JSX.Element {
       if (swipe.swallowClick(e)) e.stopPropagation()
     }
     row.addEventListener("click", swallow, true)
-    onCleanup(() => row.removeEventListener("click", swallow, true))
+    return () => row.removeEventListener("click", swallow, true)
   })
 
   // ---- Registration with the list, for keyboard focus ----
@@ -457,7 +460,7 @@ export function ListRow(props: ListRowProps): JSX.Element {
     depth,
     interactive,
     rename: () => {
-      if (!local.onRename) return false
+      if (!props.onRename) return false
       startRename()
       return true
     },
@@ -469,16 +472,16 @@ export function ListRow(props: ListRowProps): JSX.Element {
   }
   if (list) onCleanup(list.register(entry))
   const focusable = () =>
-    Boolean(list) && (interactive() || managed() || Boolean(local.onRename) || disclosure())
+    Boolean(list) && (interactive() || managed() || Boolean(props.onRename) || disclosure())
   const tabIndex = () => (focusable() ? (list?.tabStop(entry) ? 0 : -1) : undefined)
 
   // On a row of two or three lines the time ends the first line and the state the second, inside the text,
   // so the title has the first line to itself but for the time.
   const multi = () => lines() > 1
-  const statusCell = () => <span class="nc-lrow__status">{local.status}</span>
-  const metaCell = () => <span class="nc-lrow__meta">{local.meta}</span>
+  const statusCell = () => <span class="nc-lrow__status">{props.status}</span>
+  const metaCell = () => <span class="nc-lrow__meta">{props.meta}</span>
   const title = () => (
-    <Show when={renaming()} fallback={<span class="nc-lrow__title">{local.title}</span>}>
+    <Show when={renaming()} fallback={<span class="nc-lrow__title">{props.title}</span>}>
       <span class="nc-lrow__title nc-lrow__title--edit">
         <InlineField
           value={titleText() ?? ""}
@@ -487,7 +490,7 @@ export function ListRow(props: ListRowProps): JSX.Element {
           ref={(el: HTMLElement) => queueMicrotask(() => el.focus())}
           onCommit={(v) => {
             const next = v.trim()
-            if (next && next !== titleText()) local.onRename?.(next)
+            if (next && next !== titleText()) props.onRename?.(next)
           }}
           onFocusOut={(e: FocusEvent) => {
             setRenaming(false)
@@ -504,38 +507,38 @@ export function ListRow(props: ListRowProps): JSX.Element {
   )
   const text = (
     <span class="nc-lrow__text">
-      <Show when={multi() && local.meta} fallback={title()}>
+      <Show when={multi() && props.meta} fallback={title()}>
         <span class="nc-lrow__line">
           {title()}
           {metaCell()}
         </span>
       </Show>
       <Show
-        when={multi() && local.status}
+        when={multi() && props.status}
         fallback={
-          <Show when={local.secondary}>
-            <span class="nc-lrow__secondary">{local.secondary}</span>
+          <Show when={props.secondary}>
+            <span class="nc-lrow__secondary">{props.secondary}</span>
           </Show>
         }
       >
         <span class="nc-lrow__line">
-          <span class="nc-lrow__secondary">{local.secondary}</span>
+          <span class="nc-lrow__secondary">{props.secondary}</span>
           {statusCell()}
         </span>
       </Show>
-      <Show when={local.detail && lines() > 2}>
-        <span class="nc-lrow__detail">{local.detail}</span>
+      <Show when={props.detail && lines() > 2}>
+        <span class="nc-lrow__detail">{props.detail}</span>
       </Show>
     </span>
   )
   const onMainClick = (e: MouseEvent) => {
     const i = index()
-    if (list && item && i !== undefined && list.click(i, item.key, e, Boolean(local.href || local.onClick))) {
+    if (list && item && i !== undefined && list.click(i, item.key, e, Boolean(props.href || props.onClick))) {
       e.preventDefault()
       return
     }
-    callClick(local.onClick, e)
-    if (local.href) linkClick(e as MouseEvent & { currentTarget: HTMLAnchorElement }, local.href)
+    callClick(props.onClick, e)
+    if (props.href) linkClick(e as MouseEvent & { currentTarget: HTMLAnchorElement }, props.href)
   }
   const common = () => ({
     ref: (el: HTMLElement) => {
@@ -546,31 +549,31 @@ export function ListRow(props: ListRowProps): JSX.Element {
     "data-row-focus": focusable() ? "" : undefined,
     tabindex: tabIndex(),
     // The row is dragged by itself: the browser's own drag of a link would take the pointer.
-    draggable: reorderable() ? false : undefined,
+    draggable: reorderable() ? ("false" as const) : undefined,
     // A Shift or Cmd click in a selectable list selects rows, not the text between them.
     onMouseDown: (e: MouseEvent) => {
       if (list?.selectable() && (e.shiftKey || e.metaKey || e.ctrlKey)) e.preventDefault()
     },
-    onDblClick: local.onRename
+    onDblClick: props.onRename
       ? (e: MouseEvent) => {
           if ((e.target as Element).closest?.(".nc-lrow__title")) startRename()
         }
       : undefined,
     // A row that opens nothing renames on a click on its title, as an InlineField edits on a click.
     onClick:
-      local.onRename && !interactive()
+      props.onRename && !interactive()
         ? (e: MouseEvent) => {
             if (!renaming() && (e.target as Element).closest?.(".nc-lrow__title")) startRename()
           }
         : undefined,
   })
   const main = () => {
-    if (local.href && !renaming())
+    if (props.href && !renaming())
       return (
         <a
           {...common()}
-          href={local.href}
-          aria-label={local.label}
+          href={props.href}
+          aria-label={props.label}
           aria-current={selected() ? "page" : undefined}
           onClick={onMainClick}
         >
@@ -582,8 +585,8 @@ export function ListRow(props: ListRowProps): JSX.Element {
         <button
           type="button"
           {...common()}
-          aria-label={local.label}
-          aria-pressed={selected() === undefined ? undefined : selected()}
+          aria-label={props.label}
+          aria-pressed={selected() === undefined ? undefined : aria(selected())}
           onClick={onMainClick}
         >
           {text}
@@ -592,20 +595,20 @@ export function ListRow(props: ListRowProps): JSX.Element {
     return <span {...common()}>{text}</span>
   }
   const lead = () => (
-    <Show when={local.leading || local.icon || local.iconNode}>
+    <Show when={props.leading || props.icon || props.iconNode}>
       <span class="nc-lrow__lead">
-        <Show when={local.leading} fallback={<Icon name={local.icon} node={local.iconNode} />}>
-          {local.leading}
+        <Show when={props.leading} fallback={<Icon name={props.icon} node={props.iconNode} />}>
+          {props.leading}
         </Show>
       </span>
     </Show>
   )
   const style = () => {
-    const own = typeof local.style === "object" ? local.style : {}
+    const own = typeof props.style === "object" ? props.style : {}
     const vars: Record<string, string> = {}
     if (shifted()) vars["--nc-swipe"] = `${swipe.offset()}px`
     if (branch()) vars["--nc-lrow-depth"] = String(depth())
-    return Object.keys(vars).length ? { ...own, ...vars } : local.style
+    return Object.keys(vars).length ? { ...own, ...vars } : props.style
   }
   const rowView = (
     <div
@@ -613,14 +616,14 @@ export function ListRow(props: ListRowProps): JSX.Element {
       data-part="list-row"
       role={inListbox ? undefined : "listitem"}
       aria-level={branch() && !inListbox ? depth() + 1 : undefined}
-      class={cx("nc-lrow", local.class)}
-      data-density={local.density ?? list?.density() ?? "compact"}
+      class={cx("nc-lrow", props.class)}
+      data-density={props.density ?? list?.density() ?? "compact"}
       data-lines={lines()}
       data-index={index()}
       data-depth={branch() ? depth() : undefined}
       data-selected={selected() ? "" : undefined}
-      data-unread={local.unread ? "" : undefined}
-      data-muted={local.muted ? "" : undefined}
+      data-unread={props.unread ? "" : undefined}
+      data-muted={props.muted ? "" : undefined}
       data-interactive={interactive() ? "" : undefined}
       data-touch={touch() ? "" : undefined}
       data-editing={editing() ? "" : undefined}
@@ -634,7 +637,7 @@ export function ListRow(props: ListRowProps): JSX.Element {
       data-menu={hasMenu() || reorderable() ? "" : undefined}
       data-movable={reorderable() ? "" : undefined}
       data-swipeable={
-        touch() && (tray() || local.leadingActions?.length || trailing().length) ? "" : undefined
+        touch() && (tray() || props.leadingActions?.length || trailing().length) ? "" : undefined
       }
       style={style()}
       {...swipe.handlers}
@@ -662,13 +665,13 @@ export function ListRow(props: ListRowProps): JSX.Element {
       }}
       {...rest}
     >
-      <Show when={local.unread !== undefined}>
+      <Show when={props.unread !== undefined}>
         <span
           class="nc-lrow__unread"
-          data-on={local.unread ? "" : undefined}
-          role={local.unread ? "img" : undefined}
-          aria-label={local.unread ? "Unread" : undefined}
-          aria-hidden={local.unread ? undefined : "true"}
+          data-on={props.unread ? "" : undefined}
+          role={props.unread ? "img" : undefined}
+          aria-label={props.unread ? "Unread" : undefined}
+          aria-hidden={props.unread ? undefined : "true"}
         />
       </Show>
       <Show when={editing() && managed() && list?.selectable()}>
@@ -700,7 +703,7 @@ export function ListRow(props: ListRowProps): JSX.Element {
               class="nc-lrow__toggle"
               tabindex={-1}
               aria-label={expanded() ? `Collapse ${titleText()}` : `Expand ${titleText()}`}
-              aria-expanded={expanded()}
+              aria-expanded={aria(expanded())}
               aria-controls={hasChildren ? groupId : undefined}
               data-open={expanded() ? "" : undefined}
               onClick={() => setExpanded(!expanded())}
@@ -712,27 +715,27 @@ export function ListRow(props: ListRowProps): JSX.Element {
           {main()}
         </span>
       </Show>
-      <Show when={local.status && !multi()}>{statusCell()}</Show>
-      <Show when={local.meta && !multi()}>{metaCell()}</Show>
-      <Show when={local.actions && !touch()}>
+      <Show when={props.status && !multi()}>{statusCell()}</Show>
+      <Show when={props.meta && !multi()}>{metaCell()}</Show>
+      <Show when={props.actions && !touch()}>
         <span
           class="nc-lrow__actions"
           ref={(el) => {
             actionsEl = el
           }}
         >
-          {local.actions}
+          {props.actions}
         </span>
       </Show>
-      <Show when={local.persistentActions}>
-        <span class="nc-lrow__actions nc-lrow__actions--persistent">{local.persistentActions}</span>
+      <Show when={props.persistentActions}>
+        <span class="nc-lrow__actions nc-lrow__actions--persistent">{props.persistentActions}</span>
       </Show>
-      <Show when={touch() && local.leadingActions?.length}>
+      <Show when={touch() && props.leadingActions?.length}>
         <div
           class="nc-lrow__tray nc-lrow__tray--leading"
           style={{ width: `${Math.max(swipe.offset(), 0)}px` }}
         >
-          <For each={local.leadingActions}>
+          <For each={props.leadingActions}>
             {(a) => <SwipeButton action={a} close={() => swipe.setOpen(null)} />}
           </For>
         </div>
@@ -760,11 +763,11 @@ export function ListRow(props: ListRowProps): JSX.Element {
             }}
             class="nc-lrow__tray-inner"
           >
-            {local.actions}
+            {props.actions}
           </div>
         </div>
       </Show>
-      <Show when={touch() && local.actions && !tray()}>
+      <Show when={touch() && props.actions && !tray()}>
         {/* The swipe shows other actions here: the hover actions are still in the long-press menu. */}
         <div
           ref={(el) => {
@@ -772,7 +775,7 @@ export function ListRow(props: ListRowProps): JSX.Element {
           }}
           hidden
         >
-          {local.actions}
+          {props.actions}
         </div>
       </Show>
       <Show when={menuAt()}>
@@ -780,7 +783,7 @@ export function ListRow(props: ListRowProps): JSX.Element {
           <RowMenu
             at={at()}
             phone={phone()}
-            label={local.menuLabel ?? "Actions"}
+            label={props.menuLabel ?? "Actions"}
             items={(shown()?.entries ?? []) as MenuEntry[]}
             origin={row}
             returnFocus={() => mainEl}
@@ -801,13 +804,13 @@ export function ListRow(props: ListRowProps): JSX.Element {
       {rowView}
       <Show when={expanded()}>
         {/* Nested rows are not the parent's item. */}
-        <RowItem.Provider value={null}>
-          <RowDepth.Provider value={depth() + 1}>
+        <RowItem value={null}>
+          <RowDepth value={depth() + 1}>
             <div class="nc-lrow-group" id={groupId} data-part="row-group">
-              {local.children}
+              {props.children}
             </div>
-          </RowDepth.Provider>
-        </RowItem.Provider>
+          </RowDepth>
+        </RowItem>
       </Show>
     </>
   )
@@ -940,7 +943,8 @@ const sameOrder = (a: HTMLElement, b: HTMLElement) =>
  * card, an inspector or a form.
  */
 export function RowList<T = unknown>(props: RowListProps<T>): JSX.Element {
-  const [local, rest] = splitProps(props, [
+  const rest = omit(
+    props,
     "label",
     "children",
     "items",
@@ -968,21 +972,21 @@ export function RowList<T = unknown>(props: RowListProps<T>): JSX.Element {
     "class",
     "ref",
     "style",
-  ])
+  )
   const phone = usePhone()
-  const virtual = createMemo(() => (local.items?.length ?? 0) > (local.virtualizeAt ?? 150))
-  const keyOf = (item: T, index: number): RowKey => local.getKey?.(item, index) ?? index
-  const keys = createMemo(() => (local.items ?? []).map(keyOf))
+  const virtual = createMemo(() => (props.items?.length ?? 0) > (props.virtualizeAt ?? 150))
+  const keyOf = (item: T, index: number): RowKey => props.getKey?.(item, index) ?? index
+  const keys = createMemo(() => (props.items ?? []).map(keyOf))
   const render = (item: T, index: () => number) =>
-    typeof local.children === "function" ? (
-      <RowItem.Provider value={{ index, key: keyOf(item, untrack(index)) }}>
-        {(local.children as (i: T, n: number) => JSX.Element)(item, untrack(index))}
-      </RowItem.Provider>
+    typeof props.children === "function" ? (
+      <RowItem value={{ index, key: keyOf(item, untrack(index)) }}>
+        {(props.children as (i: T, n: number) => JSX.Element)(item, untrack(index))}
+      </RowItem>
     ) : null
-  const variant = () => local.variant ?? (local.flush ? "inset" : "plain")
+  const variant = () => props.variant ?? (props.flush ? "inset" : "plain")
   const height = () =>
-    local.itemHeight ??
-    (phone() ? 44 : variant() === "inline" ? 28 : local.density === "comfortable" ? 36 : 30)
+    props.itemHeight ??
+    (phone() ? 44 : variant() === "inline" ? 28 : props.density === "comfortable" ? 36 : 30)
   let root!: HTMLDivElement
   const [said, setSaid] = createSignal("")
   const announce = (text: string) => {
@@ -1008,7 +1012,8 @@ export function RowList<T = unknown>(props: RowListProps<T>): JSX.Element {
       setFirstRow(ordered()[0] ?? null)
     })
   }
-  const [branches, setBranches] = createSignal(0)
+  // A branch row registers from its own body, which is an owned scope.
+  const [branches, setBranches] = createSignal(0, { ownedWrite: true })
   const rowOf = (el: Element | null) => {
     const rowEl = el?.closest?.(".nc-lrow")
     if (!rowEl || rowEl.closest("[data-part=row-list]") !== root) return undefined
@@ -1019,9 +1024,9 @@ export function RowList<T = unknown>(props: RowListProps<T>): JSX.Element {
   // ---- Selection ----
   const selection = createSelection<RowKey>({
     keys,
-    value: () => local.selected,
-    defaultValue: untrack(() => local.defaultSelected ?? []),
-    onChange: (next) => local.onSelectedChange?.(next),
+    value: () => props.selected,
+    defaultValue: untrack(() => props.defaultSelected ?? []),
+    onChange: (next) => props.onSelectedChange?.(next),
     announce,
   })
   const selected = selection.selected
@@ -1029,25 +1034,25 @@ export function RowList<T = unknown>(props: RowListProps<T>): JSX.Element {
   const selectedSet = createMemo(() => new Set(selected()))
   const selectedItems = () => {
     const set = selectedSet()
-    return (local.items ?? []).filter((item, i) => set.has(keyOf(item, i)))
+    return (props.items ?? []).filter((item, i) => set.has(keyOf(item, i)))
   }
 
   // ---- Removal ----
   const nameOf = (index: number) => {
-    const item = local.items?.[index]
-    if (item !== undefined && local.itemLabel) return local.itemLabel(item)
+    const item = props.items?.[index]
+    if (item !== undefined && props.itemLabel) return props.itemLabel(item)
     return rowAt(index)?.querySelector(".nc-lrow__title")?.textContent?.trim() || `Item ${index + 1}`
   }
   const removeKeys = (gone: RowKey[]) => {
-    if (!local.onRemove || !gone.length) return
-    const items = local.items ?? []
+    if (!props.onRemove || !gone.length) return
+    const items = props.items ?? []
     const set = new Set(gone)
     const indices = items.map((item, i) => (set.has(keyOf(item, i)) ? i : -1)).filter((i) => i >= 0)
     const removed = indices.map((i) => items[i] as T)
     const name = indices.length === 1 ? nameOf(indices[0] as number) : "items"
     const focusAt = indices[0] ?? 0
     const hadFocus = root.contains(activeElement())
-    const undo = local.onRemove(gone, removed)
+    const undo = props.onRemove(gone, removed)
     if (selected().some((k) => set.has(k))) selection.set(selected().filter((k) => !set.has(k)))
     announce(`Removed ${indices.length === 1 ? name : `${indices.length} items`}.`)
     removalToast(indices.length === 1 ? name : "items", indices.length, undo)
@@ -1086,7 +1091,7 @@ export function RowList<T = unknown>(props: RowListProps<T>): JSX.Element {
     })
   }
   const reorder = createReorder({
-    count: () => local.items?.length ?? 0,
+    count: () => props.items?.length ?? 0,
     container: () => root,
     rowAt,
     scroller,
@@ -1094,7 +1099,7 @@ export function RowList<T = unknown>(props: RowListProps<T>): JSX.Element {
       if (!virtual()) {
         const top = (s === document.scrollingElement ? 0 : s.getBoundingClientRect().top) - s.scrollTop
         const out = { tops: [] as number[], bottoms: [] as number[] }
-        for (let i = 0; i < (local.items?.length ?? 0); i++) {
+        for (let i = 0; i < (props.items?.length ?? 0); i++) {
           const r = rowAt(i)?.getBoundingClientRect()
           out.tops.push(r ? r.top - top : 0)
           out.bottoms.push(r ? r.bottom - top : 0)
@@ -1104,13 +1109,13 @@ export function RowList<T = unknown>(props: RowListProps<T>): JSX.Element {
       const space = root.querySelector(".nc-list__space")?.getBoundingClientRect().top ?? 0
       const base = space - s.getBoundingClientRect().top + s.scrollTop
       const h = height()
-      const n = local.items?.length ?? 0
+      const n = props.items?.length ?? 0
       return {
         tops: Array.from({ length: n }, (_, i) => base + i * h),
         bottoms: Array.from({ length: n }, (_, i) => base + (i + 1) * h),
       }
     },
-    onReorder: (from, to) => local.onReorder?.(from, to),
+    onReorder: (from, to) => props.onReorder?.(from, to),
     name: nameOf,
     announce,
     refocus: (index) => focusIndex(index),
@@ -1123,14 +1128,14 @@ export function RowList<T = unknown>(props: RowListProps<T>): JSX.Element {
   // ---- Keyboard ----
   const moveFocus = (from: RowEntry, to: "next" | "prev" | "first" | "last", extend: boolean) => {
     if (virtual()) {
-      const n = local.items?.length ?? 0
+      const n = props.items?.length ?? 0
       const at = from.index() ?? 0
       const i = to === "next" ? at + 1 : to === "prev" ? at - 1 : to === "first" ? 0 : n - 1
       if (i < 0 || i >= n) return
       focusIndex(i)
       const fromKey = from.key()
       const toKey = keys()[i]
-      if (local.selectable && toKey !== undefined) {
+      if (props.selectable && toKey !== undefined) {
         if (extend) selection.extend(fromKey ?? toKey, toKey)
         else selection.setAnchor(toKey)
       }
@@ -1149,7 +1154,7 @@ export function RowList<T = unknown>(props: RowListProps<T>): JSX.Element {
     if (!target) return
     target.focus()
     const key = target.key()
-    if (local.selectable && key !== undefined) {
+    if (props.selectable && key !== undefined) {
       // The keyboard's cursor is where the next range starts; Shift extends from where it was.
       if (extend) selection.extend(from.key() ?? key, key)
       else selection.setAnchor(key)
@@ -1183,7 +1188,7 @@ export function RowList<T = unknown>(props: RowListProps<T>): JSX.Element {
     switch (e.key) {
       case "ArrowDown":
       case "ArrowUp":
-        if (e.altKey && local.onReorder && index !== undefined) {
+        if (e.altKey && props.onReorder && index !== undefined) {
           handled()
           reorder.nudge(index, e.key === "ArrowDown" ? 1 : -1)
           focusIndex(Math.max(0, Math.min(keys().length - 1, index + (e.key === "ArrowDown" ? 1 : -1))))
@@ -1217,7 +1222,7 @@ export function RowList<T = unknown>(props: RowListProps<T>): JSX.Element {
         return
       case " ":
         if (!onRow) return
-        if (local.selectable && key !== undefined && !mod) {
+        if (props.selectable && key !== undefined && !mod) {
           handled()
           return select(selectionKey(e) ?? "toggle", key)
         }
@@ -1231,7 +1236,7 @@ export function RowList<T = unknown>(props: RowListProps<T>): JSX.Element {
         return
       case "Delete":
       case "Backspace":
-        if (onRow && local.onRemove && index !== undefined) {
+        if (onRow && props.onRemove && index !== undefined) {
           handled()
           removeAt(index)
         }
@@ -1240,7 +1245,7 @@ export function RowList<T = unknown>(props: RowListProps<T>): JSX.Element {
       case "A":
       case "Escape": {
         const gesture = selectionKey(e)
-        if (gesture && local.selectable && (gesture === "all" || selected().length)) {
+        if (gesture && props.selectable && (gesture === "all" || selected().length)) {
           handled()
           select(gesture)
         }
@@ -1250,46 +1255,46 @@ export function RowList<T = unknown>(props: RowListProps<T>): JSX.Element {
   }
 
   const ctx: RowListContext = {
-    density: () => local.density,
-    tree: () => Boolean(local.tree) || branches() > 0,
+    density: () => props.density,
+    tree: () => Boolean(props.tree) || branches() > 0,
     addBranch: () => {
       setBranches((n) => n + 1)
       return () => setBranches((n) => n - 1)
     },
-    editing: () => Boolean(local.editing),
-    selectable: () => Boolean(local.selectable),
+    editing: () => Boolean(props.editing),
+    selectable: () => Boolean(props.selectable),
     isSelected: (key) => selectedSet().has(key),
     click: (_index, key, e, activates) => {
-      if (!local.selectable) return false
-      if (local.editing) {
+      if (!props.selectable) return false
+      if (props.editing) {
         select("toggle", key)
         return true
       }
       return selection.click(key, e, activates)
     },
     toggle: (_index, key) => select("toggle", key),
-    reorderable: () => Boolean(local.onReorder) && Boolean(local.items),
+    reorderable: () => Boolean(props.onReorder) && Boolean(props.items),
     reorder,
-    removable: () => Boolean(local.onRemove) && Boolean(local.items),
+    removable: () => Boolean(props.onRemove) && Boolean(props.items),
     remove: removeAt,
     focusIndex: (index) => focusIndex(index),
-    hasRowMenu: () => Boolean(local.rowMenu),
+    hasRowMenu: () => Boolean(props.rowMenu),
     menuFor: (key, own) => {
-      const target = menuTarget(keys(), selected(), key, Boolean(local.selectable))
+      const target = menuTarget(keys(), selected(), key, Boolean(props.selectable))
       if (target.reselect) select("only", key)
       const set = new Set(target.keys)
       const context: RowMenuContext<T> = {
         keys: target.keys,
-        items: (local.items ?? []).filter((item, i) => set.has(keyOf(item, i))),
+        items: (props.items ?? []).filter((item, i) => set.has(keyOf(item, i))),
       }
-      if (local.rowMenu) {
-        const entries = local.rowMenu(context)
+      if (props.rowMenu) {
+        const entries = props.rowMenu(context)
         return {
           entries,
           run: (id) => {
             const entry = entryById(entries, id)
             if (entry?.onSelect) entry.onSelect()
-            else if (local.onRowMenuSelect) local.onRowMenuSelect(id, context)
+            else if (props.onRowMenuSelect) props.onRowMenuSelect(id, context)
             // The list's own: Delete removes what the menu acts on; Open and Rename are the row's.
             else if (id === "delete") removeKeys(target.keys)
             else if (id === "open" || id === "rename") own().run(id)
@@ -1299,7 +1304,7 @@ export function RowList<T = unknown>(props: RowListProps<T>): JSX.Element {
       if (target.keys.length < 2) return own()
       // A selection's menu is what its bar offers. The bar is shown while several rows are selected.
       const actions = entriesFromButtons(root.querySelector("[data-bulk-actions]"))
-      const entries = defaultRowMenu({ count: target.keys.length, actions, remove: Boolean(local.onRemove) })
+      const entries = defaultRowMenu({ count: target.keys.length, actions, remove: Boolean(props.onRemove) })
       return {
         entries,
         run: (id) => (id === "delete" ? removeKeys(target.keys) : entryById(entries, id)?.onSelect?.()),
@@ -1327,51 +1332,47 @@ export function RowList<T = unknown>(props: RowListProps<T>): JSX.Element {
   // rows change, so a reorder or a removal does not make the columns jump.
   const none: RowColumns = { title: 0, status: 0, meta: 0, actions: 0 }
   const [widths, setWidths] = createSignal(none)
+  createEffect(virtual, (v) => {
+    setWidths(none)
+    if (typeof MutationObserver === "undefined" || typeof requestAnimationFrame === "undefined") return
+    let frame = 0
+    const measure = () => {
+      frame = 0
+      const seen = measureRowColumns(root)
+      const now = widths()
+      const next = v
+        ? {
+            title: Math.max(now.title, seen.title),
+            status: Math.max(now.status, seen.status),
+            meta: Math.max(now.meta, seen.meta),
+            actions: Math.max(now.actions, seen.actions),
+          }
+        : { ...none, title: seen.title }
+      if (MEASURED.some((c) => next[c] !== now[c]) || next.title !== now.title) setWidths(next)
+    }
+    const schedule = () => {
+      if (!frame) frame = requestAnimationFrame(measure)
+    }
+    const observer = new MutationObserver(schedule)
+    observer.observe(root, { childList: true, subtree: true, characterData: true })
+    schedule()
+    document.fonts?.ready.then(schedule)
+    return () => {
+      observer.disconnect()
+      if (frame) cancelAnimationFrame(frame)
+    }
+  })
   createEffect(
-    on(virtual, (v) => {
-      setWidths(none)
-      if (typeof MutationObserver === "undefined" || typeof requestAnimationFrame === "undefined") return
-      let frame = 0
-      const measure = () => {
-        frame = 0
-        const seen = measureRowColumns(root)
-        const now = widths()
-        const next = v
-          ? {
-              title: Math.max(now.title, seen.title),
-              status: Math.max(now.status, seen.status),
-              meta: Math.max(now.meta, seen.meta),
-              actions: Math.max(now.actions, seen.actions),
-            }
-          : { ...none, title: seen.title }
-        if (MEASURED.some((c) => next[c] !== now[c]) || next.title !== now.title) setWidths(next)
-      }
-      const schedule = () => {
-        if (!frame) frame = requestAnimationFrame(measure)
-      }
-      const observer = new MutationObserver(schedule)
-      observer.observe(root, { childList: true, subtree: true, characterData: true })
-      schedule()
-      document.fonts?.ready.then(schedule)
-      onCleanup(() => {
-        observer.disconnect()
-        if (frame) cancelAnimationFrame(frame)
-      })
-    }),
-  )
-  createEffect(
-    on(
-      () => local.items,
-      () => {
-        if (untrack(virtual)) setWidths(none)
-      },
-      { defer: true },
-    ),
+    () => props.items,
+    () => {
+      if (untrack(virtual)) setWidths(none)
+    },
+    { defer: true },
   )
   const columns = () => {
     const w = widths()
-    const own = typeof local.style === "object" ? local.style : {}
-    if (!w.title && !virtual()) return local.style
+    const own = typeof props.style === "object" ? props.style : {}
+    if (!w.title && !virtual()) return props.style
     return {
       ...own,
       ...(w.title ? { "--nc-lrow-title": `${w.title}px` } : {}),
@@ -1384,28 +1385,28 @@ export function RowList<T = unknown>(props: RowListProps<T>): JSX.Element {
         : {}),
     }
   }
-  onMount(() => {
+  onSettled(() => {
     // Capture: a virtualised list's listbox would take the arrow keys first.
     root.addEventListener("keydown", onKeyDown, true)
-    onCleanup(() => root.removeEventListener("keydown", onKeyDown, true))
+    return () => root.removeEventListener("keydown", onKeyDown, true)
   })
   const addRow = () => (
-    <Show when={local.onAdd}>
+    <Show when={props.onAdd}>
       <div role={virtual() ? undefined : "listitem"} class="nc-rows__add">
         <button
           type="button"
           class="nc-lrow nc-lrow--add"
           data-part="row-add"
-          data-density={local.density ?? "compact"}
+          data-density={props.density ?? "compact"}
           data-interactive=""
-          onClick={() => local.onAdd?.()}
+          onClick={() => props.onAdd?.()}
         >
           <span class="nc-lrow__lead">
             <Icon name="plus" />
           </span>
           <span class="nc-lrow__main">
             <span class="nc-lrow__text">
-              <span class="nc-lrow__title">{local.addLabel ?? "Add"}</span>
+              <span class="nc-lrow__title">{props.addLabel ?? "Add"}</span>
             </span>
           </span>
         </button>
@@ -1417,20 +1418,20 @@ export function RowList<T = unknown>(props: RowListProps<T>): JSX.Element {
     <div
       ref={(el) => {
         root = el
-        if (typeof local.ref === "function") (local.ref as (el: HTMLDivElement) => void)(el)
+        if (typeof props.ref === "function") (props.ref as (el: HTMLDivElement) => void)(el)
       }}
       data-part="row-list"
       data-variant={variant()}
       class={cx(
         "nc-rows",
         `nc-rows--${variant()}`,
-        local.divided && "nc-rows--divided",
-        local.flush && "nc-rows--flush",
+        props.divided && "nc-rows--divided",
+        props.flush && "nc-rows--flush",
         virtual() && "nc-rows--virtual",
-        local.editing && "nc-rows--editing",
+        props.editing && "nc-rows--editing",
         reorder.mode() !== null && "nc-rows--reordering",
-        Boolean(local.onReorder && local.items) && "nc-rows--movable",
-        local.class,
+        Boolean(props.onReorder && props.items) && "nc-rows--movable",
+        props.class,
       )}
       style={columns()}
       onFocusIn={(e) => {
@@ -1446,38 +1447,38 @@ export function RowList<T = unknown>(props: RowListProps<T>): JSX.Element {
       <Show
         when={virtual()}
         fallback={
-          <div role="list" aria-label={local.label} class="nc-rows__list">
-            <RowListCtx.Provider value={ctx}>
-              <Show when={local.items} fallback={local.children as JSX.Element}>
+          <div role="list" aria-label={props.label} class="nc-rows__list">
+            <RowListCtx value={ctx}>
+              <Show when={props.items} fallback={props.children as JSX.Element}>
                 {(items) => <For each={items()}>{(item, i) => render(item, i)}</For>}
               </Show>
-            </RowListCtx.Provider>
+            </RowListCtx>
             {addRow()}
           </div>
         }
       >
-        <InListbox.Provider value={true}>
-          <RowListCtx.Provider value={ctx}>
+        <InListbox value={true}>
+          <RowListCtx value={ctx}>
             <List
-              items={local.items as T[]}
+              items={props.items as T[]}
               itemHeight={height()}
-              label={local.label}
-              getKey={local.getKey}
+              label={props.label}
+              getKey={props.getKey}
               activeIndex={virtualActive()}
               tabIndex={-1}
-              isSelected={local.selectable ? (i) => selectedSet().has(keys()[i] as RowKey) : undefined}
-              multiselectable={local.selectable}
+              isSelected={props.selectable ? (i) => selectedSet().has(keys()[i] as RowKey) : undefined}
+              multiselectable={props.selectable}
             >
               {(item, i) => render(item, () => i)}
             </List>
-          </RowListCtx.Provider>
-        </InListbox.Provider>
+          </RowListCtx>
+        </InListbox>
         {addRow()}
       </Show>
       <Show when={reorder.line() !== null}>
         <div class="nc-rows__drop" data-part="drop-line" style={{ top: `${reorder.line()}px` }} />
       </Show>
-      <Show when={local.selectable && count() > 0}>
+      <Show when={props.selectable && count() > 0}>
         <SelectionBar
           class="nc-rows__bulk"
           count={count()}
@@ -1485,8 +1486,8 @@ export function RowList<T = unknown>(props: RowListProps<T>): JSX.Element {
           phone={phone()}
           onSelectAll={() => select("all")}
           onClear={() => select("none")}
-          onDelete={local.onRemove ? () => removeKeys([...selected()]) : undefined}
-          actions={local.bulkActions?.(selectedItems(), [...selected()])}
+          onDelete={props.onRemove ? () => removeKeys([...selected()]) : undefined}
+          actions={props.bulkActions?.(selectedItems(), [...selected()])}
         />
       </Show>
       <div class="nc-visually-hidden" role="status" aria-live="polite" aria-atomic="true">

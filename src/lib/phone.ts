@@ -64,9 +64,10 @@ export const PHONE_BOUNDS = {
 } as const
 
 /** Overrides the media query below it (the gallery shows phone pieces on a desktop page). */
-export const PhoneOverride = createContext<boolean>()
+export const PhoneOverride = createContext<boolean | null>(null)
 
-const [phoneNow, setPhoneNow] = createSignal(false)
+// Read from a component body, which is an owned scope: the first read sets this state.
+const [phoneNow, setPhoneNow] = createSignal(false, { ownedWrite: true })
 let watching = false
 
 function watch() {
@@ -98,7 +99,7 @@ export function isPhone(): boolean {
 // ── the visual viewport ─────────────────────────────────────────────────────────────────────────────
 
 /** How tall the on-screen keyboard is (or anything else covering the bottom of the layout viewport). */
-const [keyboard, setKeyboard] = createSignal(0)
+const [keyboard, setKeyboard] = createSignal(0, { ownedWrite: true })
 let tracking = false
 
 /** The keyboard's height in px; 0 when it is closed. Reactive. */

@@ -1,4 +1,5 @@
-import { type JSX, Match, Switch } from "solid-js"
+import type { JSX } from "@solidjs/web"
+import { Match, Switch } from "solid-js"
 import {
   Widget,
   type WidgetHue,

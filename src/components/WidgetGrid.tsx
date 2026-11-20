@@ -1,15 +1,5 @@
-import {
-  type Accessor,
-  createEffect,
-  createMemo,
-  createSignal,
-  For,
-  type JSX,
-  onCleanup,
-  onMount,
-  Show,
-  splitProps,
-} from "solid-js"
+import type { JSX } from "@solidjs/web"
+import { type Accessor, createEffect, createMemo, createSignal, For, omit, onSettled, Show } from "solid-js"
 import { cx } from "../lib/cx"
 import {
   cellDelta,
@@ -79,7 +69,8 @@ interface Drag<T extends GridItem> {
  * positions stay as they are; editing shows them.
  */
 export function WidgetGrid<T extends GridItem>(props: WidgetGridProps<T>): JSX.Element {
-  const [local, rest] = splitProps(props, [
+  const rest = omit(
+    props,
     "items",
     "editing",
     "rowHeight",
@@ -90,23 +81,23 @@ export function WidgetGrid<T extends GridItem>(props: WidgetGridProps<T>): JSX.E
     "onChange",
     "children",
     "class",
-  ])
+  )
   const [draft, setDraft] = createSignal<T[] | null>(null)
   const [drag, setDrag] = createSignal<{ id: string; mode: "move" | "resize" } | null>(null)
   const [stacked, setStacked] = createSignal(false)
   let root: HTMLDivElement | undefined
   let active: Drag<T> | null = null
 
-  const shown = () => draft() ?? local.items
+  const shown = () => draft() ?? props.items
   const byId = createMemo(() => new Map(shown().map((i) => [i.id, i])))
   const order = createMemo(() => new Map(reading(shown()).map((i, n) => [i.id, n])))
-  const ids = createMemo(() => local.items.map((i) => i.id))
+  const ids = createMemo(() => props.items.map((i) => i.id))
   const gap = 12
-  const row = () => local.rowHeight ?? 80
-  const editable = () => !!local.editing && !stacked()
+  const row = () => props.rowHeight ?? 80
+  const editable = () => !!props.editing && !stacked()
 
   // ── Outside editing: the stored layout drawn compacted, each item as tall as its content ──────────
-  const hiddenIds = createMemo(() => new Set(local.editing ? [] : (local.empty ?? [])))
+  const hiddenIds = createMemo(() => new Set(props.editing ? [] : (props.empty ?? [])))
   const [natural, setNatural] = createSignal<Record<string, number>>({})
   const layout = createMemo(() =>
     editable()
@@ -115,14 +106,14 @@ export function WidgetGrid<T extends GridItem>(props: WidgetGridProps<T>): JSX.E
           row: row(),
           gap,
           hidden: hiddenIds(),
-          natural: local.fit === false ? undefined : (id) => natural()[id],
+          natural: props.fit === false ? undefined : (id) => natural()[id],
           stacked: stacked(),
         }),
   )
   /** Reads the content height of items: each is switched to its natural height, read, switched back, in one
    * layout before the next paint. */
   const measure = (els: Iterable<HTMLElement>) => {
-    if (local.fit === false || editable()) return
+    if (props.fit === false || editable()) return
     const list = [...els].filter((el) => el.isConnected && !el.hasAttribute("data-hidden"))
     if (!list.length) return
     for (const el of list) el.setAttribute("data-measure", "")
@@ -134,9 +125,10 @@ export function WidgetGrid<T extends GridItem>(props: WidgetGridProps<T>): JSX.E
   const items = () =>
     root ? [...root.querySelectorAll<HTMLElement>(":scope > [data-part=widget-grid-item]")] : []
 
-  onMount(() => {
+  onSettled(() => {
     if (!root) return
     const el = root
+    const stops: Array<() => void> = []
     if (typeof ResizeObserver !== "undefined") {
       let width = el.clientWidth
       const watch = new ResizeObserver(() => {
@@ -148,7 +140,7 @@ export function WidgetGrid<T extends GridItem>(props: WidgetGridProps<T>): JSX.E
         }
       })
       watch.observe(el)
-      onCleanup(() => watch.disconnect())
+      stops.push(() => watch.disconnect())
     }
     setStacked(el.clientWidth > 0 && el.clientWidth < STACK_BELOW)
     // Content that changes (rows arriving, a list emptying) is measured again before it is painted.
@@ -166,18 +158,26 @@ export function WidgetGrid<T extends GridItem>(props: WidgetGridProps<T>): JSX.E
         measure(dirty)
       })
       changes.observe(el, { childList: true, characterData: true, attributes: true, subtree: true })
-      onCleanup(() => changes.disconnect())
+      stops.push(() => changes.disconnect())
     }
     document.fonts?.ready.then(() => measure(items())).catch(() => {})
+    return () => {
+      for (const stop of stops) stop()
+    }
   })
   // Leaving edit mode, items mounting or being revealed, a size changed: measure what is drawn now.
-  createEffect(() => {
-    if (editable() || local.fit === false) return
-    shown()
-    hiddenIds()
-    stacked()
-    queueMicrotask(() => measure(items()))
-  })
+  createEffect(
+    () => {
+      shown()
+      hiddenIds()
+      stacked()
+      return { editable: editable(), fit: props.fit, list: items() }
+    },
+    ({ editable, fit, list }) => {
+      if (editable || fit === false) return
+      queueMicrotask(() => measure(list))
+    },
+  )
 
   const begin = (e: PointerEvent, id: string, mode: "move" | "resize") => {
     if (!editable() || e.button !== 0 || !root) return
@@ -194,7 +194,7 @@ export function WidgetGrid<T extends GridItem>(props: WidgetGridProps<T>): JSX.E
       mode,
       px: e.clientX,
       py: e.clientY,
-      start: local.items,
+      start: props.items,
       from,
       cell: (width - gap * (GRID_COLUMNS - 1)) / GRID_COLUMNS,
       gap,
@@ -231,7 +231,7 @@ export function WidgetGrid<T extends GridItem>(props: WidgetGridProps<T>): JSX.E
     setDraft(null)
     setDrag(null)
     ;(e.currentTarget as Element).releasePointerCapture?.(e.pointerId)
-    if (commit && result) local.onChange?.(result)
+    if (commit && result) props.onChange?.(result)
   }
 
   const key = (e: KeyboardEvent, id: string) => {
@@ -247,9 +247,9 @@ export function WidgetGrid<T extends GridItem>(props: WidgetGridProps<T>): JSX.E
     if (!step || !item) return
     e.preventDefault()
     const next = e.shiftKey
-      ? resizeItem(local.items, id, item.w + step[0], item.h + step[1])
-      : moveItem(local.items, id, item.x + step[0], item.y + step[1])
-    local.onChange?.(next)
+      ? resizeItem(props.items, id, item.w + step[0], item.h + step[1])
+      : moveItem(props.items, id, item.x + step[0], item.y + step[1])
+    props.onChange?.(next)
   }
 
   return (
@@ -262,8 +262,8 @@ export function WidgetGrid<T extends GridItem>(props: WidgetGridProps<T>): JSX.E
       data-stacked={stacked() ? "" : undefined}
       data-fit={layout() ? "" : undefined}
       role="list"
-      aria-label={local.label}
-      class={cx("nc-wgrid", local.class)}
+      aria-label={props.label}
+      class={cx("nc-wgrid", props.class)}
       style={{
         "--wg-cols": GRID_COLUMNS,
         "--wg-row": `${row()}px`,
@@ -286,7 +286,7 @@ export function WidgetGrid<T extends GridItem>(props: WidgetGridProps<T>): JSX.E
               data-state={state()}
               data-hidden={layout() && !box() ? "" : undefined}
               tabindex={editable() ? 0 : undefined}
-              aria-label={editable() ? (local.itemLabel?.(item()) ?? id) : undefined}
+              aria-label={editable() ? (props.itemLabel?.(item()) ?? id) : undefined}
               class="nc-wgrid__item"
               style={{
                 "--wg-x": item().x,
@@ -305,7 +305,7 @@ export function WidgetGrid<T extends GridItem>(props: WidgetGridProps<T>): JSX.E
               onPointerCancel={(e) => finish(e, false)}
               onKeyDown={(e) => key(e, id)}
             >
-              {local.children(item, state)}
+              {props.children(item, state)}
               <Show when={editable()}>
                 <div class="nc-wgrid__veil" aria-hidden="true" />
                 <div

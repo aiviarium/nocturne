@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, test } from "bun:test"
-import { createSignal } from "solid-js"
+import { createSignal, flush } from "solid-js"
 import {
   Card,
   EmptyState,
@@ -122,7 +122,7 @@ describe("ListRow", () => {
 })
 
 describe("ListRow columns, lines and touch", () => {
-  const pointer = (el: Element, type: string, x: number, init: Partial<PointerEventInit> = {}) =>
+  const pointer = (el: Element, type: string, x: number, init: Partial<PointerEventInit> = {}) => {
     el.dispatchEvent(
       new PointerEvent(type, {
         bubbles: true,
@@ -134,6 +134,8 @@ describe("ListRow columns, lines and touch", () => {
         ...init,
       }),
     )
+    flush()
+  }
 
   test("each trailing cell is a direct child of the row, so a RowList's rows share its columns", () => {
     const { root } = track(
@@ -191,7 +193,7 @@ describe("ListRow columns, lines and touch", () => {
     let archived = 0
     const { root } = track(
       mount(() => (
-        <PhoneOverride.Provider value={true}>
+        <PhoneOverride value={true}>
           <RowList label="Sessions">
             <ListRow
               title="Fix the redirect"
@@ -201,7 +203,7 @@ describe("ListRow columns, lines and touch", () => {
               persistentActions={<button type="button">Allow</button>}
             />
           </RowList>
-        </PhoneOverride.Provider>
+        </PhoneOverride>
       )),
     )
     const row = one("[data-part=list-row]", root)
@@ -226,14 +228,14 @@ describe("ListRow columns, lines and touch", () => {
     let flagged = 0
     const { root } = track(
       mount(() => (
-        <PhoneOverride.Provider value={true}>
+        <PhoneOverride value={true}>
           <RowList label="Sessions">
             <ListRow
               title="Fix the redirect"
               trailingActions={[{ id: "flag", label: "Flag", onAction: () => flagged++ }]}
             />
           </RowList>
-        </PhoneOverride.Provider>
+        </PhoneOverride>
       )),
     )
     const row = one("[data-part=list-row]", root)
@@ -420,6 +422,7 @@ describe("InlineField", () => {
           onCommit={(v) => {
             commits.push(v)
             setValue(v)
+            flush()
           }}
         />
       )),
@@ -429,15 +432,19 @@ describe("InlineField", () => {
     input.focus()
     input.value = "New title"
     input.dispatchEvent(new InputEvent("input", { bubbles: true }))
+    flush()
     press(input, "Enter")
     input.dispatchEvent(new FocusEvent("blur"))
+    flush()
     await tick()
     expect(commits).toEqual(["New title"])
 
     input.focus()
     input.dispatchEvent(new FocusEvent("focus"))
+    flush()
     input.value = "Draft"
     input.dispatchEvent(new InputEvent("input", { bubbles: true }))
+    flush()
     press(input, "Escape")
     await tick()
     expect(input.value).toBe("New title")

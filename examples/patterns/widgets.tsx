@@ -12,7 +12,8 @@ import {
   WidgetProgress,
   WidgetSparkline,
 } from "@aiviarium/nocturne"
-import { createSignal, For, type JSX, Show } from "solid-js"
+import type { JSX } from "@solidjs/web"
+import { createSignal, For, Show } from "solid-js"
 import { JOBS, OPEN_ISSUES, REQUESTS } from "../_kit/data"
 import type { ExampleMeta } from "../_kit/types"
 

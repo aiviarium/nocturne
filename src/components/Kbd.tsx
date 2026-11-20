@@ -1,4 +1,5 @@
-import { For, type JSX, splitProps } from "solid-js"
+import type { JSX } from "@solidjs/web"
+import { For, omit } from "solid-js"
 import { cx } from "../lib/cx"
 
 export interface KbdProps extends JSX.HTMLAttributes<HTMLElement> {
@@ -8,10 +9,10 @@ export interface KbdProps extends JSX.HTMLAttributes<HTMLElement> {
 
 /** A keyboard shortcut hint. Always mono and never wraps. */
 export function Kbd(props: KbdProps): JSX.Element {
-  const [local, rest] = splitProps(props, ["keys", "class", "children"])
+  const rest = omit(props, "keys", "class", "children")
   return (
-    <kbd data-part="kbd" class={cx("nc-kbd", local.class)} {...rest}>
-      {local.children ?? local.keys}
+    <kbd data-part="kbd" class={cx("nc-kbd", props.class)} {...rest}>
+      {props.children ?? props.keys}
     </kbd>
   )
 }

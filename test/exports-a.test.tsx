@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, test } from "bun:test"
-import { createSignal } from "solid-js"
+import { createSignal, flush } from "solid-js"
 import {
   ActionSheet,
   ApprovalCard,
@@ -51,7 +51,7 @@ describe("ActionSheet", () => {
     const chosen: string[] = []
     track(
       mount(() => (
-        <PhoneOverride.Provider value={true}>
+        <PhoneOverride value={true}>
           <ActionSheet
             open={open()}
             onClose={() => setOpen(false)}
@@ -60,7 +60,7 @@ describe("ActionSheet", () => {
             actions={actions}
             onSelect={(id) => chosen.push(id)}
           />
-        </PhoneOverride.Provider>
+        </PhoneOverride>
       )),
     )
     await tick()
@@ -79,7 +79,7 @@ describe("ActionSheet", () => {
     const chosen: string[] = []
     track(
       mount(() => (
-        <PhoneOverride.Provider value={true}>
+        <PhoneOverride value={true}>
           <ActionSheet
             open
             onClose={() => closed++}
@@ -87,7 +87,7 @@ describe("ActionSheet", () => {
             onSelect={(id) => chosen.push(id)}
             cancelLabel="Never mind"
           />
-        </PhoneOverride.Provider>
+        </PhoneOverride>
       )),
     )
     await tick()
@@ -102,7 +102,7 @@ describe("ActionSheet", () => {
     const chosen: string[] = []
     track(
       mount(() => (
-        <PhoneOverride.Provider value={false}>
+        <PhoneOverride value={false}>
           <ActionSheet
             open
             onClose={() => {}}
@@ -110,7 +110,7 @@ describe("ActionSheet", () => {
             actions={actions}
             onSelect={(id) => chosen.push(id)}
           />
-        </PhoneOverride.Provider>
+        </PhoneOverride>
       )),
     )
     await tick()
@@ -124,9 +124,9 @@ describe("ActionSheet", () => {
   test("renders nothing while closed", async () => {
     track(
       mount(() => (
-        <PhoneOverride.Provider value={false}>
+        <PhoneOverride value={false}>
           <ActionSheet open={false} onClose={() => {}} actions={actions} onSelect={() => {}} />
-        </PhoneOverride.Provider>
+        </PhoneOverride>
       )),
     )
     await tick()
@@ -171,6 +171,7 @@ describe("ApprovalCard", () => {
     expect(card.textContent).toContain("Allowed")
     expect(card.querySelector("button")).toBeNull()
     setDecision("denied")
+    flush()
     expect(card.getAttribute("data-decision")).toBe("denied")
     expect(card.textContent).toContain("Denied")
   })
@@ -220,6 +221,7 @@ describe("AvatarStack", () => {
     expect(stack.querySelectorAll("[data-part=avatar]").length).toBe(2)
     expect(one(".nc-avatar--more", stack).textContent).toBe("+1")
     setPeople([{ name: "Ada" }])
+    flush()
     expect(stack.querySelectorAll("[data-part=avatar]").length).toBe(1)
     expect(stack.querySelector(".nc-avatar--more")).toBeNull()
   })
@@ -233,6 +235,7 @@ describe("Badge", () => {
     expect(badge.getAttribute("data-tone")).toBe("neutral")
     expect(badge.textContent).toBe("Live")
     setTone("success")
+    flush()
     expect(badge.getAttribute("data-tone")).toBe("success")
     expect(badge.classList.contains("nc-badge--success")).toBe(true)
   })
@@ -316,6 +319,7 @@ describe("BoardLane", () => {
     expect(one(".nc-board-lane__foot", lane).textContent).toBe("Show 12 more")
     expect(lane.hasAttribute("data-drop")).toBe(false)
     setDrop(true)
+    flush()
     expect(lane.hasAttribute("data-drop")).toBe(true)
   })
 
@@ -383,6 +387,7 @@ describe("BoardCard", () => {
     expect(card.hasAttribute("data-active")).toBe(true)
     expect(card.hasAttribute("data-selected")).toBe(false)
     setSelected(true)
+    flush()
     expect(card.hasAttribute("data-selected")).toBe(true)
     click(card)
     expect(clicks).toBe(1)
@@ -453,6 +458,7 @@ describe("BottomArea", () => {
     expect(area.hasAttribute("data-keyboard")).toBe(false)
     expect(area.hasAttribute("data-above-tabs")).toBe(false)
     setAbove(true)
+    flush()
     expect(area.hasAttribute("data-above-tabs")).toBe(true)
   })
 })
@@ -465,6 +471,7 @@ describe("Callout", () => {
     expect(callout.getAttribute("data-tone")).toBe("info")
     expect(callout.getAttribute("role")).toBe("status")
     setTone("danger")
+    flush()
     expect(callout.getAttribute("data-tone")).toBe("danger")
     expect(callout.getAttribute("role")).toBe("alert")
     expect(callout.classList.contains("nc-callout--danger")).toBe(true)
@@ -636,6 +643,7 @@ describe("ContextMenu", () => {
     expect(document.querySelector("[data-part=menu]")).toBeNull()
     const event = new MouseEvent("contextmenu", { bubbles: true, cancelable: true, clientX: 5, clientY: 5 })
     one(".target", area).dispatchEvent(event)
+    flush()
     expect(event.defaultPrevented).toBe(true)
     await tick()
     const menu = one("[data-part=menu]")
@@ -676,6 +684,7 @@ describe("Count", () => {
     expect(count.textContent).toBe("7")
     expect(count.getAttribute("aria-label")).toBe("7")
     setValue(12)
+    flush()
     expect(count.textContent).toBe("9+")
     expect(count.getAttribute("aria-label")).toBe("12")
   })
@@ -717,9 +726,11 @@ describe("DictationBar", () => {
     expect(bar.querySelectorAll(".nc-wave__bar").length).toBe(240)
     expect(one("[data-part=dictation-live]", root).textContent).toBe("hello there")
     setState("transcribing")
+    flush()
     expect(one("[data-part=dictation]", root).textContent).toContain("Transcribing")
     expect(root.querySelector("[data-part=dictation-live]")).toBeNull()
     setState("idle")
+    flush()
     expect(root.querySelector("[data-part=dictation]")).toBeNull()
   })
 
@@ -769,6 +780,7 @@ describe("DiffView", () => {
     const view = one("[data-part=diff-view]", root)
     expect(one(".nc-diff", view).classList.contains("nc-diff--unified")).toBe(true)
     setMode("split")
+    flush()
     expect(view.getAttribute("data-mode")).toBe("split")
     expect(one(".nc-diff", view).classList.contains("nc-diff--unified")).toBe(false)
   })

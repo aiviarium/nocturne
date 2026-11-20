@@ -1,5 +1,6 @@
 import { ListRow, RowList, ViewHeader, ViewLayout } from "@aiviarium/nocturne"
-import { createSignal, For, type JSX } from "solid-js"
+import type { JSX } from "@solidjs/web"
+import { createSignal, For } from "solid-js"
 import { DOC_TREE, type DocPage, pathTo } from "../_kit/projects"
 import type { ExampleMeta } from "../_kit/types"
 

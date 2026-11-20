@@ -1,5 +1,7 @@
 // Text, paths and the `url` and `email` formats: a line of words.
-import { type JSX, Match, Switch } from "solid-js"
+
+import type { JSX } from "@solidjs/web"
+import { Match, Switch } from "solid-js"
 import { InlineField } from "../../components/InlineField"
 import { TextField } from "../../components/TextField"
 import { Empty } from "../Empty"
@@ -60,7 +62,7 @@ function Editor(props: EditorProps): JSX.Element {
           value={text()}
           readOnly={props.disabled}
           variant={props.title ? "title" : props.spec.mono ? "mono" : "text"}
-          aria-invalid={props.error ? true : undefined}
+          aria-invalid={props.error ? "true" : undefined}
           onInput={() => props.onTouch?.()}
           onCommit={commit}
         />

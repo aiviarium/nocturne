@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test"
-import { createSignal, Show } from "solid-js"
+import { createSignal, flush, Show } from "solid-js"
 import {
   AppShell,
   ContextWidget,
@@ -60,6 +60,7 @@ const touch = (el: Element, type: string, y?: number) => {
   const event = new Event(type, { bubbles: true, cancelable: true })
   Object.defineProperty(event, "touches", { value: y === undefined ? [] : [{ clientX: 0, clientY: y }] })
   el.dispatchEvent(event)
+  flush()
 }
 
 describe("ScreenSearch", () => {
@@ -72,6 +73,7 @@ describe("ScreenSearch", () => {
     expect(input.getAttribute("aria-label")).toBe("Find")
     input.value = "abc"
     input.dispatchEvent(new Event("input", { bubbles: true }))
+    flush()
     expect(typed).toEqual(["abc"])
   })
 
@@ -90,6 +92,7 @@ describe("ScreenSearch", () => {
     expect(input.getAttribute("aria-label")).toBe("Search inbox")
     input.value = "x"
     input.dispatchEvent(new Event("input", { bubbles: true }))
+    flush()
     expect(typed).toEqual(["x"])
   })
 })
@@ -156,6 +159,7 @@ describe("Sheet", () => {
           onClose={() => {
             closed++
             setOpen(false)
+            flush()
           }}
         >
           <button type="button">Apply</button>
@@ -173,6 +177,7 @@ describe("Sheet", () => {
     expect(all("[data-part=sheet]")).toHaveLength(0)
 
     setOpen(true)
+    flush()
     await tick()
     press(document.body, "Escape")
     await wait(300)
@@ -215,6 +220,7 @@ describe("StatusDot and State", () => {
     expect(dot.getAttribute("data-status")).toBe("live")
     expect(dot.classList.contains("nc-dot--live")).toBe(true)
     setStatus("error")
+    flush()
     expect(dot.getAttribute("data-status")).toBe("error")
     expect(dot.classList.contains("nc-dot--error")).toBe(true)
   })
@@ -260,12 +266,16 @@ describe("StreamState", () => {
     expect(el.textContent).toBe("Live")
     expect(meta()).toBeNull()
     setState("resuming")
+    flush()
     expect(meta()).toBe("since 120")
     setState("paused")
+    flush()
     expect(meta()).toBe("4 buffered")
     setState("ended")
+    flush()
     expect(meta()).toBe("exit 0")
     setState("error")
+    flush()
     expect(el.getAttribute("data-state")).toBe("error")
     expect(el.classList.contains("nc-stream--error")).toBe(true)
     expect(meta()).toBe("504 timeout")
@@ -346,6 +356,7 @@ describe("TabDropFrame", () => {
       Object.defineProperty(event, "clientX", { value: x })
       Object.defineProperty(event, "clientY", { value: y })
       el.dispatchEvent(event)
+      flush()
       return event
     }
     fire(one("[data-part=tab-strip-tab]", root), "dragstart")
@@ -384,9 +395,11 @@ describe("TabDropFrame", () => {
       value: { types: [], setData() {}, getData: () => "", effectAllowed: "" },
     })
     one("[data-part=tab-strip-tab]", root).dispatchEvent(event)
+    flush()
     const frame = one("[data-part=drop-frame]", root)
     expect(frame.querySelector("[data-part=drop-zones]")).not.toBeNull()
     setShown(false)
+    flush()
     await tick()
     expect(frame.querySelector("[data-part=drop-zones]")).toBeNull()
   })
@@ -414,8 +427,10 @@ describe("TabDropFrame", () => {
     })
     const tab = one("[data-part=tab-strip-tab]", root)
     tab.dispatchEvent(event)
+    flush()
     expect(root.querySelector("[data-part=drop-zones]")).toBeNull()
     tab.dispatchEvent(new Event("dragend", { bubbles: true }))
+    flush()
   })
 })
 
@@ -482,8 +497,10 @@ describe("TextField", () => {
     expect(input.hasAttribute("aria-invalid")).toBe(false)
     input.value = "Ada"
     input.dispatchEvent(new Event("input", { bubbles: true }))
+    flush()
     expect(typed).toEqual(["Ada"])
     setError("Enter a name")
+    flush()
     expect(input.getAttribute("aria-invalid")).toBe("true")
     expect(input.classList.contains("nc-input--error")).toBe(true)
     expect(one(".nc-field__help--error", field).textContent).toBe("Enter a name")
@@ -583,6 +600,7 @@ describe("Tooltip", () => {
     const anchor = one("[data-part=tooltip-anchor]", root)
     expect(all("[data-part=tooltip]")).toHaveLength(0)
     anchor.dispatchEvent(new PointerEvent("pointerenter", { bubbles: false }))
+    flush()
     await tick()
     const tip = one("[data-part=tooltip]")
     expect(tip.getAttribute("role")).toBe("tooltip")
@@ -590,6 +608,7 @@ describe("Tooltip", () => {
     expect(anchor.getAttribute("aria-describedby")).toBe(tip.id)
     expect(root.contains(tip)).toBe(true)
     anchor.dispatchEvent(new PointerEvent("pointerleave", { bubbles: false }))
+    flush()
     await tick()
     expect(all("[data-part=tooltip]")).toHaveLength(0)
     expect(anchor.hasAttribute("aria-describedby")).toBe(false)
@@ -605,6 +624,7 @@ describe("Tooltip", () => {
     )
     const anchor = one("[data-part=tooltip-anchor]", root)
     anchor.dispatchEvent(new PointerEvent("pointerenter", { bubbles: false }))
+    flush()
     await tick()
     expect(all("[data-part=tooltip]")).toHaveLength(1)
     press(one("button", anchor), "Escape")
@@ -740,6 +760,7 @@ describe("ViewHeader", () => {
     expect(header.getAttribute("data-variant")).toBe("shell")
     expect(one("[data-part=shell-content]", root).querySelector("[data-part=view-header]")).toBeNull()
     setDeep(false)
+    flush()
     expect(bar.hidden).toBe(true)
     expect(bar.querySelector("[data-part=view-header]")).toBeNull()
   })
@@ -801,7 +822,9 @@ describe("ViewLayout", () => {
     const edge = one("[data-part=view-sidebar-edge]", layout)
     edge.setPointerCapture = () => {}
     edge.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true, clientX: 240, pointerId: 1 }))
+    flush()
     layout.dispatchEvent(new PointerEvent("pointerup", { bubbles: true, clientX: 240, pointerId: 1 }))
+    flush()
     expect(layout.getAttribute("data-sidebar")).toBe("collapsed")
     expect(JSON.parse(localStorage.getItem("nc.viewLayout.v1") as string)["test.basic"]).toEqual({
       collapsed: true,
@@ -867,6 +890,7 @@ describe("WidgetGauge", () => {
     expect(gauge.getAttribute("aria-label")).toBe("CPU 42%")
     expect(one(".nc-wgauge__value", gauge).textContent).toBe("42%")
     setValue(140)
+    flush()
     expect(gauge.getAttribute("aria-label")).toBe("CPU 100%")
     const custom = track(mount(() => <WidgetGauge value={50} label="Disk" display="512 GB" />))
     expect(one("[data-part=widget-gauge] .nc-wgauge__value", custom.root).textContent).toBe("512 GB")
@@ -883,8 +907,10 @@ describe("WidgetProgress", () => {
     expect(bar.getAttribute("aria-valuenow")).toBe("30")
     expect(one<HTMLElement>(".nc-wprogress__bar", bar).style.width).toBe("30%")
     setValue(-5)
+    flush()
     expect(bar.getAttribute("aria-valuenow")).toBe("0")
     setValue(250)
+    flush()
     expect(bar.getAttribute("aria-valuenow")).toBe("100")
   })
 })
@@ -989,6 +1015,7 @@ describe("WidgetRing", () => {
     expect(ring.getAttribute("aria-valuenow")).toBe("62")
     expect(one(".nc-wring__value", ring).textContent).toBe("62")
     setValue(140)
+    flush()
     expect(ring.getAttribute("aria-valuenow")).toBe("100")
     const small = track(mount(() => <WidgetRing value={10} label="Quota" />))
     expect(small.root.querySelector(".nc-wring__value")).toBeNull()
@@ -1053,6 +1080,7 @@ describe("WidgetSteps", () => {
     expect(one("[aria-current=step]", steps).textContent).toBe("Edit")
     expect(steps.style.getPropertyValue("--nc-steps-fill")).toBe("0.5")
     setCurrent(9)
+    flush()
     expect(states()).toEqual(["done", "done", "done"])
     expect(steps.querySelector("[aria-current]")).toBeNull()
   })
@@ -1195,9 +1223,11 @@ describe("ContextWidget", () => {
     expect(one("[data-part=widget-ring]", root).getAttribute("aria-valuenow")).toBe("62")
     expect(one(".nc-widget__value", root).textContent).toBe("62%")
     setSize("sm")
+    flush()
     expect(widget().getAttribute("data-size")).toBe("sm")
     expect(one("[data-part=widget-segments]", root).getAttribute("data-labels")).toBe("none")
     setSize("md")
+    flush()
     expect(widget().getAttribute("data-size")).toBe("md")
     expect(one(".nc-widget__value", root).textContent).toBe("124k / 200k")
     expect(one("[data-part=widget-segments]", root).getAttribute("data-labels")).toBe("legend")
@@ -1207,6 +1237,7 @@ describe("ContextWidget", () => {
       "Free 76k",
     ])
     setSize("lg")
+    flush()
     expect(widget().getAttribute("data-size")).toBe("lg")
     expect(one(".nc-widget__figure", root).textContent).toBe("62%")
     expect(one(".nc-widget__value", root).textContent).toBe("124k / 200k")
@@ -1241,11 +1272,13 @@ describe("RateWidget", () => {
     expect(root.querySelectorAll(".nc-wspark__bar")).toHaveLength(12)
     expect(one(".nc-widget__value", root).textContent).toBe("48tok/s")
     setSize(undefined)
+    flush()
     expect(one("[data-part=widget]", root).getAttribute("data-size")).toBe("md")
     expect(root.querySelectorAll(".nc-wspark__bar")).toHaveLength(30)
     expect(one(".nc-widget__value", root).textContent).toBe("p50 41")
     expect(root.querySelector("[data-part=widget-stats]")).toBeNull()
     setSize("lg")
+    flush()
     expect(one(".nc-widget__eyebrow", root).textContent).toBe("Output")
     expect(root.querySelectorAll("[data-part=widget-stats] dt")).toHaveLength(2)
   })
@@ -1299,6 +1332,7 @@ describe("SidebarHeader", () => {
     expect(shell.getAttribute("data-header")).toBe("across")
     expect(shell.hasAttribute("data-sidebar")).toBe(false)
     setHidden(true)
+    flush()
     expect(shell.getAttribute("data-sidebar")).toBe("hidden")
   })
 })

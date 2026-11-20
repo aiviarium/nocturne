@@ -159,7 +159,8 @@ export function createRowSwipe(o: RowSwipeOptions): RowSwipeControl {
 }
 
 const TOUCH_QUERY = "(hover: none) and (pointer: coarse)"
-const [touchNow, setTouchNow] = createSignal(false)
+// Read from a component body, which is an owned scope: the first read sets this state.
+const [touchNow, setTouchNow] = createSignal(false, { ownedWrite: true })
 let watchingTouch = false
 
 /** Whether the primary pointer is a finger (a phone or tablet), so nothing is revealed by hover. Reactive. */

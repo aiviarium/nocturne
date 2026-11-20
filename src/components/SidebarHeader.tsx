@@ -1,4 +1,5 @@
-import { type JSX, Show } from "solid-js"
+import type { JSX } from "@solidjs/web"
+import { Show } from "solid-js"
 import { cx } from "../lib/cx"
 import { Icon } from "./Icon"
 import { IconButton } from "./IconButton"

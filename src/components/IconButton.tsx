@@ -1,4 +1,6 @@
-import { type JSX, Show, splitProps } from "solid-js"
+import type { JSX } from "@solidjs/web"
+import { omit, Show } from "solid-js"
+import { aria } from "../lib/aria"
 import { cx } from "../lib/cx"
 import { callClick, useLinkClick } from "../lib/link"
 import { Icon, type IconName, type LucideNode } from "./Icon"
@@ -31,7 +33,8 @@ export interface IconButtonProps
  * label is required and is both its accessible name and its tooltip, so no icon-only control goes unexplained.
  */
 export function IconButton(props: IconButtonProps): JSX.Element {
-  const [local, rest] = splitProps(props, [
+  const rest = omit(
+    props,
     "label",
     "icon",
     "iconNode",
@@ -43,28 +46,28 @@ export function IconButton(props: IconButtonProps): JSX.Element {
     "class",
     "type",
     "href",
-  ])
+  )
   const linkClick = useLinkClick()
   const className = () =>
     cx(
       "nc-icon-btn",
-      local.round && "nc-icon-btn--round",
-      local.size === "sm" && "nc-icon-btn--sm",
-      local.class,
+      props.round && "nc-icon-btn--round",
+      props.size === "sm" && "nc-icon-btn--sm",
+      props.class,
     )
   const icon = () => (
-    <Icon name={local.icon} node={local.iconNode} size={local.size === "sm" ? "sm" : undefined} />
+    <Icon name={props.icon} node={props.iconNode} size={props.size === "sm" ? "sm" : undefined} />
   )
-  const button = local.href ? (
+  const button = props.href ? (
     <a
       data-part="icon-button"
       class={className()}
-      href={local.href}
-      aria-label={local.label}
+      href={props.href}
+      aria-label={props.label}
       {...(rest as JSX.AnchorHTMLAttributes<HTMLAnchorElement>)}
       onClick={(e) => {
         callClick((rest as { onClick?: unknown }).onClick, e)
-        linkClick(e, local.href)
+        linkClick(e, props.href)
       }}
     >
       {icon()}
@@ -72,18 +75,18 @@ export function IconButton(props: IconButtonProps): JSX.Element {
   ) : (
     <button
       data-part="icon-button"
-      type={local.type ?? "button"}
+      type={props.type ?? "button"}
       class={className()}
-      aria-label={local.label}
-      aria-pressed={local.pressed === undefined ? undefined : local.pressed}
+      aria-label={props.label}
+      aria-pressed={props.pressed === undefined ? undefined : aria(props.pressed)}
       {...rest}
     >
       {icon()}
     </button>
   )
   return (
-    <Show when={local.tooltip !== false} fallback={button}>
-      <Tooltip content={local.label} shortcut={local.shortcut}>
+    <Show when={props.tooltip !== false} fallback={button}>
+      <Tooltip content={props.label} shortcut={props.shortcut}>
         {button}
       </Tooltip>
     </Show>

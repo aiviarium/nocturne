@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, test } from "bun:test"
+import { flush } from "solid-js"
 import { SchemaForm } from "../src"
 import { blankDraft, fieldNode, type JsonSchema, readForm, schemaHasFields } from "../src/lib/schema"
 import { all, click, mount, one, press, tick } from "./dom"
@@ -221,6 +222,7 @@ describe("SchemaForm", () => {
   const type = (el: HTMLInputElement, value: string) => {
     el.value = value
     el.dispatchEvent(new Event("input", { bubbles: true }))
+    flush()
   }
   const submit = async () => {
     click(one("button[type=submit]"))

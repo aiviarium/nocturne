@@ -1,5 +1,7 @@
 // A day (`YYYY-MM-DD`): read as the person's locale writes it, picked from a calendar.
-import { type JSX, Show } from "solid-js"
+
+import type { JSX } from "@solidjs/web"
+import { Show } from "solid-js"
 import { Empty } from "../Empty"
 import { formatDate } from "../format"
 import type { EditorProps, FieldKind, FilterProps, ValueProps } from "../kind"

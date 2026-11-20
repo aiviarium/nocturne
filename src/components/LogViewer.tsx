@@ -1,4 +1,6 @@
-import { createEffect, createSignal, For, type JSX, onCleanup, Show, splitProps } from "solid-js"
+import type { JSX } from "@solidjs/web"
+import { createEffect, createSignal, For, omit, onCleanup, Show } from "solid-js"
+import { aria } from "../lib/aria"
 import { createControllable } from "../lib/controllable"
 import { cx } from "../lib/cx"
 import { Button } from "./Button"
@@ -73,7 +75,8 @@ function formatLogTime(at: string): string {
  * scrolls up, and offers a one-click jump back to the latest line.
  */
 export function LogViewer(props: LogViewerProps): JSX.Element {
-  const [local, rest] = splitProps(props, [
+  const rest = omit(
+    props,
     "entries",
     "title",
     "streamState",
@@ -94,33 +97,37 @@ export function LogViewer(props: LogViewerProps): JSX.Element {
     "bare",
     "label",
     "class",
-  ])
+  )
 
   const [wrap, setWrap] = createControllable<boolean>({
-    value: () => local.wrap,
-    defaultValue: local.defaultWrap ?? false,
-    onChange: (next) => local.onWrapChange?.(next),
+    value: () => props.wrap,
+    defaultValue: props.defaultWrap ?? false,
+    onChange: (next) => props.onWrapChange?.(next),
   })
 
-  const [following, setFollowing] = createSignal(local.follow !== false)
+  const [following, setFollowing] = createSignal(props.follow !== false)
   const [copied, setCopied] = createSignal(false)
   let bodyEl: HTMLDivElement | undefined
   let copyTimer: ReturnType<typeof setTimeout> | undefined
   onCleanup(() => clearTimeout(copyTimer))
 
-  createEffect(() => {
-    if (local.follow === false) setFollowing(false)
-    else setFollowing(true)
-  })
+  createEffect(
+    () => props.follow !== false,
+    (follow) => {
+      setFollowing(follow)
+    },
+  )
 
-  createEffect(() => {
-    const count = local.entries.length
-    if (count === 0 || !following() || !bodyEl) return
-    bodyEl.scrollTop = bodyEl.scrollHeight
-  })
+  createEffect(
+    () => [props.entries.length, following()] as const,
+    ([count, follow]) => {
+      if (count === 0 || !follow || !bodyEl) return
+      bodyEl.scrollTop = bodyEl.scrollHeight
+    },
+  )
 
   const onScroll = () => {
-    if (!bodyEl || local.follow === false) return
+    if (!bodyEl || props.follow === false) return
     const distance = bodyEl.scrollHeight - bodyEl.scrollTop - bodyEl.clientHeight
     const nearBottom = distance <= 24
     if (nearBottom !== following()) setFollowing(nearBottom)
@@ -132,39 +139,39 @@ export function LogViewer(props: LogViewerProps): JSX.Element {
   }
 
   const copy = async () => {
-    const text = local.entries.map((entry) => entry.text).join("\n")
+    const text = props.entries.map((entry) => entry.text).join("\n")
     try {
       await navigator.clipboard?.writeText(text)
     } catch {
       /* clipboard may be unavailable; the callback still fires */
     }
-    local.onCopy?.(text)
+    props.onCopy?.(text)
     setCopied(true)
     clearTimeout(copyTimer)
     copyTimer = setTimeout(() => setCopied(false), 1500)
   }
 
-  const showJump = () => local.follow !== false && !following() && local.entries.length > 0
+  const showJump = () => props.follow !== false && !following() && props.entries.length > 0
 
   return (
     <section
       data-part="log-viewer"
       data-following={following() ? "" : undefined}
       data-wrap={wrap() ? "" : undefined}
-      data-fill={local.fill ? "" : undefined}
-      class={cx("nc-log", !local.bare && "nc-card", local.fill && "nc-log--fill", local.class)}
+      data-fill={props.fill ? "" : undefined}
+      class={cx("nc-log", !props.bare && "nc-card", props.fill && "nc-log--fill", props.class)}
       {...rest}
     >
-      <Show when={!local.bare}>
+      <Show when={!props.bare}>
         <header class="nc-panel-header nc-log__header" data-part="log-header">
-          <h2 class="nc-panel-title">{local.title ?? "Output"}</h2>
-          <Show when={local.streamState}>
+          <h2 class="nc-panel-title">{props.title ?? "Output"}</h2>
+          <Show when={props.streamState}>
             {(state) => (
               <StreamState
                 state={state()}
-                offset={local.streamOffset}
-                code={local.streamCode}
-                meta={local.streamMeta}
+                offset={props.streamOffset}
+                code={props.streamCode}
+                meta={props.streamMeta}
               />
             )}
           </Show>
@@ -172,17 +179,17 @@ export function LogViewer(props: LogViewerProps): JSX.Element {
             <Button
               size="sm"
               variant="ghost"
-              aria-pressed={wrap()}
+              aria-pressed={aria(wrap())}
               data-part="log-wrap"
               onClick={() => setWrap(!wrap())}
             >
               {wrap() ? "No wrap" : "Wrap"}
             </Button>
-            <Show when={local.copyable !== false}>
+            <Show when={props.copyable !== false}>
               <Button
                 size="sm"
                 variant="ghost"
-                disabled={local.entries.length === 0}
+                disabled={props.entries.length === 0}
                 aria-live="polite"
                 data-part="log-copy"
                 onClick={copy}
@@ -190,7 +197,7 @@ export function LogViewer(props: LogViewerProps): JSX.Element {
                 {copied() ? "Copied" : "Copy"}
               </Button>
             </Show>
-            {local.actions}
+            {props.actions}
           </span>
         </header>
       </Show>
@@ -200,29 +207,29 @@ export function LogViewer(props: LogViewerProps): JSX.Element {
           ref={bodyEl}
           role="log"
           aria-live="off"
-          aria-label={local.label ?? "Log output"}
+          aria-label={props.label ?? "Log output"}
           tabindex="0"
           data-part="log-body"
           class={cx("nc-terminal nc-log__body", wrap() && "nc-log__body--wrap")}
-          style={!local.fill && local.maxHeight ? { "max-height": local.maxHeight } : undefined}
+          style={!props.fill && props.maxHeight ? { "max-height": props.maxHeight } : undefined}
           onScroll={onScroll}
         >
           <Show
-            when={local.entries.length > 0}
+            when={props.entries.length > 0}
             fallback={
               <div class="nc-log__empty" data-part="log-empty">
-                {local.empty ?? "No output yet."}
+                {props.empty ?? "No output yet."}
               </div>
             }
           >
-            <For each={local.entries}>
+            <For each={props.entries}>
               {(entry) => (
                 <div
                   class={cx("nc-log__line", entry.level && `nc-log__line--${entry.level}`)}
                   data-part="log-line"
                   data-level={entry.level ?? "info"}
                 >
-                  <Show when={local.showTimestamps && entry.at}>
+                  <Show when={props.showTimestamps && entry.at}>
                     {(at) => <span class="nc-log__time">{formatLogTime(at())}</span>}
                   </Show>
                   <span class="nc-log__text">{entry.text}</span>

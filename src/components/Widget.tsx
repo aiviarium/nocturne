@@ -1,4 +1,5 @@
-import { For, type JSX, Show, splitProps } from "solid-js"
+import type { JSX } from "@solidjs/web"
+import { For, omit, Show } from "solid-js"
 import { cx } from "../lib/cx"
 import type { LabelHue } from "./Badge"
 
@@ -53,7 +54,8 @@ export interface WidgetProps extends Omit<JSX.HTMLAttributes<HTMLDivElement>, "t
  * The head is one row, the live part takes the rest, and words stay to a label, a value and a unit.
  */
 export function Widget(props: WidgetProps): JSX.Element {
-  const [local, rest] = splitProps(props, [
+  const rest = omit(
+    props,
     "hue",
     "title",
     "figure",
@@ -68,35 +70,35 @@ export function Widget(props: WidgetProps): JSX.Element {
     "fill",
     "class",
     "children",
-  ])
-  const size = () => local.size ?? "md"
+  )
+  const size = () => props.size ?? "md"
   const row = () => size() === "row"
   // The unit goes with the large number: the figure, else a large value, else the value.
-  const unitOnFigure = () => local.figure !== undefined
+  const unitOnFigure = () => props.figure !== undefined
   const unit = () => (
-    <Show when={local.unit}>
-      <span class="nc-widget__unit">{local.unit}</span>
+    <Show when={props.unit}>
+      <span class="nc-widget__unit">{props.unit}</span>
     </Show>
   )
   const lead = () => (
     <Show
-      when={local.figure !== undefined}
+      when={props.figure !== undefined}
       fallback={
-        <Show when={local.title}>
-          <span class="nc-widget__title">{local.title}</span>
+        <Show when={props.title}>
+          <span class="nc-widget__title">{props.title}</span>
         </Show>
       }
     >
       <span class="nc-widget__figure nc-num">
-        {local.figure}
+        {props.figure}
         {unit()}
       </span>
     </Show>
   )
   const value = () => (
-    <Show when={local.value !== undefined}>
-      <span class={cx("nc-widget__value nc-num", local.largeValue && "nc-widget__value--large")}>
-        {local.value}
+    <Show when={props.value !== undefined}>
+      <span class={cx("nc-widget__value nc-num", props.largeValue && "nc-widget__value--large")}>
+        {props.value}
         <Show when={!unitOnFigure()}>{unit()}</Show>
       </span>
     </Show>
@@ -104,43 +106,43 @@ export function Widget(props: WidgetProps): JSX.Element {
   return (
     <div
       data-part="widget"
-      data-hue={local.hue ?? "accent"}
-      data-fill={local.fill ? "" : undefined}
+      data-hue={props.hue ?? "accent"}
+      data-fill={props.fill ? "" : undefined}
       data-size={size()}
-      role={local.label ? "group" : undefined}
-      aria-label={local.label}
-      class={cx("nc-widget", local.class)}
+      role={props.label ? "group" : undefined}
+      aria-label={props.label}
+      class={cx("nc-widget", props.class)}
       {...rest}
     >
       <Show
         when={!row()}
         fallback={
           <>
-            {local.children}
+            {props.children}
             {lead()}
             {value()}
           </>
         }
       >
-        <Show when={local.title && local.figure !== undefined}>
-          <span class="nc-widget__eyebrow">{local.title}</span>
+        <Show when={props.title && props.figure !== undefined}>
+          <span class="nc-widget__eyebrow">{props.title}</span>
         </Show>
-        <Show when={local.title || local.figure !== undefined || local.value !== undefined}>
+        <Show when={props.title || props.figure !== undefined || props.value !== undefined}>
           <div class="nc-widget__head">
             {lead()}
             {value()}
           </div>
         </Show>
-        {local.children}
-        <Show when={local.axis?.length}>
+        {props.children}
+        <Show when={props.axis?.length}>
           <div class="nc-widget__axis nc-num" aria-hidden="true">
-            <For each={local.axis}>{(mark) => <span>{mark}</span>}</For>
+            <For each={props.axis}>{(mark) => <span>{mark}</span>}</For>
           </div>
         </Show>
-        <Show when={local.caption}>
-          <span class="nc-widget__caption nc-num">{local.caption}</span>
+        <Show when={props.caption}>
+          <span class="nc-widget__caption nc-num">{props.caption}</span>
         </Show>
-        {local.foot}
+        {props.foot}
       </Show>
     </div>
   )
@@ -569,7 +571,8 @@ export function tickHeight(i: number, elapsed: boolean): number {
  * one row. Elapsed ticks take the widget's hue and the newest one glows; the rest stay a tint.
  */
 export function WidgetTimer(props: WidgetTimerProps): JSX.Element {
-  const [local, rest] = splitProps(props, [
+  const rest = omit(
+    props,
     "hue",
     "title",
     "value",
@@ -579,24 +582,24 @@ export function WidgetTimer(props: WidgetTimerProps): JSX.Element {
     "label",
     "children",
     "class",
-  ])
-  const count = () => Math.max(1, Math.round(local.ticks ?? 28))
-  const done = () => Math.round((pct(local.progress * 100) / 100) * count())
+  )
+  const count = () => Math.max(1, Math.round(props.ticks ?? 28))
+  const done = () => Math.round((pct(props.progress * 100) / 100) * count())
   return (
-    <Widget hue={local.hue} class={cx("nc-widget--timer", local.class)} {...rest}>
-      <Show when={local.scale?.length}>
+    <Widget hue={props.hue} class={cx("nc-widget--timer", props.class)} {...rest}>
+      <Show when={props.scale?.length}>
         <div class="nc-wtimer__scale nc-num" aria-hidden="true">
-          <For each={local.scale}>{(mark) => <span>{mark}</span>}</For>
+          <For each={props.scale}>{(mark) => <span>{mark}</span>}</For>
         </div>
       </Show>
       <div
         data-part="widget-timer-ticks"
         class="nc-wtimer__ticks"
         role="progressbar"
-        aria-label={local.label ?? "Timer progress"}
+        aria-label={props.label ?? "Timer progress"}
         aria-valuemin={0}
         aria-valuemax={100}
-        aria-valuenow={Math.round(pct(local.progress * 100))}
+        aria-valuenow={Math.round(pct(props.progress * 100))}
       >
         <For each={Array.from({ length: count() }, (_, i) => i)}>
           {(i) => (
@@ -612,9 +615,9 @@ export function WidgetTimer(props: WidgetTimerProps): JSX.Element {
         </For>
       </div>
       <div class="nc-wtimer__row">
-        <span class="nc-wtimer__title">{local.title}</span>
-        {local.children}
-        <span class="nc-wtimer__value nc-num">{local.value}</span>
+        <span class="nc-wtimer__title">{props.title}</span>
+        {props.children}
+        <span class="nc-wtimer__value nc-num">{props.value}</span>
       </div>
     </Widget>
   )
