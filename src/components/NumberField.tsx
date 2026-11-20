@@ -80,7 +80,8 @@ const MAX_LOCKED_MOVE = 120
  * lists and table cells.
  */
 export function NumberField(props: NumberFieldProps): JSX.Element {
-  const id = props.id ?? createId("number")
+  // The id must not change while the field lives, so the prop is read once.
+  const id = untrack(() => props.id) ?? createId("number")
   const helpId = `${id}-help`
   const labelId = `${id}-label`
   const phone = usePhone()

@@ -47,7 +47,8 @@ export function InlineField(props: InlineFieldProps): JSX.Element {
     "selectOnFocus",
     "class",
   )
-  const [draft, setDraft] = createSignal(props.value)
+  // The saved value seeds the draft once; the effect below keeps it in step from then on.
+  const [draft, setDraft] = createSignal(untrack(() => props.value))
   let editing = false
   // A new saved value (from another device, or after a save) replaces the draft while it is not being edited.
   createEffect(

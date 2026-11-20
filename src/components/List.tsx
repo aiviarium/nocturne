@@ -1,5 +1,5 @@
 import type { JSX } from "@solidjs/web"
-import { createEffect, createMemo, createSignal, For, onCleanup, onSettled } from "solid-js"
+import { createEffect, createMemo, createSignal, For, onSettled } from "solid-js"
 import { aria } from "../lib/aria"
 import { cx } from "../lib/cx"
 import { createId } from "../lib/id"

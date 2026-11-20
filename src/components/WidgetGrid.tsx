@@ -1,15 +1,5 @@
 import type { JSX } from "@solidjs/web"
-import {
-  type Accessor,
-  createEffect,
-  createMemo,
-  createSignal,
-  For,
-  omit,
-  onCleanup,
-  onSettled,
-  Show,
-} from "solid-js"
+import { type Accessor, createEffect, createMemo, createSignal, For, omit, onSettled, Show } from "solid-js"
 import { cx } from "../lib/cx"
 import {
   cellDelta,

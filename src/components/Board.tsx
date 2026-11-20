@@ -8,7 +8,6 @@ import {
   createContext,
   createSignal,
   omit,
-  onCleanup,
   onSettled,
   children as resolveChildren,
   Show,

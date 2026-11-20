@@ -1,7 +1,7 @@
 // How tall the box an element was given is, for parts that lay themselves out by it (a stat's figure steps up
 // in a tall box). A ResizeObserver rather than a CSS size container: size containment would collapse the part
 // to nothing wherever its height comes from its content (a grid row of auto height, a phone's stacked grid).
-import { createSignal, onCleanup, onSettled } from "solid-js"
+import { createSignal, onSettled } from "solid-js"
 
 /** The content-box height at which a filled stat's figure takes the large size. */
 export const TALL_BOX = 112

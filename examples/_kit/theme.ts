@@ -1,4 +1,4 @@
-import { type Accessor, createSignal, onCleanup, onSettled } from "solid-js"
+import { type Accessor, createSignal, onSettled } from "solid-js"
 
 /**
  * The theme of the nearest `[data-theme]` around `el()`, kept in step. For examples that scope an accent: an

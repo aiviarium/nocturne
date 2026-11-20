@@ -40,7 +40,8 @@ export function NavigationStack<T>(props: NavigationStackProps<T>): JSX.Element 
       for (const x of items) latest.set(props.getKey(x), x)
     },
   )
-  const [rendered, setRendered] = createSignal<readonly string[]>(keys())
+  // The screens it starts with, read once: from then on the effect below moves `rendered`.
+  const [rendered, setRendered] = createSignal<readonly string[]>(untrack(() => keys()))
   const [leaving, setLeaving] = createSignal<readonly string[]>([])
   const [entering, setEntering] = createSignal<string | null>(null)
   let timer: ReturnType<typeof setTimeout> | undefined
