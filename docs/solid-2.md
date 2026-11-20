@@ -54,7 +54,7 @@ export default defineConfig({ plugins: [solid()] })
   helpers for the same reason its own parts use them:
   `aria(value)` returns `"true"` or `"false"`, and `ariaChecked(value)` also returns `"mixed"`.
 - `Portal` no longer takes a `ref`, so an overlay root is an element the library creates and mounts
-  the portal into. The DOM is the same: a `div.nc` outside the app root.
+  the portal into, which is still a `div.nc` outside the app root.
 - Contexts without a default read as `null` rather than `undefined`, because Solid 2 throws
   `ContextNotFoundError` instead of returning `undefined`. The public hooks still return
   `undefined` when there is no provider, except `PhoneOverride`, whose context value is
@@ -79,6 +79,5 @@ browser build of `solid-js` and `@solidjs/web` under Bun's `node` condition.
 
 ## Dev diagnostics
 
-In a dev build, Solid reports a few one-time reads in Nocturne's own parts as `STRICT_READ_UNTRACKED`.
-Each of them is wrapped in `untrack`, because the part needs that value once when it is first made and
-never again. Production builds do not run the diagnostics.
+In a dev build, Solid reports a few one-time reads in Nocturne's own parts as `STRICT_READ_UNTRACKED`, each wrapped in
+`untrack` because the part needs that value once when it is first made. The diagnostics only run in a dev build.
