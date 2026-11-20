@@ -75,7 +75,8 @@ describe("LogViewer", () => {
 
     const copyBtn = one<HTMLButtonElement>("[data-part=log-copy]", viewer)
     click(copyBtn)
-    await Promise.resolve()
+    // The copy is async: `writeText` settles in a microtask of its own, so wait a task.
+    await new Promise((resolve) => setTimeout(resolve, 0))
     expect(copied).toBe("first line\nsecond line")
   })
 
