@@ -1,14 +1,6 @@
-import {
-  createMemo,
-  createSignal,
-  For,
-  Index,
-  type JSX,
-  onCleanup,
-  Show,
-  splitProps,
-  untrack,
-} from "solid-js"
+import type { JSX } from "@solidjs/web"
+import { createMemo, createSignal, For, omit, onCleanup, Show, untrack } from "solid-js"
+import { aria } from "../lib/aria"
 import { caretAt } from "../lib/caret"
 import { cx } from "../lib/cx"
 import { cameFrom } from "../lib/events"
@@ -50,21 +42,21 @@ export interface DataListInputProps
  * `InlineField`. `fields` makes them; use it in a row of your own (`children`) for anything else.
  */
 export function DataListInput(props: DataListInputProps): JSX.Element {
-  const [local, rest] = splitProps(props, ["value", "onInput", "label", "mono", "invalid", "class"])
+  const rest = omit(props, "value", "onInput", "label", "mono", "invalid", "class")
   return (
     <input
       data-part="data-list-input"
       class={cx(
         "nc-inline-field",
-        local.mono ? "nc-inline-field--mono" : "nc-inline-field--text",
-        local.class,
+        props.mono ? "nc-inline-field--mono" : "nc-inline-field--text",
+        props.class,
       )}
-      aria-label={local.label}
-      aria-invalid={local.invalid ? "true" : undefined}
-      value={local.value}
-      spellcheck={!local.mono}
+      aria-label={props.label}
+      aria-invalid={props.invalid ? "true" : undefined}
+      value={props.value}
+      spellcheck={!props.mono}
       autocomplete="off"
-      onInput={(e) => local.onInput(e.currentTarget.value)}
+      onInput={(e) => props.onInput(e.currentTarget.value)}
       {...rest}
     />
   )
@@ -567,7 +559,7 @@ export function DataList<T = string>(props: DataListProps<T>): JSX.Element {
             </For>
           </div>
         </Show>
-        <Index each={props.value}>
+        <For keyed={false} each={props.value}>
           {(item, i) => {
             const error = () => props.invalid?.(item(), i)
             const key = () => keys()[i]
@@ -611,7 +603,7 @@ export function DataList<T = string>(props: DataListProps<T>): JSX.Element {
                 data-dragging={swipe.dragging() ? "" : undefined}
                 style={swipe.offset() !== 0 ? { "--nc-swipe": `${swipe.offset()}px` } : undefined}
                 aria-label={nameOf(i)}
-                aria-selected={selectable() ? selected() : undefined}
+                aria-selected={selectable() ? aria(selected()) : undefined}
                 tabindex={-1}
                 onClick={(e) => {
                   if ((e.target as HTMLElement).closest(".nc-datalist__tray")) return
@@ -735,7 +727,7 @@ export function DataList<T = string>(props: DataListProps<T>): JSX.Element {
               </div>
             )
           }}
-        </Index>
+        </For>
         <Show when={canAdd()}>
           <div role="listitem" class="nc-datalist__row nc-datalist__row--add">
             <button type="button" class="nc-datalist__add" onClick={add}>

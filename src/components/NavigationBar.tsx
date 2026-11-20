@@ -1,17 +1,17 @@
+import type { JSX } from "@solidjs/web"
 import {
   createContext,
   createEffect,
   createMemo,
   createSignal,
   For,
-  type JSX,
-  on,
   onCleanup,
-  onMount,
+  onSettled,
   Show,
   untrack,
   useContext,
 } from "solid-js"
+import { aria } from "../lib/aria"
 import { cx } from "../lib/cx"
 import { pullRefreshes, rubberBand } from "../lib/gestures"
 import { Icon, type IconName } from "./Icon"
@@ -87,11 +87,12 @@ export interface ScreenContextValue {
   provide: (part: () => ScreenPart) => () => void
 }
 
-export const ScreenContext = createContext<ScreenContextValue>()
+// `null` is "not in a screen": in Solid 2 a default-less context throws instead of reading as undefined.
+export const ScreenContext = createContext<ScreenContextValue | null>(null)
 
 /** The screen the component is in, on a phone; undefined elsewhere. */
 export function useScreen(): ScreenContextValue | undefined {
-  return useContext(ScreenContext)
+  return useContext(ScreenContext) ?? undefined
 }
 
 /** Gives the enclosing screen a part for as long as the caller lives. */
@@ -154,6 +155,14 @@ export interface NavigationBarProps {
 /** The bar at the top of a phone screen. */
 export function NavigationBar(props: NavigationBarProps): JSX.Element {
   const split = createMemo(() => splitBarActions(props.actions ?? []))
+  let subtitleEl: HTMLElement | undefined
+  createEffect(
+    () => props.subtitle,
+    () =>
+      queueMicrotask(() =>
+        subtitleEl?.setAttribute("title", subtitleEl.textContent?.replace(/\s+/g, " ").trim() ?? ""),
+      ),
+  )
   const menu = (): MenuEntry[] => {
     const out: MenuEntry[] = []
     let section: string | undefined
@@ -202,18 +211,7 @@ export function NavigationBar(props: NavigationBarProps): JSX.Element {
           {props.title}
         </span>
         <Show when={props.subtitle}>
-          <span
-            class="nc-navbar__subtitle"
-            data-part="nav-subtitle"
-            ref={(el) => {
-              createEffect(() => {
-                void props.subtitle
-                queueMicrotask(() =>
-                  el.setAttribute("title", el.textContent?.replace(/\s+/g, " ").trim() ?? ""),
-                )
-              })
-            }}
-          >
+          <span class="nc-navbar__subtitle" data-part="nav-subtitle" ref={subtitleEl}>
             {props.subtitle}
           </span>
         </Show>
@@ -259,7 +257,7 @@ function BarButton(props: { action: BarAction }): JSX.Element {
         a().primary && "nc-navbar__button--primary",
       )}
       aria-label={a().icon ? a().label : undefined}
-      aria-pressed={a().pressed === undefined ? undefined : a().pressed}
+      aria-pressed={a().pressed === undefined ? undefined : aria(a().pressed)}
       disabled={a().disabled}
       data-action={a().id}
       onClick={() => a().onClick()}
@@ -314,8 +312,12 @@ export function NavigationScreen(props: NavigationScreenProps): JSX.Element {
   const title = () => merged().title || props.title || merged().fallbackTitle || ""
   const large = () => merged().largeTitle ?? props.largeTitle ?? false
   const mode = () => merged().mode ?? "scroll"
-  createEffect(on(title, (t) => props.onTitle?.(t)))
-  createEffect(on(mode, (m) => props.onMode?.(m)))
+  createEffect(title, (t) => {
+    props.onTitle?.(t)
+  })
+  createEffect(mode, (m) => {
+    props.onMode?.(m)
+  })
 
   let scroller!: HTMLDivElement
   let largeEl: HTMLElement | undefined
@@ -340,12 +342,15 @@ export function NavigationScreen(props: NavigationScreenProps): JSX.Element {
     else if (delta < -4) setSearchHidden(false)
     lastTop = top
   }
-  createEffect(on([large, () => merged().titleAnchor], () => queueMicrotask(onScroll)))
+  createEffect(
+    () => [large(), merged().titleAnchor],
+    () => queueMicrotask(onScroll),
+  )
 
   // Pull to refresh, on the screen's own scroller.
   const [pull, setPull] = createSignal(0)
   const [refreshing, setRefreshing] = createSignal(false)
-  onMount(() => {
+  onSettled(() => {
     props.scrollRef?.(scroller)
     let startY: number | null = null
     let distance = 0
@@ -385,7 +390,7 @@ export function NavigationScreen(props: NavigationScreenProps): JSX.Element {
 
   const search = () => merged().search
   return (
-    <ScreenContext.Provider value={value}>
+    <ScreenContext value={value}>
       <section
         class={cx("nc-screen", props.class)}
         data-part="screen"
@@ -448,7 +453,7 @@ export function NavigationScreen(props: NavigationScreenProps): JSX.Element {
           </div>
         </div>
       </section>
-    </ScreenContext.Provider>
+    </ScreenContext>
   )
 }
 

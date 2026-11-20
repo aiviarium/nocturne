@@ -1,4 +1,5 @@
-import { type JSX, Show, splitProps } from "solid-js"
+import type { JSX } from "@solidjs/web"
+import { omit, Show } from "solid-js"
 import { cx } from "../lib/cx"
 import { callClick, useLinkClick } from "../lib/link"
 import { Icon, type IconName, type LucideNode } from "./Icon"
@@ -32,7 +33,8 @@ export interface ButtonProps extends Omit<JSX.ButtonHTMLAttributes<HTMLButtonEle
 
 /** A text button. Labels say exactly what happens: "Reboot now", not "OK". */
 export function Button(props: ButtonProps): JSX.Element {
-  const [local, rest] = splitProps(props, [
+  const rest = omit(
+    props,
     "variant",
     "size",
     "icon",
@@ -46,42 +48,42 @@ export function Button(props: ButtonProps): JSX.Element {
     "type",
     "disabled",
     "onClick",
-  ])
+  )
   const linkClick = useLinkClick()
   const className = () =>
     cx(
       "nc-btn",
-      `nc-btn--${local.variant ?? "secondary"}`,
-      local.size === "sm" && "nc-btn--sm",
-      local.size === "lg" && "nc-btn--lg",
-      local.class,
+      `nc-btn--${props.variant ?? "secondary"}`,
+      props.size === "sm" && "nc-btn--sm",
+      props.size === "lg" && "nc-btn--lg",
+      props.class,
     )
   const content = (
     <>
-      <Show when={local.icon || local.iconNode}>
-        <Icon name={local.icon} node={local.iconNode} size="sm" />
+      <Show when={props.icon || props.iconNode}>
+        <Icon name={props.icon} node={props.iconNode} size="sm" />
       </Show>
-      {local.children}
-      <Show when={local.iconEnd}>
-        <Icon name={local.iconEnd} size="sm" />
+      {props.children}
+      <Show when={props.iconEnd}>
+        <Icon name={props.iconEnd} size="sm" />
       </Show>
-      <Show when={local.kbd}>
-        <Kbd keys={local.kbd} />
+      <Show when={props.kbd}>
+        <Kbd keys={props.kbd} />
       </Show>
     </>
   )
   return (
     <Show
-      when={local.href}
+      when={props.href}
       fallback={
         <button
           data-part="button"
-          data-variant={local.variant ?? "secondary"}
+          data-variant={props.variant ?? "secondary"}
           class={className()}
-          type={local.type ?? "button"}
-          disabled={local.disabled || local.loading}
-          aria-busy={local.loading || undefined}
-          onClick={(e) => callClick(local.onClick, e)}
+          type={props.type ?? "button"}
+          disabled={props.disabled || props.loading}
+          aria-busy={props.loading ? "true" : undefined}
+          onClick={(e) => callClick(props.onClick, e)}
           {...rest}
         >
           {content}
@@ -90,12 +92,12 @@ export function Button(props: ButtonProps): JSX.Element {
     >
       <a
         data-part="button"
-        data-variant={local.variant ?? "secondary"}
+        data-variant={props.variant ?? "secondary"}
         class={className()}
-        href={local.href}
+        href={props.href}
         onClick={(e) => {
-          callClick(local.onClick, e)
-          linkClick(e, local.href)
+          callClick(props.onClick, e)
+          linkClick(e, props.href)
         }}
         {...(rest as JSX.AnchorHTMLAttributes<HTMLAnchorElement>)}
       >

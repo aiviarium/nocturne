@@ -1,4 +1,5 @@
-import { createEffect, createSignal, type JSX, on, onCleanup, Show } from "solid-js"
+import type { JSX } from "@solidjs/web"
+import { createEffect, createSignal, onCleanup, Show } from "solid-js"
 import { caretAt } from "../lib/caret"
 import { createControllable } from "../lib/controllable"
 import { cx } from "../lib/cx"
@@ -112,9 +113,10 @@ export function NumberField(props: NumberFieldProps): JSX.Element {
   }
   // The text follows the value while the person is not typing.
   createEffect(
-    on([value, editing], ([v, e]) => {
+    () => [value(), editing()] as const,
+    ([v, e]) => {
       if (!e) setText(shown(v))
-    }),
+    },
   )
 
   const fit = (v: number): number => {
@@ -323,7 +325,7 @@ export function NumberField(props: NumberFieldProps): JSX.Element {
       type="button"
       class="nc-number__step"
       data-dir={dir > 0 ? "up" : "down"}
-      tabIndex={-1}
+      tabindex={-1}
       aria-label={dir > 0 ? "Increase" : "Decrease"}
       disabled={props.disabled || (dir > 0 ? atMax() : atMin())}
       onPointerDown={(e) => e.preventDefault()}
@@ -379,13 +381,13 @@ export function NumberField(props: NumberFieldProps): JSX.Element {
         aria-valuetext={value() === null ? "Empty" : `${shown(value())}${props.unit ? ` ${props.unit}` : ""}`}
         aria-label={props.label ? undefined : props["aria-label"]}
         aria-labelledby={props.label ? labelId : undefined}
-        aria-invalid={invalid() || undefined}
+        aria-invalid={invalid() ? "true" : undefined}
         aria-describedby={message() ? helpId : undefined}
-        aria-required={props.required || undefined}
+        aria-required={props.required ? "true" : undefined}
         title={inline() && typeError() ? typeError()! : undefined}
         placeholder={props.placeholder ?? (inline() ? "—" : undefined)}
         disabled={props.disabled}
-        readOnly={props.readOnly}
+        readonly={props.readOnly}
         value={text()}
         onFocus={() => {
           const byPointer = pointerFocus
@@ -459,10 +461,12 @@ export function NumberField(props: NumberFieldProps): JSX.Element {
         <Show when={message()}>
           <span
             id={helpId}
-            class="nc-field__help"
-            classList={{
-              "nc-field__help--error": invalid() && Boolean(typeError() || typeof props.error === "string"),
-            }}
+            class={[
+              "nc-field__help",
+              {
+                "nc-field__help--error": invalid() && Boolean(typeError() || typeof props.error === "string"),
+              },
+            ]}
             role={typeError() ? "alert" : undefined}
           >
             {message()}

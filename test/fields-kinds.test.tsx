@@ -1,7 +1,8 @@
 // The field kinds' newer parts: an instant in a filter, the pickers as sheets on a phone, the explanation behind
 // an info button, a file's upload and the shared rich text editor in a field.
 import { afterEach, describe, expect, test } from "bun:test"
-import { createSignal } from "solid-js"
+import type { JSX } from "@solidjs/web"
+import { createSignal, flush } from "solid-js"
 import {
   configureFields,
   FieldEditor,
@@ -21,7 +22,7 @@ afterEach(() => {
   document.body.innerHTML = ""
   configureFields({})
 })
-const show = (view: () => import("solid-js").JSX.Element) => {
+const show = (view: () => JSX.Element) => {
   const m = mount(view)
   cleanup.push(m.dispose)
   return m
@@ -62,9 +63,9 @@ describe("pickers", () => {
     document.body.innerHTML = ""
 
     const phone = show(() => (
-      <PhoneOverride.Provider value={true}>
+      <PhoneOverride value={true}>
         <FieldEditor spec={date} value="2026-03-04" onCommit={() => {}} variant="boxed" />
-      </PhoneOverride.Provider>
+      </PhoneOverride>
     ))
     click(one("[data-part=date-picker]", phone.root))
     await tick(4)
@@ -77,9 +78,9 @@ describe("pickers", () => {
     configureFields({ searchRefs: async () => [{ uri: "customer://acme", title: "Acme" }] })
     const ref: FieldSpec = { name: "c", title: "Customer", kind: "ref", scheme: "customer" }
     const m = show(() => (
-      <PhoneOverride.Provider value={true}>
+      <PhoneOverride value={true}>
         <FieldEditor spec={ref} value={null} onCommit={() => {}} variant="boxed" />
-      </PhoneOverride.Provider>
+      </PhoneOverride>
     ))
     click(one("[aria-label=Customer]", m.root))
     await tick(4)
@@ -132,6 +133,7 @@ describe("a file", () => {
         onCommit={(v) => {
           stored.push(v)
           setValue(v)
+          flush()
         }}
       />
     ))
@@ -139,6 +141,7 @@ describe("a file", () => {
     const file = new File(["hello"], "notes.txt", { type: "text/plain" })
     Object.defineProperty(input, "files", { value: [file], configurable: true })
     input.dispatchEvent(new Event("change", { bubbles: true }))
+    flush()
     await tick(4)
     expect(stored).toEqual(["id-notes.txt"])
     expect(m.root.textContent).toContain("plan.pdf")
@@ -165,6 +168,7 @@ describe("bytes", () => {
     const input = one<HTMLInputElement>("input[type=file]", m.root)
     Object.defineProperty(input, "files", { value: [file], configurable: true })
     input.dispatchEvent(new Event("change", { bubbles: true }))
+    flush()
     await tick(4)
   }
   test("is uploaded as bytes, replaced and cleared, and shows its size", async () => {
@@ -178,6 +182,7 @@ describe("bytes", () => {
         onCommit={(v) => {
           stored.push(v)
           setValue(v)
+          flush()
         }}
       />
     ))

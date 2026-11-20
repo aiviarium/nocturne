@@ -1,4 +1,5 @@
-import { createMemo, For, type JSX, Match, Show, Switch, splitProps } from "solid-js"
+import type { JSX } from "@solidjs/web"
+import { createMemo, For, Match, omit, Show, Switch } from "solid-js"
 import { cx } from "../lib/cx"
 import {
   countChanges,
@@ -34,7 +35,8 @@ export interface DiffViewProps extends Omit<JSX.HTMLAttributes<HTMLDivElement>, 
 
 /** A unified or split diff with word-level changes and optional accept and reject controls. */
 export function DiffView(props: DiffViewProps): JSX.Element {
-  const [local, rest] = splitProps(props, [
+  const rest = omit(
+    props,
     "before",
     "after",
     "patch",
@@ -45,40 +47,40 @@ export function DiffView(props: DiffViewProps): JSX.Element {
     "onReject",
     "bare",
     "class",
-  ])
+  )
   const model = createMemo<{ path?: string; hunks: DiffHunk[] }>(() => {
-    if (local.patch !== undefined) {
-      const file = parsePatch(local.patch)[0]
+    if (props.patch !== undefined) {
+      const file = parsePatch(props.patch)[0]
       return {
         path: file ? (file.newPath && file.newPath !== "/dev/null" ? file.newPath : file.oldPath) : undefined,
         hunks: file?.hunks ?? [],
       }
     }
-    return { hunks: diffStrings(local.before ?? "", local.after ?? "", { context: local.context }) }
+    return { hunks: diffStrings(props.before ?? "", props.after ?? "", { context: props.context }) }
   })
   const totals = createMemo(() => countChanges(model().hunks))
-  const split = () => local.mode === "split"
+  const split = () => props.mode === "split"
   return (
     <div
       data-part="diff-view"
       data-mode={split() ? "split" : "unified"}
-      class={cx("nc-card nc-diffview", local.class)}
+      class={cx("nc-card nc-diffview", props.class)}
       {...rest}
     >
-      <Show when={!local.bare}>
+      <Show when={!props.bare}>
         <div class="nc-panel-header">
-          <span class="nc-mono nc-diffview__path">{local.path ?? model().path ?? "Changes"}</span>
+          <span class="nc-mono nc-diffview__path">{props.path ?? model().path ?? "Changes"}</span>
           <span class="nc-mono nc-diffview__count nc-diffview__count--add">+{totals().added}</span>
           <span class="nc-mono nc-diffview__count nc-diffview__count--del">−{totals().removed}</span>
-          <Show when={local.onAccept || local.onReject}>
+          <Show when={props.onAccept || props.onReject}>
             <span class="nc-row nc-panel-header__actions">
-              <Show when={local.onReject}>
-                <Button size="sm" onClick={() => local.onReject?.()}>
+              <Show when={props.onReject}>
+                <Button size="sm" onClick={() => props.onReject?.()}>
                   Reject
                 </Button>
               </Show>
-              <Show when={local.onAccept}>
-                <Button size="sm" variant="primary" onClick={() => local.onAccept?.()}>
+              <Show when={props.onAccept}>
+                <Button size="sm" variant="primary" onClick={() => props.onAccept?.()}>
                   Accept
                 </Button>
               </Show>
@@ -90,7 +92,7 @@ export function DiffView(props: DiffViewProps): JSX.Element {
         <div
           class={cx("nc-diff", !split() && "nc-diff--unified")}
           role="table"
-          aria-label={`Diff of ${local.path ?? model().path ?? "changes"}`}
+          aria-label={`Diff of ${props.path ?? model().path ?? "changes"}`}
         >
           <Show when={model().hunks.length === 0}>
             <div class="nc-diff__hunk nc-diff__hunk--none">No changes</div>

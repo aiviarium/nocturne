@@ -2,15 +2,16 @@
 // squeezed), and the card every board draws. Below BOARD_STACK_WIDTH of the board's own
 // width (a container query, and `useBoard().stacked()` for code that lays cards out itself) the lanes stack as
 // grouped lists, the iOS way: a section header per lane and its cards as rows.
+
+import type { JSX } from "@solidjs/web"
 import {
   createContext,
   createSignal,
-  type JSX,
+  omit,
   onCleanup,
-  onMount,
+  onSettled,
   children as resolveChildren,
   Show,
-  splitProps,
   useContext,
 } from "solid-js"
 import { cx } from "../lib/cx"
@@ -69,19 +70,10 @@ export interface BoardProps extends JSX.HTMLAttributes<HTMLDivElement> {
  * lists (a section header and rows), as on a phone.
  */
 export function Board(props: BoardProps): JSX.Element {
-  const [local, rest] = splitProps(props, [
-    "label",
-    "fill",
-    "dragging",
-    "fixed",
-    "children",
-    "head",
-    "custom",
-    "class",
-  ])
+  const rest = omit(props, "label", "fill", "dragging", "fixed", "children", "head", "custom", "class")
   const [stacked, setStacked] = createSignal(false)
   let el!: HTMLDivElement
-  onMount(() => {
+  onSettled(() => {
     const measure = () => setStacked(el.clientWidth > 0 && el.clientWidth < BOARD_STACK_WIDTH)
     measure()
     if (typeof ResizeObserver === "undefined") return
@@ -90,27 +82,27 @@ export function Board(props: BoardProps): JSX.Element {
     onCleanup(() => ro.disconnect())
   })
   return (
-    <BoardContext.Provider value={{ stacked }}>
+    <BoardContext value={{ stacked }}>
       <div
         ref={el}
         role="group"
-        aria-label={local.label}
+        aria-label={props.label}
         data-part="board"
-        data-fill={local.fill ? "" : undefined}
+        data-fill={props.fill ? "" : undefined}
         data-stacked={stacked() ? "" : undefined}
-        data-dragging={local.dragging ? "" : undefined}
-        data-fixed={local.fixed ? "" : undefined}
-        class={cx("nc-board", local.class)}
+        data-dragging={props.dragging ? "" : undefined}
+        data-fixed={props.fixed ? "" : undefined}
+        class={cx("nc-board", props.class)}
         {...rest}
       >
         <div class="nc-board__scroll">
-          {local.head}
-          <Show when={!local.custom} fallback={local.children}>
-            <div class="nc-board__lanes">{local.children}</div>
+          {props.head}
+          <Show when={!props.custom} fallback={props.children}>
+            <div class="nc-board__lanes">{props.children}</div>
           </Show>
         </div>
       </div>
-    </BoardContext.Provider>
+    </BoardContext>
   )
 }
 
@@ -131,37 +123,37 @@ export interface BoardLaneHeadProps extends Omit<JSX.HTMLAttributes<HTMLDivEleme
 
 /** A lane's head: the dot or icon, the name, the count and the add control, in a 30px row. */
 export function BoardLaneHead(props: BoardLaneHeadProps): JSX.Element {
-  const [local, rest] = splitProps(props, ["name", "count", "icon", "hue", "onAdd", "addLabel", "class"])
-  const n = () => local.count
+  const rest = omit(props, "name", "count", "icon", "hue", "onAdd", "addLabel", "class")
+  const n = () => props.count
   return (
-    <div data-part="board-lane-head" class={cx("nc-board-lane__head", local.class)} {...rest}>
+    <div data-part="board-lane-head" class={cx("nc-board-lane__head", props.class)} {...rest}>
       <Show
-        when={local.icon}
+        when={props.icon}
         fallback={
-          <Show when={local.hue}>
+          <Show when={props.hue}>
             <span
               class="nc-board-lane__dot"
-              data-hue={local.hue === "neutral" ? undefined : local.hue}
+              data-hue={props.hue === "neutral" ? undefined : props.hue}
               aria-hidden="true"
             />
           </Show>
         }
       >
-        <span class="nc-board-lane__icon">{local.icon}</span>
+        <span class="nc-board-lane__icon">{props.icon}</span>
       </Show>
-      <span class="nc-board-lane__name label">{local.name}</span>
+      <span class="nc-board-lane__name label">{props.name}</span>
       <Show when={n()}>
         <span class="nc-board-lane__count nc-meta nc-num" data-part="board-lane-count">
           {n()}
         </span>
       </Show>
-      <Show when={local.onAdd}>
+      <Show when={props.onAdd}>
         <button
           type="button"
           class="nc-icon-btn nc-board-lane__add"
-          aria-label={local.addLabel ?? `New in ${typeof local.name === "string" ? local.name : "this lane"}`}
-          title={local.addLabel}
-          onClick={() => local.onAdd?.()}
+          aria-label={props.addLabel ?? `New in ${typeof props.name === "string" ? props.name : "this lane"}`}
+          title={props.addLabel}
+          onClick={() => props.onAdd?.()}
         >
           <Icon name="plus" size="sm" />
         </button>
@@ -197,7 +189,8 @@ export interface BoardLaneProps extends Omit<JSX.HTMLAttributes<HTMLElement>, "t
  * well. In a stacked board it is a grouped list: the head a section header, the cards rows of one group.
  */
 export function BoardLane(props: BoardLaneProps): JSX.Element {
-  const [local, rest] = splitProps(props, [
+  const rest = omit(
+    props,
     "name",
     "count",
     "icon",
@@ -211,30 +204,30 @@ export function BoardLane(props: BoardLaneProps): JSX.Element {
     "bodyRef",
     "bodyProps",
     "class",
-  ])
+  )
   return (
     <section
-      aria-label={local.name}
+      aria-label={props.name}
       data-part="board-lane"
-      data-drop={local.drop ? "" : undefined}
-      class={cx("nc-board-lane", local.class)}
+      data-drop={props.drop ? "" : undefined}
+      class={cx("nc-board-lane", props.class)}
       {...rest}
     >
-      <Show when={!local.hideHead}>
+      <Show when={!props.hideHead}>
         <BoardLaneHead
-          name={local.name}
-          count={local.count}
-          icon={local.icon}
-          hue={local.hue}
-          onAdd={local.onAdd}
-          addLabel={local.addLabel}
+          name={props.name}
+          count={props.count}
+          icon={props.icon}
+          hue={props.hue}
+          onAdd={props.onAdd}
+          addLabel={props.addLabel}
         />
       </Show>
-      <div ref={(el) => local.bodyRef?.(el)} class="nc-board-lane__body" {...local.bodyProps}>
-        {local.children}
+      <div ref={(el) => props.bodyRef?.(el)} class="nc-board-lane__body" {...props.bodyProps}>
+        {props.children}
       </div>
-      <Show when={local.footer}>
-        <div class="nc-board-lane__foot">{local.footer}</div>
+      <Show when={props.footer}>
+        <div class="nc-board-lane__foot">{props.footer}</div>
       </Show>
     </section>
   )
@@ -299,7 +292,8 @@ export function BoardCardMeta(props: { children: JSX.Element }): JSX.Element {
  * a grouped list. Selection is a neutral fill; the keyboard's cursor, the focus ring.
  */
 export function BoardCard(props: BoardCardProps): JSX.Element {
-  const [local, rest] = splitProps(props, [
+  const rest = omit(
+    props,
     "top",
     "title",
     "icon",
@@ -310,28 +304,28 @@ export function BoardCard(props: BoardCardProps): JSX.Element {
     "placed",
     "ghost",
     "class",
-  ])
-  const body = resolveChildren(() => local.children)
+  )
+  const body = resolveChildren(() => props.children)
   return (
     <article
       data-part="board-card"
-      data-selected={local.selected ? "" : undefined}
-      data-active={local.active ? "" : undefined}
+      data-selected={props.selected ? "" : undefined}
+      data-active={props.active ? "" : undefined}
       class={cx(
         "nc-board-card",
-        local.placed && "nc-board-card--placed",
-        local.ghost && "nc-board-card--ghost",
-        local.class,
+        props.placed && "nc-board-card--placed",
+        props.ghost && "nc-board-card--ghost",
+        props.class,
       )}
       {...rest}
     >
       <Show when={body() == null} fallback={body()}>
-        <Show when={local.top}>
-          <BoardCardTop>{local.top}</BoardCardTop>
+        <Show when={props.top}>
+          <BoardCardTop>{props.top}</BoardCardTop>
         </Show>
-        <BoardCardTitle icon={local.icon}>{local.title}</BoardCardTitle>
-        <Show when={local.meta}>
-          <BoardCardMeta>{local.meta}</BoardCardMeta>
+        <BoardCardTitle icon={props.icon}>{props.title}</BoardCardTitle>
+        <Show when={props.meta}>
+          <BoardCardMeta>{props.meta}</BoardCardMeta>
         </Show>
       </Show>
     </article>
@@ -343,12 +337,12 @@ export function BoardCard(props: BoardCardProps): JSX.Element {
  * dragged card's height (`style.height`). Absolute in a virtualised lane.
  */
 export function BoardDrop(props: JSX.HTMLAttributes<HTMLDivElement> & { placed?: boolean }): JSX.Element {
-  const [local, rest] = splitProps(props, ["placed", "class"])
+  const rest = omit(props, "placed", "class")
   return (
     <div
       aria-hidden="true"
       data-part="board-drop"
-      class={cx("nc-board-drop", local.placed && "nc-board-drop--placed", local.class)}
+      class={cx("nc-board-drop", props.placed && "nc-board-drop--placed", props.class)}
       {...rest}
     />
   )

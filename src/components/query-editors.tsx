@@ -2,7 +2,9 @@
 // for a chip's popover and the phone sheet (lists shown in place), `row` for a line of the advanced builder
 // (pickers behind a trigger). The controls themselves are the field kinds' filters (`fields/`); what is here is the
 // choice of one by operator and the pickers of people and relations, which have no kind of their own.
-import { type JSX, Match, onMount, Switch, untrack } from "solid-js"
+
+import type { JSX } from "@solidjs/web"
+import { Match, onSettled, Switch, untrack } from "solid-js"
 import { FieldFilter, specOfQueryField } from "../fields/Field"
 import { OptionList, OptionPicker } from "../fields/parts/OptionList"
 import { cx } from "../lib/cx"
@@ -54,7 +56,7 @@ export function ValueEditor(props: ValueEditorProps): JSX.Element {
   const label = () => `${props.field.label} value`
   const spec = () => specOfQueryField(props.field)
   let host: HTMLDivElement | undefined
-  onMount(() => {
+  onSettled(() => {
     if (props.autoFocus)
       queueMicrotask(() =>
         host?.querySelector<HTMLElement>("input, button, [tabindex]")?.focus({ preventScroll: true }),

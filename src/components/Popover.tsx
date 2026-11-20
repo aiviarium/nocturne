@@ -1,4 +1,5 @@
-import { createEffect, type JSX, onCleanup, Show, splitProps } from "solid-js"
+import type { JSX } from "@solidjs/web"
+import { createEffect, omit, onCleanup, Show } from "solid-js"
 import { cx } from "../lib/cx"
 import { floatTo } from "../lib/floating"
 import { pushLayer } from "../lib/layers"
@@ -24,7 +25,8 @@ export interface PopoverProps extends Omit<JSX.HTMLAttributes<HTMLDivElement>, "
 
 /** A floating surface attached to an anchor, mounted in an overlay root so it inherits the theme. */
 export function Popover(props: PopoverProps): JSX.Element {
-  const [local, rest] = splitProps(props, [
+  const rest = omit(
+    props,
     "open",
     "anchor",
     "onClose",
@@ -34,11 +36,11 @@ export function Popover(props: PopoverProps): JSX.Element {
     "floatRef",
     "class",
     "children",
-  ])
+  )
   return (
-    <Show when={local.open}>
-      <Overlay anchor={local.anchor}>
-        <PopoverSurface {...local} class={cx("nc-popover", local.class)} {...rest} />
+    <Show when={props.open}>
+      <Overlay anchor={props.anchor}>
+        <PopoverSurface {...props} class={cx("nc-popover", props.class)} {...rest} />
       </Overlay>
     </Show>
   )
@@ -51,29 +53,21 @@ function PopoverSurface(
   > &
     JSX.HTMLAttributes<HTMLDivElement>,
 ): JSX.Element {
-  const [local, rest] = splitProps(props, [
-    "anchor",
-    "onClose",
-    "placement",
-    "offset",
-    "matchWidth",
-    "floatRef",
-    "children",
-  ])
+  const rest = omit(props, "anchor", "onClose", "placement", "offset", "matchWidth", "floatRef", "children")
   let el!: HTMLDivElement
   const layer = pushLayer()
   const onKey = (event: KeyboardEvent) => {
     if (event.key === "Escape" && layer.isTop()) {
       event.stopPropagation()
       event.preventDefault()
-      local.onClose?.()
+      props.onClose?.()
     }
   }
   const onPointer = (event: PointerEvent) => {
     // The first node of the path, not `target`: from inside a shadow root `target` is the shadow host.
     const target = (event.composedPath()[0] ?? event.target) as Node
-    if (!layer.isTop() || el.contains(target) || local.anchor?.contains(target)) return
-    local.onClose?.()
+    if (!layer.isTop() || el.contains(target) || props.anchor?.contains(target)) return
+    props.onClose?.()
   }
   document.addEventListener("keydown", onKey, true)
   document.addEventListener("pointerdown", onPointer, true)
@@ -82,26 +76,27 @@ function PopoverSurface(
     document.removeEventListener("pointerdown", onPointer, true)
     layer.remove()
   })
-  createEffect(() => {
-    const anchor = local.anchor
-    if (!anchor) return
-    const stop = floatTo(anchor, el, {
-      placement: local.placement,
-      offset: local.offset,
-      matchWidth: local.matchWidth,
-    })
-    onCleanup(stop)
-  })
+  createEffect(
+    () => props.anchor,
+    (anchor) => {
+      if (!anchor) return
+      return floatTo(anchor, el, {
+        placement: props.placement,
+        offset: props.offset,
+        matchWidth: props.matchWidth,
+      })
+    },
+  )
   return (
     <div
       data-part="popover"
       ref={(node) => {
         el = node
-        local.floatRef?.(node)
+        props.floatRef?.(node)
       }}
       {...rest}
     >
-      {local.children}
+      {props.children}
     </div>
   )
 }

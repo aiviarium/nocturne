@@ -1,4 +1,5 @@
-import { createMemo, createSignal, type JSX, Show, splitProps } from "solid-js"
+import type { JSX } from "@solidjs/web"
+import { createMemo, createSignal, omit, Show } from "solid-js"
 import { cx } from "../lib/cx"
 import { ShellHeaderContext } from "./ShellHeader"
 
@@ -27,7 +28,8 @@ export interface PanelProps extends Omit<JSX.HTMLAttributes<HTMLElement>, "title
  * (12px) underneath and an optional footer. For a plain surface with an optional heading, use `Card`.
  */
 export function Panel(props: PanelProps): JSX.Element {
-  const [local, rest] = splitProps(props, [
+  const rest = omit(
+    props,
     "title",
     "state",
     "actions",
@@ -37,29 +39,29 @@ export function Panel(props: PanelProps): JSX.Element {
     "fill",
     "class",
     "children",
-  ])
+  )
   return (
     <section
       data-part="panel"
-      data-fill={local.fill ? "" : undefined}
-      class={cx("nc-card nc-panel", local.class)}
+      data-fill={props.fill ? "" : undefined}
+      class={cx("nc-card nc-panel", props.class)}
       {...rest}
     >
       <header class="nc-panel-header" data-part="panel-header">
-        <Show when={local.header} fallback={<h2 class="nc-panel-title">{local.title}</h2>}>
-          {local.header}
+        <Show when={props.header} fallback={<h2 class="nc-panel-title">{props.title}</h2>}>
+          {props.header}
         </Show>
-        <Show when={local.state}>{local.state}</Show>
-        <Show when={local.actions}>
-          <span class="nc-panel-header__actions">{local.actions}</span>
+        <Show when={props.state}>{props.state}</Show>
+        <Show when={props.actions}>
+          <span class="nc-panel-header__actions">{props.actions}</span>
         </Show>
       </header>
-      <div data-part="panel-body" class={cx("nc-panel__body", local.flush && "nc-panel__body--flush")}>
-        {local.children}
+      <div data-part="panel-body" class={cx("nc-panel__body", props.flush && "nc-panel__body--flush")}>
+        {props.children}
       </div>
-      <Show when={local.footer}>
+      <Show when={props.footer}>
         <footer data-part="panel-footer" class="nc-panel__footer">
-          {local.footer}
+          {props.footer}
         </footer>
       </Show>
     </section>
@@ -77,27 +79,27 @@ export interface FrameProps extends Omit<JSX.HTMLAttributes<HTMLDivElement>, "ti
 
 /** A content frame of the app shell: bg-1, radius 8, a hairline edge, with an optional header bar. */
 export function Frame(props: FrameProps): JSX.Element {
-  const [local, rest] = splitProps(props, ["flush", "header", "focused", "class", "children"])
+  const rest = omit(props, "flush", "header", "focused", "class", "children")
   // Read once, as in AppShell: the header is a TabStrip with state and listeners, and must not be built twice.
-  const header = createMemo(() => local.header)
+  const header = createMemo(() => props.header)
   return (
     <div
       data-part="frame"
-      data-focused={local.focused ? "" : undefined}
+      data-focused={props.focused ? "" : undefined}
       class={cx(
         "nc-frame",
-        Boolean(local.flush || header()) && "nc-frame--flush",
+        Boolean(props.flush || header()) && "nc-frame--flush",
         Boolean(header()) && "nc-frame--stacked",
-        local.class,
+        props.class,
       )}
       {...rest}
     >
-      <Show when={header()} fallback={local.children}>
+      <Show when={header()} fallback={props.children}>
         <div data-part="frame-header" class="nc-frame__header">
           {header()}
         </div>
-        <div data-part="frame-body" class={cx("nc-frame__body", !local.flush && "nc-frame__body--padded")}>
-          {local.children}
+        <div data-part="frame-body" class={cx("nc-frame__body", !props.flush && "nc-frame__body--padded")}>
+          {props.children}
         </div>
       </Show>
     </div>
@@ -146,7 +148,8 @@ export interface AppShellProps extends Omit<JSX.HTMLAttributes<HTMLDivElement>, 
  * at phone width, where the sidebar is a drawer behind a top bar.
  */
 export function AppShell(props: AppShellProps): JSX.Element {
-  const [local, rest] = splitProps(props, [
+  const rest = omit(
+    props,
     "sidebar",
     "sidebarLabel",
     "sidebarWidth",
@@ -162,13 +165,13 @@ export function AppShell(props: AppShellProps): JSX.Element {
     "class",
     "style",
     "children",
-  ])
+  )
   // Read once: a slot given as JSX is built each time it is read, and reading it for the `when` as well as for the
   // content would mount it twice (the first copy never shown, but with its effects and listeners running).
-  const topbar = createMemo(() => local.topbar)
-  const sidebar = createMemo(() => local.sidebar)
-  const statusbar = createMemo(() => local.statusbar)
-  const header = createMemo(() => local.header)
+  const topbar = createMemo(() => props.topbar)
+  const sidebar = createMemo(() => props.sidebar)
+  const statusbar = createMemo(() => props.statusbar)
+  const header = createMemo(() => props.header)
   // Headers of the views that show in the bar. The bar takes room only while one does, or the app fills it.
   const [claims, setClaims] = createSignal(0)
   let headerBar!: HTMLDivElement
@@ -179,22 +182,22 @@ export function AppShell(props: AppShellProps): JSX.Element {
       return () => setClaims((n) => n - 1)
     },
   }
-  const width = () => local.sidebarWidth ?? 232
-  const resize = (w: number) => local.onSidebarResize?.(Math.max(180, Math.min(420, Math.round(w))))
+  const width = () => props.sidebarWidth ?? 232
+  const resize = (w: number) => props.onSidebarResize?.(Math.max(180, Math.min(420, Math.round(w))))
   let root!: HTMLDivElement
   let dragging = false
   return (
     <div
       ref={root}
       data-part="app-shell"
-      data-fill={local.fill ? "" : undefined}
-      data-drawer={local.drawerOpen ? "open" : undefined}
-      data-header={local.headerPlacement === "across" ? "across" : undefined}
-      data-sidebar={local.sidebarHidden ? "hidden" : undefined}
-      class={cx("nc-shell", local.class)}
+      data-fill={props.fill ? "" : undefined}
+      data-drawer={props.drawerOpen ? "open" : undefined}
+      data-header={props.headerPlacement === "across" ? "across" : undefined}
+      data-sidebar={props.sidebarHidden ? "hidden" : undefined}
+      class={cx("nc-shell", props.class)}
       style={{
         "--nc-sidebar-width": `${width()}px`,
-        ...(typeof local.style === "object" ? local.style : {}),
+        ...(typeof props.style === "object" ? props.style : {}),
       }}
       {...rest}
     >
@@ -203,21 +206,21 @@ export function AppShell(props: AppShellProps): JSX.Element {
           {topbar()}
         </header>
       </Show>
-      <Show when={local.drawerOpen !== undefined}>
+      <Show when={props.drawerOpen !== undefined}>
         <button
           type="button"
           data-part="scrim"
           class="nc-shell__scrim"
           aria-label="Close navigation"
           tabindex="-1"
-          onClick={() => local.onDrawerClose?.()}
+          onClick={() => props.onDrawerClose?.()}
         />
       </Show>
       <Show when={sidebar()}>
-        <aside data-part="sidebar" aria-label={local.sidebarLabel ?? "Sidebar"} class="nc-shell__sidebar">
+        <aside data-part="sidebar" aria-label={props.sidebarLabel ?? "Sidebar"} class="nc-shell__sidebar">
           {sidebar()}
         </aside>
-        <Show when={local.onSidebarResize}>
+        <Show when={props.onSidebarResize}>
           <div
             role="separator"
             tabindex="0"
@@ -261,7 +264,7 @@ export function AppShell(props: AppShellProps): JSX.Element {
         {header()}
       </div>
       <main data-part="shell-content" class="nc-shell__content">
-        <ShellHeaderContext.Provider value={shellHeader}>{local.children}</ShellHeaderContext.Provider>
+        <ShellHeaderContext value={shellHeader}>{props.children}</ShellHeaderContext>
       </main>
       <Show when={statusbar()}>
         <footer data-part="statusbar" class="nc-shell__status">

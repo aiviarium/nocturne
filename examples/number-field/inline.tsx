@@ -1,6 +1,5 @@
 import { Card, type DataColumn, DataTable, NumberField, PropertyList } from "@aiviarium/nocturne"
-import { createSignal } from "solid-js"
-import { createStore } from "solid-js/store"
+import { createSignal, createStore } from "solid-js"
 import type { ExampleMeta } from "../_kit/types"
 
 export const meta: ExampleMeta = {
@@ -25,7 +24,10 @@ export default function InlineNumbers() {
     { id: "b", name: "us-east", replicas: 2, memory: 8 },
     { id: "c", name: "ap-south", replicas: 1, memory: 2 },
   ])
-  const set = (id: string, patch: Partial<Pool>) => setPools((p) => p.id === id, patch)
+  const set = (id: string, patch: Partial<Pool>) =>
+    setPools((pools) => {
+      for (const pool of pools) if (pool.id === id) Object.assign(pool, patch)
+    })
   const columns: DataColumn<Pool>[] = [
     { id: "name", header: "Pool", accessor: (p) => p.name },
     {

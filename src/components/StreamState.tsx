@@ -1,4 +1,5 @@
-import { type JSX, Show, splitProps } from "solid-js"
+import type { JSX } from "@solidjs/web"
+import { omit, Show } from "solid-js"
 import { cx } from "../lib/cx"
 import { type DotStatus, StatusDot } from "./StatusDot"
 
@@ -42,29 +43,20 @@ const DOT: Record<StreamStatus, DotStatus> = {
 
 /** The connection state of any stream. Put it in the panel header next to the title. */
 export function StreamState(props: StreamStateProps): JSX.Element {
-  const [local, rest] = splitProps(props, [
-    "state",
-    "offset",
-    "buffered",
-    "lost",
-    "exitCode",
-    "code",
-    "meta",
-    "class",
-  ])
+  const rest = omit(props, "state", "offset", "buffered", "lost", "exitCode", "code", "meta", "class")
   const meta = () => {
-    if (local.meta !== undefined) return local.meta
-    switch (local.state) {
+    if (props.meta !== undefined) return props.meta
+    switch (props.state) {
       case "resuming":
-        return local.offset !== undefined ? `since ${local.offset}` : undefined
+        return props.offset !== undefined ? `since ${props.offset}` : undefined
       case "paused":
-        return local.buffered !== undefined ? `${local.buffered} buffered` : undefined
+        return props.buffered !== undefined ? `${props.buffered} buffered` : undefined
       case "dropped":
-        return local.lost
+        return props.lost
       case "ended":
-        return local.exitCode !== undefined ? `exit ${local.exitCode}` : undefined
+        return props.exitCode !== undefined ? `exit ${props.exitCode}` : undefined
       case "error":
-        return local.code
+        return props.code
       default:
         return undefined
     }
@@ -72,18 +64,18 @@ export function StreamState(props: StreamStateProps): JSX.Element {
   return (
     <span
       data-part="stream-state"
-      data-state={local.state}
+      data-state={props.state}
       role="status"
       class={cx(
         "nc-stream",
-        local.state === "dropped" && "nc-stream--warn",
-        local.state === "error" && "nc-stream--error",
-        local.class,
+        props.state === "dropped" && "nc-stream--warn",
+        props.state === "error" && "nc-stream--error",
+        props.class,
       )}
       {...rest}
     >
-      <StatusDot status={DOT[local.state]} />
-      {LABEL[local.state]}
+      <StatusDot status={DOT[props.state]} />
+      {LABEL[props.state]}
       <Show when={meta()}>
         <span class="nc-stream__meta">{meta()}</span>
       </Show>

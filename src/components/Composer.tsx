@@ -1,4 +1,6 @@
-import { createEffect, createMemo, createSignal, For, type JSX, on, onCleanup, onMount, Show } from "solid-js"
+import type { JSX } from "@solidjs/web"
+import { createEffect, createMemo, createSignal, For, onCleanup, onSettled, Show } from "solid-js"
+import { aria } from "../lib/aria"
 import { createControllable } from "../lib/controllable"
 import { cx } from "../lib/cx"
 import {
@@ -169,7 +171,7 @@ const EFFORTS: Array<{ id: EffortLevel; label: string; description: string }> = 
 function Bars(props: { level: number }): JSX.Element {
   return (
     <span class="nc-effort__bars" aria-hidden="true">
-      <For each={[0, 1, 2, 3]}>{(i) => <i classList={{ on: i <= props.level }} />}</For>
+      <For each={[0, 1, 2, 3]}>{(i) => <i class={{ on: i <= props.level }} />}</For>
     </span>
   )
 }
@@ -249,36 +251,48 @@ export function Composer(props: ComposerProps): JSX.Element {
     return filterItems(inTab, t.query)
   })
   createEffect(
-    on(
-      () => trigger()?.char,
-      () => setTab("All"),
-    ),
+    () => trigger()?.char,
+    () => {
+      setTab("All")
+    },
   )
-  createEffect(on([() => trigger()?.query, tab], () => setActive(0)))
+  createEffect(
+    () => [trigger()?.query, tab()],
+    () => {
+      setActive(0)
+    },
+  )
   const typed = createMemo(() => {
     if (!props.onQuery || props.running || props.disabled || !focused()) return null
     const t = findTrigger(flat(), caret())
     return t && dismissed() !== t.start ? `${t.char}${t.query}` : null
   })
   createEffect(
-    on(typed, (t) => props.onQuery?.(t ? { trigger: t[0] as TriggerChar, query: t.slice(1) } : null), {
-      defer: true,
-    }),
+    typed,
+    (t) => {
+      props.onQuery?.(t ? { trigger: t[0] as TriggerChar, query: t.slice(1) } : null)
+    },
+    { defer: true },
   )
 
   const history = createHistory({ value: value(), caret: 0 })
 
   // The DOM is the source while someone edits and the value is the source when it changes from outside:
   // render only when the two disagree, and keep the caret where it was.
-  createEffect(() => {
-    const next = value()
-    if (!editor || composing || props.running || dictation()?.state === "recording") return
-    if (sameSegments(readSegments(editor), next)) return
-    const at = caretFlat(editor)
-    renderSegments(editor, next)
-    if (at !== null && document.activeElement === editor)
-      selectFlat(editor, Math.min(at, flatOfSegments(next).length))
-  })
+  createEffect(
+    () => ({
+      next: value(),
+      blocked: composing || props.running || dictation()?.state === "recording",
+    }),
+    ({ next, blocked }) => {
+      if (!editor || blocked) return
+      if (sameSegments(readSegments(editor), next)) return
+      const at = caretFlat(editor)
+      renderSegments(editor, next)
+      if (at !== null && document.activeElement === editor)
+        selectFlat(editor, Math.min(at, flatOfSegments(next).length))
+    },
+  )
 
   /** Read the editor into the value, and the caret into the trigger state. */
   const sync = (options: { typing?: boolean } = {}) => {
@@ -306,7 +320,7 @@ export function Composer(props: ComposerProps): JSX.Element {
   const onSelectionChange = () => {
     if (editor && document.activeElement === editor && !composing) syncCaret()
   }
-  onMount(() => {
+  onSettled(() => {
     document.addEventListener("selectionchange", onSelectionChange)
     if (editor) {
       renderSegments(editor, value())
@@ -608,8 +622,8 @@ export function Composer(props: ComposerProps): JSX.Element {
               aria-multiline="true"
               aria-label="Message"
               aria-autocomplete="list"
-              aria-disabled={props.disabled || undefined}
-              aria-expanded={Boolean(trigger())}
+              aria-disabled={props.disabled ? "true" : undefined}
+              aria-expanded={aria(Boolean(trigger()))}
               aria-controls={trigger() ? `${uid}-menu` : undefined}
               aria-activedescendant={trigger() && results().length ? `${uid}-opt-${active()}` : undefined}
               spellcheck={true}
@@ -651,7 +665,7 @@ export function Composer(props: ComposerProps): JSX.Element {
                   data-part="composer-options"
                   aria-label={`Options: ${optionsSummary()}`}
                   aria-haspopup="dialog"
-                  aria-expanded={options()}
+                  aria-expanded={aria(options())}
                   onClick={() => setOptions(true)}
                 >
                   <Icon name="sliders-horizontal" size="sm" />
@@ -874,7 +888,7 @@ export function Composer(props: ComposerProps): JSX.Element {
                     type="button"
                     tabindex="-1"
                     class="nc-menu__tab section"
-                    aria-pressed={tab() === t}
+                    aria-pressed={aria(tab() === t)}
                     onClick={() => setTab(t)}
                   >
                     {t}
@@ -892,7 +906,7 @@ export function Composer(props: ComposerProps): JSX.Element {
                 <div
                   id={`${uid}-opt-${i()}`}
                   role="option"
-                  aria-selected={active() === i()}
+                  aria-selected={aria(active() === i())}
                   data-active={active() === i() ? "" : undefined}
                   class="nc-menu__item nc-menu__item--rich"
                   onPointerMove={() => setActive(i())}

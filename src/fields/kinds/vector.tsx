@@ -1,6 +1,8 @@
 // An embedding: read as its number of dimensions, with a copy of the numbers where the field is shown on its own.
 // A vector is written by code (the model that makes it), so the control never edits it.
-import { createSignal, type JSX, Show } from "solid-js"
+
+import type { JSX } from "@solidjs/web"
+import { createSignal, Show } from "solid-js"
 import { IconButton } from "../../components/IconButton"
 import { Empty } from "../Empty"
 import type { EditorProps, FieldKind, ValueProps } from "../kind"

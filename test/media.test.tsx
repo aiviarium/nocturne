@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, test } from "bun:test"
-import { createSignal } from "solid-js"
+import { createSignal, flush } from "solid-js"
 import {
   ChatMedia,
   type ChatMediaItem,
@@ -76,7 +76,9 @@ describe("ChatMedia images", () => {
     const [a, b] = tiles()
     expect(["loading", "loaded"]).toContain(a?.dataset.state as string)
     a?.querySelector("img")?.dispatchEvent(new Event("load"))
+    flush()
     b?.querySelector("img")?.dispatchEvent(new Event("error"))
+    flush()
     await tick()
     expect(a?.dataset.state).toBe("loaded")
     expect(b?.dataset.state).toBe("failed")
@@ -145,9 +147,9 @@ describe("MediaViewer", () => {
     const [index, setIndex] = createSignal(0)
     track(
       mount(() => (
-        <PhoneOverride.Provider value={true}>
+        <PhoneOverride value={true}>
           <MediaViewer open items={images(3)} index={index()} onIndexChange={setIndex} onClose={() => {}} />
-        </PhoneOverride.Provider>
+        </PhoneOverride>
       )),
     )
     await tick()
@@ -158,6 +160,7 @@ describe("MediaViewer", () => {
       Object.defineProperty(event, "touches", { value: type === "touchend" ? [] : list })
       Object.defineProperty(event, "changedTouches", { value: list })
       stage.dispatchEvent(event)
+      flush()
     }
     fire("touchstart", 300)
     fire("touchend", 180)
@@ -318,16 +321,19 @@ describe("Composer image attachments", () => {
     const paste = new Event("paste", { bubbles: true, cancelable: true })
     Object.defineProperty(paste, "clipboardData", { value: { files: [file], getData: () => "" } })
     editor.dispatchEvent(paste)
+    flush()
     expect(paste.defaultPrevented).toBe(true)
     const box = one(".nc-composer")
     const data = { types: ["Files"], files: [new File(["csv"], "steps.csv", { type: "text/csv" })] }
     const over = new Event("dragover", { bubbles: true, cancelable: true })
     Object.defineProperty(over, "dataTransfer", { value: data })
     box.dispatchEvent(over)
+    flush()
     expect(box.hasAttribute("data-dropping")).toBe(true)
     const drop = new Event("drop", { bubbles: true, cancelable: true })
     Object.defineProperty(drop, "dataTransfer", { value: data })
     box.dispatchEvent(drop)
+    flush()
     expect(box.hasAttribute("data-dropping")).toBe(false)
     expect(got).toEqual(["screenshot.png", "steps.csv"])
   })

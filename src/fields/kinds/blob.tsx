@@ -1,12 +1,15 @@
 // A file kept in the blob store: read as a file chip (its name and size once the app knows them), put, replaced and
 // taken out where the field is edited. The app uploads (`configureFields({ uploadBlob })`): the field holds the
 // blob's id.
-import { createResource, createSignal, type JSX, Show } from "solid-js"
+
+import type { JSX } from "@solidjs/web"
+import { createSignal, Show } from "solid-js"
 import { Button } from "../../components/Button"
 import { Icon } from "../../components/Icon"
 import { IconButton } from "../../components/IconButton"
 import { DropdownMenu } from "../../components/Menu"
 import { cx } from "../../lib/cx"
+import { createLoaded } from "../../lib/resource"
 import { Empty } from "../Empty"
 import { formatBytes } from "../format"
 import type { EditorProps, FieldKind, ValueProps } from "../kind"
@@ -17,8 +20,8 @@ import { isEmpty } from "../spec"
 const idOf = (v: unknown) => (typeof v === "string" && v ? v : "")
 
 function useMeta(id: () => string) {
-  const [meta] = createResource(id, async (i) => (i ? ((await fieldRuntime().blobInfo?.(i)) ?? null) : null))
-  return () => meta.latest ?? null
+  const meta = createLoaded(id, (i) => (i ? fieldRuntime().blobInfo?.(i) : undefined))
+  return meta.value
 }
 
 function Chip(props: { id: string; compact?: boolean | undefined }): JSX.Element {
@@ -94,7 +97,7 @@ function Editor(props: EditorProps): JSX.Element {
               variant="secondary"
               icon="upload"
               loading={busy()}
-              aria-invalid={props.error ? true : undefined}
+              aria-invalid={props.error ? "true" : undefined}
               data-action="upload"
               onClick={pick}
             >

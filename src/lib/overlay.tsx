@@ -1,5 +1,6 @@
-import { type JSX, onCleanup } from "solid-js"
-import { Portal } from "solid-js/web"
+import type { JSX } from "@solidjs/web"
+import { Portal } from "@solidjs/web"
+import { onCleanup } from "solid-js"
 
 /**
  * Where an overlay mounts. It goes inside the nearest element carrying `data-theme` (so it
@@ -17,18 +18,14 @@ export function overlayHost(anchor?: Element | null): HTMLElement {
  */
 export function Overlay(props: { anchor?: Element | null; children: JSX.Element }): JSX.Element {
   const host = overlayHost(props.anchor)
-  return (
-    <Portal
-      mount={host}
-      ref={(container) => {
-        container.classList.add("nc")
-        container.setAttribute("data-part", "overlay-root")
-        if (host === document.body) followTheme(container, props.anchor ?? document.documentElement)
-      }}
-    >
-      {props.children}
-    </Portal>
-  )
+  // Solid 2's Portal renders straight into its mount point, so the overlay root is ours to make.
+  const container = document.createElement("div")
+  container.classList.add("nc")
+  container.setAttribute("data-part", "overlay-root")
+  host.appendChild(container)
+  if (host === document.body) followTheme(container, props.anchor ?? document.documentElement)
+  onCleanup(() => container.remove())
+  return <Portal mount={container}>{props.children}</Portal>
 }
 
 /**

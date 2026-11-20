@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, test } from "bun:test"
-import { createSignal } from "solid-js"
+import { createSignal, flush } from "solid-js"
 import {
   NumberField,
   QueryBuilder,
@@ -28,6 +28,7 @@ function type(input: HTMLInputElement, text: string) {
   input.focus()
   input.value = text
   input.dispatchEvent(new InputEvent("input", { bubbles: true }))
+  flush()
 }
 
 describe("NumberField", () => {
@@ -77,6 +78,7 @@ describe("NumberField", () => {
     const input = one<HTMLInputElement>("input[role=spinbutton]")
     type(input, "1h 30m")
     input.dispatchEvent(new FocusEvent("blur"))
+    flush()
     await tick()
     expect(seen.at(-1)).toBe(90)
     input.focus()
@@ -255,6 +257,7 @@ describe("SchemaForm numbers", () => {
     press(input, "Enter")
     press(one("[data-kind=number] [role=slider]"), "End")
     one<HTMLFormElement>("form").dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }))
+    flush()
     await tick()
     expect(sent).toEqual({ replicas: 6, volume: 100 })
   })

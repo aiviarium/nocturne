@@ -1,4 +1,4 @@
-import { render } from "solid-js/web"
+import { render } from "@solidjs/web"
 import "@aiviarium/nocturne/styles/index.css"
 import "./gallery.css"
 import { App, frameId, mountFrame } from "./App"

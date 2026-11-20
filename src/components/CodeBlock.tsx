@@ -1,4 +1,5 @@
-import { createMemo, createSignal, For, type JSX, onCleanup, Show, splitProps } from "solid-js"
+import type { JSX } from "@solidjs/web"
+import { createMemo, createSignal, For, omit, onCleanup, Show } from "solid-js"
 import { cx } from "../lib/cx"
 import { applyErrors, type CodeToken, highlight } from "../lib/highlight"
 import { Button } from "./Button"
@@ -30,7 +31,8 @@ export interface CodeBlockProps extends Omit<JSX.HTMLAttributes<HTMLDivElement>,
 
 /** Code with line numbers and syntax colours from the `syn-*` tokens. */
 export function CodeBlock(props: CodeBlockProps): JSX.Element {
-  const [local, rest] = splitProps(props, [
+  const rest = omit(
+    props,
     "code",
     "language",
     "title",
@@ -43,23 +45,23 @@ export function CodeBlock(props: CodeBlockProps): JSX.Element {
     "onApply",
     "bare",
     "class",
-  ])
+  )
   const [copied, setCopied] = createSignal(false)
   let timer: ReturnType<typeof setTimeout> | undefined
   onCleanup(() => clearTimeout(timer))
-  const first = () => local.startLine ?? 1
+  const first = () => props.startLine ?? 1
   const lines = createMemo(() => {
-    const tokens = highlight(local.code.replace(/\n$/, ""), local.language)
-    const errors = (local.errors ?? []).map((e) => ({ ...e, line: e.line - first() }))
+    const tokens = highlight(props.code.replace(/\n$/, ""), props.language)
+    const errors = (props.errors ?? []).map((e) => ({ ...e, line: e.line - first() }))
     return errors.length ? applyErrors(tokens, errors) : tokens
   })
   const copy = async () => {
     try {
-      await navigator.clipboard?.writeText(local.code)
+      await navigator.clipboard?.writeText(props.code)
     } catch {
       /* clipboard may be unavailable; the callback still fires */
     }
-    local.onCopy?.(local.code)
+    props.onCopy?.(props.code)
     setCopied(true)
     clearTimeout(timer)
     timer = setTimeout(() => setCopied(false), 1500)
@@ -68,21 +70,21 @@ export function CodeBlock(props: CodeBlockProps): JSX.Element {
   return (
     <div
       data-part="code-block"
-      data-language={local.language}
-      class={cx("nc-codeblock", local.class)}
+      data-language={props.language}
+      class={cx("nc-codeblock", props.class)}
       {...rest}
     >
-      <Show when={!local.bare}>
+      <Show when={!props.bare}>
         <div class="nc-codeblock__bar">
-          <span>{local.title ?? local.language}</span>
+          <span>{props.title ?? props.language}</span>
           <span class="nc-row nc-row--tight">
-            <Show when={local.copyable !== false}>
+            <Show when={props.copyable !== false}>
               <Button variant="ghost" size="sm" onClick={copy} aria-live="polite">
                 {copied() ? "Copied" : "Copy"}
               </Button>
             </Show>
-            <Show when={local.onApply}>
-              <Button variant="secondary" size="sm" onClick={() => local.onApply?.(local.code)}>
+            <Show when={props.onApply}>
+              <Button variant="secondary" size="sm" onClick={() => props.onApply?.(props.code)}>
                 Apply
               </Button>
             </Show>
@@ -90,16 +92,16 @@ export function CodeBlock(props: CodeBlockProps): JSX.Element {
         </div>
       </Show>
       <pre
-        class={cx("nc-code", local.lineNumbers === false && "nc-code--plain")}
+        class={cx("nc-code", props.lineNumbers === false && "nc-code--plain")}
         tabindex="0"
-        aria-label={local.title ?? "Code"}
+        aria-label={props.title ?? "Code"}
       >
         <For each={lines()}>
           {(tokens, index) => (
             <span
-              class={cx("nc-code__line", local.currentLine === first() + index() && "nc-code__line--current")}
+              class={cx("nc-code__line", props.currentLine === first() + index() && "nc-code__line--current")}
             >
-              <Show when={local.lineNumbers !== false}>
+              <Show when={props.lineNumbers !== false}>
                 <span class="nc-code__num" aria-hidden="true">
                   {first() + index()}
                 </span>

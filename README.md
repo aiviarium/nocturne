@@ -10,12 +10,14 @@ components and a collaborative rich text editor. The stylesheets in `src/styles/
 The package is not published to a registry yet. Add it from a Git checkout or a packed tarball:
 
 ```sh
-bun add solid-js
+bun add solid-js@^2 @solidjs/web@^2
 bun add @aiviarium/nocturne@file:../nocturne   # or a tarball from `bun pm pack`
 ```
 
-`solid-js` 1.9 is a peer dependency. The package contains TypeScript sources (`exports` points at `src/index.ts`),
-so build it with a bundler that compiles Solid JSX, such as Vite with `vite-plugin-solid`.
+`solid-js` 2 and `@solidjs/web` 2 are peer dependencies. The package contains TypeScript sources (`exports`
+points at `src/index.ts`), so build it with a bundler that compiles Solid JSX, such as Vite with
+`@solidjs/vite-plugin`, and set `"jsxImportSource": "@solidjs/web"` in `tsconfig.json`. `docs/solid-2.md` lists
+what Solid 2 changed for consumers.
 
 ```ts
 import "@aiviarium/nocturne/styles/index.css"

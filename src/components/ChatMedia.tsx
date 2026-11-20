@@ -1,18 +1,7 @@
-import {
-  createEffect,
-  createMemo,
-  createSignal,
-  For,
-  Index,
-  type JSX,
-  Match,
-  on,
-  onCleanup,
-  Show,
-  Switch,
-  splitProps,
-} from "solid-js"
+import type { JSX } from "@solidjs/web"
+import { createEffect, createMemo, createSignal, For, Match, omit, onCleanup, Show, Switch } from "solid-js"
 import { formatBytes } from "../fields/format"
+import { aria } from "../lib/aria"
 import { cx } from "../lib/cx"
 import { usePhone } from "../lib/phone"
 import { Dialog } from "./Dialog"
@@ -100,13 +89,13 @@ type Run = { kind: "images"; items: Shown[] } | { kind: "one"; item: ChatMediaIt
  * Put it in a `ChatMessage`'s children. A click on an image opens `MediaViewer`. The part does no fetching.
  */
 export function ChatMedia(props: ChatMediaProps): JSX.Element {
-  const [local, rest] = splitProps(props, ["items", "onOpen", "class"])
+  const rest = omit(props, "items", "onOpen", "class")
   // One read of `items` makes both the runs and the viewer's list, so they agree even when the prop is a new array
   // on every read.
   const model = createMemo(() => {
     const runs: Run[] = []
     const viewable: ChatMediaItem[] = []
-    local.items.forEach((item, index) => {
+    props.items.forEach((item, index) => {
       const last = runs[runs.length - 1]
       if (item.kind !== "image") {
         runs.push({ kind: "one", item, index })
@@ -120,8 +109,8 @@ export function ChatMedia(props: ChatMediaProps): JSX.Element {
   })
   const [viewing, setViewing] = createSignal<number | null>(null)
   return (
-    <div data-part="chat-media" class={cx("nc-media", local.class)} {...rest}>
-      <Index each={model().runs}>
+    <div data-part="chat-media" class={cx("nc-media", props.class)} {...rest}>
+      <For keyed={false} each={model().runs}>
         {(run) => (
           <Switch>
             <Match when={run().kind === "images"}>
@@ -142,7 +131,7 @@ export function ChatMedia(props: ChatMediaProps): JSX.Element {
                   <Match when={one().item.kind === "file"}>
                     <MediaFile
                       item={one().item}
-                      onOpen={local.onOpen ? () => local.onOpen?.(one().item, one().index) : undefined}
+                      onOpen={props.onOpen ? () => props.onOpen?.(one().item, one().index) : undefined}
                     />
                   </Match>
                 </Switch>
@@ -150,7 +139,7 @@ export function ChatMedia(props: ChatMediaProps): JSX.Element {
             </Match>
           </Switch>
         )}
-      </Index>
+      </For>
       <MediaViewer
         open={viewing() !== null}
         items={model().viewable}
@@ -175,7 +164,7 @@ function ImageGrid(props: { items: Shown[]; onOpen: (view: number) => void }): J
       role="group"
       aria-label={count() === 1 ? "Image" : `${count()} images`}
     >
-      <Index each={shown()}>
+      <For keyed={false} each={shown()}>
         {(entry, i) => (
           <MediaImage
             item={entry().item}
@@ -184,7 +173,7 @@ function ImageGrid(props: { items: Shown[]; onOpen: (view: number) => void }): J
             onOpen={() => props.onOpen(entry().view)}
           />
         )}
-      </Index>
+      </For>
     </div>
   )
 }
@@ -198,11 +187,11 @@ function MediaImage(props: {
   const [state, setState] = createSignal<"loading" | "loaded" | "failed">("loading")
   // A new source (a pending image that lands, a streamed update) loads afresh.
   createEffect(
-    on(
-      () => props.item.src,
-      () => setState("loading"),
-      { defer: true },
-    ),
+    () => props.item.src,
+    () => {
+      setState("loading")
+    },
+    { defer: true },
   )
   const style = () => (props.single ? { "aspect-ratio": ratioOf(props.item) } : undefined)
   const label = () => props.item.alt || props.item.name || "Image"
@@ -309,7 +298,7 @@ function MediaAudio(props: { item: ChatMediaItem }): JSX.Element {
         type="button"
         class="nc-media__play"
         aria-label={playing() ? `Pause ${name()}` : `Play ${name()}`}
-        aria-pressed={playing()}
+        aria-pressed={aria(playing())}
         disabled={props.item.pending || !props.item.src}
         onClick={toggle}
       >
@@ -518,7 +507,7 @@ export function MediaViewer(props: MediaViewerProps): JSX.Element {
               icon="chevron-left"
               round
               tooltip={false}
-              aria-disabled={at() === 0}
+              aria-disabled={aria(at() === 0)}
               onClick={() => go(-1)}
             />
           </Show>
@@ -541,7 +530,7 @@ export function MediaViewer(props: MediaViewerProps): JSX.Element {
               icon="chevron-right"
               round
               tooltip={false}
-              aria-disabled={at() === count() - 1}
+              aria-disabled={aria(at() === count() - 1)}
               onClick={() => go(1)}
             />
           </Show>

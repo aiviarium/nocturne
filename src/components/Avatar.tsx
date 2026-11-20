@@ -1,4 +1,5 @@
-import { For, type JSX, Show, splitProps } from "solid-js"
+import type { JSX } from "@solidjs/web"
+import { For, omit, Show } from "solid-js"
 import { cx } from "../lib/cx"
 import type { LabelHue } from "./Badge"
 import { Icon } from "./Icon"
@@ -37,29 +38,29 @@ function hueFor(name: string): LabelHue {
 
 /** Initials in a circle for people, a rounded square for agents, the sparkle mark for the assistant. */
 export function Avatar(props: AvatarProps): JSX.Element {
-  const [local, rest] = splitProps(props, ["kind", "name", "size", "hue", "class"])
-  const kind = () => local.kind ?? "person"
-  const hue = () => local.hue ?? (kind() === "ai" || !local.name ? undefined : hueFor(local.name))
+  const rest = omit(props, "kind", "name", "size", "hue", "class")
+  const kind = () => props.kind ?? "person"
+  const hue = () => props.hue ?? (kind() === "ai" || !props.name ? undefined : hueFor(props.name))
   return (
     <span
       data-part="avatar"
       data-kind={kind()}
       data-hue={hue()}
       role="img"
-      aria-label={local.name ?? (kind() === "ai" ? "Assistant" : undefined)}
+      aria-label={props.name ?? (kind() === "ai" ? "Assistant" : undefined)}
       class={cx(
         "nc-avatar",
-        local.size === "sm" && "nc-avatar--sm",
-        local.size === "lg" && "nc-avatar--lg",
+        props.size === "sm" && "nc-avatar--sm",
+        props.size === "lg" && "nc-avatar--lg",
         kind() === "agent" && "nc-avatar--agent",
         kind() === "ai" && "nc-avatar--ai",
-        local.class,
+        props.class,
       )}
       {...rest}
     >
       <Show
         when={kind() === "ai"}
-        fallback={kind() === "agent" ? initials(local.name ?? "").slice(0, 1) : initials(local.name ?? "")}
+        fallback={kind() === "agent" ? initials(props.name ?? "").slice(0, 1) : initials(props.name ?? "")}
       >
         <Icon name="sparkle" size="sm" />
       </Show>

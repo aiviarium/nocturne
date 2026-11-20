@@ -1,4 +1,6 @@
-import { createSignal, type JSX, Show } from "solid-js"
+import type { JSX } from "@solidjs/web"
+import { createSignal, Show } from "solid-js"
+import { aria } from "../lib/aria"
 import { cx } from "../lib/cx"
 import { createId } from "../lib/id"
 import { usePhone } from "../lib/phone"
@@ -37,7 +39,7 @@ export function InfoTip(props: InfoTipProps): JSX.Element {
         size="sm"
         tooltip={false}
         aria-haspopup="dialog"
-        aria-expanded={open()}
+        aria-expanded={aria(open())}
         aria-controls={open() ? id : undefined}
         class="nc-infotip__button"
         onClick={() => setOpen(!open())}

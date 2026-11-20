@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, test } from "bun:test"
-import { createSignal } from "solid-js"
+import { createSignal, flush } from "solid-js"
 import {
   Composer,
   type ComposerValue,
@@ -91,6 +91,7 @@ describe("dictation", () => {
     editor.focus()
     selectFlat(editor, 6)
     editor.dispatchEvent(new Event("keyup", { bubbles: true }))
+    flush()
     click(one("button[aria-label='Start dictation']"))
     await tick()
     expect(one("[data-part=dictation]").getAttribute("aria-label")).toBe("Recording")

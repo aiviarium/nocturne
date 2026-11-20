@@ -1,4 +1,5 @@
-import { type JSX, splitProps } from "solid-js"
+import type { JSX } from "@solidjs/web"
+import { omit } from "solid-js"
 import { cx } from "../lib/cx"
 
 export interface SkeletonProps extends JSX.HTMLAttributes<HTMLSpanElement> {
@@ -12,16 +13,16 @@ export interface SkeletonProps extends JSX.HTMLAttributes<HTMLSpanElement> {
 
 /** A placeholder block for content that is loading. The shimmer stops under `prefers-reduced-motion`. */
 export function Skeleton(props: SkeletonProps): JSX.Element {
-  const [local, rest] = splitProps(props, ["width", "height", "circle", "class", "style"])
+  const rest = omit(props, "width", "height", "circle", "class", "style")
   return (
     <span
       data-part="skeleton"
       aria-hidden="true"
-      class={cx("nc-skeleton", local.circle && "nc-skeleton--circle", local.class)}
+      class={cx("nc-skeleton", props.circle && "nc-skeleton--circle", props.class)}
       style={{
-        width: local.width,
-        height: local.height,
-        ...(typeof local.style === "object" ? local.style : {}),
+        width: props.width,
+        height: props.height,
+        ...(typeof props.style === "object" ? props.style : {}),
       }}
       {...rest}
     />

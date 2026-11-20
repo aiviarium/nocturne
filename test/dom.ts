@@ -1,5 +1,6 @@
-import type { JSX } from "solid-js"
-import { render } from "solid-js/web"
+import type { JSX } from "@solidjs/web"
+import { render } from "@solidjs/web"
+import { flush } from "solid-js"
 import { flatOffset, selectFlat } from "../src/lib/editor"
 
 /** Render a component into a fresh container inside a themed root. Returns the container and a cleanup. */
@@ -9,6 +10,8 @@ export function mount(view: () => JSX.Element): { root: HTMLElement; dispose: ()
   root.setAttribute("data-theme", "dark")
   document.body.appendChild(root)
   const dispose = render(view, root)
+  // Solid 2 applies a write on the next microtask; a test asserts as soon as it dispatched.
+  flush()
   return {
     root,
     dispose: () => {
@@ -27,11 +30,13 @@ export async function tick(times = 2): Promise<void> {
 export function press(el: Element, key: string, init: KeyboardEventInit = {}): KeyboardEvent {
   const event = new KeyboardEvent("keydown", { key, bubbles: true, cancelable: true, ...init })
   el.dispatchEvent(event)
+  flush()
   return event
 }
 
 export function click(el: Element): void {
   el.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true }))
+  flush()
 }
 
 /** Everything under `document` that matches, including portals. */
@@ -69,4 +74,5 @@ export function typeText(el: HTMLElement, text: string): void {
   selectFlat(el, start + text.length)
   el.dispatchEvent(new InputEvent("input", { inputType: "insertText", data: text, bubbles: true }))
   document.dispatchEvent(new Event("selectionchange"))
+  flush()
 }

@@ -1,5 +1,7 @@
 // Longer text: it grows with its text, commits when it is left and Escape puts it back.
-import { type JSX, Match, Switch } from "solid-js"
+
+import type { JSX } from "@solidjs/web"
+import { Match, Switch } from "solid-js"
 import { cx } from "../../lib/cx"
 import { Empty } from "../Empty"
 import type { EditorProps, FieldKind, ValueProps } from "../kind"
@@ -43,8 +45,8 @@ function Editor(props: EditorProps): JSX.Element {
         props.error && boxed() && "nc-input--error",
       )}
       aria-label={props.spec.title}
-      aria-invalid={props.error ? true : undefined}
-      readOnly={props.disabled}
+      aria-invalid={props.error ? "true" : undefined}
+      readonly={props.disabled}
       rows={2}
       value={text()}
       onInput={(e) => {

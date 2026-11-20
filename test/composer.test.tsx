@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, test } from "bun:test"
-import { createSignal } from "solid-js"
+import { createSignal, flush } from "solid-js"
 import { Composer, type ComposerSubmit, type ComposerValue } from "../src"
 import { flatText, selectFlat, selectionFlat } from "../src/lib/editor"
 import { all, click, editorOf, mount, one, placeCaret, press, tick, typeText } from "./dom"
@@ -193,6 +193,7 @@ describe("Composer chips", () => {
     sel.removeAllRanges()
     sel.addRange(range)
     document.dispatchEvent(new Event("selectionchange"))
+    flush()
     expect(selectionFlat(editor())).toEqual({ start: 5, end: 5 })
     expect((window.getSelection() as Selection).getRangeAt(0).startContainer).not.toBe(inner)
   })
@@ -253,6 +254,7 @@ describe("Composer chips", () => {
     expect(chips()).toHaveLength(1)
     const undo = new InputEvent("beforeinput", { inputType: "historyUndo", cancelable: true, bubbles: true })
     editor().dispatchEvent(undo)
+    flush()
     await tick()
     expect(undo.defaultPrevented).toBe(true)
     expect(chips()).toHaveLength(0)
@@ -277,6 +279,7 @@ describe("Composer value", () => {
     await tick()
     placeCaret(editorOf(), 3)
     setValue([text("one two"), chip("$", "rn", "release-notes")])
+    flush()
     await tick()
     expect(chips()).toHaveLength(1)
     expect(selectionFlat(editorOf())).toEqual({ start: 3, end: 3 })
@@ -351,6 +354,7 @@ describe("Composer paste and drop", () => {
     for (const [type, value] of Object.entries(data)) dt.setData(type, value)
     const event = new ClipboardEvent("paste", { clipboardData: dt, bubbles: true, cancelable: true })
     el.dispatchEvent(event)
+    flush()
     return event
   }
 
@@ -402,6 +406,7 @@ describe("Composer paste and drop", () => {
     await tick()
     const bold = new InputEvent("beforeinput", { inputType: "formatBold", cancelable: true, bubbles: true })
     editor().dispatchEvent(bold)
+    flush()
     expect(bold.defaultPrevented).toBe(true)
     const dt = new DataTransfer()
     dt.setData("text/plain", "dropped")
@@ -413,6 +418,7 @@ describe("Composer paste and drop", () => {
       bubbles: true,
     })
     editor().dispatchEvent(drop)
+    flush()
     await tick()
     expect(drop.defaultPrevented).toBe(true)
     expect(last()).toEqual([text("hidropped")])
@@ -435,6 +441,7 @@ describe("Composer IME composition", () => {
     await tick()
     expect(options().length).toBeGreaterThan(0)
     editor().dispatchEvent(new CompositionEvent("compositionstart", { bubbles: true }))
+    flush()
     compose(editor(), "/にほ")
     const enter = press(editor(), "Enter", { isComposing: true })
     expect(enter.defaultPrevented).toBe(false)
@@ -445,6 +452,7 @@ describe("Composer IME composition", () => {
     const reported = values.length
     compose(editor(), "/日本")
     editor().dispatchEvent(new CompositionEvent("compositionend", { bubbles: true, data: "/日本" }))
+    flush()
     await tick()
     expect(values.at(-1)).toEqual([text("/日本")])
     expect(values.length).toBeGreaterThanOrEqual(reported)
@@ -457,8 +465,10 @@ describe("Composer IME composition", () => {
     await tick()
     const node = editorOf().firstChild as Text
     editorOf().dispatchEvent(new CompositionEvent("compositionstart", { bubbles: true }))
+    flush()
     node.nodeValue = "あ"
     setValue([text("elsewhere")])
+    flush()
     await tick()
     expect(editorOf().firstChild).toBe(node)
     expect(node.nodeValue).toBe("あ")
@@ -473,6 +483,7 @@ describe("Composer IME composition", () => {
       bubbles: true,
     })
     editor().dispatchEvent(event)
+    flush()
     expect(event.defaultPrevented).toBe(true)
     expect(sent).toHaveLength(1)
   })
@@ -511,8 +522,10 @@ describe("Composer states", () => {
     track(mount(() => <Composer running={running()} value={value()} onValueChange={setValue} />))
     await tick()
     setRunning(true)
+    flush()
     await tick()
     setRunning(false)
+    flush()
     await tick()
     expect(editorOf().textContent).toBe("draft $release-notes")
     expect(chips()).toHaveLength(1)
@@ -538,16 +551,19 @@ describe("Composer states", () => {
     )
     click(one("button[aria-label='Start dictation']"))
     setState("recording")
+    flush()
     await tick()
     expect(one("[data-part=dictation]").textContent).toContain("0:07")
     expect(document.querySelector("button[aria-label=Send]")).toBeNull()
     click(one("button[aria-label='Finish dictation']"))
     click(one("button[aria-label='Cancel dictation']"))
     setState("transcribing")
+    flush()
     await tick()
     expect(one("[data-part=dictation]").textContent).toContain("Transcribing")
     expect(one<HTMLButtonElement>("button[aria-label=Transcribing]").disabled).toBe(true)
     setState("blocked")
+    flush()
     await tick()
     click(all("button").find((b) => b.textContent === "Open settings") as HTMLElement)
     expect(calls).toEqual(["start", "finish", "cancel", "settings"])

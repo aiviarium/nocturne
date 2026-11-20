@@ -64,7 +64,7 @@ export const PHONE_BOUNDS = {
 } as const
 
 /** Overrides the media query below it (the gallery shows phone pieces on a desktop page). */
-export const PhoneOverride = createContext<boolean>()
+export const PhoneOverride = createContext<boolean | null>(null)
 
 const [phoneNow, setPhoneNow] = createSignal(false)
 let watching = false

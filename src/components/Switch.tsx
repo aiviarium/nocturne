@@ -1,4 +1,6 @@
-import { createSignal, type JSX, Show, splitProps } from "solid-js"
+import type { JSX } from "@solidjs/web"
+import { createSignal, omit, Show } from "solid-js"
+import { aria, ariaChecked } from "../lib/aria"
 import { createControllable } from "../lib/controllable"
 import { cx } from "../lib/cx"
 import { Icon } from "./Icon"
@@ -18,36 +20,28 @@ export interface SwitchProps extends Omit<JSX.ButtonHTMLAttributes<HTMLButtonEle
 
 /** A two-state toggle for a setting that applies immediately. */
 export function Switch(props: SwitchProps): JSX.Element {
-  const [local, rest] = splitProps(props, [
-    "checked",
-    "defaultChecked",
-    "onChange",
-    "label",
-    "danger",
-    "class",
-    "type",
-  ])
+  const rest = omit(props, "checked", "defaultChecked", "onChange", "label", "danger", "class", "type")
   const [checked, setChecked] = createControllable({
-    value: () => local.checked,
-    defaultValue: local.defaultChecked ?? false,
-    onChange: (v) => local.onChange?.(v),
+    value: () => props.checked,
+    defaultValue: props.defaultChecked ?? false,
+    onChange: (v) => props.onChange?.(v),
   })
   const control = (
     <button
       data-part="switch"
       type="button"
       role="switch"
-      aria-checked={checked()}
-      class={cx("nc-switch", local.danger && "nc-switch--danger", !local.label && local.class)}
+      aria-checked={aria(checked())}
+      class={cx("nc-switch", props.danger && "nc-switch--danger", !props.label && props.class)}
       onClick={() => setChecked(!checked())}
       {...rest}
     />
   )
   return (
-    <Show when={local.label} fallback={control}>
-      <label data-part="switch-label" class={cx("nc-row nc-row--control", local.class)}>
+    <Show when={props.label} fallback={control}>
+      <label data-part="switch-label" class={cx("nc-row nc-row--control", props.class)}>
         {control}
-        {local.label}
+        {props.label}
       </label>
     </Show>
   )
@@ -67,21 +61,21 @@ export interface CheckboxProps
 
 /** A checkbox for a choice that is applied later. */
 export function Checkbox(props: CheckboxProps): JSX.Element {
-  const [local, rest] = splitProps(props, ["checked", "defaultChecked", "onChange", "label", "class", "type"])
-  const [state, setState] = createSignal<boolean | "mixed">(local.defaultChecked ?? false)
-  const value = () => (local.checked === undefined ? state() : local.checked)
+  const rest = omit(props, "checked", "defaultChecked", "onChange", "label", "class", "type")
+  const [state, setState] = createSignal<boolean | "mixed">(props.defaultChecked ?? false)
+  const value = () => (props.checked === undefined ? state() : props.checked)
   const toggle = () => {
     const next = value() === "mixed" ? true : !value()
-    if (local.checked === undefined) setState(next)
-    local.onChange?.(next)
+    if (props.checked === undefined) setState(next)
+    props.onChange?.(next)
   }
   const control = (
     <button
       data-part="checkbox"
       type="button"
       role="checkbox"
-      aria-checked={value()}
-      class={cx("nc-check", !local.label && local.class)}
+      aria-checked={ariaChecked(value())}
+      class={cx("nc-check", !props.label && props.class)}
       onClick={toggle}
       {...rest}
     >
@@ -94,10 +88,10 @@ export function Checkbox(props: CheckboxProps): JSX.Element {
     </button>
   )
   return (
-    <Show when={local.label} fallback={control}>
-      <label data-part="checkbox-label" class={cx("nc-row nc-row--control", local.class)}>
+    <Show when={props.label} fallback={control}>
+      <label data-part="checkbox-label" class={cx("nc-row nc-row--control", props.class)}>
         {control}
-        {local.label}
+        {props.label}
       </label>
     </Show>
   )
@@ -164,7 +158,7 @@ export function RadioGroup<T extends string = string>(props: RadioGroupProps<T>)
             type="button"
             role="radio"
             class="nc-radio"
-            aria-checked={value() === option.value}
+            aria-checked={aria(value() === option.value)}
             disabled={option.disabled}
             tabindex={tabbable(i) ? 0 : -1}
             onClick={() => setValue(option.value)}

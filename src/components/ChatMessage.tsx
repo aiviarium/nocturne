@@ -1,4 +1,6 @@
-import { createSignal, For, type JSX, Show, splitProps } from "solid-js"
+import type { JSX } from "@solidjs/web"
+import { createSignal, For, omit, Show } from "solid-js"
+import { aria } from "../lib/aria"
 import { cx } from "../lib/cx"
 import { createId } from "../lib/id"
 import { Avatar } from "./Avatar"
@@ -20,25 +22,25 @@ export interface ChatMessageProps extends Omit<JSX.HTMLAttributes<HTMLDivElement
 
 /** One message of an AI conversation. For an assistant reply, put `ToolSteps`, text and an `ApprovalCard` in the children. */
 export function ChatMessage(props: ChatMessageProps): JSX.Element {
-  const [local, rest] = splitProps(props, ["role", "thought", "avatar", "class", "children"])
+  const rest = omit(props, "role", "thought", "avatar", "class", "children")
   return (
     <Show
-      when={local.role === "assistant"}
+      when={props.role === "assistant"}
       fallback={
-        <div data-part="chat-message" data-role="user" class={cx("nc-msg-user", local.class)} {...rest}>
-          {local.children}
+        <div data-part="chat-message" data-role="user" class={cx("nc-msg-user", props.class)} {...rest}>
+          {props.children}
         </div>
       }
     >
-      <div data-part="chat-message" data-role="assistant" class={cx("nc-msg-ai", local.class)} {...rest}>
+      <div data-part="chat-message" data-role="assistant" class={cx("nc-msg-ai", props.class)} {...rest}>
         {/* The avatar heads the reply instead of taking a column of its own: the body starts at the left edge. */}
         <div class="nc-msg-ai__head">
-          {local.avatar ?? <Avatar kind="ai" />}
-          <Show when={local.thought}>
-            <span class="nc-meta">{local.thought}</span>
+          {props.avatar ?? <Avatar kind="ai" />}
+          <Show when={props.thought}>
+            <span class="nc-meta">{props.thought}</span>
           </Show>
         </div>
-        <div class="nc-msg-ai__body">{local.children}</div>
+        <div class="nc-msg-ai__body">{props.children}</div>
       </div>
     </Show>
   )
@@ -103,7 +105,7 @@ export function ToolStep(props: ToolStepProps): JSX.Element {
         <button
           type="button"
           class={cx("nc-step", "nc-step--button", status() === "running" && "nc-step--running")}
-          aria-expanded={open()}
+          aria-expanded={aria(open())}
           aria-controls={outputId}
           onClick={() => setOpen(!open())}
         >
@@ -209,21 +211,21 @@ export interface TokenProps extends JSX.HTMLAttributes<HTMLSpanElement> {
 
 /** An inline chip for a picked command, reference, skill or person, in chat messages and the composer. */
 export function Token(props: TokenProps): JSX.Element {
-  const [local, rest] = splitProps(props, ["kind", "icon", "name", "class", "children"])
+  const rest = omit(props, "kind", "icon", "name", "class", "children")
   return (
     <span
       data-part="token"
-      data-kind={local.kind}
-      class={cx("nc-token", `nc-token--${local.kind}`, local.class)}
+      data-kind={props.kind}
+      class={cx("nc-token", `nc-token--${props.kind}`, props.class)}
       {...rest}
     >
-      <Show when={local.kind === "ref" && local.icon}>
-        <Icon name={local.icon} size="sm" />
+      <Show when={props.kind === "ref" && props.icon}>
+        <Icon name={props.icon} size="sm" />
       </Show>
-      <Show when={local.kind === "person" && local.name}>
-        <Avatar name={local.name} size="sm" class="nc-avatar--inline" />
+      <Show when={props.kind === "person" && props.name}>
+        <Avatar name={props.name} size="sm" class="nc-avatar--inline" />
       </Show>
-      {local.children}
+      {props.children}
     </span>
   )
 }

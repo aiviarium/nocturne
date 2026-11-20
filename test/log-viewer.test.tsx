@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, test } from "bun:test"
-import { createSignal } from "solid-js"
+import { createSignal, flush } from "solid-js"
 import { type LogEntry, LogViewer } from "../src"
 import { click, mount, one } from "./dom"
 
@@ -39,6 +39,7 @@ describe("LogViewer", () => {
       { id: 2, at: "2026-11-19T09:12:35Z", level: "warn", text: "Heads up" },
       { id: 3, at: "2026-11-19T09:12:36Z", level: "error", text: "Failed to bind" },
     ])
+    flush()
 
     const lines = Array.from(viewer.querySelectorAll("[data-part=log-line]"))
     expect(lines).toHaveLength(3)
@@ -93,6 +94,7 @@ describe("LogViewer", () => {
     Object.defineProperty(body, "clientHeight", { value: 200, configurable: true })
     body.scrollTop = 100
     body.dispatchEvent(new Event("scroll"))
+    flush()
 
     expect(viewer.hasAttribute("data-following")).toBe(false)
     const jump = one<HTMLButtonElement>("[data-part=log-jump]", viewer)

@@ -1,4 +1,5 @@
-import { type JSX, Show, splitProps } from "solid-js"
+import type { JSX } from "@solidjs/web"
+import { omit, Show } from "solid-js"
 import { cx } from "../lib/cx"
 import { createId } from "../lib/id"
 import { Icon, type IconName } from "./Icon"
@@ -27,7 +28,8 @@ export interface TextFieldProps extends Omit<JSX.InputHTMLAttributes<HTMLInputEl
 
 /** A single-line input, 30px high, with a label, help text and an error state, plus the search variant. */
 export function TextField(props: TextFieldProps): JSX.Element {
-  const [local, rest] = splitProps(props, [
+  const rest = omit(
+    props,
     "label",
     "help",
     "error",
@@ -39,50 +41,50 @@ export function TextField(props: TextFieldProps): JSX.Element {
     "defaultValue",
     "class",
     "id",
-  ])
-  const id = local.id ?? createId("field")
+  )
+  const id = props.id ?? createId("field")
   const helpId = `${id}-help`
-  const message = () => (typeof local.error === "string" ? local.error : local.help)
-  const invalid = () => Boolean(local.error)
+  const message = () => (typeof props.error === "string" ? props.error : props.help)
+  const invalid = () => Boolean(props.error)
   return (
     <Show
-      when={local.variant === "search"}
+      when={props.variant === "search"}
       fallback={
-        <div data-part="text-field" class={cx("nc-field", local.class)}>
-          <Show when={local.label}>
+        <div data-part="text-field" class={cx("nc-field", props.class)}>
+          <Show when={props.label}>
             <label class="nc-field__label" for={id}>
-              {local.label}
+              {props.label}
             </label>
           </Show>
           <input
             id={id}
-            ref={(el) => local.inputRef?.(el)}
-            class={cx("nc-input", local.mono && "nc-mono", invalid() && "nc-input--error")}
-            aria-invalid={invalid() || undefined}
+            ref={(el) => props.inputRef?.(el)}
+            class={cx("nc-input", props.mono && "nc-mono", invalid() && "nc-input--error")}
+            aria-invalid={invalid() ? "true" : undefined}
             aria-describedby={message() ? helpId : undefined}
-            value={rest.value ?? local.defaultValue}
+            value={rest.value ?? props.defaultValue}
             {...rest}
           />
           <Show when={message()}>
-            <span id={helpId} class="nc-field__help" classList={{ "nc-field__help--error": invalid() }}>
+            <span id={helpId} class={["nc-field__help", { "nc-field__help--error": invalid() }]}>
               {message()}
             </span>
           </Show>
         </div>
       }
     >
-      <label data-part="text-field" data-variant="search" class={cx("nc-search", local.class)}>
-        <Icon name={local.icon ?? "search"} size="sm" />
+      <label data-part="text-field" data-variant="search" class={cx("nc-search", props.class)}>
+        <Icon name={props.icon ?? "search"} size="sm" />
         <input
           id={id}
           type="search"
-          ref={(el) => local.inputRef?.(el)}
-          aria-label={local.label ?? rest["aria-label"] ?? "Search"}
-          value={rest.value ?? local.defaultValue}
+          ref={(el) => props.inputRef?.(el)}
+          aria-label={props.label ?? rest["aria-label"] ?? "Search"}
+          value={rest.value ?? props.defaultValue}
           {...rest}
         />
-        <Show when={local.kbd}>
-          <Kbd keys={local.kbd} />
+        <Show when={props.kbd}>
+          <Kbd keys={props.kbd} />
         </Show>
       </label>
     </Show>

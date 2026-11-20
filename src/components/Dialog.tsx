@@ -1,4 +1,5 @@
-import { createEffect, type JSX, onCleanup, Show, splitProps } from "solid-js"
+import type { JSX } from "@solidjs/web"
+import { omit, onCleanup, onSettled, Show } from "solid-js"
 import { cx } from "../lib/cx"
 import { activeElement, focusableIn, trapTab } from "../lib/focus"
 import { createId } from "../lib/id"
@@ -75,7 +76,8 @@ export function Dialog(props: DialogProps): JSX.Element {
 }
 
 function DialogSurface(props: DialogProps): JSX.Element {
-  const [local, rest] = splitProps(props, [
+  const rest = omit(
+    props,
     "open",
     "onClose",
     "title",
@@ -90,7 +92,7 @@ function DialogSurface(props: DialogProps): JSX.Element {
     "anchor",
     "class",
     "children",
-  ])
+  )
   const titleId = createId("dialog-title")
   const descId = createId("dialog-desc")
   const previous = activeElement() as HTMLElement | null
@@ -101,7 +103,7 @@ function DialogSurface(props: DialogProps): JSX.Element {
     if (event.key === "Escape") {
       event.preventDefault()
       event.stopPropagation()
-      local.onClose()
+      props.onClose()
     } else if (event.key === "Tab" && surface) {
       trapTab(event, surface)
     }
@@ -112,9 +114,10 @@ function DialogSurface(props: DialogProps): JSX.Element {
     layer.remove()
     if (previous?.isConnected) previous.focus()
   })
-  createEffect(() => {
+  // The surface's ref exists only once the dialog is inserted, which is after the body has run.
+  onSettled(() => {
     const target =
-      local.initialFocus?.() ??
+      props.initialFocus?.() ??
       focusableIn(surface).find((el) => !el.hasAttribute("data-dialog-close")) ??
       surface
     target.focus()
@@ -122,9 +125,9 @@ function DialogSurface(props: DialogProps): JSX.Element {
   return (
     <div
       data-part="dialog-backdrop"
-      class={cx("nc-scrim", `nc-scrim--${local.placement ?? "center"}`)}
+      class={cx("nc-scrim", `nc-scrim--${props.placement ?? "center"}`)}
       onPointerDown={(e) => {
-        if (e.target === e.currentTarget && local.closeOnBackdrop !== false) local.onClose()
+        if (e.target === e.currentTarget && props.closeOnBackdrop !== false) props.onClose()
       }}
     >
       <div
@@ -132,36 +135,36 @@ function DialogSurface(props: DialogProps): JSX.Element {
         ref={surface}
         role="dialog"
         aria-modal="true"
-        aria-labelledby={local.bare ? undefined : titleId}
-        aria-label={local.bare ? local.label : undefined}
-        aria-describedby={local.description ? descId : undefined}
+        aria-labelledby={props.bare ? undefined : titleId}
+        aria-label={props.bare ? props.label : undefined}
+        aria-describedby={props.description ? descId : undefined}
         tabindex="-1"
-        data-placement={local.placement ?? "center"}
+        data-placement={props.placement ?? "center"}
         class={cx(
           "nc-dialog",
-          `nc-dialog--${local.size ?? "md"}`,
-          local.bare && "nc-dialog--bare",
-          local.placement === "bottom" && "nc-dialog--sheet",
-          local.class,
+          `nc-dialog--${props.size ?? "md"}`,
+          props.bare && "nc-dialog--bare",
+          props.placement === "bottom" && "nc-dialog--sheet",
+          props.class,
         )}
         {...rest}
       >
-        <Show when={!local.bare}>
+        <Show when={!props.bare}>
           <header class="nc-dialog__header">
             <h2 id={titleId} class="nc-dialog__title heading">
-              {local.title}
+              {props.title}
             </h2>
-            <IconButton label="Close" icon="close" data-dialog-close="" onClick={() => local.onClose()} />
+            <IconButton label="Close" icon="close" data-dialog-close="" onClick={() => props.onClose()} />
           </header>
         </Show>
-        <Show when={local.description}>
+        <Show when={props.description}>
           <p id={descId} class="nc-dialog__desc">
-            {local.description}
+            {props.description}
           </p>
         </Show>
-        <div class={cx("nc-dialog__body", local.bare && "nc-dialog__body--bare")}>{local.children}</div>
-        <Show when={local.footer}>
-          <footer class="nc-dialog__footer">{local.footer}</footer>
+        <div class={cx("nc-dialog__body", props.bare && "nc-dialog__body--bare")}>{props.children}</div>
+        <Show when={props.footer}>
+          <footer class="nc-dialog__footer">{props.footer}</footer>
         </Show>
       </div>
     </div>

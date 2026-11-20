@@ -1,4 +1,6 @@
-import { For, type JSX, Show } from "solid-js"
+import type { JSX } from "@solidjs/web"
+import { For, Show } from "solid-js"
+import { aria } from "../lib/aria"
 import { createControllable } from "../lib/controllable"
 import { cx } from "../lib/cx"
 import { createId } from "../lib/id"
@@ -80,7 +82,7 @@ export function Tabs(props: TabsProps): JSX.Element {
             role="tab"
             id={tabId(prefix, item.id)}
             aria-controls={panelId(prefix, item.id)}
-            aria-selected={value() === item.id}
+            aria-selected={aria(value() === item.id)}
             tabindex={value() === item.id ? 0 : -1}
             disabled={item.disabled}
             class={underline() ? "nc-tab" : "nc-seg__item"}

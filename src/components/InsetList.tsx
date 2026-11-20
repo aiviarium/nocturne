@@ -1,4 +1,6 @@
-import { createSignal, For, type JSX, onCleanup, Show, splitProps } from "solid-js"
+import type { JSX } from "@solidjs/web"
+import { createSignal, For, omit, onCleanup, Show } from "solid-js"
+import { aria } from "../lib/aria"
 import { cx } from "../lib/cx"
 import { useLinkClick } from "../lib/link"
 import { overlayHost } from "../lib/overlay"
@@ -28,25 +30,25 @@ export interface InsetGroupProps extends Omit<JSX.HTMLAttributes<HTMLElement>, "
 }
 
 export function InsetGroup(props: InsetGroupProps): JSX.Element {
-  const [local, rest] = splitProps(props, ["title", "titleAction", "footer", "class", "children", "label"])
+  const rest = omit(props, "title", "titleAction", "footer", "class", "children", "label")
   return (
     <section
-      class={cx("nc-inset-group", local.class)}
+      class={cx("nc-inset-group", props.class)}
       data-part="inset-group"
-      aria-label={local.label}
+      aria-label={props.label}
       {...rest}
     >
-      <Show when={local.title || local.titleAction}>
+      <Show when={props.title || props.titleAction}>
         <div class="nc-inset-group__head">
-          <h3 class="nc-inset-group__title">{local.title}</h3>
-          {local.titleAction}
+          <h3 class="nc-inset-group__title">{props.title}</h3>
+          {props.titleAction}
         </div>
       </Show>
       <div class="nc-inset-group__rows" role="list">
-        {local.children}
+        {props.children}
       </div>
-      <Show when={local.footer}>
-        <p class="nc-inset-group__footer">{local.footer}</p>
+      <Show when={props.footer}>
+        <p class="nc-inset-group__footer">{props.footer}</p>
       </Show>
     </section>
   )
@@ -105,7 +107,8 @@ export interface InsetRowProps extends Omit<JSX.HTMLAttributes<HTMLDivElement>, 
 export const SWIPE_ACTION_WIDTH = 76
 
 export function InsetRow(props: InsetRowProps): JSX.Element {
-  const [local, rest] = splitProps(props, [
+  const rest = omit(
+    props,
     "label",
     "detail",
     "value",
@@ -125,10 +128,10 @@ export function InsetRow(props: InsetRowProps): JSX.Element {
     "menuLabel",
     "onMenuSelect",
     "class",
-  ])
+  )
   const linkClick = useLinkClick()
-  const leadingWidth = () => (local.leadingActions?.length ?? 0) * SWIPE_ACTION_WIDTH
-  const trailingWidth = () => (local.trailingActions?.length ?? 0) * SWIPE_ACTION_WIDTH
+  const leadingWidth = () => (props.leadingActions?.length ?? 0) * SWIPE_ACTION_WIDTH
+  const trailingWidth = () => (props.trailingActions?.length ?? 0) * SWIPE_ACTION_WIDTH
   let row!: HTMLDivElement
   const phone = usePhone()
   const [menuAt, setMenuAt] = createSignal<{ x: number; y: number } | null>(null)
@@ -136,8 +139,8 @@ export function InsetRow(props: InsetRowProps): JSX.Element {
     element: () => row,
     leading: leadingWidth,
     trailing: trailingWidth,
-    onFull: (side) => (side === "leading" ? local.leadingActions : local.trailingActions)?.[0]?.onAction(),
-    menu: () => Boolean(local.menu?.length),
+    onFull: (side) => (side === "leading" ? props.leadingActions : props.trailingActions)?.[0]?.onAction(),
+    menu: () => Boolean(props.menu?.length),
     onLongPress: setMenuAt,
   })
   const offset = swipe.offset
@@ -145,33 +148,33 @@ export function InsetRow(props: InsetRowProps): JSX.Element {
 
   const activate = (e: MouseEvent & { currentTarget: HTMLElement }) => {
     if (swipe.swallowClick(e)) return
-    if (local.href) linkClick(e as never, local.href)
-    local.onClick?.()
+    if (props.href) linkClick(e as never, props.href)
+    props.onClick?.()
   }
   const showChevron = () =>
-    local.chevron ?? (Boolean(local.href) && !local.trailing && local.checked === undefined)
+    props.chevron ?? (Boolean(props.href) && !props.trailing && props.checked === undefined)
   const inner = () => (
     <>
-      <Show when={local.leading || local.icon}>
+      <Show when={props.leading || props.icon}>
         <span class="nc-inset-row__leading">
-          <Show when={local.leading} fallback={<Icon name={local.icon} />}>
-            {local.leading}
+          <Show when={props.leading} fallback={<Icon name={props.icon} />}>
+            {props.leading}
           </Show>
         </span>
       </Show>
       <span class="nc-inset-row__text">
-        <span class="nc-inset-row__label">{local.label}</span>
-        <Show when={local.detail}>
-          <span class="nc-inset-row__detail">{local.detail}</span>
+        <span class="nc-inset-row__label">{props.label}</span>
+        <Show when={props.detail}>
+          <span class="nc-inset-row__detail">{props.detail}</span>
         </Show>
       </span>
-      <Show when={local.value}>
-        <span class="nc-inset-row__value">{local.value}</span>
+      <Show when={props.value}>
+        <span class="nc-inset-row__value">{props.value}</span>
       </Show>
-      <Show when={local.trailing}>
-        <span class="nc-inset-row__trailing">{local.trailing}</span>
+      <Show when={props.trailing}>
+        <span class="nc-inset-row__trailing">{props.trailing}</span>
       </Show>
-      <Show when={local.checked}>
+      <Show when={props.checked}>
         <Icon name="check" class="nc-inset-row__check" />
       </Show>
       <Show when={showChevron()}>
@@ -179,21 +182,21 @@ export function InsetRow(props: InsetRowProps): JSX.Element {
       </Show>
     </>
   )
-  const interactive = () => Boolean(local.href || local.onClick)
+  const interactive = () => Boolean(props.href || props.onClick)
   return (
     <div
       ref={row}
       role="listitem"
-      class={cx("nc-inset-row", local.class)}
+      class={cx("nc-inset-row", props.class)}
       data-part="inset-row"
-      data-danger={local.danger ? "" : undefined}
-      data-muted={local.muted ? "" : undefined}
-      data-two-line={local.detail ? "" : undefined}
+      data-danger={props.danger ? "" : undefined}
+      data-muted={props.muted ? "" : undefined}
+      data-two-line={props.detail ? "" : undefined}
       data-open={offset() > 0 ? "leading" : offset() < 0 ? "trailing" : undefined}
       style={swipeable() ? { "touch-action": "pan-y" } : undefined}
       {...swipe.handlers}
       onContextMenu={(e) => {
-        if (!local.menu?.length) return
+        if (!props.menu?.length) return
         e.preventDefault()
         setMenuAt({ x: e.clientX, y: e.clientY })
       }}
@@ -204,7 +207,7 @@ export function InsetRow(props: InsetRowProps): JSX.Element {
           class="nc-inset-row__actions nc-inset-row__actions--leading"
           style={{ width: `${Math.max(offset(), 0)}px` }}
         >
-          <For each={local.leadingActions}>
+          <For each={props.leadingActions}>
             {(a) => <SwipeButton action={a} close={() => swipe.setOpen(null)} />}
           </For>
         </div>
@@ -214,7 +217,7 @@ export function InsetRow(props: InsetRowProps): JSX.Element {
           class="nc-inset-row__actions nc-inset-row__actions--trailing"
           style={{ width: `${Math.max(-offset(), 0)}px` }}
         >
-          <For each={local.trailingActions}>
+          <For each={props.trailingActions}>
             {(a) => <SwipeButton action={a} close={() => swipe.setOpen(null)} />}
           </For>
         </div>
@@ -226,26 +229,26 @@ export function InsetRow(props: InsetRowProps): JSX.Element {
       >
         <Show when={interactive()} fallback={<div class="nc-inset-row__main">{inner()}</div>}>
           <Show
-            when={local.href}
+            when={props.href}
             fallback={
               <button
                 type="button"
                 class="nc-inset-row__main"
-                role={local.checked !== undefined ? "menuitemradio" : undefined}
-                aria-checked={local.checked !== undefined ? local.checked : undefined}
+                role={props.checked !== undefined ? "menuitemradio" : undefined}
+                aria-checked={props.checked !== undefined ? aria(props.checked) : undefined}
                 onClick={activate}
               >
                 {inner()}
               </button>
             }
           >
-            <a class="nc-inset-row__main" href={local.href} onClick={activate}>
+            <a class="nc-inset-row__main" href={props.href} onClick={activate}>
               {inner()}
             </a>
           </Show>
         </Show>
-        <Show when={local.below}>
-          <div class="nc-inset-row__below">{local.below}</div>
+        <Show when={props.below}>
+          <div class="nc-inset-row__below">{props.below}</div>
         </Show>
       </div>
       <Show when={menuAt()}>
@@ -253,12 +256,12 @@ export function InsetRow(props: InsetRowProps): JSX.Element {
           <RowMenu
             at={at()}
             phone={phone()}
-            label={local.menuLabel ?? "Actions"}
-            items={local.menu ?? []}
+            label={props.menuLabel ?? "Actions"}
+            items={props.menu ?? []}
             onClose={() => setMenuAt(null)}
             onSelect={(id) => {
               setMenuAt(null)
-              local.onMenuSelect?.(id)
+              props.onMenuSelect?.(id)
             }}
           />
         )}

@@ -3,7 +3,8 @@
 // AI", dictation, and the block types plugins contribute. The shell supplies them with <EditorServicesProvider>
 // (or a component passes `services`); every one is optional and the editor hides what is missing.
 
-import { type Component, createContext, type JSX, useContext } from "solid-js"
+import type { JSX } from "@solidjs/web"
+import { type Component, createContext, useContext } from "solid-js"
 import type * as Y from "yjs"
 import type { BlockWidth, BlockWidthPolicy } from "./width"
 
@@ -153,7 +154,7 @@ const Ctx = createContext<EditorServices>({})
 
 /** Supplies editor services to every RichTextEditor below it. */
 export function EditorServicesProvider(props: { value: EditorServices; children: JSX.Element }): JSX.Element {
-  return <Ctx.Provider value={props.value}>{props.children}</Ctx.Provider>
+  return <Ctx value={props.value}>{props.children}</Ctx>
 }
 
 export function useEditorServices(): EditorServices {

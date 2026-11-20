@@ -1,5 +1,7 @@
 // An amount in a currency: written the same in a table, a list, a record page and a form.
-import { type JSX, Show } from "solid-js"
+
+import type { JSX } from "@solidjs/web"
+import { Show } from "solid-js"
 import { Empty } from "../Empty"
 import { formatMoney } from "../format"
 import type { EditorProps, FieldKind, ValueProps } from "../kind"

@@ -1,4 +1,5 @@
-import { type JSX, splitProps } from "solid-js"
+import type { JSX } from "@solidjs/web"
+import { omit } from "solid-js"
 import { cx } from "../lib/cx"
 
 /** `live` and `ai` glow because they are moving; the rest never glow. */
@@ -11,13 +12,13 @@ export interface StatusDotProps extends JSX.HTMLAttributes<HTMLSpanElement> {
 
 /** The 6px dot alone. Pair it with a word: use `State`. */
 export function StatusDot(props: StatusDotProps): JSX.Element {
-  const [local, rest] = splitProps(props, ["status", "class"])
+  const rest = omit(props, "status", "class")
   return (
     <span
       data-part="status-dot"
-      data-status={local.status}
+      data-status={props.status}
       aria-hidden="true"
-      class={cx("nc-dot", local.status !== "neutral" && `nc-dot--${local.status}`, local.class)}
+      class={cx("nc-dot", props.status !== "neutral" && `nc-dot--${props.status}`, props.class)}
       {...rest}
     />
   )
@@ -32,20 +33,20 @@ export interface StateProps extends JSX.HTMLAttributes<HTMLSpanElement> {
 
 /** A dot plus a word: the one way state is shown. The word is coloured only for `warn` and `error`. */
 export function State(props: StateProps): JSX.Element {
-  const [local, rest] = splitProps(props, ["status", "class", "children"])
+  const rest = omit(props, "status", "class", "children")
   return (
     <span
       data-part="state"
-      data-status={local.status}
+      data-status={props.status}
       class={cx(
         "nc-state",
-        (local.status === "warn" || local.status === "error") && `nc-state--${local.status}`,
-        local.class,
+        (props.status === "warn" || props.status === "error") && `nc-state--${props.status}`,
+        props.class,
       )}
       {...rest}
     >
-      <StatusDot status={local.status} />
-      {local.children}
+      <StatusDot status={props.status} />
+      {props.children}
     </span>
   )
 }

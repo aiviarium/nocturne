@@ -1,5 +1,5 @@
 import { NavigationScreen } from "@aiviarium/nocturne"
-import type { JSX } from "solid-js"
+import type { JSX } from "@solidjs/web"
 import type { ExampleMeta } from "./types"
 
 /** A short screen title for an example shown on a phone: its part's name ("text-field/states" is "Text field"). */

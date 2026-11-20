@@ -1,4 +1,6 @@
-import { createMemo, createSignal, type JSX, Show } from "solid-js"
+import type { JSX } from "@solidjs/web"
+import { createMemo, createSignal, Show } from "solid-js"
+import { aria } from "../lib/aria"
 import { createControllable } from "../lib/controllable"
 import { cx } from "../lib/cx"
 import { createId } from "../lib/id"
@@ -100,9 +102,9 @@ export function Select<T extends string = string>(props: SelectProps<T>): JSX.El
         type="button"
         class={cx("nc-input nc-select", props.mono && "nc-mono", invalid() && "nc-input--error")}
         aria-haspopup="listbox"
-        aria-expanded={open()}
+        aria-expanded={aria(open())}
         aria-label={props["aria-label"]}
-        aria-invalid={invalid() || undefined}
+        aria-invalid={invalid() ? "true" : undefined}
         aria-describedby={message() ? `${id}-help` : undefined}
         disabled={props.disabled}
         onClick={() => setOpen(!open())}
@@ -113,7 +115,7 @@ export function Select<T extends string = string>(props: SelectProps<T>): JSX.El
           }
         }}
       >
-        <span class="nc-select__value" classList={{ "nc-select__value--placeholder": !selected() }}>
+        <span class={["nc-select__value", { "nc-select__value--placeholder": !selected() }]}>
           <Show when={selected()?.icon}>
             <Icon name={selected()?.icon} size="sm" />
           </Show>
@@ -122,7 +124,7 @@ export function Select<T extends string = string>(props: SelectProps<T>): JSX.El
         <Icon name="chevron-down" size="sm" class="nc-select__chevron" />
       </button>
       <Show when={message()}>
-        <span id={`${id}-help`} class="nc-field__help" classList={{ "nc-field__help--error": invalid() }}>
+        <span id={`${id}-help`} class={["nc-field__help", { "nc-field__help--error": invalid() }]}>
           {message()}
         </span>
       </Show>

@@ -1,8 +1,11 @@
 // The control a day or an instant is picked with: at rest it reads like the table does ("Dec 1, 2026") in the
 // person's locale, and it opens a calendar, with a time of day where the field is an instant.
-import { createSignal, type JSX, Show } from "solid-js"
+
+import type { JSX } from "@solidjs/web"
+import { createSignal, Show } from "solid-js"
 import { Button } from "../../components/Button"
 import { Icon } from "../../components/Icon"
+import { aria } from "../../lib/aria"
 import { cx } from "../../lib/cx"
 import { Empty } from "../Empty"
 import { formatDate, joinInstant, splitInstant } from "../format"
@@ -46,8 +49,8 @@ export function DatePicker(props: DatePickerProps): JSX.Element {
         )}
         aria-label={props.label}
         aria-haspopup="dialog"
-        aria-expanded={open()}
-        aria-invalid={props.invalid || undefined}
+        aria-expanded={aria(open())}
+        aria-invalid={props.invalid ? "true" : undefined}
         disabled={props.disabled}
         data-part="date-picker"
         onClick={() => setOpen(!open())}

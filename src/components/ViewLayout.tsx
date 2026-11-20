@@ -1,12 +1,11 @@
+import type { JSX } from "@solidjs/web"
 import {
   createContext,
   createEffect,
   createMemo,
   createSignal,
-  type JSX,
-  on,
   onCleanup,
-  onMount,
+  onSettled,
   Show,
   untrack,
   useContext,
@@ -49,7 +48,8 @@ export interface ViewLayoutHostValue {
   keys?: { sidebar?: string; aside?: string }
 }
 
-export const ViewLayoutHost = createContext<ViewLayoutHostValue>()
+// `null` is "no host": in Solid 2 a default-less context throws instead of reading as undefined.
+export const ViewLayoutHost = createContext<ViewLayoutHostValue | null>(null)
 
 /** What a view header learns from the layout it is in: whether there are toggles to show. */
 interface LayoutState {
@@ -63,7 +63,7 @@ interface LayoutState {
   keys: () => { sidebar?: string; aside?: string }
 }
 
-export const ViewLayoutState = createContext<LayoutState>()
+export const ViewLayoutState = createContext<LayoutState | null>(null)
 
 export interface ViewLayoutProps {
   /** Remembers the widths and what is collapsed: one key per kind of view, such as `docs.page`. */
@@ -183,11 +183,11 @@ function PhoneViewLayout(props: ViewLayoutProps): JSX.Element {
       : [],
   }))
   createEffect(
-    on(
-      () => props.asideRequest,
-      (n) => n && hasAside() && setAsideOpen(true),
-      { defer: true },
-    ),
+    () => props.asideRequest,
+    (n) => {
+      if (n && hasAside()) setAsideOpen(true)
+    },
+    { defer: true },
   )
   const Body = () => (
     <Show
@@ -235,9 +235,9 @@ function PhoneViewLayout(props: ViewLayoutProps): JSX.Element {
     </Show>
   )
   return (
-    <ViewLayoutState.Provider value={state}>
+    <ViewLayoutState value={state}>
       <Body />
-    </ViewLayoutState.Provider>
+    </ViewLayoutState>
   )
 }
 
@@ -356,7 +356,7 @@ export function ViewLayout(props: ViewLayoutProps): JSX.Element {
     save(props.id, { asideCollapsed: next })
   }
 
-  onMount(() => {
+  onSettled(() => {
     const ro = new ResizeObserver(() => setFrame(root.getBoundingClientRect().width))
     ro.observe(root)
     setFrame(root.getBoundingClientRect().width)
@@ -369,36 +369,38 @@ export function ViewLayout(props: ViewLayoutProps): JSX.Element {
   })
 
   // Tell the host how much room the sidebar and a comfortable main column lack (or have to spare).
-  createEffect(() => {
-    if (!host || frame() === 0) return
-    host.report(
-      handle,
-      hasSidebar() && !collapsed()
-        ? railWidth() + width() + EDGE + (sidebarAsked() ? MAIN_FLOOR : minMain()) - frame()
-        : null,
-    )
-  })
+  createEffect(
+    () =>
+      !host || frame() === 0
+        ? undefined
+        : {
+            host,
+            value:
+              hasSidebar() && !collapsed()
+                ? railWidth() + width() + EDGE + (sidebarAsked() ? MAIN_FLOOR : minMain()) - frame()
+                : null,
+          },
+    (next) => next?.host.report(handle, next.value),
+  )
   // A view asked for its panel: open it, beside the main column or over it.
   createEffect(
-    on(
-      () => props.asideRequest,
-      (n) => {
-        if (!n || !hasAside()) return
-        if (asideComfort() || asideFloor()) {
-          if (!asideComfort()) setAsideAsked(true)
-          setAsideCollapsed(false)
-          save(props.id, { asideCollapsed: false })
-        } else setAsideOver(true)
-      },
-      { defer: true },
-    ),
+    () => props.asideRequest,
+    (n) => {
+      if (!n || !hasAside()) return
+      if (asideComfort() || asideFloor()) {
+        if (!asideComfort()) setAsideAsked(true)
+        setAsideCollapsed(false)
+        save(props.id, { asideCollapsed: false })
+      } else setAsideOver(true)
+    },
+    { defer: true },
   )
   // An overlay closes when there is room for the column again.
-  createEffect(() => {
-    if (asideFits()) setAsideOver(false)
+  createEffect(asideFits, (fits) => {
+    if (fits) setAsideOver(false)
   })
-  createEffect(() => {
-    if (sidebarRoom()) setSidebarOver(false)
+  createEffect(sidebarRoom, (room) => {
+    if (room) setSidebarOver(false)
   })
 
   // A column opened over the main column is an overlay: a scrim behind it, Escape and a click on the scrim close
@@ -410,45 +412,42 @@ export function ViewLayout(props: ViewLayoutProps): JSX.Element {
     setSidebarOver(false)
     setAsideOver(false)
   }
-  createEffect(
-    on(overlay, (which) => {
-      if (!which) return
-      const opener = activeElement() as HTMLElement | null
-      const layer = pushLayer()
-      const onKey = (e: KeyboardEvent) => {
-        if (e.key !== "Escape" || e.defaultPrevented || !layer.isTop()) return
-        e.preventDefault()
-        e.stopPropagation()
-        closeOverlay()
-      }
-      document.addEventListener("keydown", onKey, true)
-      queueMicrotask(() => {
-        const panel = root?.querySelector<HTMLElement>(
-          which === "sidebar" ? "[data-part=view-sidebar]" : "[data-part=view-aside]",
-        )
-        if (!panel || panel.contains(activeElement())) return
-        const first =
-          panel.querySelector<HTMLElement>("[aria-current=page], [aria-current=true]") ??
-          focusableIn(panel)[0]
-        ;(first ?? panel).focus({ preventScroll: true })
-      })
-      onCleanup(() => {
-        document.removeEventListener("keydown", onKey, true)
-        layer.remove()
-        // Back to the toggle, unless focus has already gone somewhere outside the closed column.
-        const now = activeElement()
-        const lost = !now || now === document.body || !now.isConnected || Boolean(now.closest(COLUMNS))
-        if (!lost) return
-        const back =
-          opener?.isConnected && opener !== document.body && !opener.closest(COLUMNS)
-            ? opener
-            : root?.querySelector<HTMLElement>(
-                which === "sidebar" ? "[data-part=view-sidebar-toggle]" : "[data-part=view-aside-toggle]",
-              )
-        back?.focus({ preventScroll: true })
-      })
-    }),
-  )
+  createEffect(overlay, (which) => {
+    if (!which) return
+    const opener = activeElement() as HTMLElement | null
+    const layer = pushLayer()
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "Escape" || e.defaultPrevented || !layer.isTop()) return
+      e.preventDefault()
+      e.stopPropagation()
+      closeOverlay()
+    }
+    document.addEventListener("keydown", onKey, true)
+    queueMicrotask(() => {
+      const panel = root?.querySelector<HTMLElement>(
+        which === "sidebar" ? "[data-part=view-sidebar]" : "[data-part=view-aside]",
+      )
+      if (!panel || panel.contains(activeElement())) return
+      const first =
+        panel.querySelector<HTMLElement>("[aria-current=page], [aria-current=true]") ?? focusableIn(panel)[0]
+      ;(first ?? panel).focus({ preventScroll: true })
+    })
+    return () => {
+      document.removeEventListener("keydown", onKey, true)
+      layer.remove()
+      // Back to the toggle, unless focus has already gone somewhere outside the closed column.
+      const now = activeElement()
+      const lost = !now || now === document.body || !now.isConnected || Boolean(now.closest(COLUMNS))
+      if (!lost) return
+      const back =
+        opener?.isConnected && opener !== document.body && !opener.closest(COLUMNS)
+          ? opener
+          : root?.querySelector<HTMLElement>(
+              which === "sidebar" ? "[data-part=view-sidebar-toggle]" : "[data-part=view-aside-toggle]",
+            )
+      back?.focus({ preventScroll: true })
+    }
+  })
   /** A choice in the sidebar opened over the main column closes it (a link or a navigation item). */
   const choseInSidebar = (e: MouseEvent) => {
     if (!sidebarOver() || e.defaultPrevented) return
@@ -467,17 +466,29 @@ export function ViewLayout(props: ViewLayoutProps): JSX.Element {
     moved = false
     setDragging(which)
   }
+  // The width the pointer last asked for: a read of the signal would be a step behind within one event.
+  let dragged: { which: "sidebar" | "aside"; width: number } | null = null
   const drag = (e: PointerEvent) => {
     const which = dragging()
     if (!which) return
     if (pressAt !== null && Math.abs(e.clientX - pressAt) < 3) return
     moved = true
     const box = root.getBoundingClientRect()
-    if (which === "sidebar") setWidth(clamp(e.clientX - box.left, SIDEBAR.min, SIDEBAR.max))
-    else setAsideWidth(clamp(box.right - e.clientX, ASIDE.min, Math.min(ASIDE.max, box.width * 0.35)))
+    if (which === "sidebar") {
+      dragged = { which, width: clamp(e.clientX - box.left, SIDEBAR.min, SIDEBAR.max) }
+      setWidth(dragged.width)
+    } else {
+      dragged = {
+        which,
+        width: clamp(box.right - e.clientX, ASIDE.min, Math.min(ASIDE.max, box.width * 0.35)),
+      }
+      setAsideWidth(dragged.width)
+    }
   }
   const endDrag = () => {
     const which = dragging()
+    const last = dragged
+    dragged = null
     setDragging(null)
     pressAt = null
     if (which && !moved) {
@@ -485,19 +496,22 @@ export function ViewLayout(props: ViewLayoutProps): JSX.Element {
       else toggleAside()
       return
     }
-    if (which === "sidebar") save(props.id, { w: width() })
+    if (which === "sidebar") save(props.id, { w: last?.width ?? width() })
     if (which === "aside") save(props.id, { aw: asideWidth() })
   }
   const keyStep = (which: "sidebar" | "aside", e: KeyboardEvent) => {
     const step = e.key === "ArrowRight" ? 16 : e.key === "ArrowLeft" ? -16 : 0
     if (!step) return
     e.preventDefault()
+    // One write, then what was written: a read of the signal would be a step behind.
     if (which === "sidebar") {
-      setWidth((w) => clamp(w + step, SIDEBAR.min, SIDEBAR.max))
-      save(props.id, { w: width() })
+      const next = clamp(width() + step, SIDEBAR.min, SIDEBAR.max)
+      setWidth(next)
+      save(props.id, { w: next })
     } else {
-      setAsideWidth(clamp(asideWidth() - step, ASIDE.min, ASIDE.max))
-      save(props.id, { aw: asideWidth() })
+      const next = clamp(asideWidth() - step, ASIDE.min, ASIDE.max)
+      setAsideWidth(next)
+      save(props.id, { aw: next })
     }
   }
 
@@ -544,8 +558,7 @@ export function ViewLayout(props: ViewLayoutProps): JSX.Element {
         <Show when={hasSidebar()}>
           <Show when={sidebarShown() || sidebarOver()}>
             <aside
-              class="nc-view-layout__sidebar"
-              classList={{ "nc-view-layout__sidebar--over": sidebarOver() }}
+              class={["nc-view-layout__sidebar", { "nc-view-layout__sidebar--over": sidebarOver() }]}
               aria-label={props.sidebarLabel ?? "Navigation"}
               data-part="view-sidebar"
               onClick={choseInSidebar}
@@ -609,8 +622,7 @@ export function ViewLayout(props: ViewLayoutProps): JSX.Element {
           {headerSlot()}
           <div class="nc-view-layout__row">
             <main
-              class="nc-view-layout__main"
-              classList={{ "nc-view-layout__main--scroll": props.scroll !== false }}
+              class={["nc-view-layout__main", { "nc-view-layout__main--scroll": props.scroll !== false }]}
               data-part="view-main"
               data-reading={readingWidth() ? "" : undefined}
               style={readingWidth() ? { "--nc-view-reading": `${readingWidth()}px` } : undefined}
@@ -634,8 +646,7 @@ export function ViewLayout(props: ViewLayoutProps): JSX.Element {
                 />
               </Show>
               <aside
-                class="nc-view-layout__aside"
-                classList={{ "nc-view-layout__aside--over": asideOver() }}
+                class={["nc-view-layout__aside", { "nc-view-layout__aside--over": asideOver() }]}
                 aria-label={props.asideLabel ?? "Details"}
                 data-part="view-aside"
               >
@@ -649,13 +660,13 @@ export function ViewLayout(props: ViewLayoutProps): JSX.Element {
   }
 
   return (
-    <ViewLayoutState.Provider value={state}>
+    <ViewLayoutState value={state}>
       <Body />
-    </ViewLayoutState.Provider>
+    </ViewLayoutState>
   )
 }
 
 /** The toggles a view header shows for the layout it is in. */
 export function useViewLayout(): LayoutState | undefined {
-  return useContext(ViewLayoutState)
+  return useContext(ViewLayoutState) ?? undefined
 }

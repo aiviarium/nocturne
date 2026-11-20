@@ -2,8 +2,9 @@
 // form. Every one goes through the kind's implementation (`registry.ts`); nothing outside this folder draws a typed
 // value of its own.
 
-import { createMemo, type JSX, Show } from "solid-js"
-import { Dynamic } from "solid-js/web"
+import type { JSX } from "@solidjs/web"
+import { Dynamic } from "@solidjs/web"
+import { createMemo, Show } from "solid-js"
 import { InfoTip } from "../components/InfoTip"
 import { cx } from "../lib/cx"
 import { createId } from "../lib/id"

@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, test } from "bun:test"
-import { createSignal } from "solid-js"
+import { createSignal, flush } from "solid-js"
 import {
   clearToasts,
   DataList,
@@ -38,6 +38,7 @@ const rightClick = (el: Element, init: MouseEventInit = {}) => {
     ...init,
   })
   el.dispatchEvent(e)
+  flush()
   return e
 }
 const menuItems = () => all("[role=menuitem]").map((e) => e.textContent?.trim())
@@ -101,6 +102,7 @@ describe("RowList's context menu", () => {
           onRemove={(keys) => {
             const before = items()
             setItems(before.filter((t) => !keys.includes(t)))
+            flush()
             return () => setItems(before)
           }}
           rowMenu={
@@ -131,6 +133,7 @@ describe("RowList's context menu", () => {
     const mains = all<HTMLElement>("[data-row-focus]")
     click(mains[0] as HTMLElement)
     mains[2]?.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, shiftKey: true }))
+    flush()
     expect(all("[data-selected]").length).toBe(3)
     const e = rightClick(rows()[1] as HTMLElement)
     await tick()
@@ -164,7 +167,9 @@ describe("RowList's context menu", () => {
     const mains = all<HTMLElement>("[data-row-focus]")
     // A plain click opens the row; Cmd and a click selects.
     mains[0]?.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, metaKey: true }))
+    flush()
     mains[1]?.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, metaKey: true }))
+    flush()
     ;(mains[1] as HTMLElement).focus()
     press(mains[1] as HTMLElement, "ContextMenu")
     await tick()
@@ -223,6 +228,7 @@ describe("DataTable manages its rows", () => {
           onRemove={(ids) => {
             const before = rows()
             setRows(before.filter((r) => !ids.includes(r.id)))
+            flush()
             return () => setRows(before)
           }}
         />
@@ -263,9 +269,11 @@ describe("DataTable manages its rows", () => {
     expect(opened).toEqual(["a"])
     expect(trs().map((t) => t.getAttribute("aria-selected"))).toEqual(["false", "false", "false"])
     trs()[2]?.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, shiftKey: true }))
+    flush()
     expect(trs().map((t) => t.getAttribute("aria-selected"))).toEqual(["true", "true", "true"])
     expect(opened).toEqual(["a"])
     trs()[1]?.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, metaKey: true }))
+    flush()
     expect(trs().map((t) => t.getAttribute("aria-selected"))).toEqual(["true", "false", "true"])
     // The arrows move focus, Enter opens.
     const row = trs()[0] as HTMLElement
@@ -281,6 +289,7 @@ describe("DataTable manages its rows", () => {
     track(mount(() => <Table />))
     click(trs()[0] as HTMLElement)
     trs()[1]?.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, shiftKey: true }))
+    flush()
     rightClick(trs()[1] as HTMLElement)
     await tick()
     expect(menuItems()).toEqual(["Delete 2"])
@@ -326,6 +335,7 @@ describe("DataList", () => {
           onChange={(next) => {
             props.seen?.push(next)
             setEnv(next)
+            flush()
           }}
           create={() => ({ name: "", value: "" })}
           selectable
@@ -356,6 +366,7 @@ describe("DataList", () => {
     const value = one<HTMLInputElement>("input[aria-label='Value of B']")
     value.value = "20"
     value.dispatchEvent(new InputEvent("input", { bubbles: true }))
+    flush()
     expect(one<HTMLInputElement>("input[aria-label='Value of B']").value).toBe("20")
   })
 
@@ -366,6 +377,7 @@ describe("DataList", () => {
     // A real click lands on the check mark inside the box, which unchecking removes while the click bubbles.
     const mark = one("[aria-label='Select B'] svg")
     mark.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true }))
+    flush()
     expect(one("[aria-label='Select B']").getAttribute("aria-checked")).toBe("false")
     expect(all("[data-part=bulk-bar]").length).toBe(0)
   })
@@ -377,6 +389,7 @@ describe("DataList", () => {
     one("[aria-label='Select C']").dispatchEvent(
       new MouseEvent("click", { bubbles: true, cancelable: true, shiftKey: true }),
     )
+    flush()
     expect(rows().map((r) => r.hasAttribute("data-selected"))).toEqual([true, true, true])
     expect(one("[data-part=bulk-bar]").textContent).toContain("3 selected")
     click(one("[aria-label='Select all rows']"))

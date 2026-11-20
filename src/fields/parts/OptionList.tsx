@@ -1,8 +1,11 @@
 // Option lists: a listbox of options (one or many, with a search field when long) and the same behind one trigger.
 // Used by the enum kind's filter and by the pickers of people and relations in the query builder.
-import { createMemo, createSignal, For, type JSX, onMount, Show, untrack } from "solid-js"
+
+import type { JSX } from "@solidjs/web"
+import { createMemo, createSignal, For, onSettled, Show, untrack } from "solid-js"
 import { Icon, type IconName } from "../../components/Icon"
 import { TextField } from "../../components/TextField"
+import { aria } from "../../lib/aria"
 import { cx } from "../../lib/cx"
 import { createId } from "../../lib/id"
 import type { QueryOption } from "../../lib/query"
@@ -43,7 +46,7 @@ export function OptionList(props: OptionListProps): JSX.Element {
     e.preventDefault()
     list.querySelector(`#${id}-${active()}`)?.scrollIntoView({ block: "nearest" })
   }
-  onMount(() => {
+  onSettled(() => {
     if (!props.autoFocus) return
     // The first chosen option is where the keys start.
     const at = props.options.findIndex((o) => props.value.includes(o.value))
@@ -76,9 +79,9 @@ export function OptionList(props: OptionListProps): JSX.Element {
         class="nc-qopts__list"
         role="listbox"
         aria-label={props.label}
-        aria-multiselectable={props.multiple || undefined}
+        aria-multiselectable={props.multiple ? "true" : undefined}
         aria-activedescendant={shown().length ? `${id}-${active()}` : undefined}
-        tabIndex={props.options.length >= SEARCH_FROM ? -1 : 0}
+        tabindex={props.options.length >= SEARCH_FROM ? -1 : 0}
         onKeyDown={onKeyDown}
       >
         <For each={shown()} fallback={<div class="nc-qopts__empty">No matches</div>}>
@@ -88,7 +91,7 @@ export function OptionList(props: OptionListProps): JSX.Element {
               <div
                 id={`${id}-${i()}`}
                 role="option"
-                aria-selected={on()}
+                aria-selected={aria(on())}
                 class={cx("nc-menu__item nc-qopts__option", o.description && "nc-menu__item--rich")}
                 data-active={active() === i() || undefined}
                 onPointerMove={() => setActive(i())}
@@ -149,7 +152,7 @@ export function OptionPicker(props: OptionPickerProps): JSX.Element {
         type="button"
         class="nc-input nc-select nc-qrow__picker"
         aria-haspopup="listbox"
-        aria-expanded={open()}
+        aria-expanded={aria(open())}
         aria-label={`${props.label}: ${text() || "none chosen"}`}
         onClick={() => setOpen(!open())}
         onKeyDown={(e) => {
@@ -159,7 +162,7 @@ export function OptionPicker(props: OptionPickerProps): JSX.Element {
           }
         }}
       >
-        <span class="nc-select__value" classList={{ "nc-select__value--placeholder": !text() }}>
+        <span class={["nc-select__value", { "nc-select__value--placeholder": !text() }]}>
           {text() || "Choose…"}
         </span>
         <Icon name="chevron-down" size="sm" class="nc-select__chevron" />

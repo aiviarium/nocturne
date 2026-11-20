@@ -1,4 +1,4 @@
-import type { JSX } from "solid-js"
+import type { JSX } from "@solidjs/web"
 
 /** No value: one em dash, muted, wherever a value is read. */
 export function Empty(): JSX.Element {

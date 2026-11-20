@@ -3,6 +3,7 @@ export * from "./components"
 export * from "./editor"
 export * from "./fields"
 export { ACCENTS, type AccentPreset, accentPreset, accentValue } from "./lib/accents"
+export { aria, ariaChecked } from "./lib/aria"
 export { cx } from "./lib/cx"
 export { type DiffHunk, type DiffLine, diffStrings, diffWords, type FileDiff, parsePatch } from "./lib/diff"
 export {

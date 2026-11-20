@@ -1,4 +1,5 @@
-import { createSignal, type JSX, onMount, Show } from "solid-js"
+import type { JSX } from "@solidjs/web"
+import { createSignal, onSettled, Show } from "solid-js"
 import { cx } from "../lib/cx"
 import { pullRefreshes, rubberBand } from "../lib/gestures"
 import { keyboardOpen, trackViewport } from "../lib/phone"
@@ -42,7 +43,7 @@ export function PullToRefresh(props: {
   let el!: HTMLDivElement
   const [pull, setPull] = createSignal(0)
   const [busy, setBusy] = createSignal(false)
-  onMount(() => {
+  onSettled(() => {
     let y: number | null = null
     let d = 0
     el.addEventListener(

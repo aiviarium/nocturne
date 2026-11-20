@@ -1,7 +1,8 @@
 import { ACCENTS, isPhone, Nav, Tabs, ToastRegion } from "@aiviarium/nocturne"
+import { render } from "@solidjs/web"
 import { createMemo, createSignal, For, Show } from "solid-js"
-import { render } from "solid-js/web"
 import { mount } from "../examples/mount"
+import { aria } from "../src/lib/aria"
 import { DeviceChrome } from "./device"
 import { Sections } from "./kit"
 import { PAGE_GROUPS, PAGES } from "./pages"
@@ -118,7 +119,7 @@ export function App() {
                   class="g-swatch"
                   title={a.name}
                   aria-label={`Accent ${a.name}`}
-                  aria-pressed={accentId() === a.id}
+                  aria-pressed={aria(accentId() === a.id)}
                   style={{ "--swatch": theme() === "dark" ? a.dark : a.light }}
                   onClick={() => {
                     setAccentId(a.id)

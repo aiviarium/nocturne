@@ -1,4 +1,5 @@
-import { createEffect, createSignal, type JSX, on, Show, splitProps } from "solid-js"
+import type { JSX } from "@solidjs/web"
+import { createEffect, createSignal, omit, Show } from "solid-js"
 import { cx } from "../lib/cx"
 
 export interface InlineFieldProps
@@ -33,7 +34,8 @@ export interface InlineFieldProps
  * real `input` (or `textarea` with `multiline`) with a label.
  */
 export function InlineField(props: InlineFieldProps): JSX.Element {
-  const [local, rest] = splitProps(props, [
+  const rest = omit(
+    props,
     "value",
     "onCommit",
     "onInput",
@@ -44,38 +46,40 @@ export function InlineField(props: InlineFieldProps): JSX.Element {
     "readOnly",
     "selectOnFocus",
     "class",
-  ])
-  const [draft, setDraft] = createSignal(local.value)
+  )
+  const [draft, setDraft] = createSignal(props.value)
   let editing = false
   // A new saved value (from another device, or after a save) replaces the draft while it is not being edited.
   createEffect(
-    on(
-      () => local.value,
-      (v) => {
-        if (!editing) setDraft(v)
-      },
-    ),
+    () => props.value,
+    (v) => {
+      if (!editing) setDraft(v)
+    },
   )
   const commit = () => {
+    const wasEditing = editing
     editing = false
-    const next = local.multiline ? draft().replace(/\s*\n\s*/g, " ") : draft()
-    if (next !== local.value) local.onCommit(next)
+    // Escape reverts, then blurs: the blur that follows must not commit the text it put back.
+    if (!wasEditing) return
+    const next = props.multiline ? draft().replace(/\s*\n\s*/g, " ") : draft()
+    if (next !== props.value) props.onCommit(next)
   }
   const revert = (el: HTMLInputElement | HTMLTextAreaElement) => {
+    // A draft write is read back only after the next flush, so the restored text goes to the field here.
     editing = false
-    setDraft(local.value)
-    el.value = local.value
+    el.value = props.value
+    setDraft(() => props.value)
     el.blur()
   }
   const handlers = {
     onFocus: (e: FocusEvent) => {
       editing = true
-      if (local.selectOnFocus) (e.currentTarget as HTMLInputElement).select()
+      if (props.selectOnFocus) (e.currentTarget as HTMLInputElement).select()
     },
     onInput: (e: InputEvent) => {
       const v = (e.currentTarget as HTMLInputElement).value
       setDraft(v)
-      local.onInput?.(v)
+      props.onInput?.(v)
     },
     onBlur: () => commit(),
     onKeyDown: (e: KeyboardEvent) => {
@@ -90,20 +94,29 @@ export function InlineField(props: InlineFieldProps): JSX.Element {
       }
     },
   }
-  const className = () => cx("nc-inline-field", `nc-inline-field--${local.variant ?? "text"}`, local.class)
+  const className = () => cx("nc-inline-field", `nc-inline-field--${props.variant ?? "text"}`, props.class)
+  let area: HTMLTextAreaElement | undefined
+  // Grows with its text: a title that wraps is as tall as its lines.
+  createEffect(draft, () =>
+    queueMicrotask(() => {
+      if (!area) return
+      area.style.height = "auto"
+      area.style.height = `${area.scrollHeight}px`
+    }),
+  )
   return (
     <Show
-      when={local.multiline}
+      when={props.multiline}
       fallback={
         <input
           data-part="inline-field"
           class={className()}
-          aria-label={local.label}
-          placeholder={local.placeholder}
-          readOnly={local.readOnly}
+          aria-label={props.label}
+          placeholder={props.placeholder}
+          readonly={props.readOnly}
           value={draft()}
           title={draft() || undefined}
-          spellcheck={local.variant !== "mono"}
+          spellcheck={props.variant !== "mono"}
           {...handlers}
           {...(rest as JSX.InputHTMLAttributes<HTMLInputElement>)}
         />
@@ -112,19 +125,12 @@ export function InlineField(props: InlineFieldProps): JSX.Element {
       <textarea
         data-part="inline-field"
         class={cx(className(), "nc-inline-field--multiline")}
-        aria-label={local.label}
-        placeholder={local.placeholder}
-        readOnly={local.readOnly}
+        aria-label={props.label}
+        placeholder={props.placeholder}
+        readonly={props.readOnly}
         value={draft()}
         rows={1}
-        ref={(el) => {
-          // Grows with its text: a title that wraps is as tall as its lines.
-          const fit = () => {
-            el.style.height = "auto"
-            el.style.height = `${el.scrollHeight}px`
-          }
-          createEffect(on(draft, () => queueMicrotask(fit)))
-        }}
+        ref={area}
         {...handlers}
         {...(rest as JSX.TextareaHTMLAttributes<HTMLTextAreaElement>)}
       />

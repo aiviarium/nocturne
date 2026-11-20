@@ -11,6 +11,7 @@ export interface ShellHeaderValue {
   claim: () => () => void
 }
 
-export const ShellHeaderContext = createContext<ShellHeaderValue>()
+// `null` is "no shell above": in Solid 2 a default-less context throws instead of reading as undefined.
+export const ShellHeaderContext = createContext<ShellHeaderValue | null>(null)
 
-export const useShellHeader = () => useContext(ShellHeaderContext)
+export const useShellHeader = (): ShellHeaderValue | undefined => useContext(ShellHeaderContext) ?? undefined

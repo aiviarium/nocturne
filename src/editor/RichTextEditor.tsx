@@ -2,6 +2,9 @@
 // collaborative document (`provider`, a Yjs document and its awareness) or to a JSON value (`value` and `onChange`,
 // conflict detection left to the caller). Pickers, uploads, the model call and dictation come from
 // EditorServices; the editor itself has no network code.
+
+import type { JSX } from "@solidjs/web"
+import { Dynamic } from "@solidjs/web"
 import { baseKeymap } from "prosemirror-commands"
 import { dropCursor } from "prosemirror-dropcursor"
 import { gapCursor } from "prosemirror-gapcursor"
@@ -26,20 +29,7 @@ import {
   tableEditing,
 } from "prosemirror-tables"
 import { EditorView } from "prosemirror-view"
-import {
-  createEffect,
-  createMemo,
-  createSignal,
-  For,
-  type JSX,
-  on,
-  onCleanup,
-  onMount,
-  Show,
-  splitProps,
-  untrack,
-} from "solid-js"
-import { Dynamic } from "solid-js/web"
+import { createEffect, createMemo, createSignal, For, onCleanup, onSettled, Show, untrack } from "solid-js"
 import {
   initProseMirrorDoc,
   yCursorPlugin,
@@ -52,6 +42,7 @@ import { DictationBlockedError, type Transcriber, useTranscriber } from "../comp
 import { Icon } from "../components/Icon"
 import { Menu, type MenuEntry } from "../components/Menu"
 import { Popover } from "../components/Popover"
+import { aria } from "../lib/aria"
 import { cx } from "../lib/cx"
 import { Overlay } from "../lib/overlay"
 import {
@@ -314,7 +305,6 @@ function filterItems(items: InsertItem[], q: string): InsertItem[] {
 
 /** The shared rich text editor. */
 export function RichTextEditor(props: RichTextEditorProps): JSX.Element {
-  const [local] = splitProps(props, ["class", "id"])
   const ctxServices = useEditorServices()
   const transcriber = useTranscriber()
   const services = (): EditorServices => {
@@ -425,24 +415,20 @@ export function RichTextEditor(props: RichTextEditorProps): JSX.Element {
 
   // Block types arrive as plugins load: recompute the blocks' widths.
   createEffect(
-    on(
-      () => services().blocks?.(),
-      () => {
-        if (view) view.dispatch(view.state.tr.setMeta(blockWidthKey, true))
-      },
-      { defer: true },
-    ),
+    () => services().blocks?.(),
+    () => {
+      if (view) view.dispatch(view.state.tr.setMeta(blockWidthKey, true))
+    },
+    { defer: true },
   )
 
   // Annotations are read by their plugin; tell it when the list changes.
   createEffect(
-    on(
-      () => JSON.stringify(props.annotations ?? []),
-      () => {
-        if (view) view.dispatch(view.state.tr.setMeta(annotationsKey, true))
-      },
-      { defer: true },
-    ),
+    () => JSON.stringify(props.annotations ?? []),
+    () => {
+      if (view) view.dispatch(view.state.tr.setMeta(annotationsKey, true))
+    },
+    { defer: true },
   )
 
   const lastJSON = { current: "" }
@@ -542,7 +528,7 @@ export function RichTextEditor(props: RichTextEditorProps): JSX.Element {
 
   // ── Mount ────────────────────────────────────────────────────────────────────────────────────────
 
-  onMount(() => {
+  onSettled(() => {
     let initial: { doc?: PMNode; mapping?: Map<unknown, unknown> } = {}
     if (props.provider) {
       const frag = props.provider.doc.getXmlFragment(props.provider.fragment ?? "prosemirror")
@@ -681,44 +667,46 @@ export function RichTextEditor(props: RichTextEditorProps): JSX.Element {
 
   // Plain mode: a new value from outside replaces the content.
   createEffect(
-    on(
-      () => props.value,
-      (v) => {
-        if (!view || collab() || v === undefined) return
-        const json = JSON.stringify(v ?? null)
-        if (json === lastJSON.current) return
-        lastJSON.current = json
-        const doc = docFromJSON(v)
-        const state = view.state
-        const tr = state.tr.replaceWith(0, state.doc.content.size, doc.content)
-        tr.setMeta("addToHistory", false)
-        const sel = Math.min(state.selection.from, tr.doc.content.size - 1)
-        tr.setSelection(TextSelection.near(tr.doc.resolve(Math.max(1, sel))))
-        view.updateState(state.apply(tr))
-        setTick(0)
-      },
-      { defer: true },
-    ),
+    () => props.value,
+    (v) => {
+      if (!view || collab() || v === undefined) return
+      const json = JSON.stringify(v ?? null)
+      if (json === lastJSON.current) return
+      lastJSON.current = json
+      const doc = docFromJSON(v)
+      const state = view.state
+      const tr = state.tr.replaceWith(0, state.doc.content.size, doc.content)
+      tr.setMeta("addToHistory", false)
+      const sel = Math.min(state.selection.from, tr.doc.content.size - 1)
+      tr.setSelection(TextSelection.near(tr.doc.resolve(Math.max(1, sel))))
+      view.updateState(state.apply(tr))
+      setTick(0)
+    },
+    { defer: true },
   )
 
   // The provider says the caller may only view.
-  createEffect(() => setProviderReadOnly(!!props.provider?.readOnly?.()))
   createEffect(
-    on(readOnly, () => {
-      if (!view) return
-      view.setProps({ editable: () => !readOnly() })
-      view.dispatch(view.state.tr.setMeta("nc-editor-readonly", readOnly()))
-    }),
+    () => !!props.provider?.readOnly?.(),
+    (readOnlyNow) => {
+      setProviderReadOnly(readOnlyNow)
+    },
   )
+  createEffect(readOnly, () => {
+    if (!view) return
+    view.setProps({ editable: () => !readOnly() })
+    view.dispatch(view.state.tr.setMeta("nc-editor-readonly", readOnly()))
+  })
 
   // Collaborative mode: the local user's name and colour for the others.
-  createEffect(() => {
-    const u = props.user
-    const p = props.provider
-    if (!u || !p) return
-    const color = untrack(() => (root ? resolveColor(root, u.color) : u.color))
-    p.awareness.setLocalStateField("user", { name: u.name, color })
-  })
+  createEffect(
+    () => ({ user: props.user, provider: props.provider }),
+    ({ user, provider }) => {
+      if (!user || !provider) return
+      const color = untrack(() => (root ? resolveColor(root, user.color) : user.color))
+      provider.awareness.setLocalStateField("user", { name: user.name, color })
+    },
+  )
 
   // ── Handle ───────────────────────────────────────────────────────────────────────────────────────
 
@@ -954,33 +942,37 @@ export function RichTextEditor(props: RichTextEditorProps): JSX.Element {
   let searchTimer: ReturnType<typeof setTimeout> | undefined
   let searchSeq = 0
   createEffect(
-    on(
-      () => {
-        const t = trigger()
-        return t?.kind === "@" || t?.kind === "[[" ? `${t.kind} ${t.query}` : null
-      },
-      (key) => {
-        setActive(0)
-        clearTimeout(searchTimer)
-        if (key == null) return setMentionItems([])
-        const kind = key.startsWith("[[") ? "[[" : "@"
-        const q = key.slice(kind.length + 1)
-        const search = kind === "[[" ? services().links?.search : services().searchMentions
-        if (!search) return setMentionItems([])
-        const seq = ++searchSeq
-        searchTimer = setTimeout(() => {
-          search(q)
-            .then((r) => seq === searchSeq && setMentionItems(r.slice(0, 8)))
-            .catch(() => seq === searchSeq && setMentionItems([]))
-        }, 80)
-      },
-    ),
+    () => {
+      const t = trigger()
+      return t?.kind === "@" || t?.kind === "[[" ? `${t.kind} ${t.query}` : null
+    },
+    (key) => {
+      setActive(0)
+      clearTimeout(searchTimer)
+      if (key == null) {
+        setMentionItems([])
+        return
+      }
+      const kind = key.startsWith("[[") ? "[[" : "@"
+      const q = key.slice(kind.length + 1)
+      const search = kind === "[[" ? services().links?.search : services().searchMentions
+      if (!search) {
+        setMentionItems([])
+        return
+      }
+      const seq = ++searchSeq
+      searchTimer = setTimeout(() => {
+        search(q)
+          .then((r) => seq === searchSeq && setMentionItems(r.slice(0, 8)))
+          .catch(() => seq === searchSeq && setMentionItems([]))
+      }, 80)
+    },
   )
   createEffect(
-    on(
-      () => trigger()?.kind === "/" && trigger()?.query,
-      () => setActive(0),
-    ),
+    () => trigger()?.kind === "/" && trigger()?.query,
+    () => {
+      setActive(0)
+    },
   )
 
   const clearTriggerText = (t: Trigger) => {
@@ -1038,8 +1030,8 @@ export function RichTextEditor(props: RichTextEditorProps): JSX.Element {
     return t.kind === "[[" ? !!services().links : !!services().searchMentions
   }
 
-  createEffect(() => {
-    if (!menuOpen()) {
+  createEffect(menuOpen, (open) => {
+    if (!open) {
       if (menuKeys.current === triggerKeys) menuKeys.current = null
       return
     }
@@ -1715,8 +1707,8 @@ export function RichTextEditor(props: RichTextEditorProps): JSX.Element {
   return (
     <div
       ref={root}
-      id={local.id}
-      class={cx("nc-editor", `nc-editor--${variant()}`, readOnly() && "nc-editor--readonly", local.class)}
+      id={props.id}
+      class={cx("nc-editor", `nc-editor--${variant()}`, readOnly() && "nc-editor--readonly", props.class)}
       data-part="rich-text-editor"
       data-mode={collab() ? "collaborative" : "plain"}
       data-readonly={readOnly() ? "" : undefined}
@@ -1837,7 +1829,7 @@ export function RichTextEditor(props: RichTextEditorProps): JSX.Element {
                       <button
                         type="button"
                         role="option"
-                        aria-selected={active() === index}
+                        aria-selected={aria(active() === index)}
                         class={cx(
                           "nc-editor-slash__item",
                           active() === index && "nc-editor-slash__item--active",
@@ -1896,7 +1888,7 @@ export function RichTextEditor(props: RichTextEditorProps): JSX.Element {
                   <button
                     type="button"
                     role="option"
-                    aria-selected={active() === i()}
+                    aria-selected={aria(active() === i())}
                     class={cx("nc-editor-slash__item", active() === i() && "nc-editor-slash__item--active")}
                     data-uri={m.uri}
                     onMouseEnter={() => setActive(i())}
@@ -1920,7 +1912,7 @@ export function RichTextEditor(props: RichTextEditorProps): JSX.Element {
                   <button
                     type="button"
                     role="option"
-                    aria-selected={active() === mentionItems().length}
+                    aria-selected={aria(active() === mentionItems().length)}
                     class={cx(
                       "nc-editor-slash__item",
                       active() === mentionItems().length && "nc-editor-slash__item--active",
@@ -2035,7 +2027,7 @@ export function RichTextEditor(props: RichTextEditorProps): JSX.Element {
                     type="button"
                     class="nc-editor-format__btn"
                     aria-label={label}
-                    aria-pressed={isActive(mark)}
+                    aria-pressed={aria(isActive(mark))}
                     onClick={toggle(mark)}
                   >
                     <Glyph d={d} />
@@ -2046,7 +2038,7 @@ export function RichTextEditor(props: RichTextEditorProps): JSX.Element {
                 type="button"
                 class="nc-editor-format__btn"
                 aria-label="Link"
-                aria-pressed={isActive("link")}
+                aria-pressed={aria(isActive("link"))}
                 onClick={openLink}
               >
                 <Glyph d={FMT_PATHS.link} />

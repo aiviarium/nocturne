@@ -1,8 +1,8 @@
 import { afterEach, describe, expect, test } from "bun:test"
 import { readFileSync } from "node:fs"
 import { join } from "node:path"
-import { createSignal } from "solid-js"
-import { render } from "solid-js/web"
+import { render } from "@solidjs/web"
+import { createSignal, flush } from "solid-js"
 import {
   AppShell,
   Button,
@@ -327,9 +327,11 @@ describe("DataTable", () => {
     )
     expect(all("tbody[data-state=loading] tr")).toHaveLength(5)
     setState("empty")
+    flush()
     expect(document.querySelector("[data-state=empty]")?.textContent).toContain("No sessions match")
     expect(document.body.textContent).toContain("Clear filters")
     setState("error")
+    flush()
     const error = one("[data-state=error]")
     expect(error.textContent).toContain("502")
     click(error.querySelector("button") as HTMLElement)
@@ -398,6 +400,7 @@ describe("Dialog", () => {
     )
     await tick()
     one("[data-part=dialog-backdrop]").dispatchEvent(new Event("pointerdown", { bubbles: true }))
+    flush()
     expect(closed).toEqual([])
   })
 })
@@ -448,6 +451,7 @@ describe("Select inside a Dialog", () => {
       expect(probe("nc-toast-region")).toBeGreaterThan(probe("nc-tooltip--floating"))
       const echo = all("[role=menuitemradio]").find((i) => i.textContent?.includes("Echo service"))!
       echo.dispatchEvent(new Event("pointerdown", { bubbles: true }))
+      flush()
       click(echo)
       await tick()
       expect(seen).toEqual(["echo"])
@@ -504,6 +508,7 @@ describe("Select, Switch, Checkbox, RadioGroup, Split", () => {
     expect(help.textContent).toBe("Choose a host.")
     expect(help.classList.contains("nc-field__help--error")).toBe(true)
     setError(undefined)
+    flush()
     expect(button.hasAttribute("aria-invalid")).toBe(false)
     expect(help.textContent).toBe("Where it runs.")
   })
@@ -770,6 +775,7 @@ describe("TabStrip", () => {
       const event = new Event(type, { bubbles: true, cancelable: true })
       Object.defineProperty(event, "dataTransfer", { value: dt })
       el.dispatchEvent(event)
+      flush()
       return event
     }
     const store = new Map<string, string>()
@@ -892,6 +898,7 @@ describe("TabStrip behaviours", () => {
     const fire = (el: Element, init: MouseEventInit) => {
       const e = new MouseEvent("contextmenu", { bubbles: true, cancelable: true, ...init })
       el.dispatchEvent(e)
+      flush()
       return e
     }
     expect(fire(beta, { clientX: 10, clientY: 10 }).defaultPrevented).toBe(true)
@@ -909,6 +916,7 @@ describe("TabStrip behaviours", () => {
     expect(document.querySelector("[role=menu]")).not.toBeNull()
     press(one("[role=menu]"), "Escape")
     document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }))
+    flush()
     await tick()
     press(beta, "F10", { shiftKey: true })
     await tick()
@@ -933,11 +941,14 @@ describe("TabStrip behaviours", () => {
     )
     const gamma = one("[data-tab=c]")
     gamma.dispatchEvent(new MouseEvent("auxclick", { button: 1, bubbles: true, cancelable: true }))
+    flush()
     expect(closed).toEqual(["c"])
     // On a tab it does nothing; on the strip it does.
     gamma.dispatchEvent(new MouseEvent("dblclick", { bubbles: true }))
+    flush()
     expect(opened).toBe(0)
     one("[data-part=tab-strip]").dispatchEvent(new MouseEvent("dblclick", { bubbles: true }))
+    flush()
     expect(opened).toBe(1)
   })
 })
@@ -996,6 +1007,7 @@ describe("Dialog placements, AppShell and Frame", () => {
     expect(root.querySelector("[data-part=statusbar]")?.textContent).toBe("status")
     expect(one("[data-part=app-shell]", root).hasAttribute("data-drawer")).toBe(false)
     setOpen(true)
+    flush()
     expect(one("[data-part=app-shell]", root).getAttribute("data-drawer")).toBe("open")
     click(one("[data-part=scrim]", root))
     expect(closed).toBe(1)
@@ -1049,13 +1061,17 @@ describe("Dialog placements, AppShell and Frame", () => {
     const links = Array.from(root.querySelectorAll("a"))
     const plain = new MouseEvent("click", { bubbles: true, cancelable: true, button: 0 })
     links[0]?.dispatchEvent(plain)
+    flush()
     expect(plain.defaultPrevented).toBe(true)
     const modified = new MouseEvent("click", { bubbles: true, cancelable: true, button: 0, ctrlKey: true })
     links[1]?.dispatchEvent(modified)
+    flush()
     expect(modified.defaultPrevented).toBe(false)
     links[1]?.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, button: 0 }))
+    flush()
     const outside = new MouseEvent("click", { bubbles: true, cancelable: true, button: 0 })
     links[2]?.dispatchEvent(outside)
+    flush()
     expect(outside.defaultPrevented).toBe(false)
     expect(went).toEqual(["/~/hello/main", "/x"])
   })

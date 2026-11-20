@@ -51,7 +51,7 @@ export function IssueBoardExample() {
               <For each={cards()}>
                 {(i) => (
                   <BoardCard
-                    draggable
+                    draggable="true"
                     tabindex="0"
                     selected={selected() === i.id}
                     onDragStart={(e) => {

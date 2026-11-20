@@ -1,18 +1,17 @@
+import type { JSX } from "@solidjs/web"
 import {
   createEffect,
   createMemo,
   createSignal,
+  createStore,
   For,
-  Index,
-  type JSX,
   Match,
-  on,
-  onMount,
+  omit,
+  onSettled,
+  reconcile,
   Show,
   Switch,
-  splitProps,
 } from "solid-js"
-import { createStore, reconcile } from "solid-js/store"
 import { FieldEditor, FormField } from "../fields/Field"
 import { fieldOfNode } from "../fields/schema"
 import { cx } from "../lib/cx"
@@ -78,7 +77,8 @@ export interface SchemaFormProps
  * settings and dialogs such as the one that creates a connection.
  */
 export function SchemaForm(props: SchemaFormProps): JSX.Element {
-  const [local, rest] = splitProps(props, [
+  const rest = omit(
+    props,
     "schema",
     "value",
     "onSubmit",
@@ -93,28 +93,34 @@ export function SchemaForm(props: SchemaFormProps): JSX.Element {
     "secretFields",
     "storedSecrets",
     "class",
-  ])
+  )
   const root = createMemo(() =>
-    fieldNode(markSecrets(local.schema, local.secretFields ?? [], local.storedSecrets ?? [])),
+    fieldNode(markSecrets(props.schema, props.secretFields ?? [], props.storedSecrets ?? [])),
   )
   const rootNode = () => root() as Extract<FieldNode, { kind: "object" }>
-  const [draft, setDraft] = createStore<{ value: Draft }>({ value: blankDraft(root(), local.value) })
+  const [draft, setDraft] = createStore<{ value: Draft }>({ value: blankDraft(root(), props.value) })
   // A new schema starts a new form.
   createEffect(
-    on(
-      () => local.schema,
-      () => setDraft("value", reconcile(blankDraft(root(), local.value))),
-      { defer: true },
-    ),
+    () => props.schema,
+    () =>
+      setDraft((state) => {
+        reconcile(blankDraft(root(), props.value))(state.value)
+      }),
+    { defer: true },
   )
   const [attempted, setAttempted] = createSignal(false)
   const result = createMemo(() => readForm(root(), draft.value))
   const errors = (): FieldErrors => (attempted() ? result().errors : {})
-  createEffect(() => local.onValueChange?.(result().value))
+  createEffect(
+    () => result().value,
+    (value) => {
+      props.onValueChange?.(value)
+    },
+  )
   let form!: HTMLFormElement
 
-  onMount(() => {
-    if (local.autofocus !== false) queueMicrotask(() => focusFirst(form))
+  onSettled(() => {
+    if (props.autofocus !== false) queueMicrotask(() => focusFirst(form))
   })
 
   const submit = (event: Event) => {
@@ -125,11 +131,19 @@ export function SchemaForm(props: SchemaFormProps): JSX.Element {
       queueMicrotask(() => (form.querySelector<HTMLElement>("[aria-invalid=true]") ?? form).focus())
       return
     }
-    local.onSubmit(value)
+    props.onSubmit(value)
   }
 
   const set = (path: Array<string | number>, next: Draft) =>
-    (setDraft as (...args: unknown[]) => void)("value", ...path, next)
+    setDraft((state) => {
+      if (path.length === 0) {
+        state.value = next
+        return
+      }
+      let at = state.value as unknown as Record<string | number, unknown>
+      for (const key of path.slice(0, -1)) at = at[key] as Record<string | number, unknown>
+      at[path[path.length - 1] as string] = next
+    })
   const read = (path: Array<string | number>): Draft => {
     let at: unknown = draft.value
     for (const key of path) at = (at as Record<string | number, unknown>)?.[key]
@@ -141,7 +155,7 @@ export function SchemaForm(props: SchemaFormProps): JSX.Element {
       data-part="schema-form"
       ref={form}
       novalidate
-      class={cx("nc-schema-form", local.class)}
+      class={cx("nc-schema-form", props.class)}
       onSubmit={submit}
       {...rest}
     >
@@ -162,20 +176,20 @@ export function SchemaForm(props: SchemaFormProps): JSX.Element {
       >
         <FieldGroup node={rootNode()} path={[]} errors={errors()} read={read} set={set} />
       </Show>
-      <Show when={local.problems?.length}>
+      <Show when={props.problems?.length}>
         <Callout tone="danger" data-part="schema-form-problems">
-          {local.problems?.join(" · ")}
+          {props.problems?.join(" · ")}
         </Callout>
       </Show>
-      <Show when={!local.hideActions}>
+      <Show when={!props.hideActions}>
         <div class="nc-schema-form__actions">
-          <Show when={local.onCancel}>
-            <Button variant="ghost" onClick={() => local.onCancel?.()}>
-              {local.cancelLabel ?? "Cancel"}
+          <Show when={props.onCancel}>
+            <Button variant="ghost" onClick={() => props.onCancel?.()}>
+              {props.cancelLabel ?? "Cancel"}
             </Button>
           </Show>
-          <Button type="submit" variant="primary" loading={local.busy}>
-            {local.submitLabel ?? "Save"}
+          <Button type="submit" variant="primary" loading={props.busy}>
+            {props.submitLabel ?? "Save"}
           </Button>
         </div>
       </Show>
@@ -391,7 +405,7 @@ function ArrayField(
           />
         )}
       </Show>
-      <Index each={listed() ? [] : rows()}>
+      <For keyed={false} each={listed() ? [] : rows()}>
         {(_row, i) => (
           <div class="nc-schema-form__row">
             <div class="nc-schema-form__row-field">
@@ -418,7 +432,7 @@ function ArrayField(
             />
           </div>
         )}
-      </Index>
+      </For>
       <Show when={error()}>
         <span class="nc-field__help nc-field__help--error" role="alert">
           {error()}

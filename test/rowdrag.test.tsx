@@ -5,7 +5,7 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test"
 import { readFileSync } from "node:fs"
 import { join } from "node:path"
-import { createSignal } from "solid-js"
+import { createSignal, flush } from "solid-js"
 import {
   clearToasts,
   DataList,
@@ -51,7 +51,7 @@ afterEach(() => {
   document.body.innerHTML = ""
 })
 
-const pointer = (target: EventTarget, type: string, y: number, init: PointerEventInit = {}) =>
+const pointer = (target: EventTarget, type: string, y: number, init: PointerEventInit = {}) => {
   target.dispatchEvent(
     new PointerEvent(type, {
       bubbles: true,
@@ -64,13 +64,19 @@ const pointer = (target: EventTarget, type: string, y: number, init: PointerEven
       ...init,
     }),
   )
-const clickWith = (el: Element, init: MouseEventInit) =>
+  flush()
+}
+const clickWith = (el: Element, init: MouseEventInit) => {
   el.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, ...init }))
+  flush()
+}
 const menuItems = () => all("[role=menuitem]").map((e) => e.textContent?.trim())
-const rightClick = (el: Element) =>
+const rightClick = (el: Element) => {
   el.dispatchEvent(
     new MouseEvent("contextmenu", { bubbles: true, cancelable: true, clientX: 40, clientY: 40 }),
   )
+  flush()
+}
 
 describe("dragging without a handle: the decisions", () => {
   test("a press that moves past the threshold is a drag; less is a click", () => {
@@ -106,6 +112,7 @@ describe("RowList: drag the row itself", () => {
         onReorder={(from, to) => {
           props.moves.push([from, to])
           setItems(reorderItems(items(), from, to))
+          flush()
         }}
       >
         {(s) => (
@@ -170,9 +177,9 @@ describe("RowList: drag the row itself", () => {
     const moves: Array<[number, number]> = []
     track(
       mount(() => (
-        <PhoneOverride.Provider value={true}>
+        <PhoneOverride value={true}>
           <Steps moves={moves} menu />
-        </PhoneOverride.Provider>
+        </PhoneOverride>
       )),
     )
     const row = all<HTMLElement>("[data-part=list-row]")[0] as HTMLElement
@@ -211,6 +218,7 @@ describe("RowList: desktop selection", () => {
             props.removed?.push(keys)
             const before = items()
             setItems(before.filter((s) => !keys.includes(s)))
+            flush()
             return () => setItems(before)
           }}
         >
@@ -246,6 +254,7 @@ describe("RowList: desktop selection", () => {
     track(mount(() => <Pages />))
     const e = new MouseEvent("mousedown", { bubbles: true, cancelable: true, shiftKey: true })
     mains()[2]?.dispatchEvent(e)
+    flush()
     expect(e.defaultPrevented).toBe(true)
   })
 
@@ -314,10 +323,12 @@ describe("DataTable: drag the row, desktop selection, neutral checkboxes", () =>
           onReorder={(from, to) => {
             props.moves?.push([from, to])
             setRows(reorderItems(rows(), from, to))
+            flush()
           }}
           onRemove={(ids) => {
             const before = rows()
             setRows(before.filter((r) => !ids.includes(r.id)))
+            flush()
             return () => setRows(before)
           }}
         />
@@ -412,6 +423,7 @@ describe("DataList: no grip, no remove button", () => {
               onChange={(n) => {
                 seen.push(n)
                 setTags(n)
+                flush()
               }}
             />
             <ToastRegion />
@@ -486,6 +498,7 @@ describe("DataList: a click picks the row, a double click edits", () => {
     const row = rows()[1] as HTMLElement
     expect(row.hasAttribute("data-editing")).toBe(false)
     row.dispatchEvent(new MouseEvent("dblclick", { bubbles: true, clientX: 30, clientY: 5 }))
+    flush()
     await tick()
     const input = row.querySelector("input") as HTMLInputElement
     expect(document.activeElement).toBe(input)

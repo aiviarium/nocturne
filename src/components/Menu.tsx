@@ -1,17 +1,17 @@
+import type { JSX } from "@solidjs/web"
 import {
   createEffect,
   createMemo,
   createSignal,
   For,
-  type JSX,
   Match,
-  on,
   onCleanup,
-  onMount,
+  onSettled,
   Show,
   Switch,
   untrack,
 } from "solid-js"
+import { aria, ariaChecked } from "../lib/aria"
 import { cx } from "../lib/cx"
 import { activeElement } from "../lib/focus"
 import { createId } from "../lib/id"
@@ -144,14 +144,16 @@ export function Menu(props: MenuProps): JSX.Element {
   }
   const choiceStop = (row: HTMLElement) =>
     row.querySelector<HTMLElement>("[aria-checked=true]") ?? row.querySelector<HTMLElement>("button")
-  onMount(() => {
+  onSettled(() => {
     if (props.autoFocus !== false) {
       const first = rows().findIndex((r) => r.type !== "choice" && r.checked && !r.disabled)
       focusIndex(first >= 0 ? first : edgeEnabled(disabled(), "first"))
     }
   })
   onCleanup(() => clearTimeout(bufferTimer))
-  createEffect(on(entries, () => setActive((a) => Math.min(a, rows().length - 1))))
+  createEffect(entries, () => {
+    setActive((a) => Math.min(a, rows().length - 1))
+  })
 
   const onKeyDown = (event: KeyboardEvent) => {
     const at = active()
@@ -245,7 +247,7 @@ export function Menu(props: MenuProps): JSX.Element {
                         <button
                           type="button"
                           role="menuitemradio"
-                          aria-checked={choice.value === option.value}
+                          aria-checked={aria(choice.value === option.value)}
                           aria-label={option.label}
                           data-value={option.value}
                           tabindex={active() === index && choice.value === option.value ? 0 : -1}
@@ -312,9 +314,9 @@ export function Menu(props: MenuProps): JSX.Element {
                           : "menuitem"
                     }
                     aria-checked={
-                      props.radio || item.checked !== undefined ? Boolean(item.checked) : undefined
+                      props.radio || item.checked !== undefined ? ariaChecked(item.checked) : undefined
                     }
-                    aria-disabled={item.disabled || undefined}
+                    aria-disabled={item.disabled ? "true" : undefined}
                     tabindex={active() === index ? 0 : -1}
                     data-active={active() === index ? "" : undefined}
                     class={cx(
@@ -376,7 +378,7 @@ export interface DropdownMenuProps extends Omit<MenuProps, "autoFocus" | "onRequ
 export interface DropdownTriggerProps {
   ref: (el: HTMLElement) => void
   "aria-haspopup": "menu"
-  "aria-expanded": boolean
+  "aria-expanded": "true" | "false"
   "aria-controls": string | undefined
   onClick: () => void
   onKeyDown: (event: KeyboardEvent) => void
@@ -403,7 +405,7 @@ export function DropdownMenu(props: DropdownMenuProps): JSX.Element {
     ref: setTrigger,
     "aria-haspopup": "menu",
     get "aria-expanded"() {
-      return open()
+      return aria(open())
     },
     get "aria-controls"() {
       return open() ? menuId : undefined
