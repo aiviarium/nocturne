@@ -144,11 +144,18 @@ export function Menu(props: MenuProps): JSX.Element {
   }
   const choiceStop = (row: HTMLElement) =>
     row.querySelector<HTMLElement>("[aria-checked=true]") ?? row.querySelector<HTMLElement>("button")
+  // The row to open on, worked out in the body: an `onSettled` callback runs outside a tracking scope.
+  const firstStop = createMemo(() => {
+    const list = rows()
+    const checked = list.findIndex((r) => r.type !== "choice" && r.checked && !r.disabled)
+    if (checked >= 0) return checked
+    return edgeEnabled(
+      list.map((r) => r.type !== "choice" && Boolean((r as MenuItemEntry).disabled)),
+      "first",
+    )
+  })
   onSettled(() => {
-    if (props.autoFocus !== false) {
-      const first = rows().findIndex((r) => r.type !== "choice" && r.checked && !r.disabled)
-      focusIndex(first >= 0 ? first : edgeEnabled(disabled(), "first"))
-    }
+    if (props.autoFocus !== false) focusIndex(firstStop())
   })
   onCleanup(() => clearTimeout(bufferTimer))
   createEffect(entries, () => {

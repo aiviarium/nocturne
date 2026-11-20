@@ -1,6 +1,6 @@
 import type { JSX } from "@solidjs/web"
 import { Portal } from "@solidjs/web"
-import { onCleanup } from "solid-js"
+import { onCleanup, untrack } from "solid-js"
 
 /**
  * Where an overlay mounts. It goes inside the nearest element carrying `data-theme` (so it
@@ -17,7 +17,7 @@ export function overlayHost(anchor?: Element | null): HTMLElement {
  * opener's theme, so tokens and `nc-*` classes work even outside the app root.
  */
 export function Overlay(props: { anchor?: Element | null; children: JSX.Element }): JSX.Element {
-  const host = overlayHost(props.anchor)
+  const host = overlayHost(untrack(() => props.anchor))
   // Solid 2's Portal renders straight into its mount point, so the overlay root is ours to make.
   const container = document.createElement("div")
   container.classList.add("nc")

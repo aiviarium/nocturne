@@ -1,5 +1,5 @@
 import type { JSX } from "@solidjs/web"
-import { createEffect, createMemo, createSignal, For, onCleanup } from "solid-js"
+import { createEffect, createMemo, createSignal, For, onCleanup, untrack } from "solid-js"
 import { cx } from "../lib/cx"
 import { EDGE_WIDTH, lockDirection, swipeBack } from "../lib/gestures"
 

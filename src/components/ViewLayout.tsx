@@ -269,17 +269,20 @@ export function ViewLayout(props: ViewLayoutProps): JSX.Element {
   let root!: HTMLDivElement
 
   // The slots are read once each (a slot given as JSX is built each time it is read, see AppShell), and built
-  // inside the layout's context, so a ViewHeader in them finds the layout (Body below makes them).
-  const [slots, setSlots] = createSignal<{
-    sidebar: () => JSX.Element
-    aside: () => JSX.Element
-    header: () => JSX.Element
-    rail: () => JSX.Element
-  }>()
-  const railSlot = () => slots()?.rail()
-  const sidebarSlot = () => slots()?.sidebar()
-  const asideSlot = () => slots()?.aside()
-  const headerSlot = () => slots()?.header()
+  // inside the layout's context, so a ViewHeader in them finds the layout (Body below makes them). They are a
+  // plain object, made by Body before its JSX is built, so the first render already sees them.
+  let slots:
+    | {
+        sidebar: () => JSX.Element
+        aside: () => JSX.Element
+        header: () => JSX.Element
+        rail: () => JSX.Element
+      }
+    | undefined
+  const railSlot = () => slots?.rail()
+  const sidebarSlot = () => slots?.sidebar()
+  const asideSlot = () => slots?.aside()
+  const headerSlot = () => slots?.header()
   const present = (x: unknown) => x !== undefined && x !== null && x !== false
   const hasSidebar = () => present(sidebarSlot())
   const hasAside = () => present(asideSlot())
@@ -361,11 +364,11 @@ export function ViewLayout(props: ViewLayoutProps): JSX.Element {
     ro.observe(root)
     setFrame(root.getBoundingClientRect().width)
     const off = host?.mount(handle)
-    onCleanup(() => {
+    return () => {
       ro.disconnect()
       host?.report(handle, null)
       off?.()
-    })
+    }
   })
 
   // Tell the host how much room the sidebar and a comfortable main column lack (or have to spare).
@@ -528,12 +531,12 @@ export function ViewLayout(props: ViewLayoutProps): JSX.Element {
   }
 
   const Body = () => {
-    setSlots({
-      sidebar: createMemo(() => props.sidebar),
-      aside: createMemo(() => props.aside),
-      header: createMemo(() => props.header),
-      rail: createMemo(() => props.rail),
-    })
+    slots = {
+      sidebar: () => props.sidebar,
+      aside: () => props.aside,
+      header: () => props.header,
+      rail: () => props.rail,
+    }
     return (
       <div
         ref={root}

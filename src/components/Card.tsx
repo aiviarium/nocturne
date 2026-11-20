@@ -406,30 +406,41 @@ export function FilterBar(props: FilterBarProps): JSX.Element {
   const rest = omit(props, "label", "search", "children", "end", "class")
   // Which ends of the filters have more hidden past them, when they scroll sideways.
   const [more, setMore] = createSignal({ start: false, end: false })
-  const watchScroll = (el: HTMLDivElement) => {
-    const update = () => {
-      const max = el.scrollWidth - el.clientWidth
-      const start = max > 1 && el.scrollLeft > 1
-      const end = max > 1 && el.scrollLeft < max - 1
-      if (start !== more().start || end !== more().end) setMore({ start, end })
+  // A ref callback is unowned in Solid 2, so the listening is set up by a factory in the body.
+  const watchScroll = () => {
+    let stop: (() => void) | undefined
+    onCleanup(() => stop?.())
+    return (el: HTMLDivElement) => {
+      stop?.()
+      const update = () => {
+        const max = el.scrollWidth - el.clientWidth
+        const start = max > 1 && el.scrollLeft > 1
+        const end = max > 1 && el.scrollLeft < max - 1
+        if (start !== more().start || end !== more().end) setMore({ start, end })
+      }
+      el.addEventListener("scroll", update, { passive: true })
+      const ro = typeof ResizeObserver === "function" ? new ResizeObserver(update) : undefined
+      ro?.observe(el)
+      queueMicrotask(update)
+      stop = () => {
+        el.removeEventListener("scroll", update)
+        ro?.disconnect()
+      }
     }
-    el.addEventListener("scroll", update, { passive: true })
-    const ro = typeof ResizeObserver === "function" ? new ResizeObserver(update) : undefined
-    ro?.observe(el)
-    queueMicrotask(update)
-    onCleanup(() => {
-      el.removeEventListener("scroll", update)
-      ro?.disconnect()
-    })
   }
   // `end` is pinned to the first line's right; the row keeps its width free on every line so nothing runs under it.
   const [endWidth, setEndWidth] = createSignal(0)
-  const watchEnd = (el: HTMLDivElement) => {
-    const update = () => setEndWidth(Math.ceil(el.getBoundingClientRect().width))
-    const ro = typeof ResizeObserver === "function" ? new ResizeObserver(update) : undefined
-    ro?.observe(el)
-    queueMicrotask(update)
-    onCleanup(() => ro?.disconnect())
+  const watchEnd = () => {
+    let stop: (() => void) | undefined
+    onCleanup(() => stop?.())
+    return (el: HTMLDivElement) => {
+      stop?.()
+      const update = () => setEndWidth(Math.ceil(el.getBoundingClientRect().width))
+      const ro = typeof ResizeObserver === "function" ? new ResizeObserver(update) : undefined
+      ro?.observe(el)
+      queueMicrotask(update)
+      stop = () => ro?.disconnect()
+    }
   }
   return (
     <div
@@ -449,7 +460,7 @@ export function FilterBar(props: FilterBarProps): JSX.Element {
         </Show>
         <Show when={props.children}>
           <div
-            ref={watchScroll}
+            ref={watchScroll()}
             class="nc-filterbar__filters"
             data-more-start={more().start ? "" : undefined}
             data-more-end={more().end ? "" : undefined}
@@ -458,7 +469,7 @@ export function FilterBar(props: FilterBarProps): JSX.Element {
           </div>
         </Show>
         <Show when={props.end}>
-          <div ref={watchEnd} class="nc-filterbar__end">
+          <div ref={watchEnd()} class="nc-filterbar__end">
             {props.end}
           </div>
         </Show>

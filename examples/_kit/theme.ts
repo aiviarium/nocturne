@@ -13,7 +13,7 @@ export function useNearestTheme(el: Accessor<HTMLElement | undefined>): Accessor
     read()
     const observer = new MutationObserver(read)
     observer.observe(themed, { attributes: true, attributeFilter: ["data-theme"] })
-    onCleanup(() => observer.disconnect())
+    return () => observer.disconnect()
   })
   return theme
 }

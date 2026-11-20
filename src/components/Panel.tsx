@@ -173,7 +173,8 @@ export function AppShell(props: AppShellProps): JSX.Element {
   const statusbar = createMemo(() => props.statusbar)
   const header = createMemo(() => props.header)
   // Headers of the views that show in the bar. The bar takes room only while one does, or the app fills it.
-  const [claims, setClaims] = createSignal(0)
+  // A view header claims the bar from its own body, which is an owned scope.
+  const [claims, setClaims] = createSignal(0, { ownedWrite: true })
   let headerBar!: HTMLDivElement
   const shellHeader = {
     mount: () => headerBar,

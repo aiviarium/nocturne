@@ -54,7 +54,7 @@ export function List<T>(props: ListProps<T>): JSX.Element {
         ? undefined
         : new ResizeObserver(() => setMeasured(el.clientHeight || 400))
     observer?.observe(el)
-    onCleanup(() => observer?.disconnect())
+    return () => observer?.disconnect()
   })
 
   const range = createMemo(() => {

@@ -76,3 +76,12 @@ export default defineConfig({ plugins: [solid()] })
 
 `bun test` compiles `.tsx` with `@solidjs/compiler`, Solid 2's Oxc-based transform, and renders the
 browser build of `solid-js` and `@solidjs/web` under Bun's `node` condition.
+
+## Dev diagnostics
+
+In a dev build, Solid reports a few one-time reads in Nocturne's own parts (`STRICT_READ_UNTRACKED`
+for the seed of an `InlineField`'s draft, a `NumberField`'s generated id, the rows a `NavigationStack`
+starts with, and the anchor a `ToastRegion` mounts at). Each is a value the part reads once on
+purpose: the draft is kept in step by an effect, the id must not change, the stack starts from the
+items given, and the toast region mounts where it was first shown. Production builds do not run the
+diagnostics.

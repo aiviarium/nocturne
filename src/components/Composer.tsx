@@ -1,5 +1,5 @@
 import type { JSX } from "@solidjs/web"
-import { createEffect, createMemo, createSignal, For, onCleanup, onSettled, Show } from "solid-js"
+import { createEffect, createMemo, createSignal, For, onCleanup, onSettled, Show, untrack } from "solid-js"
 import { aria } from "../lib/aria"
 import { createControllable } from "../lib/controllable"
 import { cx } from "../lib/cx"
@@ -275,7 +275,7 @@ export function Composer(props: ComposerProps): JSX.Element {
     { defer: true },
   )
 
-  const history = createHistory({ value: value(), caret: 0 })
+  const history = createHistory({ value: untrack(() => value()), caret: 0 })
 
   // The DOM is the source while someone edits and the value is the source when it changes from outside:
   // render only when the two disagree, and keep the caret where it was.

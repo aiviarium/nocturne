@@ -1,5 +1,5 @@
 import type { JSX } from "@solidjs/web"
-import { For, Show } from "solid-js"
+import { For, Show, untrack } from "solid-js"
 import { aria } from "../lib/aria"
 import { createControllable } from "../lib/controllable"
 import { cx } from "../lib/cx"
@@ -42,7 +42,7 @@ export function Tabs(props: TabsProps): JSX.Element {
   const prefix = props.idPrefix ?? createId("tabs")
   const [value, setValue] = createControllable<string>({
     value: () => props.value,
-    defaultValue: props.defaultValue ?? props.items.find((i) => !i.disabled)?.id ?? "",
+    defaultValue: untrack(() => props.defaultValue ?? props.items.find((i) => !i.disabled)?.id ?? ""),
     onChange: (v) => props.onChange?.(v),
   })
   const buttons = new Map<string, HTMLButtonElement>()

@@ -17,7 +17,7 @@ export function createTallBox(el: () => Element | undefined, min = TALL_BOX): ()
       setTall(height >= min)
     })
     observer.observe(target)
-    onCleanup(() => observer.disconnect())
+    return () => observer.disconnect()
   })
   return tall
 }

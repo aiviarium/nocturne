@@ -79,7 +79,7 @@ export function Board(props: BoardProps): JSX.Element {
     if (typeof ResizeObserver === "undefined") return
     const ro = new ResizeObserver(measure)
     ro.observe(el)
-    onCleanup(() => ro.disconnect())
+    return () => ro.disconnect()
   })
   return (
     <BoardContext value={{ stacked }}>

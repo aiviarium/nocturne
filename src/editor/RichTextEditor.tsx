@@ -29,7 +29,18 @@ import {
   tableEditing,
 } from "prosemirror-tables"
 import { EditorView } from "prosemirror-view"
-import { createEffect, createMemo, createSignal, For, onCleanup, onSettled, Show, untrack } from "solid-js"
+import {
+  createEffect,
+  createMemo,
+  createSignal,
+  For,
+  getOwner,
+  onCleanup,
+  onSettled,
+  runWithOwner,
+  Show,
+  untrack,
+} from "solid-js"
 import {
   initProseMirrorDoc,
   yCursorPlugin,
@@ -528,135 +539,152 @@ export function RichTextEditor(props: RichTextEditorProps): JSX.Element {
 
   // ── Mount ────────────────────────────────────────────────────────────────────────────────────────
 
-  onSettled(() => {
-    let initial: { doc?: PMNode; mapping?: Map<unknown, unknown> } = {}
-    if (props.provider) {
-      const frag = props.provider.doc.getXmlFragment(props.provider.fragment ?? "prosemirror")
-      if (frag.length > 0) {
-        const r = initProseMirrorDoc(frag, schema)
-        initial = { doc: r.doc, mapping: r.mapping as Map<unknown, unknown> }
+  // The view's node views are Solid renders: they need the editor's owner, and a render cannot run inside
+  // `onSettled` (which forbids a nested flush), so the view is made in the next microtask.
+  const owner = getOwner()
+  onSettled(() =>
+    queueMicrotask(() => {
+      let initial: { doc?: PMNode; mapping?: Map<unknown, unknown> } = {}
+      if (props.provider) {
+        const frag = props.provider.doc.getXmlFragment(props.provider.fragment ?? "prosemirror")
+        if (frag.length > 0) {
+          const r = initProseMirrorDoc(frag, schema)
+          initial = { doc: r.doc, mapping: r.mapping as Map<unknown, unknown> }
+        }
       }
-    }
-    view = new EditorView(
-      { mount },
-      {
-        state: buildState(initial.doc, initial.mapping),
-        dispatchTransaction: dispatch,
-        editable: () => !readOnly(),
-        nodeViews: nodeViews({ services, readOnly, docVersion }),
-        attributes: () => ({
-          class: "nc-editor__content",
-          "data-part": "editor-content",
-          role: "textbox",
-          "aria-multiline": "true",
-          "aria-label": props["aria-label"] ?? "Document",
-          ...(readOnly() ? { "aria-readonly": "true" } : {}),
-        }),
-        handleDOMEvents: {
-          focus: () => {
-            setFocused(true)
-            props.onFocusChange?.(true)
-            setTick(0)
-            return false
-          },
-          blur: (_v, e) => {
-            const next = (e as FocusEvent).relatedTarget as Node | null
-            if (next && root.contains(next)) return false
-            setFocused(false)
-            props.onFocusChange?.(false)
-            setTick(0)
-            return false
-          },
-        },
-        handlePaste: (v, event) => {
-          if (readOnly()) return false
-          const files = Array.from(event.clipboardData?.files ?? [])
-          if (files.length) return uploadFiles(files)
-          const html = event.clipboardData?.getData("text/html")
-          const text = event.clipboardData?.getData("text/plain") ?? ""
-          if (!html && text && looksLikeMarkdown(text) && !v.state.selection.$from.parent.type.spec.code) {
-            const doc = parseMarkdown(text)
-            v.dispatch(v.state.tr.replaceSelection(new Slice(doc.content, 1, 1)).scrollIntoView())
-            return true
-          }
-          return false
-        },
-        handleDrop: (v, event, _slice, moved) => {
-          if (moved || readOnly()) return false
-          const files = Array.from((event as DragEvent).dataTransfer?.files ?? [])
-          if (!files.length) return false
-          const pos = v.posAtCoords({ left: (event as DragEvent).clientX, top: (event as DragEvent).clientY })
-          event.preventDefault()
-          return uploadFiles(files, pos?.pos)
-        },
-        handleClickOn: (_v, _pos, node, _np, event) => {
-          if (node.type.name === "mention" && (event.metaKey || event.ctrlKey || readOnly())) {
-            services().openMention?.(String(node.attrs.uri))
-            return true
-          }
-          return false
-        },
-        handleKeyDown: (v, e) => {
-          // ProseMirror learns of a caret the browser moved (a click, End, an arrow key) from the
-          // document's `selectionchange` event, a task Chromium may run after a key that is already
-          // waiting: that key's command would then act where the caret was before (Enter split the first
-          // heading instead of the paragraph clicked). Reading the DOM selection first keeps keys where
-          // the caret is. `domObserver` is ProseMirror's own; `flush` is what its event handler calls.
-          ;(v as unknown as { domObserver?: { flush(): void } }).domObserver?.flush()
-          const sel = v.state.selection
-          if (e.key === "Enter" && sel instanceof NodeSelection && sel.node.type.name === "mention") {
-            services().openMention?.(String(sel.node.attrs.uri))
-            return true
-          }
-          if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k" && !readOnly()) {
-            e.preventDefault()
-            openLink()
-            return true
-          }
-          if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "j" && services().ai && !readOnly()) {
-            e.preventDefault()
-            openAi()
-            return true
-          }
-          if (
-            (e.metaKey || e.ctrlKey) &&
-            e.shiftKey &&
-            e.code === "Space" &&
-            services().dictate &&
-            !readOnly()
-          ) {
-            e.preventDefault()
-            if (e.repeat) return true
-            // A short press starts and a second one finishes; holding the key records until it is let go.
-            const starting = !dictation
-            void toggleDictation()
-            if (starting) {
-              const pressed = Date.now()
-              const up = (k: KeyboardEvent) => {
-                if (k.code !== "Space") return
-                window.removeEventListener("keyup", up, true)
-                if (Date.now() - pressed > 400) dictation?.abort()
-              }
-              window.addEventListener("keyup", up, true)
-            }
-            return true
-          }
-          return false
-        },
-      },
-    )
-    // Repair tables the schema would not hold (a concurrent edit can leave a row short).
-    const fixed = fixTables(view.state)
-    if (fixed && !collab()) view.dispatch(fixed)
-    lastJSON.current = JSON.stringify(view.state.doc.toJSON())
-    // A presence colour given as a token becomes #rrggbb, which y-prosemirror's cursors take.
-    const aw = props.provider?.awareness
-    const own = aw?.getLocalState()?.user as CollabUser | undefined
-    if (aw && own?.color && !props.user && !own.color.startsWith("#"))
-      aw.setLocalStateField("user", { ...own, color: resolveColor(root, own.color) })
-    if (props.autofocus) view.focus()
-    props.ref?.(handle)
-  })
+      view = runWithOwner(
+        owner,
+        () =>
+          new EditorView(
+            { mount },
+            {
+              state: buildState(initial.doc, initial.mapping),
+              dispatchTransaction: dispatch,
+              editable: () => !readOnly(),
+              nodeViews: nodeViews({ services, readOnly, docVersion }),
+              attributes: () => ({
+                class: "nc-editor__content",
+                "data-part": "editor-content",
+                role: "textbox",
+                "aria-multiline": "true",
+                "aria-label": props["aria-label"] ?? "Document",
+                ...(readOnly() ? { "aria-readonly": "true" } : {}),
+              }),
+              handleDOMEvents: {
+                focus: () => {
+                  setFocused(true)
+                  props.onFocusChange?.(true)
+                  setTick(0)
+                  return false
+                },
+                blur: (_v, e) => {
+                  const next = (e as FocusEvent).relatedTarget as Node | null
+                  if (next && root.contains(next)) return false
+                  setFocused(false)
+                  props.onFocusChange?.(false)
+                  setTick(0)
+                  return false
+                },
+              },
+              handlePaste: (v, event) => {
+                if (readOnly()) return false
+                const files = Array.from(event.clipboardData?.files ?? [])
+                if (files.length) return uploadFiles(files)
+                const html = event.clipboardData?.getData("text/html")
+                const text = event.clipboardData?.getData("text/plain") ?? ""
+                if (
+                  !html &&
+                  text &&
+                  looksLikeMarkdown(text) &&
+                  !v.state.selection.$from.parent.type.spec.code
+                ) {
+                  const doc = parseMarkdown(text)
+                  v.dispatch(v.state.tr.replaceSelection(new Slice(doc.content, 1, 1)).scrollIntoView())
+                  return true
+                }
+                return false
+              },
+              handleDrop: (v, event, _slice, moved) => {
+                if (moved || readOnly()) return false
+                const files = Array.from((event as DragEvent).dataTransfer?.files ?? [])
+                if (!files.length) return false
+                const pos = v.posAtCoords({
+                  left: (event as DragEvent).clientX,
+                  top: (event as DragEvent).clientY,
+                })
+                event.preventDefault()
+                return uploadFiles(files, pos?.pos)
+              },
+              handleClickOn: (_v, _pos, node, _np, event) => {
+                if (node.type.name === "mention" && (event.metaKey || event.ctrlKey || readOnly())) {
+                  services().openMention?.(String(node.attrs.uri))
+                  return true
+                }
+                return false
+              },
+              handleKeyDown: (v, e) => {
+                // ProseMirror learns of a caret the browser moved (a click, End, an arrow key) from the
+                // document's `selectionchange` event, a task Chromium may run after a key that is already
+                // waiting: that key's command would then act where the caret was before (Enter split the first
+                // heading instead of the paragraph clicked). Reading the DOM selection first keeps keys where
+                // the caret is. `domObserver` is ProseMirror's own; `flush` is what its event handler calls.
+                ;(v as unknown as { domObserver?: { flush(): void } }).domObserver?.flush()
+                const sel = v.state.selection
+                if (e.key === "Enter" && sel instanceof NodeSelection && sel.node.type.name === "mention") {
+                  services().openMention?.(String(sel.node.attrs.uri))
+                  return true
+                }
+                if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k" && !readOnly()) {
+                  e.preventDefault()
+                  openLink()
+                  return true
+                }
+                if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "j" && services().ai && !readOnly()) {
+                  e.preventDefault()
+                  openAi()
+                  return true
+                }
+                if (
+                  (e.metaKey || e.ctrlKey) &&
+                  e.shiftKey &&
+                  e.code === "Space" &&
+                  services().dictate &&
+                  !readOnly()
+                ) {
+                  e.preventDefault()
+                  if (e.repeat) return true
+                  // A short press starts and a second one finishes; holding the key records until it is let go.
+                  const starting = !dictation
+                  void toggleDictation()
+                  if (starting) {
+                    const pressed = Date.now()
+                    const up = (k: KeyboardEvent) => {
+                      if (k.code !== "Space") return
+                      window.removeEventListener("keyup", up, true)
+                      if (Date.now() - pressed > 400) dictation?.abort()
+                    }
+                    window.addEventListener("keyup", up, true)
+                  }
+                  return true
+                }
+                return false
+              },
+            },
+          ),
+      )
+      // Repair tables the schema would not hold (a concurrent edit can leave a row short).
+      const fixed = fixTables(view.state)
+      if (fixed && !collab()) view.dispatch(fixed)
+      lastJSON.current = JSON.stringify(view.state.doc.toJSON())
+      // A presence colour given as a token becomes #rrggbb, which y-prosemirror's cursors take.
+      const aw = props.provider?.awareness
+      const own = aw?.getLocalState()?.user as CollabUser | undefined
+      if (aw && own?.color && !props.user && !own.color.startsWith("#"))
+        aw.setLocalStateField("user", { ...own, color: resolveColor(root, own.color) })
+      if (props.autofocus) view.focus()
+      props.ref?.(handle)
+    }),
+  )
 
   onCleanup(() => {
     abortAi()

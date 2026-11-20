@@ -196,10 +196,10 @@ function SheetSurface(props: SheetProps): JSX.Element {
     requestAnimationFrame(() => {
       if (!surface.contains(activeElement())) target.focus({ preventScroll: true })
     })
-    onCleanup(() => {
+    return () => {
       ro.disconnect()
       window.removeEventListener("resize", measure)
-    })
+    }
   })
   onCleanup(() => {
     document.removeEventListener("keydown", onKeyDown, true)

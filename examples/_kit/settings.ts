@@ -6,7 +6,8 @@ export interface ExampleSettings {
   density: Accessor<RowDensity | undefined>
 }
 
-export const ExampleSettingsContext = createContext<ExampleSettings>()
+// `null` is "no page settings": a default-less context throws in Solid 2 instead of reading as undefined.
+export const ExampleSettingsContext = createContext<ExampleSettings | null>(null)
 
 /** The row density the page asks for, or `fallback` (the gallery, or a page that sets none). */
 export function useDensity(fallback: RowDensity = "compact"): Accessor<RowDensity> {

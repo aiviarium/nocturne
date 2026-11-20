@@ -448,7 +448,7 @@ export function ListRow(props: ListRowProps): JSX.Element {
       if (swipe.swallowClick(e)) e.stopPropagation()
     }
     row.addEventListener("click", swallow, true)
-    onCleanup(() => row.removeEventListener("click", swallow, true))
+    return () => row.removeEventListener("click", swallow, true)
   })
 
   // ---- Registration with the list, for keyboard focus ----
@@ -1012,7 +1012,8 @@ export function RowList<T = unknown>(props: RowListProps<T>): JSX.Element {
       setFirstRow(ordered()[0] ?? null)
     })
   }
-  const [branches, setBranches] = createSignal(0)
+  // A branch row registers from its own body, which is an owned scope.
+  const [branches, setBranches] = createSignal(0, { ownedWrite: true })
   const rowOf = (el: Element | null) => {
     const rowEl = el?.closest?.(".nc-lrow")
     if (!rowEl || rowEl.closest("[data-part=row-list]") !== root) return undefined
@@ -1387,7 +1388,7 @@ export function RowList<T = unknown>(props: RowListProps<T>): JSX.Element {
   onSettled(() => {
     // Capture: a virtualised list's listbox would take the arrow keys first.
     root.addEventListener("keydown", onKeyDown, true)
-    onCleanup(() => root.removeEventListener("keydown", onKeyDown, true))
+    return () => root.removeEventListener("keydown", onKeyDown, true)
   })
   const addRow = () => (
     <Show when={props.onAdd}>

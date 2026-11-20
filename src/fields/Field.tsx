@@ -33,8 +33,8 @@ export function FieldEditor(props: EditorProps): JSX.Element {
 
 /** The control of a filter rule's value, or nothing for a kind that cannot be filtered. */
 export function FieldFilter(props: FilterProps): JSX.Element {
-  const Filter = FIELD_KINDS[props.spec.kind].Filter
-  return Filter ? <Filter {...props} /> : null
+  const Filter = createMemo(() => FIELD_KINDS[props.spec.kind].Filter)
+  return <Show when={Filter()}>{(F) => <Dynamic component={F()} {...props} />}</Show>
 }
 
 /** What a filter's field is as a field: its kind and the limits its controls take. */

@@ -138,6 +138,7 @@ export function WidgetGrid<T extends GridItem>(props: WidgetGridProps<T>): JSX.E
   onSettled(() => {
     if (!root) return
     const el = root
+    const stops: Array<() => void> = []
     if (typeof ResizeObserver !== "undefined") {
       let width = el.clientWidth
       const watch = new ResizeObserver(() => {
@@ -149,7 +150,7 @@ export function WidgetGrid<T extends GridItem>(props: WidgetGridProps<T>): JSX.E
         }
       })
       watch.observe(el)
-      onCleanup(() => watch.disconnect())
+      stops.push(() => watch.disconnect())
     }
     setStacked(el.clientWidth > 0 && el.clientWidth < STACK_BELOW)
     // Content that changes (rows arriving, a list emptying) is measured again before it is painted.
@@ -167,9 +168,12 @@ export function WidgetGrid<T extends GridItem>(props: WidgetGridProps<T>): JSX.E
         measure(dirty)
       })
       changes.observe(el, { childList: true, characterData: true, attributes: true, subtree: true })
-      onCleanup(() => changes.disconnect())
+      stops.push(() => changes.disconnect())
     }
     document.fonts?.ready.then(() => measure(items())).catch(() => {})
+    return () => {
+      for (const stop of stops) stop()
+    }
   })
   // Leaving edit mode, items mounting or being revealed, a size changed: measure what is drawn now.
   createEffect(

@@ -1,5 +1,5 @@
 import type { JSX } from "@solidjs/web"
-import { createEffect, createSignal, onCleanup, Show } from "solid-js"
+import { createEffect, createMemo, createSignal, onCleanup, Show, untrack } from "solid-js"
 import { caretAt } from "../lib/caret"
 import { createControllable } from "../lib/controllable"
 import { cx } from "../lib/cx"
@@ -100,6 +100,8 @@ export function NumberField(props: NumberFieldProps): JSX.Element {
     else document.documentElement.removeAttribute("data-nc-scrubbing")
   }
   let input!: HTMLInputElement
+  // A ref callback runs unowned: the caller's handler is read in the body instead.
+  const inputRef = createMemo(() => props.inputRef)
   /** Focus came from a press on the field: the caret goes where it was pressed, nothing is selected. */
   let pointerFocus = false
 
@@ -112,10 +114,11 @@ export function NumberField(props: NumberFieldProps): JSX.Element {
     return String(Number(v.toFixed(Math.min(10, Math.max(decimals(), decimalsOf(v))))))
   }
   // The text follows the value while the person is not typing.
+  // The formatted text is read in the compute: an apply runs unowned, and `format` may be a compiled memo.
   createEffect(
-    () => [value(), editing()] as const,
-    ([v, e]) => {
-      if (!e) setText(shown(v))
+    () => ({ text: shown(value()), editing: editing() }),
+    ({ text, editing }) => {
+      if (!editing) setText(text)
     },
   )
 
@@ -353,7 +356,7 @@ export function NumberField(props: NumberFieldProps): JSX.Element {
         id={id}
         ref={(el) => {
           input = el
-          props.inputRef?.(el)
+          inputRef()?.(el)
         }}
         name={props.name}
         class="nc-number__input"

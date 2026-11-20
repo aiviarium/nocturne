@@ -168,7 +168,7 @@ export function TabStrip(props: TabStripProps): JSX.Element {
     if (typeof ResizeObserver === "undefined") return
     const observer = new ResizeObserver(measure)
     observer.observe(list)
-    onCleanup(() => observer.disconnect())
+    return () => observer.disconnect()
   })
   const keepActiveInView = () => {
     const el = tabs.get(props.value)

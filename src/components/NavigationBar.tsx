@@ -300,7 +300,8 @@ export interface NavigationScreenProps {
 
 /** A phone screen: the navigation bar, a large title and search where there are, then the content. */
 export function NavigationScreen(props: NavigationScreenProps): JSX.Element {
-  const [parts, setParts] = createSignal<Array<() => ScreenPart>>([])
+  // A screen's parts are given from the bodies of the parts themselves, which are owned scopes.
+  const [parts, setParts] = createSignal<Array<() => ScreenPart>>([], { ownedWrite: true })
   const value: ScreenContextValue = {
     level: () => props.level ?? "main",
     provide: (part) => {
