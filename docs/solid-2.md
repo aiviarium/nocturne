@@ -79,9 +79,7 @@ browser build of `solid-js` and `@solidjs/web` under Bun's `node` condition.
 
 ## Dev diagnostics
 
-In a dev build, Solid reports a few one-time reads in Nocturne's own parts as `STRICT_READ_UNTRACKED`:
-the seed of an `InlineField`'s draft, a `NumberField`'s generated id, the rows a `NavigationStack`
-starts with, and the anchor a `ToastRegion` mounts at. Those values are read once on purpose. A
-draft is kept in step with its saved value by an effect, and an id stays the same for the life of
-its field. A stack renders the items it was given, and a toast region mounts where it was first
-shown. Production builds do not run the diagnostics.
+In a dev build, Solid reports a few one-time reads in Nocturne's own parts as `STRICT_READ_UNTRACKED`.
+Those reads are wrapped in `untrack` because the part needs the value once, when it is made: the
+draft an `InlineField` starts with, the id a `NumberField` gives itself, the items a `NavigationStack`
+opens on, and the anchor a `ToastRegion` mounts at. Production builds do not run the diagnostics.
