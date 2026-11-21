@@ -1,8 +1,9 @@
 import type { JSX } from "@solidjs/web"
-import { omit, Show } from "solid-js"
+import { merge, omit, Show } from "solid-js"
 import { aria } from "../lib/aria"
 import { cx } from "../lib/cx"
 import { callClick, useLinkClick } from "../lib/link"
+import { mergeParts } from "../lib/merge"
 import { Icon, type IconName, type LucideNode } from "./Icon"
 import { Tooltip } from "./Tooltip"
 
@@ -58,36 +59,57 @@ export function IconButton(props: IconButtonProps): JSX.Element {
   const icon = () => (
     <Icon name={props.icon} node={props.iconNode} size={props.size === "sm" ? "sm" : undefined} />
   )
-  const button = props.href ? (
-    <a
-      data-part="icon-button"
-      class={className()}
-      href={props.href}
-      aria-label={props.label}
-      {...(rest as JSX.AnchorHTMLAttributes<HTMLAnchorElement>)}
-      onClick={(e) => {
-        callClick((rest as { onClick?: unknown }).onClick, e)
-        linkClick(e, props.href)
-      }}
-    >
-      {icon()}
-    </a>
-  ) : (
-    <button
-      data-part="icon-button"
-      type={props.type ?? "button"}
-      class={className()}
-      aria-label={props.label}
-      aria-pressed={props.pressed === undefined ? undefined : aria(props.pressed)}
-      {...rest}
-    >
-      {icon()}
-    </button>
-  )
+  const button = (trigger: Record<string, unknown> = {}) =>
+    props.href ? (
+      <a
+        data-part="icon-button"
+        href={props.href}
+        aria-label={props.label}
+        {...mergeParts(
+          merge(rest as JSX.AnchorHTMLAttributes<HTMLAnchorElement>, {
+            onClick: (e: MouseEvent & { currentTarget: HTMLAnchorElement }) => {
+              callClick((rest as { onClick?: unknown }).onClick, e)
+              linkClick(e, props.href)
+            },
+          }),
+          trigger,
+        )}
+        class={className()}
+      >
+        {icon()}
+      </a>
+    ) : (
+      <button
+        data-part="icon-button"
+        type={props.type ?? "button"}
+        aria-label={props.label}
+        aria-pressed={props.pressed === undefined ? undefined : aria(props.pressed)}
+        {...mergeParts(
+          merge(rest, {
+            onClick: (e: MouseEvent & { currentTarget: HTMLButtonElement; target: Element }) => {
+              // A disabled button with a tooltip stays focusable, so the tooltip can say what it does; a press does
+              // nothing.
+              if (props.disabled) {
+                e.preventDefault()
+                return
+              }
+              callClick((rest as { onClick?: unknown }).onClick, e)
+            },
+          }),
+          trigger,
+        )}
+        disabled={trigger.ref === undefined ? props.disabled : undefined}
+        aria-disabled={trigger.ref !== undefined && props.disabled ? "true" : undefined}
+        class={className()}
+      >
+        {icon()}
+      </button>
+    )
   return (
-    <Show when={props.tooltip !== false} fallback={button}>
-      <Tooltip content={props.label} shortcut={props.shortcut}>
-        {button}
+    <Show when={props.tooltip !== false} fallback={button()}>
+      {/* The button is the trigger, so the tooltip names the button itself. */}
+      <Tooltip content={props.label} shortcut={props.shortcut} type="label">
+        {(trigger) => button(trigger)}
       </Tooltip>
     </Show>
   )

@@ -19,7 +19,6 @@ export {
 } from "./lib/expression"
 export {
   type Detent,
-  detentHeights,
   EDGE_WIDTH,
   lockDirection,
   PULL_THRESHOLD,
@@ -27,7 +26,6 @@ export {
   type RowSwipe,
   rowSwipe,
   rubberBand,
-  settleDetent,
   swipeBack,
 } from "./lib/gestures"
 export {
@@ -58,7 +56,7 @@ export {
   trackViewport,
   usePhone,
 } from "./lib/phone"
-export { computePosition, type Placement } from "./lib/position"
+export type { Placement } from "./lib/placement"
 export {
   createQueryId,
   defaultOperator,

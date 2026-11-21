@@ -37,6 +37,8 @@
     "vite": "^8.0.0"
   },
   "dependencies": {
+    "@ui-sdk/core": "0.1.0-beta.13",
+    "@ui-sdk/solid": "0.1.0-beta.13",
     "lib0": "^0.2.120",
     "markdown-it": "^15.0.3",
     "prosemirror-commands": "^1.7.2",

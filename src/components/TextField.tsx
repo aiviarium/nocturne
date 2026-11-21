@@ -1,5 +1,5 @@
 import type { JSX } from "@solidjs/web"
-import { omit, Show } from "solid-js"
+import { omit, Show, untrack } from "solid-js"
 import { cx } from "../lib/cx"
 import { createId } from "../lib/id"
 import { Icon, type IconName } from "./Icon"
@@ -58,7 +58,7 @@ export function TextField(props: TextFieldProps): JSX.Element {
           </Show>
           <input
             id={id}
-            ref={(el) => props.inputRef?.(el)}
+            ref={(el) => untrack(() => props.inputRef)?.(el)}
             class={cx("nc-input", props.mono && "nc-mono", invalid() && "nc-input--error")}
             aria-invalid={invalid() ? "true" : undefined}
             aria-describedby={message() ? helpId : undefined}
@@ -78,7 +78,7 @@ export function TextField(props: TextFieldProps): JSX.Element {
         <input
           id={id}
           type="search"
-          ref={(el) => props.inputRef?.(el)}
+          ref={(el) => untrack(() => props.inputRef)?.(el)}
           aria-label={props.label ?? rest["aria-label"] ?? "Search"}
           value={rest.value ?? props.defaultValue}
           {...rest}

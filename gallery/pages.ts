@@ -75,6 +75,13 @@ export const PAGES: GalleryPage[] = [
     sections: ["property-list/variants"],
   },
   {
+    id: "setting-row",
+    title: "Setting row",
+    group: "Shared parts",
+    lead: "One setting of a settings page: its title, description and key at the left, its control at the right. A change applies at once; a modified row has an accent edge and a chip that resets it.",
+    sections: ["setting-row/default"],
+  },
+  {
     id: "filter-bar",
     title: "Filter bar",
     group: "Shared parts",

@@ -340,9 +340,10 @@ function QueryChips(p: { state: QueryState; props: QueryBuilderProps }): JSX.Ele
         )}
       </For>
       {/* One rule's popover. */}
-      <Show when={!phone() && openId()}>
+      {/* Keyed: the popover keeps the rule's id while it closes, after the Show has let go of it. */}
+      <Show when={!phone() && openId()} keyed>
         {(id) => (
-          <RulePopover state={state} props={props} id={id()} anchor={anchors.get(id())} onClose={closeChip} />
+          <RulePopover state={state} props={props} id={id} anchor={anchors.get(id)} onClose={closeChip} />
         )}
       </Show>
       <Popover

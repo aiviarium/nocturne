@@ -1,7 +1,8 @@
 import type { JSX } from "@solidjs/web"
-import { createSignal, omit, Show } from "solid-js"
-import { aria, ariaChecked } from "../lib/aria"
-import { createControllable } from "../lib/controllable"
+import { CheckboxIndicator, Checkbox as CheckboxRoot } from "@ui-sdk/solid/checkbox"
+import { Radio, RadioGroup as RadioGroupRoot, RadioIndicator } from "@ui-sdk/solid/radio"
+import { Switch as SwitchRoot, SwitchThumb } from "@ui-sdk/solid/switch"
+import { For, omit, Show } from "solid-js"
 import { cx } from "../lib/cx"
 import { Icon } from "./Icon"
 
@@ -18,29 +19,36 @@ export interface SwitchProps extends Omit<JSX.ButtonHTMLAttributes<HTMLButtonEle
   danger?: boolean
 }
 
-/** A two-state toggle for a setting that applies immediately. */
+/** A two-state toggle for a setting that applies immediately: ui-sdk's Switch. */
 export function Switch(props: SwitchProps): JSX.Element {
-  const rest = omit(props, "checked", "defaultChecked", "onChange", "label", "danger", "class", "type")
-  const [checked, setChecked] = createControllable({
-    value: () => props.checked,
-    defaultValue: props.defaultChecked ?? false,
-    onChange: (v) => props.onChange?.(v),
-  })
-  const control = (
-    <button
+  const rest = omit(
+    props,
+    "checked",
+    "defaultChecked",
+    "onChange",
+    "label",
+    "danger",
+    "class",
+    "type",
+    "disabled",
+  )
+  const control = () => (
+    <SwitchRoot
       data-part="switch"
-      type="button"
-      role="switch"
-      aria-checked={aria(checked())}
+      checked={props.checked}
+      defaultChecked={props.checked === undefined ? props.defaultChecked : undefined}
+      onCheckedChange={(next: boolean) => props.onChange?.(next)}
+      disabled={props.disabled === true || props.disabled === ""}
       class={cx("nc-switch", props.danger && "nc-switch--danger", !props.label && props.class)}
-      onClick={() => setChecked(!checked())}
-      {...rest}
-    />
+      {...(rest as Record<string, unknown>)}
+    >
+      <SwitchThumb class="nc-switch__thumb" />
+    </SwitchRoot>
   )
   return (
-    <Show when={props.label} fallback={control}>
+    <Show when={props.label} fallback={control()}>
       <label data-part="switch-label" class={cx("nc-row nc-row--control", props.class)}>
-        {control}
+        {control()}
         {props.label}
       </label>
     </Show>
@@ -59,38 +67,37 @@ export interface CheckboxProps
   label?: JSX.Element
 }
 
-/** A checkbox for a choice that is applied later. */
+const toState = (v: boolean | "mixed" | undefined) => (v === "mixed" ? "indeterminate" : v)
+
+/** A checkbox for a choice that is applied later: ui-sdk's Checkbox. */
 export function Checkbox(props: CheckboxProps): JSX.Element {
-  const rest = omit(props, "checked", "defaultChecked", "onChange", "label", "class", "type")
-  const [state, setState] = createSignal<boolean | "mixed">(props.defaultChecked ?? false)
-  const value = () => (props.checked === undefined ? state() : props.checked)
-  const toggle = () => {
-    const next = value() === "mixed" ? true : !value()
-    if (props.checked === undefined) setState(next)
-    props.onChange?.(next)
-  }
-  const control = (
-    <button
+  const rest = omit(props, "checked", "defaultChecked", "onChange", "label", "class", "type", "disabled")
+  const control = () => (
+    <CheckboxRoot
       data-part="checkbox"
-      type="button"
-      role="checkbox"
-      aria-checked={ariaChecked(value())}
+      checked={toState(props.checked)}
+      defaultChecked={props.checked === undefined ? props.defaultChecked : undefined}
+      onCheckedChange={(next: boolean | "indeterminate") => props.onChange?.(next === true)}
+      disabled={props.disabled === true || props.disabled === ""}
       class={cx("nc-check", !props.label && props.class)}
-      onClick={toggle}
-      {...rest}
+      {...(rest as Record<string, unknown>)}
     >
-      <Show when={value() === true}>
-        <Icon name="check" class="nc-check__mark" />
-      </Show>
-      <Show when={value() === "mixed"}>
-        <span class="nc-check__dash" />
-      </Show>
-    </button>
+      <CheckboxIndicator
+        class="nc-check__indicator"
+        render={(part: Record<string, unknown>, state: { indeterminate: boolean }) => (
+          <span {...part}>
+            <Show when={state.indeterminate} fallback={<Icon name="check" class="nc-check__mark" />}>
+              <span class="nc-check__dash" />
+            </Show>
+          </span>
+        )}
+      />
+    </CheckboxRoot>
   )
   return (
-    <Show when={props.label} fallback={control}>
+    <Show when={props.label} fallback={control()}>
       <label data-part="checkbox-label" class={cx("nc-row nc-row--control", props.class)}>
-        {control}
+        {control()}
         {props.label}
       </label>
     </Show>
@@ -122,59 +129,31 @@ export interface RadioGroupProps<T extends string = string> {
   class?: string
 }
 
-/** One choice of a few visible options. Arrow keys move the choice; only the chosen radio is tabbable. */
+/** One choice of a few visible options: ui-sdk's RadioGroup. Arrow keys move the choice; only the chosen radio is
+ * tabbable. */
 export function RadioGroup<T extends string = string>(props: RadioGroupProps<T>): JSX.Element {
-  const [value, setValue] = createControllable<T | undefined>({
-    value: () => props.value,
-    defaultValue: props.defaultValue,
-    onChange: (v) => v !== undefined && props.onChange?.(v),
-  })
-  const buttons: HTMLButtonElement[] = []
-  const enabled = () => props.options.map((o, i) => (o.disabled ? -1 : i)).filter((i) => i >= 0)
-  const move = (from: number, dir: 1 | -1) => {
-    const list = enabled()
-    const at = list.indexOf(from)
-    const next = list[(at + dir + list.length) % list.length] as number
-    setValue((props.options[next] as RadioOption<T>).value)
-    buttons[next]?.focus()
-  }
-  const tabbable = (i: number) => {
-    const current = props.options.findIndex((o) => o.value === value())
-    return current >= 0 ? current === i : i === enabled()[0]
-  }
   return (
-    <div
+    <RadioGroupRoot<T>
       data-part="radio-group"
-      role="radiogroup"
       aria-label={props.label}
+      value={props.value}
+      defaultValue={props.value === undefined ? props.defaultValue : undefined}
+      onValueChange={(next: T | null) => {
+        if (next !== null) props.onChange?.(next)
+      }}
+      loop
       class={cx("nc-row nc-radio-group", props.vertical && "nc-radio-group--vertical", props.class)}
     >
-      {props.options.map((option, i) => (
-        <label class="nc-row nc-row--control">
-          <button
-            ref={(el) => {
-              buttons[i] = el
-            }}
-            type="button"
-            role="radio"
-            class="nc-radio"
-            aria-checked={aria(value() === option.value)}
-            disabled={option.disabled}
-            tabindex={tabbable(i) ? 0 : -1}
-            onClick={() => setValue(option.value)}
-            onKeyDown={(e) => {
-              if (e.key === "ArrowRight" || e.key === "ArrowDown") {
-                e.preventDefault()
-                move(i, 1)
-              } else if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
-                e.preventDefault()
-                move(i, -1)
-              }
-            }}
-          />
-          {option.label}
-        </label>
-      ))}
-    </div>
+      <For each={props.options}>
+        {(option) => (
+          <label class="nc-row nc-row--control">
+            <Radio value={option.value} disabled={option.disabled} class="nc-radio">
+              <RadioIndicator class="nc-radio__dot" />
+            </Radio>
+            {option.label}
+          </label>
+        )}
+      </For>
+    </RadioGroupRoot>
   )
 }

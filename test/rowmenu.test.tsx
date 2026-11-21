@@ -354,7 +354,7 @@ describe("DataList", () => {
   test("a field per column, named by its column and row, under a header; no grip", () => {
     track(mount(() => <Env />))
     expect(all(".nc-datalist__th").map((e) => e.textContent)).toEqual(["Name", "Value"])
-    expect(all("input").map((i) => i.getAttribute("aria-label"))).toEqual([
+    expect(all("input:not([aria-hidden])").map((i) => i.getAttribute("aria-label"))).toEqual([
       "Name of A",
       "Value of A",
       "Name of B",

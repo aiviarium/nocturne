@@ -1,13 +1,15 @@
 import type { JSX } from "@solidjs/web"
-import { createEffect, createMemo, createSignal, For, onCleanup, onSettled, Show } from "solid-js"
+import { Command, CommandEmpty, CommandInput, CommandItem, CommandList } from "@ui-sdk/solid/command"
+import { PopoverContent, Popover as PopoverRoot, PopoverTrigger } from "@ui-sdk/solid/popover"
+import { createEffect, createSignal, For, onCleanup, onSettled, Show } from "solid-js"
 import { aria } from "../lib/aria"
 import { cx } from "../lib/cx"
 import { createId } from "../lib/id"
+import { mergeParts } from "../lib/merge"
 import { Icon, type IconName } from "./Icon"
 import { IconButton } from "./IconButton"
 import { Menu, type MenuEntry } from "./Menu"
-import { Popover } from "./Popover"
-import { TextField } from "./TextField"
+import { OpenLayer } from "./Popover"
 import { Tooltip } from "./Tooltip"
 
 export interface TabStripItem {
@@ -88,7 +90,6 @@ export function TabStrip(props: TabStripProps): JSX.Element {
   const [overflow, setOverflow] = createSignal(false)
   const [touch, setTouch] = createSignal(false)
   const [menuAt, setMenuAt] = createSignal<{ id: string; x: number; y: number } | null>(null)
-  const [anchor, setAnchor] = createSignal<HTMLElement>()
   const stripId = () => props.stripId ?? prefix
   // A strip removed in the middle of a drag gets no dragend: forget its tab, or drop zones elsewhere stay up.
   onCleanup(() => {
@@ -251,125 +252,133 @@ export function TabStrip(props: TabStripProps): JSX.Element {
       >
         <For each={props.items}>
           {(item, index) => (
-            <Tooltip content={tip(item)} placement="bottom" delay={600}>
-              <div
-                ref={(el) => tabs.set(item.id, el)}
-                data-part="tab-strip-tab"
-                data-tab={item.id}
-                data-active={props.value === item.id ? "" : undefined}
-                data-pinned={item.pinned ? "" : undefined}
-                data-dirty={item.dirty ? "" : undefined}
-                data-loading={item.loading ? "" : undefined}
-                data-drop-before={dropAt() === index() ? "" : undefined}
-                class="nc-tabstrip__tab"
-                draggable={props.dragGroup && !touch() ? "true" : undefined}
-                onDragStart={(event) => {
-                  if (!props.dragGroup || !event.dataTransfer) return
-                  event.dataTransfer.setData(
-                    dragType(props.dragGroup),
-                    JSON.stringify({ id: item.id, from: stripId() }),
-                  )
-                  event.dataTransfer.effectAllowed = "move"
-                  setDragged({ group: props.dragGroup, id: item.id, from: stripId() })
-                }}
-                onDragEnd={() => {
-                  setDropAt(null)
-                  setDragged(null)
-                }}
-                onMouseDown={(event) => {
-                  // A middle press would start the browser's autoscroll.
-                  if (event.button === 1 && props.onClose) event.preventDefault()
-                }}
-                onAuxClick={(event) => {
-                  if (event.button === 1 && props.onClose) {
-                    event.preventDefault()
-                    props.onClose(item.id)
-                  }
-                }}
-                onContextMenu={(event) => {
-                  if (!props.menu) return
+            <div
+              ref={(el) => tabs.set(item.id, el)}
+              data-part="tab-strip-tab"
+              data-tab={item.id}
+              data-active={props.value === item.id ? "" : undefined}
+              data-pinned={item.pinned ? "" : undefined}
+              data-dirty={item.dirty ? "" : undefined}
+              data-loading={item.loading ? "" : undefined}
+              data-drop-before={dropAt() === index() ? "" : undefined}
+              class="nc-tabstrip__tab"
+              draggable={props.dragGroup && !touch() ? "true" : undefined}
+              onDragStart={(event) => {
+                if (!props.dragGroup || !event.dataTransfer) return
+                event.dataTransfer.setData(
+                  dragType(props.dragGroup),
+                  JSON.stringify({ id: item.id, from: stripId() }),
+                )
+                event.dataTransfer.effectAllowed = "move"
+                setDragged({ group: props.dragGroup, id: item.id, from: stripId() })
+              }}
+              onDragEnd={() => {
+                setDropAt(null)
+                setDragged(null)
+              }}
+              onMouseDown={(event) => {
+                // A middle press would start the browser's autoscroll.
+                if (event.button === 1 && props.onClose) event.preventDefault()
+              }}
+              onAuxClick={(event) => {
+                if (event.button === 1 && props.onClose) {
                   event.preventDefault()
-                  openMenu(item.id, event.clientX, event.clientY)
-                }}
-                onPointerDown={(event) => {
-                  setTouch(event.pointerType === "touch" || event.pointerType === "pen")
-                  if (event.pointerType === "mouse" || !props.menu) return
-                  cancelPress()
-                  const { clientX: x, clientY: y } = event
-                  press = {
-                    id: item.id,
-                    x,
-                    y,
-                    timer: setTimeout(() => {
-                      press = undefined
-                      swallowClick = true
-                      openMenu(item.id, x, y)
-                    }, 500),
-                  }
-                }}
-                onPointerMove={(event) => {
-                  if (press && Math.hypot(event.clientX - press.x, event.clientY - press.y) > 8) cancelPress()
-                }}
-                onPointerUp={cancelPress}
-                onPointerCancel={cancelPress}
-              >
-                <button
-                  ref={(el) => buttons.set(item.id, el)}
-                  type="button"
-                  role="tab"
-                  aria-selected={aria(props.value === item.id)}
-                  aria-label={item.pinned ? tip(item) : undefined}
-                  tabindex={props.value === item.id ? 0 : -1}
-                  class="nc-tabstrip__main label"
-                  onClick={(event) => {
-                    if (swallowClick) {
-                      swallowClick = false
-                      event.preventDefault()
-                      return
-                    }
-                    props.onChange(item.id)
-                  }}
-                  onKeyDown={(e) => onKeyDown(e, index())}
-                >
-                  <Show
-                    when={item.loading}
-                    fallback={
-                      <Show when={item.icon}>
-                        <Icon name={item.icon} size="sm" />
-                      </Show>
-                    }
-                  >
-                    <span class="nc-spinner" role="status" aria-label="Loading" />
-                  </Show>
-                  <Show when={!item.pinned}>
-                    <span class="nc-tabstrip__title">{item.label}</span>
-                    <Show when={item.detail}>
-                      <span class="nc-tabstrip__detail">{item.detail}</span>
-                    </Show>
-                  </Show>
-                  <Show when={item.pinned && item.dirty}>
-                    <span
-                      class="nc-tabstrip__dirty nc-tabstrip__dirty--pinned"
-                      aria-label="Unsaved changes"
-                    />
-                  </Show>
-                </button>
-                <Show when={props.onClose && !item.pinned}>
+                  props.onClose(item.id)
+                }
+              }}
+              onContextMenu={(event) => {
+                if (!props.menu) return
+                event.preventDefault()
+                openMenu(item.id, event.clientX, event.clientY)
+              }}
+              onPointerDown={(event) => {
+                setTouch(event.pointerType === "touch" || event.pointerType === "pen")
+                if (event.pointerType === "mouse" || !props.menu) return
+                cancelPress()
+                const { clientX: x, clientY: y } = event
+                press = {
+                  id: item.id,
+                  x,
+                  y,
+                  timer: setTimeout(() => {
+                    press = undefined
+                    swallowClick = true
+                    openMenu(item.id, x, y)
+                  }, 500),
+                }
+              }}
+              onPointerMove={(event) => {
+                if (press && Math.hypot(event.clientX - press.x, event.clientY - press.y) > 8) cancelPress()
+              }}
+              onPointerUp={cancelPress}
+              onPointerCancel={cancelPress}
+            >
+              {/* The tab is the tooltip's trigger: the full title shows over a truncated or pinned one. */}
+              <Tooltip content={tip(item)} placement="bottom" delay={600} type="description">
+                {(trigger) => (
                   <button
+                    {...mergeParts(
+                      {
+                        ref: (el: HTMLButtonElement) => buttons.set(item.id, el),
+                        onClick: (event: MouseEvent) => {
+                          if (swallowClick) {
+                            swallowClick = false
+                            event.preventDefault()
+                            return
+                          }
+                          props.onChange(item.id)
+                        },
+                        onKeyDown: (e: KeyboardEvent) => onKeyDown(e, index()),
+                      },
+                      trigger,
+                    )}
                     type="button"
-                    class="nc-tabstrip__close"
-                    tabindex="-1"
-                    aria-label={props.closeLabel?.(item) ?? `Close ${item.label}`}
-                    onClick={() => props.onClose?.(item.id)}
+                    role="tab"
+                    aria-selected={aria(props.value === item.id)}
+                    aria-label={item.pinned ? tip(item) : undefined}
+                    tabindex={props.value === item.id ? 0 : -1}
+                    class="nc-tabstrip__main label"
                   >
-                    <Show when={item.dirty}>
-                      <span class="nc-tabstrip__dirty" role="img" aria-label="Unsaved changes" />
+                    <Show
+                      when={item.loading}
+                      fallback={
+                        <Show when={item.icon}>
+                          <Icon name={item.icon} size="sm" />
+                        </Show>
+                      }
+                    >
+                      <span class="nc-spinner" role="status" aria-label="Loading" />
                     </Show>
-                    <Icon name="close" size="sm" />
+                    <Show when={!item.pinned}>
+                      <span class="nc-tabstrip__title">{item.label}</span>
+                      <Show when={item.detail}>
+                        <span class="nc-tabstrip__detail">{item.detail}</span>
+                      </Show>
+                    </Show>
+                    <Show when={item.pinned && item.dirty}>
+                      <span
+                        class="nc-tabstrip__dirty nc-tabstrip__dirty--pinned"
+                        aria-label="Unsaved changes"
+                      />
+                    </Show>
                   </button>
-                </Show>
-              </div>
-            </Tooltip>
+                )}
+              </Tooltip>
+              <Show when={props.onClose && !item.pinned}>
+                <button
+                  type="button"
+                  class="nc-tabstrip__close"
+                  tabindex="-1"
+                  aria-label={props.closeLabel?.(item) ?? `Close ${item.label}`}
+                  onClick={() => props.onClose?.(item.id)}
+                >
+                  <Show when={item.dirty}>
+                    <span class="nc-tabstrip__dirty" role="img" aria-label="Unsaved changes" />
+                  </Show>
+                  <Icon name="close" size="sm" />
+                </button>
+              </Show>
+            </div>
           )}
         </For>
       </div>
@@ -379,116 +388,90 @@ export function TabStrip(props: TabStripProps): JSX.Element {
       <Show when={props.actions}>
         <div class="nc-tabstrip__actions">{props.actions}</div>
       </Show>
-      <span
-        ref={setAnchor}
-        class="nc-tabstrip__ctx"
-        aria-hidden="true"
-        style={{ left: `${menuAt()?.x ?? 0}px`, top: `${menuAt()?.y ?? 0}px` }}
-      />
-      <Popover
-        open={menuAt() !== null}
-        anchor={anchor()}
-        placement="bottom-start"
-        offset={0}
-        onClose={() => closeMenu()}
-      >
-        <Show when={menuAt()} keyed>
-          {(at) => (
-            <Menu
-              label="Tab"
-              minWidth="264px"
-              items={props.menu?.(at.id) ?? []}
-              onRequestClose={() => closeMenu(false)}
-              onSelect={(entry) => {
-                closeMenu()
-                props.onMenuSelect?.(at.id, entry)
-              }}
-            />
-          )}
-        </Show>
-      </Popover>
+      <Show when={menuAt()} keyed>
+        {(at) => (
+          <Menu
+            open
+            anchor={{ x: at.x, y: at.y }}
+            label="Tab"
+            minWidth="264px"
+            items={props.menu?.(at.id) ?? []}
+            onClose={() => closeMenu()}
+            onSelect={(entry) => {
+              closeMenu()
+              props.onMenuSelect?.(at.id, entry)
+            }}
+          />
+        )}
+      </Show>
     </div>
   )
 }
 
-/** The button at the end of a strip with many tabs: every tab, with a filter, in a menu. */
+/** The button at the end of a strip with many tabs: every tab, with a filter, in a popover. */
 function AllTabs(props: {
   items: TabStripItem[]
   value: string
   onChange: (id: string) => void
 }): JSX.Element {
   const [open, setOpen] = createSignal(false)
-  const [query, setQuery] = createSignal("")
-  const [anchor, setAnchor] = createSignal<HTMLElement>()
-  let box: HTMLDivElement | undefined
-  const shown = createMemo(() => {
-    const q = query().trim().toLowerCase()
-    return props.items.filter((i) => !q || `${i.label} ${i.detail ?? ""}`.toLowerCase().includes(q))
-  })
-  // One line a tab: the title, then what tells it from another of the same title and its state, dimmed.
-  const entries = createMemo<MenuEntry[]>(() =>
-    shown().map((i) => ({
-      id: i.id,
-      label: i.label,
-      icon: i.icon,
-      checked: props.value === i.id,
-      shortcut:
-        [i.detail, i.pinned ? "Pinned" : "", i.dirty ? "Unsaved" : ""].filter(Boolean).join(" · ") ||
-        undefined,
-    })),
-  )
-  const close = () => {
-    setOpen(false)
-    setQuery("")
-  }
   const choose = (id: string) => {
-    close()
+    setOpen(false)
     props.onChange(id)
   }
   return (
     <div class="nc-tabstrip__more" data-part="all-tabs">
-      <span ref={setAnchor} class="nc-tabstrip__more-anchor">
-        <IconButton
-          label="All tabs"
-          icon="chevron-down"
-          aria-haspopup="dialog"
-          aria-expanded={aria(open())}
-          onClick={() => setOpen(!open())}
+      <PopoverRoot open={open()} onOpenChange={setOpen}>
+        <PopoverTrigger
+          render={(trigger: Record<string, unknown>) => (
+            <IconButton {...trigger} label="All tabs" icon="chevron-down" />
+          )}
         />
-      </span>
-      <Popover open={open()} anchor={anchor()} placement="bottom-end" onClose={close}>
-        <div ref={box} class="nc-alltabs" role="dialog" aria-label="All tabs" data-part="all-tabs-list">
-          <TextField
-            variant="search"
-            label="Filter tabs"
-            placeholder="Filter tabs"
-            value={query()}
-            autofocus
-            onInput={(e) => setQuery(e.currentTarget.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && shown()[0]) {
-                e.preventDefault()
-                choose(shown()[0].id)
-              } else if (e.key === "ArrowDown") {
-                e.preventDefault()
-                box?.querySelector<HTMLElement>("[role=menuitem], [role=menuitemradio]")?.focus()
-              }
-            }}
-          />
-          <div class="nc-alltabs__list">
-            <Show when={entries().length} fallback={<p class="nc-menu__empty">No tab matches.</p>}>
-              <Menu
-                label="Tabs"
-                radio
-                items={entries()}
-                autoFocus={false}
-                onSelect={choose}
-                onRequestClose={close}
-              />
-            </Show>
+        <PopoverContent
+          side="bottom"
+          align="end"
+          sideOffset={4}
+          collisionPadding={8}
+          class="nc-popover"
+          initialFocus="auto"
+        >
+          <OpenLayer />
+          <div class="nc-alltabs" data-part="all-tabs-list">
+            {/* A command list: the filter keeps focus, arrows move the highlight and Enter opens the tab. */}
+            <Command onAction={choose} defaultValue={props.value}>
+              <CommandInput aria-label="Filter tabs" placeholder="Filter tabs" class="nc-input nc-search" />
+              <CommandEmpty class="nc-menu__empty">No tab matches.</CommandEmpty>
+              <CommandList class="nc-alltabs__list nc-menu" aria-label="Tabs">
+                <For each={props.items}>
+                  {(item) => (
+                    <CommandItem
+                      value={item.id}
+                      keywords={[item.label, item.detail ?? ""]}
+                      class="nc-menu__item"
+                      aria-current={props.value === item.id ? "true" : undefined}
+                    >
+                      <Show when={item.icon} fallback={<span class="nc-menu__slot" aria-hidden="true" />}>
+                        <Icon name={item.icon} size="sm" />
+                      </Show>
+                      <span class="nc-menu__text">{item.label}</span>
+                      <Show when={props.value === item.id}>
+                        <Icon name="check" size="sm" class="nc-menu__check" />
+                      </Show>
+                      <Show
+                        when={[item.detail, item.pinned ? "Pinned" : "", item.dirty ? "Unsaved" : ""]
+                          .filter(Boolean)
+                          .join(" · ")}
+                      >
+                        {(note) => <span class="nc-menu__key">{note()}</span>}
+                      </Show>
+                    </CommandItem>
+                  )}
+                </For>
+              </CommandList>
+            </Command>
           </div>
-        </div>
-      </Popover>
+        </PopoverContent>
+      </PopoverRoot>
     </div>
   )
 }

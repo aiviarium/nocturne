@@ -4,24 +4,23 @@ description: Where popovers, menus, dialogs, tooltips and toasts mount, and how 
 icon: Layers
 ---
 
+## Built on ui-sdk
+
+Popovers, menus, selects, dialogs, sheets, tooltips and toasts are built on [ui-sdk](https://ui-sdk.dev).
+ui-sdk does the keyboard, focus, dismissal, placement and ARIA, and Nocturne draws them with its `nc-*` classes.
+The components keep the props they had before.
+
 ## Where they mount
 
-Popovers, menus, dialogs, tooltips and toasts mount inside the nearest element with a `data-theme`.
-They inherit its theme and `--accent`.
-With no such element they fall back to `document.body`, in a `div.nc` that copies the theme of the opener and keeps it in step.
+An overlay renders in the top layer of the browser, at the place in the page where you put it.
+It inherits the theme and `--accent` of that place, so a menu opened in a light panel is light.
+The menu of a table row is the one exception: it renders next to the table, in a `div.nc` that copies the table's theme.
 
 ## The order
 
-Overlays stack in a fixed order, lowest first:
-
-1. the phone drawer
-2. the scrim of a dialog
-3. popovers
-4. tooltips
-5. toasts
-
-A `Select`, menu or tooltip opened in a `Dialog` shows above it.
-Escape closes only the topmost open layer.
+The top layer stacks overlays in the order they open, so a `Select`, menu or tooltip opened in a `Dialog` shows above it.
+Escape closes only the topmost open overlay.
+A modal dialog or sheet makes the page behind it inert until it closes.
 
 <Example id="patterns/overlay-stack" minHeight={420} />
 
@@ -30,6 +29,7 @@ Escape closes only the topmost open layer.
 A `Popover` is a box that floats next to an anchor element.
 It flips to the other side when there is no room and stays inside the viewport.
 Escape or a press outside it closes it.
+For a button that opens a popover of its own, use `PopoverButton`.
 
 <Example id="popover/anchored" minHeight={300} />
 
@@ -38,6 +38,7 @@ Escape or a press outside it closes it.
 A `Dialog` is centred, bare, near the top, or a bottom sheet.
 Focus moves in when it opens, Tab cycles inside, and Escape closes it.
 Focus then returns to the button that opened it.
+On a phone a dialog with a title is a `Sheet`, which rests at the height of its content and is dragged down to close.
 
 <Example id="dialog/confirm" minHeight={300} />
 
@@ -46,7 +47,8 @@ Focus then returns to the button that opened it.
 A tooltip shows the label of an `IconButton` with its shortcut.
 
 Toasts are short notices in a live region at the bottom right.
-Danger toasts are announced assertively, and hover pauses the timer.
-Put a `ToastRegion` next to the root of the app.
+Danger toasts are announced assertively, and hover or focus pauses the timer.
+F6 moves focus into the region and back.
+Put one `ToastRegion` next to the root of the app.
 
 <Example id="toast/tones" minHeight={260} />

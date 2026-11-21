@@ -7,6 +7,8 @@ const ui = fileURLToPath(new URL("../src", import.meta.url))
 export default defineConfig({
   root: fileURLToPath(new URL(".", import.meta.url)),
   plugins: [solid()],
+  // ui-sdk's Solid package and the core it loads must be one copy; pre-bundling the core would make two.
+  optimizeDeps: { exclude: ["@ui-sdk/core"] },
   resolve: { alias: { "@aiviarium/nocturne": ui } },
   // 4800 unless GALLERY_PORT says otherwise (the browser tests run their own copy).
   server: { host: "127.0.0.1", port: Number(process.env.GALLERY_PORT ?? 4800), strictPort: true },

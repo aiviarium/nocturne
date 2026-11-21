@@ -1,12 +1,18 @@
 import type { JSX } from "@solidjs/web"
-import { createMemo, omit, onCleanup, onSettled, Show } from "solid-js"
+import {
+  DialogBackdrop,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  Dialog as DialogRoot,
+  DialogTitle,
+} from "@ui-sdk/solid/dialog"
+import { omit, Show } from "solid-js"
 import { cx } from "../lib/cx"
-import { activeElement, focusableIn, trapTab } from "../lib/focus"
-import { createId } from "../lib/id"
-import { pushLayer } from "../lib/layers"
-import { Overlay } from "../lib/overlay"
+import { focusableIn } from "../lib/focus"
 import { usePhone } from "../lib/phone"
 import { IconButton } from "./IconButton"
+import { OpenLayer } from "./Popover"
 import { Sheet } from "./Sheet"
 
 export interface DialogProps extends Omit<JSX.HTMLAttributes<HTMLDivElement>, "title"> {
@@ -32,7 +38,7 @@ export interface DialogProps extends Omit<JSX.HTMLAttributes<HTMLDivElement>, "t
   initialFocus?: () => HTMLElement | undefined
   /** Close when the backdrop is clicked. Default true; turn it off for forms with unsaved input. */
   closeOnBackdrop?: boolean
-  /** Where to mount; defaults to the themed root of `anchor`, or `document.body`. */
+  /** @deprecated The dialog renders in the top layer where it sits, and keeps that place's theme. */
   anchor?: HTMLElement
 }
 
@@ -45,16 +51,7 @@ export function Dialog(props: DialogProps): JSX.Element {
   const phone = usePhone()
   const asSheet = () => phone() && (!props.bare || props.placement === "bottom")
   return (
-    <Show
-      when={asSheet()}
-      fallback={
-        <Show when={props.open}>
-          <Overlay anchor={props.anchor}>
-            <DialogSurface {...props} />
-          </Overlay>
-        </Show>
-      }
-    >
+    <Show when={asSheet()} fallback={<DialogSurface {...props} />}>
       <Sheet
         open={props.open}
         onClose={props.onClose}
@@ -93,82 +90,61 @@ function DialogSurface(props: DialogProps): JSX.Element {
     "class",
     "children",
   )
-  const titleId = createId("dialog-title")
-  const descId = createId("dialog-desc")
-  const previous = activeElement() as HTMLElement | null
-  const layer = pushLayer()
-  let surface!: HTMLDivElement
-  const onKeyDown = (event: KeyboardEvent) => {
-    if (!layer.isTop()) return
-    if (event.key === "Escape") {
-      event.preventDefault()
-      event.stopPropagation()
-      props.onClose()
-    } else if (event.key === "Tab" && surface) {
-      trapTab(event, surface)
-    }
-  }
-  document.addEventListener("keydown", onKeyDown, true)
-  onCleanup(() => {
-    document.removeEventListener("keydown", onKeyDown, true)
-    layer.remove()
-    if (previous?.isConnected) previous.focus()
-  })
-  // The surface's ref exists only once the dialog is inserted, which is after the body has run.
-  // Read in the body: a prop getter can make a memo, and onSettled may not create one.
-  const initialFocus = createMemo(() => props.initialFocus)
-  onSettled(() => {
-    const target =
-      initialFocus()?.() ??
-      focusableIn(surface).find((el) => !el.hasAttribute("data-dialog-close")) ??
-      surface
-    target.focus()
-  })
+  let surface: HTMLDivElement | undefined
+  // The first control in the body, not the header's close button: the person came to fill the form in.
+  const firstFocus = () =>
+    props.initialFocus?.() ??
+    (surface ? focusableIn(surface).find((el) => !el.hasAttribute("data-dialog-close")) : undefined) ??
+    surface
   return (
-    <div
-      data-part="dialog-backdrop"
-      class={cx("nc-scrim", `nc-scrim--${props.placement ?? "center"}`)}
-      onPointerDown={(e) => {
-        if (e.target === e.currentTarget && props.closeOnBackdrop !== false) props.onClose()
+    <DialogRoot
+      open={props.open}
+      closeOnOutsidePress={props.closeOnBackdrop !== false}
+      onOpenChange={(next) => {
+        if (!next) props.onClose()
       }}
     >
-      <div
+      <DialogBackdrop
+        data-part="dialog-backdrop"
+        class={cx("nc-scrim", `nc-scrim--${props.placement ?? "center"}`)}
+      />
+      <DialogContent
+        ref={(el: HTMLDivElement) => {
+          surface = el
+        }}
+        initialFocus={firstFocus}
         data-part="dialog"
-        ref={surface}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={props.bare ? undefined : titleId}
         aria-label={props.bare ? props.label : undefined}
-        aria-describedby={props.description ? descId : undefined}
-        tabindex="-1"
         data-placement={props.placement ?? "center"}
         class={cx(
           "nc-dialog",
           `nc-dialog--${props.size ?? "md"}`,
+          `nc-dialog--at-${props.placement ?? "center"}`,
           props.bare && "nc-dialog--bare",
           props.placement === "bottom" && "nc-dialog--sheet",
           props.class,
         )}
-        {...rest}
+        {...(rest as Record<string, unknown>)}
       >
+        <OpenLayer />
         <Show when={!props.bare}>
           <header class="nc-dialog__header">
-            <h2 id={titleId} class="nc-dialog__title heading">
-              {props.title}
-            </h2>
-            <IconButton label="Close" icon="close" data-dialog-close="" onClick={() => props.onClose()} />
+            <DialogTitle class="nc-dialog__title heading">{props.title}</DialogTitle>
+            <DialogClose
+              render={(close: Record<string, unknown>) => (
+                <IconButton label="Close" icon="close" data-dialog-close="" {...close} />
+              )}
+            />
           </header>
         </Show>
         <Show when={props.description}>
-          <p id={descId} class="nc-dialog__desc">
-            {props.description}
-          </p>
+          <DialogDescription class="nc-dialog__desc">{props.description}</DialogDescription>
         </Show>
         <div class={cx("nc-dialog__body", props.bare && "nc-dialog__body--bare")}>{props.children}</div>
         <Show when={props.footer}>
           <footer class="nc-dialog__footer">{props.footer}</footer>
         </Show>
-      </div>
-    </div>
+      </DialogContent>
+    </DialogRoot>
   )
 }

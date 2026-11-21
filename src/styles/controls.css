@@ -63,13 +63,13 @@
 .nc-slider__row { display: flex; align-items: center; gap: var(--space-3); min-width: 0; }
 .nc-slider__body { display: flex; flex: 1; flex-direction: column; min-width: 0; }
 /* The thumb's centre travels the box inside the margins, so at either end it stays inside the field. */
-.nc-slider { position: relative; height: var(--nc-slider-hit); margin: 0 calc(var(--nc-slider-thumb) / 2); touch-action: pan-y; cursor: pointer; -webkit-user-select: none; user-select: none; }
-.nc-slider__track { position: absolute; top: 50%; right: 0; left: 0; height: var(--nc-slider-track); margin-top: calc(var(--nc-slider-track) / -2); border-radius: var(--radius-full); background: var(--bg-4); pointer-events: none; }
+.nc-slider { position: relative; display: flex; align-items: center; height: var(--nc-slider-hit); margin: 0 calc(var(--nc-slider-thumb) / 2); touch-action: pan-y; cursor: pointer; -webkit-user-select: none; user-select: none; }
+.nc-slider__track { flex: 1; height: var(--nc-slider-track); border-radius: var(--radius-full); background: var(--bg-4); }
 .nc-slider__fill { position: absolute; top: 0; bottom: 0; border-radius: var(--radius-full); background: var(--accent); }
-.nc-slider__thumb { position: absolute; top: 50%; z-index: 1; box-sizing: border-box; width: var(--nc-slider-thumb); height: var(--nc-slider-thumb); margin: calc(var(--nc-slider-thumb) / -2) 0 0 calc(var(--nc-slider-thumb) / -2); border-radius: var(--radius-full); background: var(--on-accent); box-shadow: 0 0 0 1px var(--line-strong); cursor: grab; touch-action: none; transition: box-shadow 120ms; }
+.nc-slider__thumb { z-index: 1; box-sizing: border-box; width: var(--nc-slider-thumb); height: var(--nc-slider-thumb); border-radius: var(--radius-full); background: var(--on-accent); box-shadow: 0 0 0 1px var(--line-strong); cursor: grab; touch-action: none; transition: box-shadow 120ms; }
 .nc-slider__thumb:hover { box-shadow: 0 0 0 1px var(--line-strong), 0 0 0 4px var(--accent-tint); }
-.nc-slider__thumb:focus-visible { outline: none; box-shadow: var(--focus-ring); }
-.nc-slider__thumb[data-active] { cursor: grabbing; box-shadow: 0 0 0 1px var(--accent-strong), 0 0 0 4px var(--accent-tint); }
+.nc-slider__thumb:is(:focus-visible, :has(:focus-visible)) { outline: none; box-shadow: var(--focus-ring); }
+.nc-slider__thumb:is([data-active], [data-dragging]) { cursor: grabbing; box-shadow: 0 0 0 1px var(--accent-strong), 0 0 0 4px var(--accent-tint); }
 .nc-slider[data-dragging] { cursor: grabbing; }
 .nc-slider__tick { position: absolute; top: calc(50% + var(--nc-slider-track) / 2 + 3px); width: 1px; height: 4px; margin-left: -0.5px; background: var(--line-strong); pointer-events: none; }
 .nc-slider__marks { position: relative; height: var(--nc-type-label-line); margin: -2px calc(var(--nc-slider-thumb) / 2) 0; }
@@ -85,10 +85,9 @@
 /* Vertical: the same parts stood up. */
 .nc-slider-field[data-orientation="vertical"] { display: inline-flex; align-items: center; }
 .nc-slider-field[data-orientation="vertical"] .nc-slider__head { flex-direction: column; align-items: center; gap: 0; }
-.nc-slider-field[data-orientation="vertical"] .nc-slider { width: var(--nc-slider-hit); height: var(--nc-slider-length); margin: calc(var(--nc-slider-thumb) / 2) 0; touch-action: pan-x; }
-.nc-slider-field[data-orientation="vertical"] .nc-slider__track { top: 0; bottom: 0; right: auto; left: 50%; width: var(--nc-slider-track); height: auto; margin: 0 0 0 calc(var(--nc-slider-track) / -2); }
+.nc-slider-field[data-orientation="vertical"] .nc-slider { flex-direction: column; justify-content: center; width: var(--nc-slider-hit); height: var(--nc-slider-length); margin: calc(var(--nc-slider-thumb) / 2) 0; touch-action: pan-x; }
+.nc-slider-field[data-orientation="vertical"] .nc-slider__track { flex: 1; width: var(--nc-slider-track); height: auto; }
 .nc-slider-field[data-orientation="vertical"] .nc-slider__fill { top: auto; right: 0; left: 0; }
-.nc-slider-field[data-orientation="vertical"] .nc-slider__thumb { top: auto; left: 50%; margin: 0 0 calc(var(--nc-slider-thumb) / -2) calc(var(--nc-slider-thumb) / -2); }
 .nc-slider-field[data-orientation="vertical"] .nc-slider__tick { top: auto; left: calc(50% + var(--nc-slider-track) / 2 + 3px); width: 4px; height: 1px; margin: 0 0 -0.5px; }
 
 :root[data-phone] .nc-slider-field { --nc-slider-thumb: 22px; --nc-slider-hit: var(--phone-hit); }

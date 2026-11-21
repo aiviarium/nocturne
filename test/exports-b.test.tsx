@@ -377,7 +377,7 @@ describe("InsetList, InsetGroup and InsetRow", () => {
       new MouseEvent("contextmenu", { bubbles: true, cancelable: true, clientX: 10, clientY: 10 }),
     )
     await tick()
-    const items = all("[data-part=popover] [role=menuitem]")
+    const items = all("[data-part=menu] [role=menuitem]")
     expect(items.map((i) => i.textContent)).toEqual(["Archive", "Delete"])
     click(items[1]!)
     await tick()
@@ -799,7 +799,7 @@ describe("RowMenu", () => {
       )),
     )
     await tick()
-    const menu = one("[data-part=popover] [data-part=menu]")
+    const menu = one("[data-part=menu]")
     expect(themed.contains(menu)).toBe(true)
     expect(menu.getAttribute("aria-label")).toBe("Row actions")
     const items = all("[role=menuitem]")
@@ -813,18 +813,21 @@ describe("RowMenu", () => {
   test("on a phone it is a sheet", async () => {
     track(
       mount(() => (
-        <RowMenu
-          at={{ x: 0, y: 0 }}
-          phone
-          label="Row actions"
-          items={[{ id: "open", label: "Open" }]}
-          onClose={() => {}}
-          onSelect={() => {}}
-        />
+        <PhoneOverride value={true}>
+          <RowMenu
+            at={{ x: 0, y: 0 }}
+            label="Row actions"
+            items={[{ id: "open", label: "Open" }]}
+            onClose={() => {}}
+            onSelect={() => {}}
+          />
+        </PhoneOverride>
       )),
     )
     await tick()
-    expect(all("[data-part=popover]")).toHaveLength(0)
-    expect(one("[data-part=sheet] [data-part=menu]").textContent).toContain("Open")
+    // ui-sdk presents it as a sheet: Nocturne's phone layout asks for one.
+    const menu = one("[data-part=menu]")
+    expect(menu.getAttribute("data-presentation")).toBe("sheet")
+    expect(menu.textContent).toContain("Open")
   })
 })

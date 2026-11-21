@@ -561,7 +561,10 @@ describe("Composer states", () => {
     flush()
     await tick()
     expect(one("[data-part=dictation]").textContent).toContain("Transcribing")
-    expect(one<HTMLButtonElement>("button[aria-label=Transcribing]").disabled).toBe(true)
+    // A disabled icon button keeps its tooltip, so it is aria-disabled and stays focusable.
+    expect(one<HTMLButtonElement>("button[aria-label=Transcribing]").getAttribute("aria-disabled")).toBe(
+      "true",
+    )
     setState("blocked")
     flush()
     await tick()

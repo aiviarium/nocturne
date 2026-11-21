@@ -1,9 +1,8 @@
 import type { JSX } from "@solidjs/web"
-import { For, Show, untrack } from "solid-js"
-import { aria } from "../lib/aria"
-import { createControllable } from "../lib/controllable"
+import { SegmentedControl, SegmentedControlItem } from "@ui-sdk/solid/segmented-control"
+import { TabsList, TabsPanel, Tabs as TabsRoot, TabsTab } from "@ui-sdk/solid/tabs"
+import { createContext, For, Show, useContext } from "solid-js"
 import { cx } from "../lib/cx"
-import { createId } from "../lib/id"
 import { Icon, type IconName } from "./Icon"
 
 export interface TabItem {
@@ -28,107 +27,122 @@ export interface TabsProps {
   defaultValue?: string
   /** Called with the id of the tab the person chose. */
   onChange?: (id: string) => void
-  /** `segmented` switches the view of the same data; `underline` moves between sections. Default `segmented`. */
+  /**
+   * `segmented` switches the view of the same data, as a segmented control (one choice of a few, like a radio
+   * group); `underline` moves between sections, as tabs with panels. Default `segmented`.
+   */
   variant?: "segmented" | "underline"
   /** Accessible name of the tab list. */
   label: string
-  /** Prefix for generated ids; pass the same value to `TabPanel`. */
+  /** @deprecated ui-sdk links the tabs to their panels; put the `TabPanel`s inside `Tabs` instead. */
   idPrefix?: string
   class?: string
+  /** The `TabPanel`s of underline tabs, which ui-sdk links to their tabs. */
+  children?: JSX.Element
 }
 
-/** Tabs with roving focus: arrow keys, Home and End move and select. */
+const InTabs = createContext(false)
+
+/**
+ * A row of choices with roving focus: arrow keys, Home and End move and select. Segmented tabs are ui-sdk's
+ * SegmentedControl; underline tabs are its Tabs, with their panels as children.
+ */
 export function Tabs(props: TabsProps): JSX.Element {
-  const prefix = props.idPrefix ?? createId("tabs")
-  const [value, setValue] = createControllable<string>({
-    value: () => props.value,
-    defaultValue: untrack(() => props.defaultValue ?? props.items.find((i) => !i.disabled)?.id ?? ""),
-    onChange: (v) => props.onChange?.(v),
-  })
-  const buttons = new Map<string, HTMLButtonElement>()
-  const underline = () => props.variant === "underline"
-  const go = (index: number) => {
-    const item = props.items[index]
-    if (!item) return
-    setValue(item.id)
-    buttons.get(item.id)?.focus()
-  }
-  const onKeyDown = (event: KeyboardEvent, index: number) => {
-    const enabled = props.items.map((item, i) => (item.disabled ? -1 : i)).filter((i) => i >= 0)
-    const at = enabled.indexOf(index)
-    let target: number | undefined
-    if (event.key === "ArrowRight") target = enabled[(at + 1) % enabled.length]
-    else if (event.key === "ArrowLeft") target = enabled[(at - 1 + enabled.length) % enabled.length]
-    else if (event.key === "Home") target = enabled[0]
-    else if (event.key === "End") target = enabled[enabled.length - 1]
-    if (target !== undefined) {
-      event.preventDefault()
-      go(target)
-    }
-  }
+  const label = (item: TabItem, underline: boolean) => (
+    <>
+      <Show when={item.icon}>
+        <Icon name={item.icon} size="sm" />
+      </Show>
+      {item.label}
+      <Show when={underline && item.count !== undefined && item.count !== 0 && item.count !== "0"}>
+        <span class="nc-tab__count">{item.count}</span>
+      </Show>
+    </>
+  )
   return (
-    <div
-      data-part="tabs"
-      data-variant={underline() ? "underline" : "segmented"}
-      role="tablist"
-      aria-label={props.label}
-      class={cx(underline() ? "nc-tabs" : "nc-seg", props.class)}
+    <Show
+      when={props.variant === "underline"}
+      fallback={
+        <SegmentedControl
+          data-part="tabs"
+          data-variant="segmented"
+          aria-label={props.label}
+          value={props.value}
+          defaultValue={
+            props.value === undefined
+              ? (props.defaultValue ?? props.items.find((i) => !i.disabled)?.id)
+              : undefined
+          }
+          onValueChange={(next: string | null) => {
+            if (next !== null) props.onChange?.(next)
+          }}
+          loop
+          class={cx("nc-seg", props.class)}
+        >
+          <For each={props.items} keyed={(item) => item.id}>
+            {(item) => (
+              <SegmentedControlItem value={item().id} disabled={item().disabled} class="nc-seg__item">
+                {label(item(), false)}
+              </SegmentedControlItem>
+            )}
+          </For>
+        </SegmentedControl>
+      }
     >
-      <For each={props.items}>
-        {(item, index) => (
-          <button
-            ref={(el) => buttons.set(item.id, el)}
-            type="button"
-            role="tab"
-            id={tabId(prefix, item.id)}
-            aria-controls={panelId(prefix, item.id)}
-            aria-selected={aria(value() === item.id)}
-            tabindex={value() === item.id ? 0 : -1}
-            disabled={item.disabled}
-            class={underline() ? "nc-tab" : "nc-seg__item"}
-            onClick={() => setValue(item.id)}
-            onKeyDown={(e) => onKeyDown(e, index())}
-          >
-            <Show when={item.icon}>
-              <Icon name={item.icon} size="sm" />
-            </Show>
-            {item.label}
-            <Show when={item.count !== undefined && item.count !== 0 && item.count !== "0" && underline()}>
-              <span class="nc-tab__count">{item.count}</span>
-            </Show>
-          </button>
-        )}
-      </For>
-    </div>
+      <TabsRoot
+        value={props.value}
+        defaultValue={props.value === undefined ? props.defaultValue : undefined}
+        onValueChange={(next: string | null) => {
+          if (next !== null) props.onChange?.(next)
+        }}
+        loop
+      >
+        <TabsList
+          data-part="tabs"
+          data-variant="underline"
+          aria-label={props.label}
+          class={cx("nc-tabs", props.class)}
+        >
+          <For each={props.items} keyed={(item) => item.id}>
+            {(item) => (
+              <TabsTab value={item().id} disabled={item().disabled} class="nc-tab">
+                {label(item(), true)}
+              </TabsTab>
+            )}
+          </For>
+        </TabsList>
+        <InTabs value={true}>{props.children}</InTabs>
+      </TabsRoot>
+    </Show>
   )
 }
 
-const tabId = (prefix: string, id: string) => `${prefix}-tab-${id}`
-const panelId = (prefix: string, id: string) => `${prefix}-panel-${id}`
-
 export interface TabPanelProps {
-  /** The `idPrefix` given to `Tabs`. */
-  idPrefix: string
+  /** @deprecated Only for a panel outside `Tabs`, which nothing links to its tab. */
+  idPrefix?: string
   /** The tab id this panel belongs to. */
   id: string
-  /** The currently selected tab id. The panel is hidden unless it matches `id`. */
-  value: string
+  /** Only for a panel outside `Tabs`: the selected tab id. Inside `Tabs` the tabs say which panel shows. */
+  value?: string
   children: JSX.Element
   class?: string
 }
 
 /** The content for one tab, labelled by it and hidden while another tab is selected. */
 export function TabPanel(props: TabPanelProps): JSX.Element {
+  const inside = useContext(InTabs)
   return (
-    <div
-      data-part="tab-panel"
-      role="tabpanel"
-      id={panelId(props.idPrefix, props.id)}
-      aria-labelledby={tabId(props.idPrefix, props.id)}
-      hidden={props.value !== props.id}
-      class={props.class}
+    <Show
+      when={inside}
+      fallback={
+        <div data-part="tab-panel" role="tabpanel" hidden={props.value !== props.id} class={props.class}>
+          {props.value === props.id ? props.children : null}
+        </div>
+      }
     >
-      {props.value === props.id ? props.children : null}
-    </div>
+      <TabsPanel value={props.id} data-part="tab-panel" class={props.class}>
+        {props.children}
+      </TabsPanel>
+    </Show>
   )
 }

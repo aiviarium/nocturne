@@ -160,52 +160,62 @@ describe("NumberField", () => {
   })
 })
 
+/** A key pressed and let go: ui-sdk's slider commits a key's change on keyup. */
+function stroke(el: Element, key: string, init: KeyboardEventInit = {}) {
+  press(el, key, init)
+  el.dispatchEvent(new KeyboardEvent("keyup", { key, bubbles: true, cancelable: true, ...init }))
+  flush()
+}
+
 describe("Slider", () => {
   test("keys move by step, large step and to the ends", () => {
     const [v, setV] = createSignal(50)
     view(() => <Slider label="Volume" value={v()} onChange={setV} />)
     const thumb = one("[role=slider]")
-    press(thumb, "ArrowRight")
+    stroke(thumb, "ArrowRight")
     expect(v()).toBe(51)
-    press(thumb, "PageUp")
+    stroke(thumb, "PageUp")
     expect(v()).toBe(61)
-    press(thumb, "ArrowLeft", { shiftKey: true })
+    stroke(thumb, "ArrowLeft", { shiftKey: true })
     expect(v()).toBe(51)
-    press(thumb, "End")
+    stroke(thumb, "End")
     expect(v()).toBe(100)
-    press(thumb, "ArrowUp")
+    stroke(thumb, "ArrowUp")
     expect(v()).toBe(100)
-    press(thumb, "Home")
+    stroke(thumb, "Home")
     expect(v()).toBe(0)
   })
 
-  test("ARIA slider semantics and formatting", () => {
+  test("a range input per thumb, named by the label, with the formatted value", () => {
     view(() => <Slider label="Opacity" defaultValue={40} format={(n) => `${n}%`} />)
-    const thumb = one("[role=slider]")
-    expect(thumb.getAttribute("aria-valuenow")).toBe("40")
-    expect(thumb.getAttribute("aria-valuemin")).toBe("0")
-    expect(thumb.getAttribute("aria-valuemax")).toBe("100")
+    const thumb = one<HTMLInputElement>("[role=slider]")
+    expect(thumb.type).toBe("range")
+    expect(thumb.value).toBe("40")
+    expect(thumb.min).toBe("0")
+    expect(thumb.max).toBe("100")
     expect(thumb.getAttribute("aria-valuetext")).toBe("40%")
-    expect(thumb.getAttribute("aria-labelledby")).toBeTruthy()
+    expect(document.getElementById(thumb.getAttribute("aria-labelledby") as string)?.textContent).toBe(
+      "Opacity",
+    )
     expect(one(".nc-slider__value").textContent).toBe("40%")
+    expect(one("[data-part=slider]").getAttribute("role")).toBe("group")
   })
 
   test("steps snap and decimals stay clean", () => {
     const [v, setV] = createSignal(0.7)
     view(() => <Slider aria-label="Temperature" value={v()} onChange={setV} min={0} max={2} step={0.1} />)
     const thumb = one("[role=slider]")
-    press(thumb, "ArrowRight")
-    press(thumb, "ArrowRight")
+    stroke(thumb, "ArrowRight")
+    stroke(thumb, "ArrowRight")
     expect(v()).toBe(0.9)
   })
 
   test("disabled ignores keys", () => {
     const [v, setV] = createSignal(10)
     view(() => <Slider aria-label="Locked" value={v()} onChange={setV} disabled />)
-    const thumb = one("[role=slider]")
-    expect(thumb.getAttribute("aria-disabled")).toBe("true")
-    expect(thumb.tabIndex).toBe(-1)
-    press(thumb, "ArrowRight")
+    const thumb = one<HTMLInputElement>("[role=slider]")
+    expect(thumb.disabled).toBe(true)
+    stroke(thumb, "ArrowRight")
     expect(v()).toBe(10)
   })
 
@@ -214,13 +224,12 @@ describe("Slider", () => {
     view(() => <RangeSlider label="Hours" value={v()} onChange={setV} min={0} max={24} minDistance={1} />)
     const [lo, hi] = all("[role=slider]")
     expect(lo!.getAttribute("aria-label")).toBe("Hours, minimum")
-    press(lo!, "ArrowRight")
+    stroke(lo!, "ArrowRight")
     expect(v()).toEqual([9, 10])
-    press(hi!, "ArrowLeft")
+    stroke(hi!, "ArrowLeft")
     expect(v()).toEqual([9, 10])
-    press(hi!, "End")
+    stroke(hi!, "End")
     expect(v()).toEqual([9, 24])
-    expect(hi!.getAttribute("aria-valuemin")).toBe("9")
   })
 
   test("the attached field sets the value", () => {
@@ -232,7 +241,7 @@ describe("Slider", () => {
     type(input, "512*2")
     press(input, "Enter")
     expect(v()).toBe(1024)
-    expect(one("[role=slider]").getAttribute("aria-valuenow")).toBe("1024")
+    expect(one<HTMLInputElement>("[role=slider]").value).toBe("1024")
   })
 })
 

@@ -87,7 +87,7 @@ export function NumberField(props: NumberFieldProps): JSX.Element {
   const phone = usePhone()
   const [value, setValue] = createControllable<number | null>({
     value: () => props.value,
-    defaultValue: props.defaultValue ?? null,
+    defaultValue: untrack(() => props.defaultValue) ?? null,
     onChange: (v) => props.onChange?.(v),
   })
   const [text, setText] = createSignal("")
@@ -357,7 +357,7 @@ export function NumberField(props: NumberFieldProps): JSX.Element {
         id={id}
         ref={(el) => {
           input = el
-          inputRef()?.(el)
+          untrack(inputRef)?.(el)
         }}
         name={props.name}
         class="nc-number__input"

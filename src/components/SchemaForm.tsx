@@ -11,6 +11,7 @@ import {
   reconcile,
   Show,
   Switch,
+  untrack,
 } from "solid-js"
 import { FieldEditor, FormField } from "../fields/Field"
 import { fieldOfNode } from "../fields/schema"
@@ -98,7 +99,9 @@ export function SchemaForm(props: SchemaFormProps): JSX.Element {
     fieldNode(markSecrets(props.schema, props.secretFields ?? [], props.storedSecrets ?? [])),
   )
   const rootNode = () => root() as Extract<FieldNode, { kind: "object" }>
-  const [draft, setDraft] = createStore<{ value: Draft }>({ value: blankDraft(root(), props.value) })
+  const [draft, setDraft] = createStore<{ value: Draft }>({
+    value: untrack(() => blankDraft(root(), props.value)),
+  })
   // A new schema starts a new form.
   createEffect(
     () => props.schema,

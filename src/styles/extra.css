@@ -34,7 +34,7 @@ a.nc-btn { text-decoration: none; }
 .nc-btn[aria-busy="true"] { cursor: progress; }
 .nc-btn .nc-kbd { margin-right: -4px; }
 .nc-icon-btn[aria-pressed="true"] { background: var(--bg-4); color: var(--text-1); }
-.nc-icon-btn[disabled] { color: var(--text-4); cursor: not-allowed; background: transparent; }
+.nc-icon-btn[disabled], .nc-icon-btn[aria-disabled="true"] { color: var(--text-4); cursor: not-allowed; background: transparent; }
 .nc-icon-btn--round { border-radius: var(--radius-full); }
 .nc-tooltip-anchor { display: inline-flex; }
 /* Overlay stacking: the phone drawer (74–75) < the dialog scrim (80) < popovers (85) < tooltips (86) < toasts
@@ -52,7 +52,7 @@ a.nc-btn { text-decoration: none; }
 .nc button.nc-select { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); text-align: left; cursor: pointer; font-weight: 400; }
 .nc-select[aria-expanded="true"] { border-color: var(--accent-strong); }
 .nc-select__value { display: inline-flex; align-items: center; gap: var(--space-2); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.nc-select__value--placeholder { color: var(--text-3); }
+.nc-select[data-placeholder] .nc-select__value { color: var(--text-3); }
 .nc-select__chevron { color: var(--text-3); }
 .nc-switch--danger[aria-checked="true"] { background: var(--danger); }
 .nc-switch[disabled], .nc-check[disabled], .nc-radio[disabled] { opacity: 0.45; cursor: not-allowed; }
@@ -79,8 +79,8 @@ textarea.nc-textarea { width: 100%; height: auto; min-height: calc(var(--control
 /* Tabs and navigation entries sit edge to edge in strips and lists that clip: their ring is inside. */
 .nc-tab:focus-visible, .nc-nav-item:focus-visible { outline: none; box-shadow: var(--focus-ring-inset); }
 .nc-tab { border-radius: var(--radius-xs); }
-.nc-seg__item[disabled], .nc-tab[disabled] { color: var(--text-4); cursor: not-allowed; }
-.nc-seg__item:not([aria-selected="true"]):hover { color: var(--text-1); }
+.nc-seg__item:is([disabled], [data-disabled]), .nc-tab:is([disabled], [data-disabled]) { color: var(--text-4); cursor: not-allowed; }
+.nc-seg__item:not([aria-selected="true"], [data-checked]):hover { color: var(--text-1); }
 .nc-tab:not([aria-selected="true"]):hover { color: var(--text-1); }
 button.nc-nav-item { display: flex; width: 100%; gap: 10px; justify-content: flex-start; border: 0; background: transparent; font: inherit; text-align: left; cursor: pointer; }
 .nc-nav-item .nc-count { margin-left: auto; }
@@ -102,8 +102,8 @@ button.nc-sidebar-header__place--menu { justify-content: flex-start; cursor: poi
 .nc-tabstrip__actions { display: flex; align-items: center; gap: var(--space-1); margin-left: auto; padding-left: var(--space-2); flex: none; }
 /* Tabs shrink to a minimum width, then the strip scrolls. Each tab sits in its tooltip's anchor, which is the flex item. */
 /* A tab is as wide as its title needs, up to a limit; when the strip is full the tabs shrink before it scrolls. */
-.nc-tabstrip__tabs > .nc-tooltip-anchor { display: flex; flex: 0 1 auto; min-width: 96px; max-width: 224px; }
-.nc-tabstrip__tabs > .nc-tooltip-anchor:has([data-pinned]) { flex: none; min-width: 0; max-width: none; }
+.nc-tabstrip__tabs > .nc-tabstrip__tab { flex: 0 1 auto; min-width: 96px; max-width: 224px; }
+.nc-tabstrip__tabs > .nc-tabstrip__tab[data-pinned] { flex: none; min-width: 0; max-width: none; }
 .nc-tabstrip__tab { position: relative; display: flex; align-items: center; flex: 1; min-width: 0; height: var(--control-md); border-radius: var(--radius-sm); color: var(--text-2); }
 .nc-tabstrip__tab:hover { background: var(--bg-3); color: var(--text-1); }
 .nc-tabstrip__tab[data-active] { background: var(--bg-4); color: var(--text-1); }
@@ -186,9 +186,11 @@ button.nc-sidebar-header__place--menu { justify-content: flex-start; cursor: poi
 .nc-token--person .nc-avatar { width: 16px; height: 16px; }
 
 /* ---------- Menu ---------- */
-button.nc-menu__item { box-sizing: border-box; width: 100%; border: 0; background: transparent; font: inherit; text-align: left; cursor: pointer; justify-content: flex-start; }
+button.nc-menu__item, div.nc-menu__item { box-sizing: border-box; width: 100%; border: 0; background: transparent; font: inherit; text-align: left; cursor: pointer; justify-content: flex-start; }
 .nc-menu__item:focus-visible { outline: none; }
 .nc-menu__item[aria-disabled="true"] { color: var(--text-4); cursor: not-allowed; }
+.nc-menu__item, .nc-menu__option { outline: none; user-select: none; }
+.nc-menu:focus-visible { outline: none; }
 .nc-menu__item--rich { height: auto; min-height: var(--control-md); padding-top: var(--space-1); padding-bottom: var(--space-1); }
 .nc-menu__text { flex: 1; min-width: 0; text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .nc-menu__text--stack { display: flex; flex-direction: column; }
@@ -577,8 +579,11 @@ button.nc-effort:focus-visible { outline: none; box-shadow: var(--focus-ring); }
 
 /* ---------- Overlays ---------- */
 .nc-scrim { position: fixed; inset: 0; z-index: 80; display: flex; align-items: center; justify-content: center; padding: var(--space-4); background: color-mix(in srgb, var(--bg-0) 72%, transparent); }
-.nc-dialog { display: flex; flex-direction: column; gap: var(--space-3); box-sizing: border-box; width: 100%; max-height: 100%; padding: var(--space-4); border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--bg-1); box-shadow: var(--shadow-overlay); overflow: auto; outline: none; }
+/* The dialog sits in the top layer beside its backdrop, not inside it: it centres itself. */
+.nc-dialog { position: fixed; inset: 0; margin: auto; height: fit-content; z-index: 81; display: flex; flex-direction: column; gap: var(--space-3); box-sizing: border-box; width: calc(100% - 2 * var(--space-4)); max-height: calc(100dvh - 2 * var(--space-4)); padding: var(--space-4); color: var(--text-1); border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--bg-1); box-shadow: var(--shadow-overlay); overflow: auto; outline: none; }
 .nc-scrim--top { align-items: flex-start; padding-top: 12vh; }
+.nc-dialog--at-top { margin-top: 12vh; max-height: calc(88vh - var(--space-4)); }
+.nc-dialog--at-bottom { margin-bottom: 0; width: 100%; }
 .nc-scrim--bottom { align-items: flex-end; padding: 0; }
 .nc-dialog--bare { gap: 0; padding: 0; overflow: hidden; }
 .nc-dialog__body--bare { display: flex; flex-direction: column; min-height: 0; }
@@ -629,9 +634,11 @@ button.nc-effort:focus-visible { outline: none; box-shadow: var(--focus-ring); }
 .nc-menu__option { display: inline-flex; align-items: center; justify-content: center; flex: 1; gap: var(--space-1); height: 24px; padding: 0 var(--space-2); border: 0; border-radius: var(--radius-xs); background: transparent; color: var(--text-2); font: inherit; cursor: pointer; }
 .nc-menu__option:hover { color: var(--text-1); }
 .nc-menu__option[aria-checked="true"] { background: var(--bg-4); color: var(--text-1); }
+.nc-menu__option[data-highlighted] { box-shadow: var(--focus-ring); }
 .nc-menu__option:focus-visible { outline: none; box-shadow: var(--focus-ring); }
 .nc-menu__choice--swatches { gap: var(--space-2); margin: 2px 0; padding: var(--space-1) var(--space-2); border: 0; background: transparent; }
 .nc-menu__option--swatch { flex: none; width: 20px; height: 20px; padding: 0; border-radius: var(--radius-full); background: var(--nc-swatch); color: var(--bg-0); }
+.nc-menu__option--swatch[data-highlighted] { box-shadow: 0 0 0 2px var(--bg-3), var(--focus-ring); }
 .nc-menu__option--swatch[aria-checked="true"] { background: var(--nc-swatch); box-shadow: 0 0 0 2px var(--bg-3), 0 0 0 3.5px var(--text-2); }
 .nc-menu__option--swatch:focus-visible { box-shadow: 0 0 0 2px var(--bg-3), var(--focus-ring); }
 .nc-menu__option--swatch:hover { filter: brightness(1.12); }
@@ -645,9 +652,9 @@ button.nc-effort:focus-visible { outline: none; box-shadow: var(--focus-ring); }
 .nc-view-layout { position: relative; display: flex; height: 100%; min-height: 0; min-width: 0; }
 .nc-view-layout[data-dragging] { cursor: col-resize; user-select: none; }
 .nc-view-layout__sidebar { position: relative; display: flex; flex-direction: column; flex: none; box-sizing: border-box; width: var(--nc-view-sidebar, 240px); min-height: 0; overflow: visible; background: var(--bg-1); }
-.nc-view-layout__sidebar > :not(.nc-tooltip-anchor) { min-height: 0; overflow: auto; }
+.nc-view-layout__sidebar > :not(.nc-tooltip-anchor, [role="tooltip"]) { min-height: 0; overflow: auto; }
 /* The content scrolls inside its own padding, so a selected item's fill is an inset pill, as in the shell's sidebar. */
-.nc-view-layout__sidebar > :not(.nc-tooltip-anchor):not(.nc-view-layout__over-head) { box-sizing: border-box; padding: var(--space-2); }
+.nc-view-layout__sidebar > :not(.nc-tooltip-anchor, [role="tooltip"]):not(.nc-view-layout__over-head) { box-sizing: border-box; padding: var(--space-2); }
 .nc-view-layout__sidebar--over { position: absolute; inset: 0 auto 0 0; z-index: 30; max-width: 85%; border-right: 1px solid var(--line); box-shadow: var(--shadow-overlay); }
 .nc-view-layout__rail { display: flex; flex: none; flex-direction: column; align-items: center; box-sizing: border-box; width: 36px; padding-top: var(--space-1); border-right: 1px solid var(--line-soft); }
 .nc-view-layout__activity { display: flex; flex: none; flex-direction: column; align-items: center; gap: var(--space-1); box-sizing: border-box; width: 36px; padding: var(--space-1) 0; border-right: 1px solid var(--line-soft); }
@@ -722,3 +729,4 @@ button.nc-effort:focus-visible { outline: none; box-shadow: var(--focus-ring); }
 .nc-log__line--state .nc-log__text { color: var(--accent-text); }
 .nc-log__empty { color: var(--text-3); }
 .nc-log__jump { position: absolute; right: var(--space-3); bottom: var(--space-3); box-shadow: var(--shadow-overlay); }
+.nc-tabs ~ [data-part="tab-panel"] { margin-top: var(--space-3); }
