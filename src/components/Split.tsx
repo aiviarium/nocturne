@@ -198,6 +198,15 @@ export function SplitGroup<T>(props: SplitGroupProps<T>): JSX.Element {
   const min = () => props.min ?? 160
   const horizontal = () => props.orientation !== "vertical"
   const weightOf = (i: number) => props.weights?.[i] ?? 1
+  // Flex grows panes by their weights only when the weights add up to at least 1, so each pane gets its weight
+  // against the mean: a lone pane left with weight 0.5 still fills the group.
+  const mean = () => {
+    const n = props.items.length
+    if (n === 0) return 1
+    let sum = 0
+    for (let i = 0; i < n; i++) sum += weightOf(i)
+    return sum > 0 ? sum / n : 1
+  }
   const [dragging, setDragging] = createSignal<number | null>(null)
   let root!: HTMLDivElement
   let pair: { left: number; total: number; px: number } | undefined
@@ -269,7 +278,7 @@ export function SplitGroup<T>(props: SplitGroupProps<T>): JSX.Element {
               data-part="split-group-pane"
               data-key={props.getKey ? String(props.getKey(item, index())) : String(index())}
               class="nc-split__pane nc-splitgroup__pane"
-              style={{ "--nc-weight": weightOf(index()) }}
+              style={{ "--nc-weight": weightOf(index()) / mean() }}
             >
               {props.children(item, index())}
             </div>

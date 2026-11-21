@@ -627,6 +627,31 @@ describe("Split fixed to the second pane and SplitGroup", () => {
   })
 })
 
+describe("SplitGroup weights", () => {
+  test("grows each pane by its weight against the mean, so a lone pane with weight 0.5 fills the group", () => {
+    const { root } = track(
+      mount(() => (
+        <SplitGroup items={["a"]} weights={[0.5]}>
+          {(item) => <span>{item}</span>}
+        </SplitGroup>
+      )),
+    )
+    const pane = one("[data-part=split-group-pane]", root)
+    expect(Number(pane.style.getPropertyValue("--nc-weight"))).toBe(1)
+    const pair = track(
+      mount(() => (
+        <SplitGroup items={["a", "b"]} weights={[0.25, 0.75]}>
+          {(item) => <span>{item}</span>}
+        </SplitGroup>
+      )),
+    )
+    const weights = Array.from(pair.root.querySelectorAll<HTMLElement>("[data-part=split-group-pane]")).map(
+      (one) => Number(one.style.getPropertyValue("--nc-weight")),
+    )
+    expect(weights).toEqual([0.5, 1.5])
+  })
+})
+
 describe("WidgetTimer", () => {
   test("ticks up to the progress take the hue and the newest one glows; the rest stay a tint", () => {
     const { root } = track(
