@@ -97,13 +97,18 @@ button.nc-sidebar-header__place--menu { justify-content: flex-start; cursor: poi
 .nc-sidebar-header__place:has(> .nc-sidebar-header__mark) { padding-left: 6px; }
 .nc-sidebar-header__row > [data-part="sidebar-back"] { flex: none; margin-left: var(--space-1); }
 .nc-sidebar-header__row > [data-part="sidebar-back"] + .nc-sidebar-header__place { padding-left: var(--space-1); }
-/* The levels above the place: they take at most two fifths of the row and give way first, so the place keeps its name. */
-.nc-sidebar-header__path { display: flex; flex: 0 1000 auto; align-items: center; min-width: 7ch; max-width: 40%; color: var(--text-3); }
-.nc-sidebar-header__crumb { flex: 0 1 auto; min-width: 4ch; height: var(--control-sm); padding: 0 var(--space-1); overflow: hidden; border: 0; border-radius: var(--radius-sm); background: transparent; color: var(--text-3); font-family: inherit; font-size: var(--nc-type-body); line-height: var(--nc-type-label-line); text-overflow: ellipsis; white-space: nowrap; cursor: pointer; }
+/* The levels above the place: they give way first, down to a few letters each, so the place keeps its name. */
+.nc-sidebar-header__path { display: flex; flex: 0 1000 auto; align-items: center; min-width: 7ch; overflow: hidden; color: var(--text-3); }
+.nc-sidebar-header__crumb { flex: 0 1 auto; min-width: 3ch; height: var(--control-sm); padding: 0 var(--space-1); overflow: hidden; border: 0; border-radius: var(--radius-sm); background: transparent; color: var(--text-3); font-family: inherit; font-size: var(--nc-type-body); line-height: var(--nc-type-label-line); text-overflow: ellipsis; white-space: nowrap; cursor: pointer; }
+.nc-sidebar-header__crumb { display: inline-flex; align-items: center; text-align: left; }
+/* When the row is short, the levels further up give way before the one beside the place. */
+.nc-sidebar-header__crumb { flex-shrink: 1000; }
+.nc-sidebar-header__path > .nc-sidebar-header__crumb:nth-last-child(2) { flex-shrink: 1; }
+.nc-sidebar-header__crumb-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .nc-sidebar-header__crumb:hover, .nc-sidebar-header__crumb[aria-expanded="true"] { background: var(--bg-3); color: var(--text-1); }
 .nc-sidebar-header__crumb:focus-visible { outline: none; box-shadow: var(--focus-ring-inset); }
 .nc-sidebar-header__sep { flex: none; padding: 0 2px; color: var(--text-4); }
-.nc-sidebar-header__path + .nc-sidebar-header__place { flex: 1 1 auto; padding-left: var(--space-1); }
+.nc-sidebar-header__path + .nc-sidebar-header__place { flex: 0 1 auto; margin-right: auto; padding-left: var(--space-1); }
 .nc-sidebar-header__row > [data-part="sidebar-back"] + .nc-sidebar-header__path { margin-left: 2px; }
 
 .nc-tabstrip { position: relative; display: flex; align-items: center; flex: 1; min-width: 0; min-height: var(--header); padding: 0 var(--space-1) 0 6px; }

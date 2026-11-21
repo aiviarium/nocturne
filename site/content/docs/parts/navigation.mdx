@@ -35,7 +35,7 @@ Most apps use this one.
 Its row holds, from left to right:
 
 - `back`, once you have drilled into a domain. A chevron goes to the place above, and its name says where.
-- `path`, once you have drilled into a domain. The level above the place, as a button, then a slash: `Fleet / build-01`. The levels above that fold into a `…` menu. The path is the way you came, so the place is never shown alone.
+- `path`, optional. The levels above the place, as buttons with slashes: `Fleet / build-01`. Each level has `show`: `inline` puts it in the row, `fold` puts it in a `…` menu at the start of the path, and `hidden` leaves it out. Without `show`, the last level is in the row and the ones before it go to the menu. Leave out levels that don't help. The app itself is one, as back already names it: a space reads `‹ Personal`, not `‹ Rookery / Personal`. Keep a parent in the row when the place makes little sense without it, such as the fleet above a host.
 - The place the sidebar shows, with its `Mark`. With `switcher` it opens a menu of the other places of that kind, such as workspaces, projects or hosts. Give it a switcher whenever the place is one of a kind, even when it is the only one so far, so the control is always there.
 - The command palette, with `onCommand`.
 - The toggle that hides the sidebar. It shows when the app passes `onSidebarHiddenChange` to `AppShell`.
@@ -137,9 +137,10 @@ If it is one more level of the same list, nest it.
 
 The crumbs show the path to where you are.
 The view picks one of three forms for each target.
+An app can set `show` from a person's setting, so people choose how much of the path they see.
 
 - **Full path.** Each level as a crumb, as in `Atlas web / Issues`. Use it when the path is short, and in a tree, where the crumbs show where the page sits.
-- **Stripped path.** Drop or fold the leading levels, so the levels that help you move stay. `fold={1}` turns the first crumb into `…`, a menu of the folded levels, as in `… / Atlas web / WEB-142`. To drop levels, pass only the crumbs you keep.
+- **Stripped path.** Drop or fold levels, so the levels that help you move stay. `fold={1}` turns the first crumb into `…`, a menu of the folded levels, as in `… / Atlas web / WEB-142`. A crumb's `show` picks for that crumb alone: `fold` moves it into the menu and `hidden` leaves it out, wherever it is in the path. The last crumb is the page and always shows.
 - **Back control only.** `back` shows a back control in place of the crumbs, named after the list it returns to. Use it for a target reached from one list, such as a chat opened from the session list.
 
 A crumb for one of a kind, such as a project or a host, has a `switcher`: a menu of the others of that kind.

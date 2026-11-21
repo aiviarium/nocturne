@@ -63,8 +63,10 @@ Rookery's shell and Crow follow one layout. Keep to it:
   (20px) in the sidebar header. Don't draw letter squares by hand.
 - **A `Skeleton` fades in after 400ms.** A load that finishes sooner doesn't show it. Show skeletons only while
   there is nothing to show, not on a refresh of data already on screen.
-- **The sidebar's head shows the way you came.** Inside a level, `SidebarHeader` has back, then `path` (the level
-  above, `Fleet / build-01`), then the place. Never show the place alone.
+- **The sidebar's head may show the way you came.** Inside a level, `SidebarHeader` has back, then an optional
+  `path`, then the place. Each level and each `ViewCrumb` has `show` (`inline`, `fold` into `…`, or `hidden`), so
+  a view keeps the parts that help (`Fleet / build-01`) and leaves out the rest, such as the app itself, which back
+  already names.
 - **The place is a switcher whenever it is one of a kind** (spaces, projects, hosts), even with one so far. It keeps
   the page. The crumb for that place in the `ViewHeader` has the same `switcher`. At the top level the header shows
   the app's name alone.
