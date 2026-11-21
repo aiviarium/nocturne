@@ -1,5 +1,5 @@
 import type { JSX } from "@solidjs/web"
-import { For, Show } from "solid-js"
+import { createMemo, For, Show } from "solid-js"
 import { cx } from "../lib/cx"
 import {
   type DockFrame,
@@ -118,11 +118,15 @@ export function Dock(props: DockProps): JSX.Element {
         >
           <div class="nc-dock__panes">
             <For each={frame().tabs}>
-              {(id) => (
-                <div class="nc-dock__pane" data-dock-tab={id} hidden={frame().active !== id}>
-                  {props.children(id, () => frame().active === id)}
-                </div>
-              )}
+              {(id) => {
+                // Only a real change reaches the content: a layout change that leaves the tab where it was is not one.
+                const shown = createMemo(() => frame().active === id)
+                return (
+                  <div class="nc-dock__pane" data-dock-tab={id} hidden={!shown()}>
+                    {props.children(id, shown)}
+                  </div>
+                )
+              }}
             </For>
           </div>
         </Frame>

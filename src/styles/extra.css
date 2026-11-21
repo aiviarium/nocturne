@@ -160,8 +160,9 @@ button.nc-sidebar-header__place--menu { justify-content: flex-start; cursor: poi
 /* A dock: tiled frames, each with its tabs, filling what holds it. */
 .nc-dock { display: flex; flex: 1; min-width: 0; min-height: 0; height: 100%; }
 .nc-dock > .nc-splitgroup { flex: 1; }
+.nc-dock__frame > .nc-frame__body { display: flex; flex-direction: column; }
 .nc-dock__panes { position: relative; display: flex; flex: 1; min-width: 0; min-height: 0; }
-.nc-dock__pane { display: flex; flex: 1; flex-direction: column; min-width: 0; min-height: 0; }
+.nc-dock__pane { position: absolute; inset: 0; display: flex; flex-direction: column; min-width: 0; min-height: 0; overflow: hidden; }
 .nc-dock__pane[hidden] { display: none; }
 .nc-dropframe { position: relative; display: flex; flex-direction: column; flex: 1; min-width: 0; min-height: 0; }
 .nc-dropframe > .nc-frame { flex: 1; }
