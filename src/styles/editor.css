@@ -162,7 +162,7 @@ li[data-checked="true"] > .nc-editor-task__box { border-color: var(--accent); ba
 .nc-editor-handle__btn:hover { background: var(--bg-3); color: var(--text-1); }
 .nc-editor-handle__btn:focus-visible { outline: none; box-shadow: var(--focus-ring); }
 .nc-editor-handle__drag { cursor: grab; touch-action: none; -webkit-touch-callout: none; user-select: none; }
-.nc-editor-handle__drag .nc-icon path { stroke-width: 2.2; }
+.nc-editor-handle__drag .nc-icon { stroke-width: 3; }
 .nc-editor-handle--dragging { opacity: 0; }
 .nc-editor-handle--dragging .nc-editor-handle__drag { cursor: grabbing; }
 

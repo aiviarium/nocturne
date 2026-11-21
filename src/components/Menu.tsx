@@ -39,7 +39,7 @@ export interface MenuItemEntry {
   id: string
   /** Text. */
   label: string
-  /** A core icon before the label. */
+  /** A named icon before the label. */
   icon?: IconName
   /** Anything before the label instead of an icon (an avatar, a dot). */
   leading?: JSX.Element
@@ -69,7 +69,7 @@ export interface MenuChoiceOption {
   value: string
   /** Text, or the accessible name of a swatch. */
   label: string
-  /** A core icon before the text. */
+  /** A named icon before the text. */
   icon?: IconName
   /** A colour: the option is drawn as a round swatch. */
   swatch?: string

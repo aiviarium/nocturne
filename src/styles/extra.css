@@ -20,8 +20,6 @@
 .nc-row--end { justify-content: flex-end; }
 .nc-row--control { gap: 10px; flex-wrap: nowrap; cursor: pointer; color: var(--text-1); }
 .nc-icon--lg { width: 20px; height: 20px; }
-/* Lucide is drawn on a 24 grid, so the core set's 1.5 stroke (on 16) is 2.25 here: the same weight on screen at every size. */
-.nc-icon--lucide { stroke-width: 2.25; }
 .nc-glyph { width: 12px; height: 12px; flex-shrink: 0; }
 [hidden] { display: none !important; }
 
@@ -56,7 +54,7 @@ a.nc-btn { text-decoration: none; }
 .nc-select__chevron { color: var(--text-3); }
 .nc-switch--danger[aria-checked="true"] { background: var(--danger); }
 .nc-switch[disabled], .nc-check[disabled], .nc-radio[disabled] { opacity: 0.45; cursor: not-allowed; }
-.nc-check .nc-icon { width: 10px; height: 10px; stroke-width: 2.4; }
+.nc-check .nc-icon { width: 10px; height: 10px; stroke-width: 3.6; }
 .nc-check__dash { width: 8px; height: 2px; border-radius: var(--radius-xs); background: var(--accent-strong); }
 button.nc-radio { padding: 0; background: transparent; cursor: pointer; flex-shrink: 0; }
 button.nc-radio:focus-visible { outline: none; box-shadow: var(--focus-ring); }

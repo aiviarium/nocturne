@@ -10,7 +10,9 @@ Nocturne is a design system and its SolidJS component library, published as one 
   them in cascade layers.
 - `src/components/` holds the components, `src/fields/` the field kinds, `src/editor/` the rich text editor and
   `src/lib/` the helpers. `src/index.ts` is the public API.
-- `icons/`: the 48 core icons. `bun run gen:icons` writes `src/components/icon-data.ts` from them.
+- `icons/`: every icon `name` takes, as SVG for the site. `scripts/icons.ts` maps each name to a Lucide icon, and
+  `bun run gen:icons` writes `src/components/icon-data.ts` and `icons/` from it and the `lucide` package. Lucide is
+  the only family, so never draw an icon by hand.
 - `examples/`: one file per example. `gallery/` shows them (`bun run gallery`).
 - `test/`: `bun test` with happy-dom (`test/setup.ts` is preloaded by `bunfig.toml`).
 - `scripts/`: `lint-tokens.ts`, `gen-icons.ts` and the Playwright screenshot scripts.

@@ -17,7 +17,7 @@ export interface TabStripItem {
   id: string
   /** Visible text. It truncates with an ellipsis, and the full text is in the tooltip. */
   label: string
-  /** A core icon. */
+  /** A named icon. */
   icon?: IconName
   /** Dimmed words after the title that tell tabs with the same title apart: the space, the parent. */
   detail?: string

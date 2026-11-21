@@ -11,9 +11,9 @@ export interface IconButtonProps
   extends Omit<JSX.ButtonHTMLAttributes<HTMLButtonElement>, "children" | "aria-label"> {
   /** Required. Becomes `aria-label` and the tooltip text. */
   label: string
-  /** A core icon. */
+  /** A named icon. */
   icon?: IconName
-  /** A Lucide icon, when the core set lacks one. */
+  /** Any other Lucide icon, as a node. */
   iconNode?: LucideNode
   /** Toggled-on state (bg-4, text-1). Sets `aria-pressed`. */
   pressed?: boolean

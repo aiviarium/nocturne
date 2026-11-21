@@ -13,7 +13,7 @@ export interface MentionItem {
   uri: string
   title: string
   subtitle?: string
-  /** A core icon name. */
+  /** A named icon name. */
   icon?: string
 }
 
@@ -87,7 +87,7 @@ export interface EditorBlockType {
   id: string
   title: string
   description?: string
-  /** A core icon name, or a short glyph shown in the `/` menu. */
+  /** The icon shown in the `/` menu, by name. An unknown name shows a box. */
   icon?: string
   keywords?: string[]
   /** The attributes of a new block. */

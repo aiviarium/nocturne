@@ -8,9 +8,9 @@ import { IconButton } from "./IconButton"
 export interface NavItemProps extends Omit<JSX.AnchorHTMLAttributes<HTMLAnchorElement>, "children"> {
   /** Row label. */
   label: string
-  /** A core icon. */
+  /** A named icon. */
   icon?: IconName
-  /** A Lucide icon, when the core set lacks one. */
+  /** Any other Lucide icon, as a node. */
   iconNode?: LucideNode
   /** Content in the icon's place, such as a letter mark for an entry that has no icon. */
   leading?: JSX.Element

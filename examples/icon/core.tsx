@@ -2,10 +2,10 @@ import { ICON_PATHS, Icon, type IconName } from "@aiviarium/nocturne"
 import { For } from "solid-js"
 import type { ExampleMeta } from "../_kit/types"
 
-export const meta: ExampleMeta = { title: "Core set (48)", surface: "none" }
+export const meta: ExampleMeta = { title: "The named set", surface: "none" }
 
-/** The core set: the icons drawn as path data. The rest of ICON_PATHS are Lucide icons @aiviarium/nocturne carries. */
-const CORE = (Object.keys(ICON_PATHS) as IconName[]).filter((n) => typeof ICON_PATHS[n] === "string")
+/** Every icon @aiviarium/nocturne carries by name, each a Lucide icon. */
+const CORE = (Object.keys(ICON_PATHS) as IconName[]).sort()
 
 export default function CoreIcons() {
   return (

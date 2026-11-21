@@ -49,7 +49,7 @@ export function ChatMessage(props: ChatMessageProps): JSX.Element {
 export type StepStatus = "ok" | "running" | "error" | "pending"
 
 export interface ToolStepProps {
-  /** A core icon for the kind of step: file, edit, terminal. */
+  /** A named icon for the kind of step: file, edit, terminal. */
   icon?: IconName
   /** What the step does, as a verb: "Read", "Edited", "Running". */
   verb: string
@@ -203,7 +203,7 @@ export type TokenKind = "cmd" | "ref" | "skill" | "person"
 export interface TokenProps extends JSX.HTMLAttributes<HTMLSpanElement> {
   /** `cmd` for `/commands`, `ref` for `@` files and docs, `skill` for `$skills`, `person` for `@` people. */
   kind: TokenKind
-  /** A core icon for `ref` tokens. */
+  /** A named icon for `ref` tokens. */
   icon?: IconName
   /** A person's name, for the avatar of a `person` token. */
   name?: string

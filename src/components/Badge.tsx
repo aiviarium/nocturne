@@ -10,7 +10,7 @@ export interface BadgeProps extends JSX.HTMLAttributes<HTMLSpanElement> {
   tone?: BadgeTone
   /** Squarer corners (radius-xs), for tags that sit in dense rows. */
   square?: boolean
-  /** A core icon before the word. */
+  /** A named icon before the word. */
   icon?: IconName
 }
 
