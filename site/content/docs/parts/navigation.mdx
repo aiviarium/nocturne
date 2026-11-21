@@ -35,7 +35,8 @@ Most apps use this one.
 Its row holds, from left to right:
 
 - `back`, once you have drilled into a domain. A chevron goes to the place above, and its name says where.
-- The place the sidebar shows, with its `Mark`. With `switcher` it opens a menu of the other places of that kind, such as workspaces or projects.
+- `path`, once you have drilled into a domain. The level above the place, as a button, then a slash: `Fleet / build-01`. The levels above that fold into a `…` menu. The path is the way you came, so the place is never shown alone.
+- The place the sidebar shows, with its `Mark`. With `switcher` it opens a menu of the other places of that kind, such as workspaces, projects or hosts. Give it a switcher whenever the place is one of a kind, even when it is the only one so far, so the control is always there.
 - The command palette, with `onCommand`.
 - The toggle that hides the sidebar. It shows when the app passes `onSidebarHiddenChange` to `AppShell`.
 
@@ -140,6 +141,10 @@ The view picks one of three forms for each target.
 - **Full path.** Each level as a crumb, as in `Atlas web / Issues`. Use it when the path is short, and in a tree, where the crumbs show where the page sits.
 - **Stripped path.** Drop or fold the leading levels, so the levels that help you move stay. `fold={1}` turns the first crumb into `…`, a menu of the folded levels, as in `… / Atlas web / WEB-142`. To drop levels, pass only the crumbs you keep.
 - **Back control only.** `back` shows a back control in place of the crumbs, named after the list it returns to. Use it for a target reached from one list, such as a chat opened from the session list.
+
+A crumb for one of a kind, such as a project or a host, has a `switcher`: a menu of the others of that kind.
+Picking one keeps the page, so `Hosts / build-01 / Files` becomes `Hosts / forge / Files`.
+The sidebar's place has the same switcher, with the same items.
 
 Every crumb but the last is a link.
 The last crumb is the page, in `text-1` with `aria-current="page"`.

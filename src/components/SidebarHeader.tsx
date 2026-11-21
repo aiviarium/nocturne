@@ -1,10 +1,16 @@
 import type { JSX } from "@solidjs/web"
-import { Show } from "solid-js"
+import { For, Show } from "solid-js"
 import { cx } from "../lib/cx"
 import { Icon } from "./Icon"
 import { IconButton } from "./IconButton"
 import { DropdownMenu, type MenuEntry } from "./Menu"
 import { SidebarToggle } from "./ShellSidebar"
+
+/** A level above the place a drilled-down sidebar shows. */
+export interface SidebarPathItem {
+  label: string
+  onClick: () => void
+}
 
 export interface SidebarHeaderProps {
   /** The place the sidebar shows: the workspace at the top level, the project or host you drilled into below it. */
@@ -16,6 +22,12 @@ export interface SidebarHeaderProps {
    * that place for the button's accessible name.
    */
   back?: { to: string; onClick: () => void }
+  /**
+   * The levels above the place, from the top down, each a button that goes to it: `Fleet` above a host. The row
+   * shows the last one beside the place, as `Fleet / build-01`; the ones before it fold into a `…` menu, so the
+   * place keeps room for its name.
+   */
+  path?: SidebarPathItem[]
   /** Makes the title a menu button that switches to another place of the same kind: workspaces, projects. */
   switcher?: { label: string; items: MenuEntry[]; onSelect: (id: string) => void }
   /** Opens the command palette. */
@@ -56,6 +68,9 @@ export function SidebarHeader(props: SidebarHeaderProps): JSX.Element {
             />
           )}
         </Show>
+        <Show when={props.path?.length}>
+          <SidebarPath path={props.path!} />
+        </Show>
         <Show when={props.switcher} fallback={<span class="nc-sidebar-header__place">{title()}</span>}>
           {(s) => (
             <DropdownMenu
@@ -91,5 +106,47 @@ export function SidebarHeader(props: SidebarHeaderProps): JSX.Element {
         <div class="nc-sidebar-header__below">{props.children}</div>
       </Show>
     </div>
+  )
+}
+
+const FOLD = "nc-sidebar-path-fold:"
+
+/** The levels above the place: the last as a button, the ones before it folded into a menu. */
+function SidebarPath(props: { path: SidebarPathItem[] }): JSX.Element {
+  const folded = () => props.path.slice(0, -1)
+  const last = () => props.path[props.path.length - 1]!
+  return (
+    <span class="nc-sidebar-header__path" data-part="sidebar-path">
+      <Show when={folded().length > 0}>
+        <DropdownMenu
+          label="Levels above"
+          items={folded().map((item, i) => ({ id: `${FOLD}${i}`, label: item.label }))}
+          onSelect={(id) => folded()[Number(id.slice(FOLD.length))]?.onClick()}
+          trigger={(t) => (
+            <button {...t} type="button" class="nc-sidebar-header__crumb" data-part="sidebar-fold">
+              …
+            </button>
+          )}
+        />
+        <span class="nc-sidebar-header__sep" aria-hidden="true">
+          /
+        </span>
+      </Show>
+      <For each={[last()]}>
+        {(item) => (
+          <button
+            type="button"
+            class="nc-sidebar-header__crumb"
+            data-part="sidebar-crumb"
+            onClick={() => item.onClick()}
+          >
+            {item.label}
+          </button>
+        )}
+      </For>
+      <span class="nc-sidebar-header__sep" aria-hidden="true">
+        /
+      </span>
+    </span>
   )
 }

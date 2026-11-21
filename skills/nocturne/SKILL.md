@@ -63,8 +63,13 @@ Rookery's shell and Crow follow one layout. Keep to it:
   (20px) in the sidebar header. Don't draw letter squares by hand.
 - **A `Skeleton` fades in after 400ms.** A load that finishes sooner doesn't show it. Show skeletons only while
   there is nothing to show, not on a refresh of data already on screen.
-- **The header's switcher moves between siblings of the domain you are in**, such as other spaces. It keeps the
-  page. At the top level the header shows the app's name alone.
+- **The sidebar's head shows the way you came.** Inside a level, `SidebarHeader` has back, then `path` (the level
+  above, `Fleet / build-01`), then the place. Never show the place alone.
+- **The place is a switcher whenever it is one of a kind** (spaces, projects, hosts), even with one so far. It keeps
+  the page. The crumb for that place in the `ViewHeader` has the same `switcher`. At the top level the header shows
+  the app's name alone.
+- **One width for every view.** The main column fills its width and content starts at the left: lists, logs,
+  forms, settings and overviews alike. `reading` is only for long prose, such as a document's body.
 - **Views keep their actions out of the status bar.** It shows whether the server is reachable and which jobs run. A view puts its actions in its own header.
 
 ## Overlays and controls
