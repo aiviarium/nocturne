@@ -2,19 +2,19 @@ import type { JSX } from "@solidjs/web"
 import { createUniqueId, omit, Show } from "solid-js"
 import { cx } from "../lib/cx"
 import { Icon } from "./Icon"
+import { InfoTip } from "./InfoTip"
 
-/** The ids a setting's control takes, so the row's title names it and its description describes it. */
+/** The ids a setting's control takes, so the row's title names it. */
 export interface SettingControlIds {
   labelId: string
-  descriptionId: string
 }
 
 export interface SettingRowProps extends Omit<JSX.HTMLAttributes<HTMLDivElement>, "title"> {
   /** The setting's name as a person reads it. */
   title: string
-  /** What it changes, in a sentence, under the title. */
+  /** What it changes, in a sentence. The row shows it behind an `InfoTip` beside the title, never as text. */
   description?: JSX.Element
-  /** Its key, in mono under the description, such as `rookery/timezone`. */
+  /** Its key, in mono under the title, such as `rookery/timezone`. */
   name?: string
   /** A group within the section, before the title in text-3. */
   category?: string
@@ -37,12 +37,13 @@ export interface SettingRowProps extends Omit<JSX.HTMLAttributes<HTMLDivElement>
 }
 
 /**
- * One setting as a row of a settings page: its title and description at the left, its control at the right,
- * and whether it is changed at the scope shown. A change applies at once, so the row has no save button.
+ * One setting as a row of a settings page: its title, an `InfoTip` with its description and its key at the left,
+ * its control at the right, and whether it is changed at the scope shown. A change applies at once, so the row has
+ * no save button.
  */
 export function SettingRow(props: SettingRowProps): JSX.Element {
   const id = createUniqueId()
-  const ids: SettingControlIds = { labelId: `${id}-label`, descriptionId: `${id}-description` }
+  const ids: SettingControlIds = { labelId: `${id}-label` }
   const rest = omit(
     props,
     "title",
@@ -78,6 +79,9 @@ export function SettingRow(props: SettingRowProps): JSX.Element {
           <span id={ids.labelId} class="nc-setting__title">
             {props.title}
           </span>
+          <Show when={props.description}>
+            <InfoTip label={props.title}>{props.description}</InfoTip>
+          </Show>
           <Show when={props.modified}>
             <Show
               when={props.onReset}
@@ -112,11 +116,6 @@ export function SettingRow(props: SettingRowProps): JSX.Element {
             </span>
           </Show>
         </div>
-        <Show when={props.description}>
-          <p id={ids.descriptionId} class="nc-setting__description">
-            {props.description}
-          </p>
-        </Show>
         <Show when={props.name}>
           <span class="nc-setting__name">{props.name}</span>
         </Show>
