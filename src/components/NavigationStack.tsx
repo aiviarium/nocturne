@@ -81,9 +81,10 @@ export function NavigationStack<T>(props: NavigationStackProps<T>): JSX.Element 
   onCleanup(() => clearTimeout(timer))
 
   const position = (key: string): "top" | "below" | "hidden" | "leaving" | "entering" => {
-    if (leaving().includes(key)) return "leaving"
-    if (entering() === key) return "entering"
     const k = keys()
+    // A screen that left the items is leaving from the first frame, before the effect records it.
+    if (leaving().includes(key) || !k.includes(key)) return "leaving"
+    if (entering() === key) return "entering"
     const i = k.indexOf(key)
     if (i === k.length - 1) return "top"
     if (i === k.length - 2) return "below"

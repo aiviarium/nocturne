@@ -4,7 +4,7 @@
 // choice of one by operator and the pickers of people and relations, which have no kind of their own.
 
 import type { JSX } from "@solidjs/web"
-import { Match, onSettled, Switch, untrack } from "solid-js"
+import { createMemo, Match, onSettled, Switch, untrack } from "solid-js"
 import { FieldFilter, specOfQueryField } from "../fields/Field"
 import { OptionList, OptionPicker } from "../fields/parts/OptionList"
 import { cx } from "../lib/cx"
@@ -56,8 +56,10 @@ export function ValueEditor(props: ValueEditorProps): JSX.Element {
   const label = () => `${props.field.label} value`
   const spec = () => specOfQueryField(props.field)
   let host: HTMLDivElement | undefined
+  // Read in the body: a prop getter can make a memo, and onSettled may not create one.
+  const autoFocus = createMemo(() => !!props.autoFocus)
   onSettled(() => {
-    if (props.autoFocus)
+    if (autoFocus())
       queueMicrotask(() =>
         host?.querySelector<HTMLElement>("input, button, [tabindex]")?.focus({ preventScroll: true }),
       )

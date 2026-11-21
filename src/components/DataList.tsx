@@ -54,7 +54,7 @@ export function DataListInput(props: DataListInputProps): JSX.Element {
       aria-label={props.label}
       aria-invalid={props.invalid ? "true" : undefined}
       value={props.value}
-      spellcheck={!props.mono}
+      spellcheck={props.mono ? "false" : "true"}
       autocomplete="off"
       onInput={(e) => props.onInput(e.currentTarget.value)}
       {...rest}

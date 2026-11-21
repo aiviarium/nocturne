@@ -241,7 +241,7 @@ function MediaImage(props: {
             height={props.item.height}
             loading="lazy"
             decoding="async"
-            draggable={false}
+            draggable="false"
             onLoad={() => setState("loaded")}
             onError={() => setState("failed")}
           />
@@ -519,7 +519,7 @@ export function MediaViewer(props: MediaViewerProps): JSX.Element {
                 alt={current()?.alt ?? ""}
                 width={current()?.width}
                 height={current()?.height}
-                draggable={false}
+                draggable="false"
               />
             )}
           </Show>

@@ -46,10 +46,15 @@ export function OptionList(props: OptionListProps): JSX.Element {
     e.preventDefault()
     list.querySelector(`#${id}-${active()}`)?.scrollIntoView({ block: "nearest" })
   }
+  // The first chosen option is where the keys start. Props are read here, in a memo, because a prop
+  // getter may make a memo itself, and onSettled may not create one.
+  const start = createMemo(() =>
+    props.autoFocus ? props.options.findIndex((o) => props.value.includes(o.value)) : -1,
+  )
+  const autoFocus = createMemo(() => !!props.autoFocus)
   onSettled(() => {
-    if (!props.autoFocus) return
-    // The first chosen option is where the keys start.
-    const at = props.options.findIndex((o) => props.value.includes(o.value))
+    if (!autoFocus()) return
+    const at = start()
     if (at > 0) setActive(at)
     queueMicrotask(() => (search ?? list).focus({ preventScroll: true }))
   })

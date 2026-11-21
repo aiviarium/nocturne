@@ -67,6 +67,19 @@ export default defineConfig({ plugins: [solid()] })
 - `DropdownTriggerProps["aria-expanded"]` is typed `"true" | "false"` because it is spread onto a
   button, and a bare boolean is not a valid ARIA value there.
 
+## Scopes where Solid 2 throws
+
+A dev build throws, and halts every update on the page, when a part breaks one of these rules. A production
+build does not throw, but the cleanup or memo is lost. Nocturne's parts follow them:
+
+- No `onCleanup` inside a ref callback, `onSettled` or `createTrackedEffect`. A ref callback stores the element,
+  and the component body registers the cleanup (see `TooltipBubble` in `Tooltip.tsx`). `onSettled` returns its
+  cleanup.
+- No memo created inside `onSettled`. A prop getter can create one when the caller passed an expression. A part
+  reads such props into a memo in its body, and `onSettled` reads the memo.
+- Enumerated attributes such as `draggable` and `spellcheck` take the strings `"true"` and `"false"`. A boolean
+  `false` removes the attribute.
+
 ## Additions
 
 - `aria` and `ariaChecked` are exported for apps that write ARIA attributes themselves.
