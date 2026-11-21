@@ -3,6 +3,7 @@ import { omit, Show, untrack } from "solid-js"
 import { cx } from "../lib/cx"
 import { createId } from "../lib/id"
 import { Icon, type IconName } from "./Icon"
+import { InfoTip } from "./InfoTip"
 import { Kbd } from "./Kbd"
 
 export interface TextFieldProps extends Omit<JSX.InputHTMLAttributes<HTMLInputElement>, "ref"> {
@@ -10,6 +11,8 @@ export interface TextFieldProps extends Omit<JSX.InputHTMLAttributes<HTMLInputEl
   label?: string
   /** Help text below the input, in text-3. */
   help?: string
+  /** An explanation of the field, behind an InfoTip beside the label, in place of help text under it. */
+  info?: JSX.Element
   /** An error message (danger, says how to fix it), or `true` for the error state alone. */
   error?: string | boolean
   /** `search` puts a 13px icon before the input and an optional shortcut hint after it. */
@@ -32,6 +35,7 @@ export function TextField(props: TextFieldProps): JSX.Element {
     props,
     "label",
     "help",
+    "info",
     "error",
     "variant",
     "mono",
@@ -52,9 +56,14 @@ export function TextField(props: TextFieldProps): JSX.Element {
       fallback={
         <div data-part="text-field" class={cx("nc-field", props.class)}>
           <Show when={props.label}>
-            <label class="nc-field__label" for={id}>
-              {props.label}
-            </label>
+            <span class="nc-field__head">
+              <label class="nc-field__label" for={id}>
+                {props.label}
+              </label>
+              <Show when={props.info}>
+                <InfoTip label={props.label ?? ""}>{props.info}</InfoTip>
+              </Show>
+            </span>
           </Show>
           <input
             id={id}

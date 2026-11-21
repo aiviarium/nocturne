@@ -5,12 +5,15 @@ import { createId } from "../lib/id"
 import { DICTATION_KEY, DictationBar, joinDictated, useDictation } from "./Dictation"
 import { Icon } from "./Icon"
 import { IconButton } from "./IconButton"
+import { InfoTip } from "./InfoTip"
 
 export interface TextAreaProps extends Omit<JSX.TextareaHTMLAttributes<HTMLTextAreaElement>, "ref"> {
   /** Label above the input. */
   label?: string
   /** Help text below the input, in text-3. */
   help?: string
+  /** An explanation of the field, behind an InfoTip beside the label, in place of help text under it. */
+  info?: JSX.Element
   /** An error message (danger, says how to fix it), or `true` for the error state alone. */
   error?: string | boolean
   /** Receives the `textarea` element. */
@@ -27,7 +30,18 @@ export interface TextAreaProps extends Omit<JSX.TextareaHTMLAttributes<HTMLTextA
  * Ctrl Shift Space), the recording strip with timer, level and live text, and the blocked state.
  */
 export function TextArea(props: TextAreaProps): JSX.Element {
-  const rest = omit(props, "label", "help", "error", "textareaRef", "dictation", "class", "id", "onKeyDown")
+  const rest = omit(
+    props,
+    "label",
+    "help",
+    "info",
+    "error",
+    "textareaRef",
+    "dictation",
+    "class",
+    "id",
+    "onKeyDown",
+  )
   const id = props.id ?? createId("textarea")
   const helpId = `${id}-help`
   let el: HTMLTextAreaElement | undefined
@@ -71,9 +85,14 @@ export function TextArea(props: TextAreaProps): JSX.Element {
   return (
     <div data-part="text-area" class={cx("nc-field", props.class)} data-dictation={state().state}>
       <Show when={props.label}>
-        <label class="nc-field__label" for={id}>
-          {props.label}
-        </label>
+        <span class="nc-field__head">
+          <label class="nc-field__label" for={id}>
+            {props.label}
+          </label>
+          <Show when={props.info}>
+            <InfoTip label={props.label ?? ""}>{props.info}</InfoTip>
+          </Show>
+        </span>
       </Show>
       <div class={["nc-textarea", { "nc-textarea--dictation": shown() }]}>
         <textarea

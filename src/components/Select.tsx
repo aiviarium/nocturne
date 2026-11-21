@@ -13,6 +13,7 @@ import { createMemo, For, Show } from "solid-js"
 import { cx } from "../lib/cx"
 import { createId } from "../lib/id"
 import { Icon, type IconName } from "./Icon"
+import { InfoTip } from "./InfoTip"
 import { usePresentation } from "./Menu"
 import { OpenLayer } from "./Popover"
 
@@ -50,6 +51,8 @@ export interface SelectProps<T extends string = string> {
   mono?: boolean
   /** Help text below the control, in text-3. */
   help?: string
+  /** An explanation of the field, behind an InfoTip beside the label, in place of help text under it. */
+  info?: JSX.Element
   /** An error message (danger, says how to fix it), or `true` for the error state alone. */
   error?: string | boolean
   /** The name the value submits under in a form. */
@@ -85,7 +88,12 @@ export function Select<T extends string = string>(props: SelectProps<T>): JSX.El
         presentation={presentation()}
       >
         <Show when={props.label}>
-          <SelectLabel class="nc-field__label">{props.label}</SelectLabel>
+          <span class="nc-field__head">
+            <SelectLabel class="nc-field__label">{props.label}</SelectLabel>
+            <Show when={props.info}>
+              <InfoTip label={props.label ?? ""}>{props.info}</InfoTip>
+            </Show>
+          </span>
         </Show>
         <SelectTrigger
           class={cx("nc-input nc-select", props.mono && "nc-mono", invalid() && "nc-input--error")}

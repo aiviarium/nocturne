@@ -3,6 +3,7 @@ import { For, omit, Show } from "solid-js"
 import { cx } from "../lib/cx"
 import { callClick, useLinkClick } from "../lib/link"
 import { Icon, type IconName, type LucideNode } from "./Icon"
+import { IconButton } from "./IconButton"
 
 export interface NavItemProps extends Omit<JSX.AnchorHTMLAttributes<HTMLAnchorElement>, "children"> {
   /** Row label. */
@@ -19,6 +20,8 @@ export interface NavItemProps extends Omit<JSX.AnchorHTMLAttributes<HTMLAnchorEl
   current?: boolean
   /** Where the row goes: rendered as a link. */
   href?: string
+  /** The row opens a level of the sidebar, such as a project's or a host's places: a chevron ends it. */
+  drill?: boolean
 }
 
 /** A sidebar row. Renders a link when it has an `href`, a button otherwise. */
@@ -34,6 +37,7 @@ export function NavItem(props: NavItemProps): JSX.Element {
     "class",
     "href",
     "onClick",
+    "drill",
   )
   const linkClick = useLinkClick()
   const body = (
@@ -51,6 +55,9 @@ export function NavItem(props: NavItemProps): JSX.Element {
       <span class="nc-nav-item__label">{props.label}</span>
       <Show when={props.meta}>
         <span class="nc-nav-item__meta">{props.meta}</span>
+      </Show>
+      <Show when={props.drill}>
+        <Icon name="chevron-right" size="sm" class="nc-nav-item__drill" />
       </Show>
     </>
   )
@@ -87,11 +94,20 @@ export function NavItem(props: NavItemProps): JSX.Element {
   )
 }
 
+/** NavGroup is a run of items under an optional heading. */
+export interface NavGroup {
+  /** The sentence-case heading. */
+  label?: string
+  /** One small icon action at the heading's end, such as adding an item to the group. Needs a `label`. */
+  action?: { label: string; icon: IconName; onClick: () => void }
+  items: NavItemProps[]
+}
+
 export interface NavProps {
   /** Accessible name of the navigation landmark. */
   label: string
-  /** Groups of items, each with an optional sentence-case heading. */
-  groups?: Array<{ label?: string; items: NavItemProps[] }>
+  /** Groups of items, each with an optional sentence-case heading and one action beside it. */
+  groups?: NavGroup[]
   /** Free-form content instead of `groups`. */
   children?: JSX.Element
   class?: string
@@ -109,7 +125,20 @@ export function Nav(props: NavProps): JSX.Element {
         {(group) => (
           <>
             <Show when={group().label}>
-              <span class="nc-nav__label">{group().label}</span>
+              <Show when={group().action} fallback={<span class="nc-nav__label">{group().label}</span>}>
+                {(action) => (
+                  <div class="nc-nav__head" data-empty={group().items.length === 0 ? "" : undefined}>
+                    <span class="nc-nav__label">{group().label}</span>
+                    <IconButton
+                      size="sm"
+                      class="nc-nav__action"
+                      icon={action().icon}
+                      label={action().label}
+                      onClick={() => action().onClick()}
+                    />
+                  </div>
+                )}
+              </Show>
             </Show>
             <For keyed={false} each={group().items}>
               {(item) => <NavItem {...item()} />}
