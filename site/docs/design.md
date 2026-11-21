@@ -40,7 +40,7 @@ Badges in the page match the images of the badge endpoint.
 | Field | `#18181B` with a 1 px `#2A2A30` outline |
 | Icon | The `-icon` file at 14 px, on the left |
 | Label | Inter 600, `#EDEDEF` |
-| Value | Inter 650, `#0A0A0B` on the project's dark tone |
+| Value | Inter 650, `#0A0A0B` on the dark tone of the project |
 
 They are dark in both themes. The `Badge` component draws them, and the header chip uses it.
 
