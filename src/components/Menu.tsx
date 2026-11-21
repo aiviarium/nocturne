@@ -77,14 +77,15 @@ export interface MenuChoiceOption {
 
 /**
  * One choice among a few, chosen inside the menu without closing it: a segmented row (`Theme: System, Dark,
- * Light`) or a row of colour swatches.
+ * Light`), a row of colour swatches, or `icons`: one menu row with the label at its start and the options as small
+ * icon buttons at its end, for a setting that should take no more room than an item.
  */
 export interface MenuChoiceEntry {
   type: "choice"
   /** Names the group for a screen reader. */
   id: string
   label: string
-  variant?: "segmented" | "swatches"
+  variant?: "segmented" | "swatches" | "icons"
   options: MenuChoiceOption[]
   value: string
   onChange: (value: string) => void
@@ -440,7 +441,8 @@ function Item(props: {
 
 /** A choice inside the menu: radio items in a row, chosen without closing it. */
 function Choice(props: { entry: MenuChoiceEntry }): JSX.Element {
-  return (
+  const icons = () => props.entry.variant === "icons"
+  const group = () => (
     <MenuRadioGroup
       name={props.entry.id}
       value={props.entry.value}
@@ -448,7 +450,11 @@ function Choice(props: { entry: MenuChoiceEntry }): JSX.Element {
       aria-label={props.entry.label}
       data-part="menu-choice"
       data-variant={props.entry.variant ?? "segmented"}
-      class={cx("nc-menu__choice", props.entry.variant === "swatches" && "nc-menu__choice--swatches")}
+      class={cx(
+        "nc-menu__choice",
+        props.entry.variant === "swatches" && "nc-menu__choice--swatches",
+        icons() && "nc-menu__choice--icons",
+      )}
     >
       <For each={props.entry.options}>
         {(option) => (
@@ -458,6 +464,7 @@ function Choice(props: { entry: MenuChoiceEntry }): JSX.Element {
             closeOnSelect={false}
             aria-label={option.label}
             data-value={option.value}
+            title={icons() ? option.label : undefined}
             class={cx("nc-menu__option", option.swatch && "nc-menu__option--swatch")}
             style={option.swatch ? { "--nc-swatch": option.swatch } : undefined}
           >
@@ -468,7 +475,9 @@ function Choice(props: { entry: MenuChoiceEntry }): JSX.Element {
                   <Show when={option.icon}>
                     <Icon name={option.icon} size="sm" />
                   </Show>
-                  <span>{option.label}</span>
+                  <Show when={!icons() || !option.icon}>
+                    <span>{option.label}</span>
+                  </Show>
                 </>
               }
             >
@@ -480,5 +489,15 @@ function Choice(props: { entry: MenuChoiceEntry }): JSX.Element {
         )}
       </For>
     </MenuRadioGroup>
+  )
+  return (
+    <Show when={icons()} fallback={group()}>
+      <div class="nc-menu__choice-row" data-part="menu-choice-row">
+        <span class="nc-menu__choice-label" aria-hidden="true">
+          {props.entry.label}
+        </span>
+        {group()}
+      </div>
+    </Show>
   )
 }

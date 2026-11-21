@@ -912,7 +912,11 @@ export function Composer(props: ComposerProps): JSX.Element {
                   onPointerMove={() => setActive(i())}
                   onClick={() => pick(r.item)}
                 >
-                  <span class="nc-mark section" data-trigger={trigger()?.char} data-kind={r.item.kind}>
+                  <span
+                    class="nc-trigger-mark section"
+                    data-trigger={trigger()?.char}
+                    data-kind={r.item.kind}
+                  >
                     <Show
                       when={r.item.kind === "person"}
                       fallback={r.item.icon ? <Icon name={r.item.icon} size="sm" /> : null}

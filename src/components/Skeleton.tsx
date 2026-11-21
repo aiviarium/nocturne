@@ -9,15 +9,24 @@ export interface SkeletonProps extends JSX.HTMLAttributes<HTMLSpanElement> {
   height?: string
   /** A circle, for avatars. */
   circle?: boolean
+  /**
+   * Show at once. By default a skeleton fades in only after 400ms, so a load that finishes sooner never flashes
+   * placeholders; pass this where the wait is known to be long.
+   */
+  immediate?: boolean
 }
 
-/** A placeholder block for content that is loading. The shimmer stops under `prefers-reduced-motion`. */
+/**
+ * A placeholder block for content that is loading. It fades in after 400ms, so fast loads show no placeholders at
+ * all. The shimmer stops under `prefers-reduced-motion`.
+ */
 export function Skeleton(props: SkeletonProps): JSX.Element {
-  const rest = omit(props, "width", "height", "circle", "class", "style")
+  const rest = omit(props, "width", "height", "circle", "immediate", "class", "style")
   return (
     <span
       data-part="skeleton"
       aria-hidden="true"
+      data-immediate={props.immediate ? "" : undefined}
       class={cx("nc-skeleton", props.circle && "nc-skeleton--circle", props.class)}
       style={{
         width: props.width,

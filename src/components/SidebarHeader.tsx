@@ -4,6 +4,7 @@ import { cx } from "../lib/cx"
 import { Icon } from "./Icon"
 import { IconButton } from "./IconButton"
 import { DropdownMenu, type MenuEntry } from "./Menu"
+import { SidebarToggle } from "./ShellSidebar"
 
 export interface SidebarHeaderProps {
   /** The place the sidebar shows: the workspace at the top level, the project or host you drilled into below it. */
@@ -21,8 +22,6 @@ export interface SidebarHeaderProps {
   onCommand?: () => void
   /** The command palette's shortcut, shown in the button's tooltip: "Ctrl K". */
   commandShortcut?: string
-  /** Hides the sidebar. The app shows a way to bring it back, such as an action in the view's header. */
-  onHideSidebar?: () => void
   /** Under the row: a search field. */
   children?: JSX.Element
   class?: string
@@ -30,8 +29,8 @@ export interface SidebarHeaderProps {
 
 /**
  * The top of the app's sidebar: back when drilled down, the place it shows (a switcher when there are others),
- * the command palette and the sidebar toggle in one row, and a search field under it. The frames beside it start
- * at the top of the window.
+ * the command palette and the sidebar toggle in one row, and a search field under it. The toggle is there when the
+ * `AppShell` has `onSidebarHiddenChange`. The frames beside it start at the top of the window.
  */
 export function SidebarHeader(props: SidebarHeaderProps): JSX.Element {
   const title = (extra?: JSX.Element) => (
@@ -86,15 +85,7 @@ export function SidebarHeader(props: SidebarHeaderProps): JSX.Element {
             onClick={() => props.onCommand?.()}
           />
         </Show>
-        <Show when={props.onHideSidebar}>
-          <IconButton
-            size="sm"
-            icon="sidebar"
-            label="Hide the sidebar"
-            data-part="sidebar-toggle"
-            onClick={() => props.onHideSidebar?.()}
-          />
-        </Show>
+        <SidebarToggle />
       </div>
       <Show when={props.children}>
         <div class="nc-sidebar-header__below">{props.children}</div>

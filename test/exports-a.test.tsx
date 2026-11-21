@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, test } from "bun:test"
 import { createSignal, flush } from "solid-js"
 import {
+  AccountMenu,
   ActionSheet,
   ApprovalCard,
   Avatar,
@@ -24,6 +25,8 @@ import {
   Delta,
   DictationBar,
   DiffView,
+  Mark,
+  markLetter,
   PhoneOverride,
 } from "../src"
 import { all, click, mount, one, press, tick } from "./dom"
@@ -209,6 +212,90 @@ describe("Avatar", () => {
   test("an explicit hue wins over the one from the name", () => {
     const { root } = track(mount(() => <Avatar name="Ada" hue="rose" />))
     expect(one("[data-part=avatar]", root).getAttribute("data-hue")).toBe("rose")
+  })
+})
+
+describe("Mark", () => {
+  test("is a place's first letter, named by the place, in the size and hue asked for", () => {
+    const { root } = track(mount(() => <Mark name="  atlas web" size="sm" hue="sky" />))
+    const mark = one("[data-part=mark]", root)
+    expect(mark.textContent).toBe("A")
+    expect(mark.getAttribute("role")).toBe("img")
+    expect(mark.getAttribute("aria-label")).toBe("  atlas web")
+    expect(mark.getAttribute("data-size")).toBe("sm")
+    expect(mark.getAttribute("data-hue")).toBe("sky")
+  })
+
+  test("an icon, a logo or a decorative mark", () => {
+    track(
+      mount(() => (
+        <>
+          <Mark name="Fleet" icon="server" solid hue="accent" />
+          <Mark name="Acme" src="data:image/png;base64,AAAA" decorative />
+        </>
+      )),
+    )
+    const [icon, logo] = all("[data-part=mark]")
+    expect(icon?.querySelector("svg.nc-icon")).not.toBeNull()
+    expect(icon?.hasAttribute("data-solid")).toBe(true)
+    expect(logo?.querySelector("img")?.getAttribute("alt")).toBe("")
+    expect(logo?.getAttribute("aria-hidden")).toBe("true")
+    expect(logo?.hasAttribute("role")).toBe(false)
+    expect(markLetter("— 9 lives")).toBe("9")
+    expect(markLetter("")).toBe("?")
+  })
+})
+
+describe("AccountMenu", () => {
+  test("opens on who is signed in, with the app's items, the theme in one row and sign out last", async () => {
+    const picked: string[] = []
+    const [theme, setTheme] = createSignal<"system" | "dark" | "light">("system")
+    const { root } = track(
+      mount(() => (
+        <AccountMenu
+          name="Ada Lovelace"
+          detail="ada@example.test"
+          badge="Admin"
+          items={[{ id: "settings", label: "Settings", icon: "settings" }]}
+          onSelect={(id) => picked.push(id)}
+          theme={{ value: theme(), onChange: setTheme }}
+          onSignOut={() => picked.push("out")}
+        />
+      )),
+    )
+    const trigger = one<HTMLButtonElement>("[data-part=account-menu]", root)
+    expect(trigger.getAttribute("aria-label")).toBe("Account: Ada Lovelace")
+    expect(trigger.textContent).toContain("Ada Lovelace")
+    click(trigger)
+    await tick()
+    const identity = one("[data-part=account-identity]")
+    expect(identity.textContent).toContain("Admin")
+    expect(identity.textContent).toContain("ada@example.test")
+    // The theme is one row: its label and three icon options, no text in them.
+    const row = one("[data-part=menu-choice-row]")
+    expect(row.textContent).toBe("Theme")
+    const options = all<HTMLElement>("[data-part=menu-choice] [role=menuitemradio]")
+    expect(options.map((o) => o.getAttribute("aria-label"))).toEqual(["System", "Light", "Dark"])
+    click(options[2] as HTMLElement)
+    await tick()
+    expect(theme()).toBe("dark")
+    const items = all<HTMLElement>("[role=menuitem]")
+    expect(items.map((i) => i.textContent)).toEqual(["Settings", "Sign out"])
+    click(items[0] as HTMLElement)
+    await tick()
+    expect(picked).toEqual(["settings"])
+    click(trigger)
+    await tick()
+    click(all<HTMLElement>("[role=menuitem]")[1] as HTMLElement)
+    await tick()
+    expect(picked).toEqual(["settings", "out"])
+  })
+
+  test("as an avatar, the trigger has no name text", () => {
+    const { root } = track(mount(() => <AccountMenu name="Ada" trigger="avatar" />))
+    const trigger = one("[data-part=account-menu]", root)
+    expect(trigger.classList.contains("nc-account--avatar")).toBe(true)
+    expect(trigger.querySelector(".nc-account__trigger-name")).toBeNull()
   })
 })
 

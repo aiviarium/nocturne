@@ -63,3 +63,16 @@ Rare actions go behind the overflow button.
 <DoDont do="design/overflow-menu" dont="design/entry-row" minHeight={260} />
 
 <GalleryLink page="menu" />
+
+## The account
+
+`AccountMenu` is the signed-in person's menu, at the foot of the sidebar.
+Its trigger is a row with the avatar and the name, and `trigger="avatar"` shows the avatar alone for a top bar.
+At the top of the menu is the signed-in person, with `detail` and `badge` beside the name.
+The app's `items` follow.
+With `theme`, the menu has one theme row, where System, Light and Dark are three icons.
+With `onSignOut`, the last item signs out.
+
+A choice with `variant="icons"` is that same row for another setting: its label at the start and its options as icons at the end.
+
+<Example id="account-menu/default" minHeight={340} />

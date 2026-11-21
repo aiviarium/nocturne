@@ -209,6 +209,13 @@ describe("Skeleton", () => {
     expect(el.style.width).toBe("60%")
     expect(el.style.height).toBe("12px")
     expect(el.classList.contains("nc-skeleton--circle")).toBe(true)
+    // It fades in after a delay unless asked to show at once.
+    expect(el.hasAttribute("data-immediate")).toBe(false)
+  })
+
+  test("immediate shows it at once", () => {
+    const { root } = track(mount(() => <Skeleton immediate />))
+    expect(one("[data-part=skeleton]", root).hasAttribute("data-immediate")).toBe(true)
   })
 })
 
@@ -1286,7 +1293,6 @@ describe("SidebarHeader", () => {
           title="Atlas web"
           back={{ to: "Projects", onClick: () => calls.push("back") }}
           onCommand={() => calls.push("command")}
-          onHideSidebar={() => calls.push("hide")}
         >
           <input aria-label="Search" />
         </SidebarHeader>
@@ -1300,12 +1306,12 @@ describe("SidebarHeader", () => {
       ) ?? c.textContent
     // A tooltip sits beside its button, hidden until it shows; it is not one of the row's controls.
     const controls = Array.from(row.children).filter((c) => c.getAttribute("role") !== "tooltip")
-    expect(controls.map(part)).toEqual(["sidebar-back", "Atlas web", "sidebar-command", "sidebar-toggle"])
+    // Outside a shell that lets the sidebar hide, there is no toggle.
+    expect(controls.map(part)).toEqual(["sidebar-back", "Atlas web", "sidebar-command"])
     expect(one("[data-part=sidebar-back]", header).getAttribute("aria-label")).toBe("Back to Projects")
     click(one("[data-part=sidebar-back]", header))
     click(one("[data-part=sidebar-command]", header))
-    click(one("[data-part=sidebar-toggle]", header))
-    expect(calls).toEqual(["back", "command", "hide"])
+    expect(calls).toEqual(["back", "command"])
     expect(header.querySelector("input[aria-label=Search]")).not.toBeNull()
   })
 
@@ -1324,5 +1330,62 @@ describe("SidebarHeader", () => {
     setHidden(true)
     flush()
     expect(shell.getAttribute("data-sidebar")).toBe("hidden")
+  })
+
+  test("AppShell keeps one sidebar toggle: in the sidebar header, then at the start of the first view header", () => {
+    const [hidden, setHidden] = createSignal(false)
+    const { root } = track(
+      mount(() => (
+        <AppShell
+          sidebarHidden={hidden()}
+          onSidebarHiddenChange={setHidden}
+          sidebar={<SidebarHeader title="Acme" />}
+        >
+          <ViewHeader crumbs={[{ label: "Projects" }]} />
+          <ViewHeader crumbs={[{ label: "Issues" }]} />
+        </AppShell>
+      )),
+    )
+    const toggles = () => all("[data-part=sidebar-toggle]")
+    expect(toggles()).toHaveLength(1)
+    const hide = toggles()[0] as HTMLElement
+    expect(hide.closest("[data-part=sidebar-header]")).not.toBeNull()
+    expect(hide.getAttribute("aria-label")).toBe("Hide the sidebar")
+    expect(hide.getAttribute("aria-controls")).toBe(one("[data-part=sidebar]", root).id)
+    click(hide)
+    expect(hidden()).toBe(true)
+    // Hidden: the first view header holds the toggle, before its crumbs; the second has none. The sidebar's own
+    // stays in the hidden sidebar.
+    const shown = all("[data-part=view-header] [data-part=sidebar-toggle]")
+    expect(shown).toHaveLength(1)
+    const show = shown[0] as HTMLElement
+    const headers = all("[data-part=view-header]")
+    expect(show.closest("[data-part=view-header]")).toBe(headers[0] as HTMLElement)
+    expect(headers[0]?.firstElementChild).toBe(show)
+    expect(show.getAttribute("aria-label")).toBe("Show the sidebar")
+    expect(show.getAttribute("aria-expanded")).toBe("false")
+    click(show)
+    expect(hidden()).toBe(false)
+    expect(all("[data-part=view-header] [data-part=sidebar-toggle]")).toHaveLength(0)
+  })
+
+  test("with no view header, the shell's header bar brings the hidden sidebar back", () => {
+    const [hidden, setHidden] = createSignal(true)
+    const { root } = track(
+      mount(() => (
+        <AppShell
+          sidebarHidden={hidden()}
+          onSidebarHiddenChange={setHidden}
+          sidebar={<SidebarHeader title="Acme" />}
+        >
+          <p>Content</p>
+        </AppShell>
+      )),
+    )
+    const bar = one<HTMLElement>("[data-part=shell-header]", root)
+    expect(bar.hidden).toBe(false)
+    click(one("[data-part=sidebar-toggle]", bar))
+    expect(hidden()).toBe(false)
+    expect(bar.hidden).toBe(true)
   })
 })

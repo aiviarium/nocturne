@@ -54,7 +54,15 @@ Rookery's shell and Crow follow one layout. Keep to it:
   returns.
 - **Each view has its own `ViewHeader`** inside `ViewLayout`. It holds crumbs or a title and the view's state. Its
   actions are at the right, the rarely used ones in its overflow menu. Views don't share a header.
-- **The account card is at the sidebar's foot**, not in a corner of the page.
+- **The account is an `AccountMenu` at the sidebar's foot**, not in a corner of the page. It says who is signed in,
+  holds the app's items, the theme as one row of icons and sign out.
+- **The sidebar toggle is the shell's.** Pass `sidebarHidden` and `onSidebarHiddenChange` to `AppShell`. The same
+  small toggle then ends the `SidebarHeader` row, and the first view's header starts with it while the sidebar is
+  hidden. Views don't add an action of their own for it.
+- **Places have a `Mark`**, a rounded square with a letter or an icon. Use `sm` (16px) in rows and crumbs and `md`
+  (20px) in the sidebar header. Don't draw letter squares by hand.
+- **A `Skeleton` fades in after 400ms.** A load that finishes sooner doesn't show it. Show skeletons only while
+  there is nothing to show, not on a refresh of data already on screen.
 - **The header's switcher moves between siblings of the domain you are in**, such as other spaces. It keeps the
   page. At the top level the header shows the app's name alone.
 - **Views keep their actions out of the status bar.** It shows whether the server is reachable and which jobs run. A view puts its actions in its own header.

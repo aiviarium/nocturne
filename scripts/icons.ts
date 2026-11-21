@@ -110,6 +110,9 @@ export const NAMES: Record<string, string> = {
   table: "Table",
   type: "Type",
   underline: "Underline",
+  "log-out": "LogOut",
+  moon: "Moon",
+  sun: "Sun",
 }
 
 /**

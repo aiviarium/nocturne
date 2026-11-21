@@ -2,6 +2,7 @@ import {
   AppShell,
   Frame,
   ListRow,
+  Mark,
   Nav,
   RowList,
   State,
@@ -60,7 +61,7 @@ export default function Topbar() {
                 crumbs={[
                   {
                     label: "Acme",
-                    mark: <span class="nc-nav-item__mark">A</span>,
+                    mark: <Mark name="Acme" hue="accent" size="sm" decorative />,
                     switcher: {
                       label: "Switch workspace",
                       items: [
