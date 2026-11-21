@@ -109,25 +109,25 @@ export function Select<T extends string = string>(props: SelectProps<T>): JSX.El
           style={{ "min-width": "var(--anchor-width)" }}
         >
           <OpenLayer />
-          <For each={props.options}>
+          <For each={props.options} keyed={(option) => option.value}>
             {(option) => (
               <SelectItem
-                value={option.value}
-                label={option.label}
-                disabled={option.disabled}
-                class={cx("nc-menu__item", option.description && "nc-menu__item--rich")}
-                data-value={option.value}
+                value={option().value}
+                label={option().label}
+                disabled={option().disabled}
+                class={cx("nc-menu__item", option().description && "nc-menu__item--rich")}
+                data-value={option().value}
               >
-                <Show when={option.icon}>
-                  <Icon name={option.icon} size="sm" />
+                <Show when={option().icon}>
+                  <Icon name={option().icon} size="sm" />
                 </Show>
                 <Show
-                  when={option.description}
-                  fallback={<SelectItemText class="nc-menu__text">{option.label}</SelectItemText>}
+                  when={option().description}
+                  fallback={<SelectItemText class="nc-menu__text">{option().label}</SelectItemText>}
                 >
                   <span class="nc-menu__text nc-menu__text--stack">
-                    <SelectItemText>{option.label}</SelectItemText>
-                    <span class="nc-menu__desc nc-meta">{option.description}</span>
+                    <SelectItemText>{option().label}</SelectItemText>
+                    <span class="nc-menu__desc nc-meta">{option().description}</span>
                   </span>
                 </Show>
                 <SelectItemIndicator class="nc-menu__check">

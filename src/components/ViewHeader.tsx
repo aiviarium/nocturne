@@ -343,49 +343,49 @@ function DesktopViewHeader(props: ViewHeaderProps): JSX.Element {
         </Show>
         <span class="nc-view-header__middle">{props.children}</span>
         <span class="nc-view-header__actions" data-part="view-actions">
-          <For each={icons()}>
+          <For each={icons()} keyed={(a) => a.id}>
             {(a) => (
               <Show
-                when={!a.count || !a.icon}
+                when={!a().count || !a().icon}
                 fallback={
                   <Button
                     size="sm"
                     variant="ghost"
-                    icon={a.icon}
-                    aria-label={a.label}
-                    aria-pressed={aria(a.pressed)}
-                    title={a.label}
-                    disabled={a.disabled}
-                    data-action={a.id}
+                    icon={a().icon}
+                    aria-label={a().label}
+                    aria-pressed={aria(a().pressed)}
+                    title={a().label}
+                    disabled={a().disabled}
+                    data-action={a().id}
                     class="nc-view-header__count"
-                    onClick={a.onClick}
+                    onClick={() => a().onClick?.()}
                   >
-                    {a.count}
+                    {a().count}
                   </Button>
                 }
               >
                 <Show
-                  when={a.icon}
+                  when={a().icon}
                   fallback={
                     <Button
                       size="sm"
                       variant="ghost"
-                      disabled={a.disabled}
-                      data-action={a.id}
-                      onClick={a.onClick}
+                      disabled={a().disabled}
+                      data-action={a().id}
+                      onClick={() => a().onClick?.()}
                     >
-                      {a.label}
+                      {a().label}
                     </Button>
                   }
                 >
                   <IconButton
-                    label={a.label}
-                    icon={a.icon}
-                    pressed={a.pressed}
-                    disabled={a.disabled}
-                    shortcut={a.shortcut}
-                    data-action={a.id}
-                    onClick={a.onClick}
+                    label={a().label}
+                    icon={a().icon}
+                    pressed={a().pressed}
+                    disabled={a().disabled}
+                    shortcut={a().shortcut}
+                    data-action={a().id}
+                    onClick={() => a().onClick?.()}
                   />
                 </Show>
               </Show>
@@ -415,17 +415,17 @@ function DesktopViewHeader(props: ViewHeaderProps): JSX.Element {
               )}
             />
           </Show>
-          <For each={primary()}>
+          <For each={primary()} keyed={(a) => a.id}>
             {(a) => (
               <Button
                 size="sm"
                 variant="primary"
-                icon={a.icon}
-                disabled={a.disabled}
-                data-action={a.id}
-                onClick={a.onClick}
+                icon={a().icon}
+                disabled={a().disabled}
+                data-action={a().id}
+                onClick={() => a().onClick?.()}
               >
-                {a.label}
+                {a().label}
               </Button>
             )}
           </For>

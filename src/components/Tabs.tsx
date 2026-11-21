@@ -79,10 +79,10 @@ export function Tabs(props: TabsProps): JSX.Element {
           loop
           class={cx("nc-seg", props.class)}
         >
-          <For each={props.items}>
+          <For each={props.items} keyed={(item) => item.id}>
             {(item) => (
-              <SegmentedControlItem value={item.id} disabled={item.disabled} class="nc-seg__item">
-                {label(item, false)}
+              <SegmentedControlItem value={item().id} disabled={item().disabled} class="nc-seg__item">
+                {label(item(), false)}
               </SegmentedControlItem>
             )}
           </For>
@@ -103,10 +103,10 @@ export function Tabs(props: TabsProps): JSX.Element {
           aria-label={props.label}
           class={cx("nc-tabs", props.class)}
         >
-          <For each={props.items}>
+          <For each={props.items} keyed={(item) => item.id}>
             {(item) => (
-              <TabsTab value={item.id} disabled={item.disabled} class="nc-tab">
-                {label(item, true)}
+              <TabsTab value={item().id} disabled={item().disabled} class="nc-tab">
+                {label(item(), true)}
               </TabsTab>
             )}
           </For>
