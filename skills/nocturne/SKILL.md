@@ -19,6 +19,21 @@ Nocturne draws them with its `nc-*` classes and keeps a data-driven API.
 
 ## Rules
 
+Read `design-rules.md` beside this file before you build or change a view. These are the ones views break most:
+
+- **Labels hold the meaning.** Text in a view is limited to titles, labels and values, with a description in an
+  `InfoTip` beside its label. Subtitles, paragraphs above lists and help text under fields are left out. An empty
+  state has a title, its action and one short line at most.
+- **Indicators mark the unusual.** A count appears when it is above zero, and a state while something is wrong or
+  running.
+- **A view shows what the person can change.** A setting or a scope they can't set is hidden.
+- **An add action is a ghost plus icon button** in the view header: `icon: "plus"`, leaving `primary` out. Primary
+  buttons submit a dialog or a form.
+- **Scope by drilling.** Entering a space, a host or a project drills the sidebar into its places, and the domain is
+  part of the address.
+
+The parts:
+
 1. **Use a part, don't build one.** A list is `RowList` and `ListRow`, a table `DataTable`, facts `PropertyList`,
    a figure `Stat`, a setting `SettingRow`, nothing to show `EmptyState`, a state `State`. If a part lacks something, add a variant to the
    part in Nocturne, not a one-off in the app.
@@ -37,9 +52,11 @@ Rookery's shell and Crow follow one layout. Keep to it:
 - **No top bar on desktop.** The sidebar's head is a `SidebarHeader` with back, the current place and search.
   Drilling into an item, such as a host or a job, replaces the sidebar's content with that item's places. Back
   returns.
-- **Each view has its own `ViewHeader`** inside `ViewLayout`. It holds crumbs or a title and the view's state. The
-  primary action is at the right, and the others are in an overflow menu. Views don't share a header.
+- **Each view has its own `ViewHeader`** inside `ViewLayout`. It holds crumbs or a title and the view's state. Its
+  actions are at the right, the rarely used ones in its overflow menu. Views don't share a header.
 - **The account card is at the sidebar's foot**, not in a corner of the page.
+- **The header's switcher moves between siblings of the domain you are in**, such as other spaces. It keeps the
+  page. At the top level the header shows the app's name alone.
 - **Views keep their actions out of the status bar.** It shows whether the server is reachable and which jobs run. A view puts its actions in its own header.
 
 ## Overlays and controls

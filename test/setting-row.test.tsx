@@ -25,6 +25,9 @@ describe("SettingRow", () => {
     const control = row.querySelector('[role="switch"]')!
     expect(control.getAttribute("aria-labelledby")).toBe(label.id)
     expect(row.textContent).toContain("rookery/notifications")
+    // The description is an explanation on demand, not text on the row.
+    expect(row.querySelector('[data-part="info-tip"]')).not.toBeNull()
+    expect(row.textContent).not.toContain("Tell me when a job ends.")
 
     const reset = row.querySelector<HTMLButtonElement>('[data-part="setting-reset"]')!
     click(reset)
