@@ -1036,19 +1036,18 @@ describe("Dialog placements, AppShell and Frame", () => {
   })
 })
 
+import { createOverlayRoot } from "../src/lib/overlay"
+
 describe("Overlay theme", () => {
   test("an overlay in the body follows the page's theme and accent when they change", async () => {
     document.documentElement.setAttribute("data-theme", "dark")
     document.documentElement.style.setProperty("--accent", "#111111") // lint-tokens-ignore
-    const [open, setOpen] = createSignal(true)
-    const dispose = render(
-      () => (
-        <Dialog open={open()} bare label="x" onClose={() => setOpen(false)}>
-          hi
-        </Dialog>
-      ),
-      document.body,
-    )
+    // A row's menu draws in an overlay root, outside the table it was opened from.
+    const OverlayUser = () => {
+      createOverlayRoot(undefined)
+      return null
+    }
+    const dispose = render(() => <OverlayUser />, document.body)
     try {
       await tick()
       const root = one("[data-part=overlay-root]")

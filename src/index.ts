@@ -19,7 +19,6 @@ export {
 } from "./lib/expression"
 export {
   type Detent,
-  detentHeights,
   EDGE_WIDTH,
   lockDirection,
   PULL_THRESHOLD,
@@ -27,7 +26,6 @@ export {
   type RowSwipe,
   rowSwipe,
   rubberBand,
-  settleDetent,
   swipeBack,
 } from "./lib/gestures"
 export {

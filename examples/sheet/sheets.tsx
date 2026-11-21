@@ -12,7 +12,7 @@ import type { ExampleMeta } from "../_kit/types"
 
 export const meta: ExampleMeta = {
   title: "Sheets",
-  note: "A sheet opens at its content's height when that fits; only taller content rests at medium and large. Drag between them or down to dismiss. Destructive confirmations and short choices are action sheets.",
+  note: "A sheet opens at its content's height, up to nearly the whole screen. A long list can rest at medium and large: drag or press the handle between them, or drag down to dismiss. Destructive confirmations and short choices are action sheets.",
   phone: true,
   screen: true,
   height: 760,
@@ -50,7 +50,13 @@ function Sheets() {
           </InsetGroup>
         </InsetList>
       </Sheet>
-      <Sheet open={sheet() === "tall"} title="Context" onClose={() => setSheet(null)} flush>
+      <Sheet
+        open={sheet() === "tall"}
+        title="Context"
+        detents={["medium", "large"]}
+        onClose={() => setSheet(null)}
+        flush
+      >
         <InsetList>
           <For each={["Session", "Sources", "Changes", "Pull requests"]}>
             {(g) => (

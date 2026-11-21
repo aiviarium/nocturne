@@ -1,13 +1,11 @@
 // The decisions behind the phone's gestures (src/lib/gestures.ts) and the bar's choice of actions.
 import { describe, expect, test } from "bun:test"
 import {
-  detentHeights,
   lockDirection,
   PULL_THRESHOLD,
   pullRefreshes,
   rowSwipe,
   rubberBand,
-  settleDetent,
   swipeBack,
 } from "../src/lib/gestures"
 
@@ -31,44 +29,6 @@ describe("swipe back from the edge", () => {
   })
   test("a flick back to the left cancels however far it went", () => {
     expect(swipeBack({ dx: 300, vx: -0.5, width })).toBe("cancel")
-  })
-})
-
-describe("sheet detents", () => {
-  test("medium and large when the content is tall", () => {
-    expect(detentHeights({ available: 800, content: 2000, detents: ["medium", "large"] })).toEqual([400, 788])
-  })
-  test("one detent at the content's height when it fits under medium", () => {
-    expect(detentHeights({ available: 800, content: 220, detents: ["medium", "large"] })).toEqual([220])
-  })
-  test("content between medium and large opens at its own height, not at medium", () => {
-    expect(detentHeights({ available: 800, content: 600, detents: ["medium", "large"] })).toEqual([600])
-    expect(detentHeights({ available: 800, content: 788, detents: ["medium", "large"] })).toEqual([788])
-  })
-  test("only content taller than large rests at medium and large", () => {
-    expect(detentHeights({ available: 800, content: 789, detents: ["medium", "large"] })).toEqual([400, 788])
-    expect(detentHeights({ available: 800, content: 2000, detents: ["large"] })).toEqual([788])
-  })
-  test("fit is the content's height, never more than large", () => {
-    expect(detentHeights({ available: 800, content: 5000, detents: ["fit"] })).toEqual([788])
-  })
-  const h = [400, 788]
-  test("a slow release goes to the nearest detent", () => {
-    expect(settleDetent(h, 700, 0)).toBe(1)
-    expect(settleDetent(h, 520, 0)).toBe(0)
-  })
-  test("below 60% of the smallest dismisses", () => {
-    expect(settleDetent(h, 230, 0)).toBe(-1)
-    expect(settleDetent(h, 250, 0)).toBe(0)
-  })
-  test("a flick moves one detent in its direction, or dismisses from the smallest", () => {
-    expect(settleDetent(h, 760, 1.2)).toBe(0)
-    expect(settleDetent(h, 420, -1.2)).toBe(1)
-    expect(settleDetent(h, 380, 1.2)).toBe(-1)
-  })
-  test("a sheet that may not be dismissed stays at its smallest", () => {
-    expect(settleDetent(h, 100, 0, false)).toBe(0)
-    expect(settleDetent(h, 380, 1.2, false)).toBe(0)
   })
 })
 

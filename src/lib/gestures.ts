@@ -25,67 +25,8 @@ export function swipeBack(g: { dx: number; vx: number; width: number }): "back" 
   return "cancel"
 }
 
+/** Where a sheet may rest: half the screen, nearly all of it, or its content's own height. */
 export type Detent = "medium" | "large" | "fit"
-
-/**
- * The heights a sheet can rest at, smallest first. `available` is the room between the top inset and the
- * keyboard; `content` the height the sheet's content wants. Large is all of the room less a strip at the top that
- * shows the screen behind; medium is half of it. A sheet whose content fits under large has one detent, its own
- * height: it opens showing all of its content (a short menu is not padded out to half the screen, and a form is
- * not cut off at medium). Only content taller than large rests at the sheet's detents, medium and large by
- * default, and scrolls inside.
- */
-export function detentHeights(o: {
-  available: number
-  content: number
-  detents: readonly Detent[]
-}): number[] {
-  const large = Math.max(0, Math.round(o.available - 12))
-  const medium = Math.round(o.available * 0.5)
-  const content = Math.round(o.content)
-  if (content <= large || o.detents.length === 0) return [content]
-  const out: number[] = []
-  for (const d of o.detents) {
-    const h = d === "medium" ? medium : large
-    if (!out.includes(h)) out.push(h)
-  }
-  return out.sort((a, b) => a - b)
-}
-
-/**
- * Where a dragged sheet settles when it is let go: the index of a detent in `heights` (smallest first), or -1 to
- * dismiss. A flick (faster than 0.6 px/ms) moves one detent in its direction, or dismisses from the smallest; a
- * slow release goes to the nearest detent, and below 60% of the smallest one dismisses.
- */
-export function settleDetent(
-  heights: readonly number[],
-  height: number,
-  velocity: number,
-  dismissible = true,
-): number {
-  if (!heights.length) return -1
-  const nearest = heights.reduce(
-    (best, h, i) => (Math.abs(h - height) < Math.abs(heights[best]! - height) ? i : best),
-    0,
-  )
-  if (Math.abs(velocity) > 0.6) {
-    // Down (positive) shrinks: from the detent at or below where the sheet is, one step down.
-    if (velocity > 0) {
-      let below = -1
-      for (let i = heights.length - 1; i >= 0; i--)
-        if (heights[i]! < height - 1) {
-          below = i
-          break
-        }
-      if (below === -1) return dismissible ? -1 : 0
-      return below
-    }
-    for (let i = 0; i < heights.length; i++) if (heights[i]! > height + 1) return i
-    return heights.length - 1
-  }
-  if (dismissible && height < heights[0]! * 0.6) return -1
-  return nearest
-}
 
 /** What a list row does when it is let go after a sideways swipe. */
 export type RowSwipe = "close" | "leading" | "trailing" | "full-leading" | "full-trailing"
