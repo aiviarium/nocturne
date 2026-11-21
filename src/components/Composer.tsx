@@ -581,7 +581,7 @@ export function Composer(props: ComposerProps): JSX.Element {
                   >
                     {(preview) => (
                       <span class="nc-composer__thumb" role="listitem" data-kind="image" title={a.name}>
-                        <img class="nc-composer__thumb-img" src={preview()} alt={a.name} draggable={false} />
+                        <img class="nc-composer__thumb-img" src={preview()} alt={a.name} draggable="false" />
                         <button
                           type="button"
                           class="nc-composer__thumb-remove"
@@ -626,7 +626,7 @@ export function Composer(props: ComposerProps): JSX.Element {
               aria-expanded={aria(Boolean(trigger()))}
               aria-controls={trigger() ? `${uid}-menu` : undefined}
               aria-activedescendant={trigger() && results().length ? `${uid}-opt-${active()}` : undefined}
-              spellcheck={true}
+              spellcheck="true"
               onInput={onInput}
               onBeforeInput={onBeforeInput}
               onKeyDown={onKeyDown}

@@ -377,7 +377,7 @@ export function NumberField(props: NumberFieldProps): JSX.Element {
           phone() && props.min !== undefined && props.min >= 0 && !props.units ? "decimal" : undefined
         }
         autocomplete="off"
-        spellcheck={false}
+        spellcheck="false"
         role="spinbutton"
         aria-valuenow={value() ?? undefined}
         aria-valuemin={props.min}

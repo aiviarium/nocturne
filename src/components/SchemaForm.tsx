@@ -119,8 +119,10 @@ export function SchemaForm(props: SchemaFormProps): JSX.Element {
   )
   let form!: HTMLFormElement
 
+  // Read in the body: a prop getter can make a memo, and onSettled may not create one.
+  const autofocus = createMemo(() => props.autofocus)
   onSettled(() => {
-    if (props.autofocus !== false) queueMicrotask(() => focusFirst(form))
+    if (autofocus() !== false) queueMicrotask(() => focusFirst(form))
   })
 
   const submit = (event: Event) => {

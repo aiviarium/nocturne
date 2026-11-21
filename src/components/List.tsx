@@ -46,8 +46,10 @@ export function List<T>(props: ListProps<T>): JSX.Element {
   const viewport = () => props.height ?? measured()
   let el!: HTMLDivElement
 
+  // Read in the body: a prop getter can make a memo, and onSettled may not create one.
+  const fixedHeight = createMemo(() => props.height)
   onSettled(() => {
-    if (props.height !== undefined) return
+    if (fixedHeight() !== undefined) return
     setMeasured(el.clientHeight || 400)
     const observer =
       typeof ResizeObserver === "undefined"

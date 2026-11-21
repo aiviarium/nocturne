@@ -177,6 +177,8 @@ function SheetSurface(props: SheetProps): JSX.Element {
     setNatural(Math.ceil(header + content.offsetHeight + padding + footer + edge))
   }
   let restore = () => {}
+  // Read in the body: a prop getter can make a memo, and onSettled may not create one.
+  const initialFocus = createMemo(() => props.initialFocus)
   onSettled(() => {
     setTop(safeTop(root) + 10)
     restore = inertOthers(root.parentElement as HTMLElement)
@@ -187,7 +189,7 @@ function SheetSurface(props: SheetProps): JSX.Element {
     measure()
     requestAnimationFrame(() => requestAnimationFrame(() => setPhase("open")))
     const target =
-      props.initialFocus?.() ??
+      initialFocus()?.() ??
       focusableIn(body).find((el) => !el.matches("input, textarea, [contenteditable]")) ??
       surface
     target.focus({ preventScroll: true })

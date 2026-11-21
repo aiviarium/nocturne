@@ -117,7 +117,7 @@ export function InlineField(props: InlineFieldProps): JSX.Element {
           readonly={props.readOnly}
           value={draft()}
           title={draft() || undefined}
-          spellcheck={props.variant !== "mono"}
+          spellcheck={props.variant === "mono" ? "false" : "true"}
           {...handlers}
           {...(rest as JSX.InputHTMLAttributes<HTMLInputElement>)}
         />
