@@ -1,8 +1,17 @@
 // Nocturne names a floating element's place in one word, such as `bottom-start`; ui-sdk takes a side and an
 // alignment.
-import type { Placement } from "./position"
-
-export type { Placement }
+/** Where a floating element sits relative to its anchor. `-start` aligns edges, `-end` aligns the far edges. */
+export type Placement =
+  | "bottom-start"
+  | "bottom"
+  | "bottom-end"
+  | "top-start"
+  | "top"
+  | "top-end"
+  | "right-start"
+  | "right"
+  | "left-start"
+  | "left"
 
 /** placementSide splits a placement into the side and alignment ui-sdk's popups take. */
 export function placementSide(placement: Placement): {

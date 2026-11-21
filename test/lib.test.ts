@@ -2,35 +2,7 @@ import { describe, expect, test } from "bun:test"
 import { countChanges, diffStrings, diffWords, myers, parsePatch, toSplitRows } from "../src/lib/diff"
 import { highlight } from "../src/lib/highlight"
 import { edgeEnabled, nextEnabled, typeahead } from "../src/lib/keyboard"
-import { computePosition } from "../src/lib/position"
 import { filterItems, findTrigger } from "../src/lib/triggers"
-
-describe("computePosition", () => {
-  const viewport = { left: 0, top: 0, width: 800, height: 600 }
-  const float = { left: 0, top: 0, width: 200, height: 100 }
-  test("places below and aligned to the start", () => {
-    const r = computePosition({ anchor: { left: 100, top: 100, width: 80, height: 28 }, float, viewport })
-    expect(r).toEqual({ left: 100, top: 132, placement: "bottom-start" })
-  })
-  test("flips to the top when there is no room below", () => {
-    const r = computePosition({ anchor: { left: 100, top: 560, width: 80, height: 28 }, float, viewport })
-    expect(r.placement).toBe("top-start")
-    expect(r.top).toBe(560 - 100 - 4)
-  })
-  test("clamps into the viewport", () => {
-    const r = computePosition({ anchor: { left: 760, top: 100, width: 40, height: 28 }, float, viewport })
-    expect(r.left).toBe(800 - 200 - 8)
-  })
-  test("aligns the end edges for -end placements", () => {
-    const r = computePosition({
-      anchor: { left: 400, top: 100, width: 100, height: 28 },
-      float,
-      viewport,
-      placement: "bottom-end",
-    })
-    expect(r.left).toBe(300)
-  })
-})
 
 describe("keyboard helpers", () => {
   test("nextEnabled wraps and skips disabled", () => {

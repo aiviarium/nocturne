@@ -87,7 +87,7 @@ export function NumberField(props: NumberFieldProps): JSX.Element {
   const phone = usePhone()
   const [value, setValue] = createControllable<number | null>({
     value: () => props.value,
-    defaultValue: props.defaultValue ?? null,
+    defaultValue: untrack(() => props.defaultValue) ?? null,
     onChange: (v) => props.onChange?.(v),
   })
   const [text, setText] = createSignal("")

@@ -2,7 +2,7 @@
 // Arrow keys move by a day or a week, Page Up and Down by a month, Home and End to the ends of the week, Enter picks.
 
 import type { JSX } from "@solidjs/web"
-import { createEffect, createMemo, createSignal, For } from "solid-js"
+import { createEffect, createMemo, createSignal, For, untrack } from "solid-js"
 import { IconButton } from "../../components/IconButton"
 import { aria } from "../../lib/aria"
 import { cx } from "../../lib/cx"
@@ -51,7 +51,7 @@ export interface CalendarProps {
 export function Calendar(props: CalendarProps): JSX.Element {
   const today = new Date()
   const picked = () => parseDay(props.value)
-  const [focus, setFocus] = createSignal<Date>(picked() ?? today)
+  const [focus, setFocus] = createSignal<Date>(untrack(picked) ?? today)
   createEffect(
     picked,
     (p) => {
@@ -137,7 +137,8 @@ export function Calendar(props: CalendarProps): JSX.Element {
               <For each={row}>
                 {(d) => {
                   const iso = dayOf(d)
-                  const inMonth = d.getMonth() === mon()
+                  // The days are drawn again for each month, so the month is read once.
+                  const inMonth = d.getMonth() === untrack(mon)
                   const selected = () => props.value === iso
                   const roving = () => dayOf(focus()) === iso
                   return (
@@ -151,7 +152,7 @@ export function Calendar(props: CalendarProps): JSX.Element {
                         data-selected={selected() || undefined}
                         tabindex={roving() ? 0 : -1}
                         ref={(el) => {
-                          if (props.autofocus && roving() && !focused) {
+                          if (!focused && untrack(() => props.autofocus && roving())) {
                             focused = true
                             queueMicrotask(() => el.focus({ preventScroll: true }))
                           }

@@ -56,7 +56,7 @@ export {
   trackViewport,
   usePhone,
 } from "./lib/phone"
-export { computePosition, type Placement } from "./lib/position"
+export type { Placement } from "./lib/placement"
 export {
   createQueryId,
   defaultOperator,
