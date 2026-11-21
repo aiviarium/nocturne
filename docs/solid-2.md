@@ -75,8 +75,8 @@ build does not throw, but the cleanup or memo is lost. Nocturne's parts follow t
 - No `onCleanup` inside a ref callback, `onSettled` or `createTrackedEffect`. A ref callback stores the element,
   and the component body registers the cleanup (see `TooltipBubble` in `Tooltip.tsx`). `onSettled` returns its
   cleanup.
-- No memo created inside `onSettled`. A prop getter can create one when the caller passed an expression, so a
-  part reads such props into a memo in its body and `onSettled` reads the memo.
+- No memo created inside `onSettled`. A prop getter can create one when the caller passed an expression. A part
+  reads such props into a memo in its body, and `onSettled` reads the memo.
 - Enumerated attributes such as `draggable` and `spellcheck` take the strings `"true"` and `"false"`. A boolean
   `false` removes the attribute.
 
