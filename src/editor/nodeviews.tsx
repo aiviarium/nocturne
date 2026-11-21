@@ -146,7 +146,7 @@ export class ImageView extends SolidView {
         <img
           src={String(a().src)}
           alt={String(a().alt ?? "")}
-          draggable={false}
+          draggable="false"
           onClick={() => this.select()}
         />
         <Show when={uploading()}>

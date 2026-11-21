@@ -154,8 +154,10 @@ export function Menu(props: MenuProps): JSX.Element {
       "first",
     )
   })
+  // Read in the body: a prop getter can make a memo, and onSettled may not create one.
+  const autoFocus = createMemo(() => props.autoFocus)
   onSettled(() => {
-    if (props.autoFocus !== false) focusIndex(firstStop())
+    if (autoFocus() !== false) focusIndex(firstStop())
   })
   onCleanup(() => clearTimeout(bufferTimer))
   createEffect(entries, () => {

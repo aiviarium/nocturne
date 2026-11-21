@@ -1,5 +1,5 @@
 import type { JSX } from "@solidjs/web"
-import { omit, onCleanup, onSettled, Show } from "solid-js"
+import { createMemo, omit, onCleanup, onSettled, Show } from "solid-js"
 import { cx } from "../lib/cx"
 import { activeElement, focusableIn, trapTab } from "../lib/focus"
 import { createId } from "../lib/id"
@@ -115,9 +115,11 @@ function DialogSurface(props: DialogProps): JSX.Element {
     if (previous?.isConnected) previous.focus()
   })
   // The surface's ref exists only once the dialog is inserted, which is after the body has run.
+  // Read in the body: a prop getter can make a memo, and onSettled may not create one.
+  const initialFocus = createMemo(() => props.initialFocus)
   onSettled(() => {
     const target =
-      props.initialFocus?.() ??
+      initialFocus()?.() ??
       focusableIn(surface).find((el) => !el.hasAttribute("data-dialog-close")) ??
       surface
     target.focus()

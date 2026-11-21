@@ -51,26 +51,38 @@ export function Tooltip(props: TooltipProps): JSX.Element {
       {props.children}
       <Show when={open() && anchor()}>
         <Overlay anchor={anchor()}>
-          <div
-            data-part="tooltip"
-            id={id}
-            role="tooltip"
-            class="nc-tooltip nc-tooltip--floating"
-            ref={(el) => {
-              const stop = floatTo(anchor() as HTMLElement, el, {
-                placement: props.placement ?? "top",
-                offset: 6,
-              })
-              onCleanup(stop)
-            }}
-          >
+          <TooltipBubble id={id} anchor={anchor() as HTMLElement} placement={props.placement ?? "top"}>
             {props.content}
             <Show when={props.shortcut}>
               <Kbd keys={props.shortcut} />
             </Show>
-          </div>
+          </TooltipBubble>
         </Overlay>
       </Show>
     </span>
+  )
+}
+
+/** The floating label. Its body owns the float, so the cleanup is registered where Solid allows it. */
+function TooltipBubble(props: {
+  id: string
+  anchor: HTMLElement
+  placement: Placement
+  children: JSX.Element
+}) {
+  let stop: (() => void) | undefined
+  onCleanup(() => stop?.())
+  return (
+    <div
+      data-part="tooltip"
+      id={props.id}
+      role="tooltip"
+      class="nc-tooltip nc-tooltip--floating"
+      ref={(el) => {
+        stop = floatTo(props.anchor, el, { placement: props.placement, offset: 6 })
+      }}
+    >
+      {props.children}
+    </div>
   )
 }
