@@ -84,8 +84,11 @@
 .nc-fieldrow[data-invalid] .nc-input { border-color: var(--danger); }
 
 /* An explanation on demand: the info button beside a label and the words it opens. */
-.nc-infotip { display: inline-flex; vertical-align: middle; margin-inline-start: var(--space-1); }
-.nc-infotip__button { color: var(--text-3); }
+/* The info button is as tall as the label's line and no wider than its icon needs, so it sits right after the
+   label like a character of it, not as a separate control. In a head that spaces its children it adds no margin. */
+.nc-infotip { display: inline-flex; vertical-align: middle; margin-inline-start: 2px; }
+:is(.nc-field__head, .nc-setting__head) > .nc-infotip { margin-inline-start: 0; }
+.nc-infotip__button.nc-icon-btn { width: 18px; height: 18px; margin: -1px 0; border-radius: var(--radius-xs); color: var(--text-3); }
 .nc-infotip__button:hover { color: var(--text-1); }
 .nc-infotip__pop { max-width: min(20rem, calc(100vw - var(--space-4) * 2)); padding: var(--space-2) var(--space-3); border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--bg-3); box-shadow: var(--shadow-overlay); }
 .nc-infotip__text { color: var(--text-1); font-size: var(--nc-type-label); line-height: var(--nc-type-label-line); font-weight: 400; white-space: normal; overflow-wrap: anywhere; }

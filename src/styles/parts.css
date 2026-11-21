@@ -618,6 +618,7 @@ button.nc-lrow__toggle:hover { color: var(--text-1); }
 .nc-setting[data-modified]::before { content: ""; position: absolute; inset-block: var(--space-2); inset-inline-start: 0; width: 2px; border-radius: var(--radius-sm); background: var(--accent); }
 .nc-setting__text { display: flex; flex-direction: column; gap: var(--space-1); min-width: 0; }
 .nc-setting__head { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); min-width: 0; }
+.nc-setting__head > .nc-infotip { margin-inline-start: calc(-1 * var(--space-1)); }
 .nc-setting__category { color: var(--text-3); font-size: var(--nc-type-body); line-height: var(--nc-type-body-line); }
 .nc-setting__category::after { content: " ›"; }
 .nc-setting__title { color: var(--text-1); font-size: var(--nc-type-body); line-height: var(--nc-type-body-line); font-weight: 500; }

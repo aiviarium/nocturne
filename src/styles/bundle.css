@@ -148,6 +148,32 @@
 .nc-avatar--lg { width: 32px; height: 32px; font-size: 12px; }
 .nc-avatar--agent { border-radius: var(--radius-sm); color: var(--bg-0); }
 .nc-avatar--ai { border-radius: 7px; background: var(--accent-tint); color: var(--accent-text); }
+/* Mark: a place's letter, icon or logo in a rounded square, sized to the row: 16px beside 16px row icons, 20px in
+   the sidebar header, 32px on a page. The letter is optically centred, so no padding sits around it. */
+.nc-mark { --nc-mark-hue: var(--text-3); display: inline-flex; align-items: center; justify-content: center; flex: none; box-sizing: border-box; width: 20px; height: 20px; overflow: hidden; border-radius: 5px; background: color-mix(in oklch, var(--nc-mark-hue) 18%, var(--bg-2)); box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--nc-mark-hue) 28%, transparent); color: color-mix(in oklch, var(--nc-mark-hue) 40%, var(--text-1)); font: 600 11px/1 var(--font-sans); letter-spacing: 0; user-select: none; }
+.nc-mark[data-size="sm"] { width: 16px; height: 16px; border-radius: var(--radius-xs); font-size: 9px; }
+.nc-mark[data-size="lg"] { width: 32px; height: 32px; border-radius: var(--radius-md); font-size: 15px; }
+.nc-mark .nc-icon { width: 12px; height: 12px; }
+.nc-mark[data-size="sm"] .nc-icon { width: 10px; height: 10px; }
+.nc-mark[data-size="lg"] .nc-icon { width: 18px; height: 18px; }
+.nc-mark[data-hue="neutral"] { background: var(--bg-3); box-shadow: inset 0 0 0 1px var(--line-soft); color: var(--text-1); }
+.nc-mark[data-solid] { background: var(--nc-mark-hue); box-shadow: none; color: var(--bg-0); }
+.nc-mark[data-solid][data-hue="accent"] { background: var(--accent); color: var(--on-accent); }
+.nc-mark[data-solid][data-hue="neutral"] { background: var(--text-1); color: var(--bg-0); }
+.nc-mark:has(> .nc-mark__image) { background: transparent; box-shadow: inset 0 0 0 1px var(--line-soft); }
+.nc-mark__image { width: 100%; height: 100%; object-fit: cover; }
+.nc-mark[data-hue="sky"] { --nc-mark-hue: var(--label-sky); }
+.nc-mark[data-hue="teal"] { --nc-mark-hue: var(--label-teal); }
+.nc-mark[data-hue="mint"] { --nc-mark-hue: var(--label-mint); }
+.nc-mark[data-hue="amber"] { --nc-mark-hue: var(--label-amber); }
+.nc-mark[data-hue="ember"] { --nc-mark-hue: var(--label-ember); }
+.nc-mark[data-hue="rose"] { --nc-mark-hue: var(--label-rose); }
+.nc-mark[data-hue="orchid"] { --nc-mark-hue: var(--label-orchid); }
+.nc-mark[data-hue="accent"] { --nc-mark-hue: var(--accent-strong); }
+.nc-mark[data-hue="success"] { --nc-mark-hue: var(--success); }
+.nc-mark[data-hue="warning"] { --nc-mark-hue: var(--warning); }
+.nc-mark[data-hue="danger"] { --nc-mark-hue: var(--danger); }
+.nc-mark[data-hue="info"] { --nc-mark-hue: var(--info); }
 .nc-avatars { display: flex; }
 .nc-avatars > * { margin-right: -6px; box-shadow: 0 0 0 2px var(--bg-1); }
 

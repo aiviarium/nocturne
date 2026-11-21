@@ -59,11 +59,13 @@ Every part on these pages that cuts text already does this, such as row titles, 
 ## Other display parts
 
 - `Avatar` is initials in a circle for people, a rounded square for agents, and the sparkle mark for the assistant.
+- `Mark` is the mark of a place, such as a workspace, a space, a project or the product. It is a rounded square with the first letter, an icon or a logo. Use `sm` (16px) in rows and crumbs, `md` (20px) in the sidebar header and `lg` (32px) on a page. `solid` fills it, for the product's own mark.
 - `Callout` is an inline message in a neutral grey box. The hue is in its icon. It has one or two sentences: what happened and what to do next.
 - `Toast` shows short notices in a live region at the bottom right. Danger toasts are announced assertively, and hover pauses the timer.
-- `Skeleton` holds the place of content while it loads.
+- `Skeleton` holds the place of content while it loads. It fades in after 400ms, so a load that finishes sooner shows nothing in between. `immediate` shows it at once, where the wait is known to be long.
 
 <Example id="avatar/kinds" />
+<Example id="mark/sizes" />
 <Example id="callout/tones" />
 
 <GalleryLink page="status-meta" />

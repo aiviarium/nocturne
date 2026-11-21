@@ -35,9 +35,20 @@ Most apps use this one.
 Its row holds, from left to right:
 
 - `back`, once you have drilled into a domain. A chevron goes to the place above, and its name says where.
-- The place the sidebar shows, with its mark. With `switcher` it opens a menu of the other places of that kind, such as workspaces or projects.
+- The place the sidebar shows, with its `Mark`. With `switcher` it opens a menu of the other places of that kind, such as workspaces or projects.
 - The command palette, with `onCommand`.
-- The toggle that hides the sidebar, with `onHideSidebar`. The app passes `sidebarHidden` to `AppShell`, and the view's header gets an action that brings the sidebar back.
+- The toggle that hides the sidebar. It shows when the app passes `onSidebarHiddenChange` to `AppShell`.
+
+The row is aligned to the `Nav` under it.
+Back's chevron and a 20px mark are centred on the column of the nav icons, and the name starts at the left edge of the nav labels.
+
+`AppShell` places the sidebar toggle.
+The app keeps `sidebarHidden` and changes it in `onSidebarHiddenChange`.
+When the sidebar is shown, the toggle is at the end of the `SidebarHeader` row.
+When the sidebar is hidden, a toggle of the same size and icon is at the start of the first view's header.
+A shell with no view header shows it in its header bar.
+Views don't add an action of their own for it.
+`SidebarToggle` is the same control, for a header of the app's own.
 
 A search field goes under the row, as the children.
 There is no bar across the top.
@@ -92,6 +103,7 @@ Escape in a column opened over the main column closes it and returns focus to it
 | --- | --- |
 | Top bar | On a phone, the control that opens the drawer. Nothing on a desktop |
 | Sidebar header | Back, the place and its switcher, the command palette, the sidebar toggle, and search |
+| Sidebar foot | The `AccountMenu` |
 | App header | In a top bar, the path from the workspace on, search, and the view's actions |
 | `TabStrip` of a `Frame` | One tab for each open view, with the name of the view |
 | `ViewHeader` | The crumbs or a back control, short context, and the actions of the view, when there is no top bar |

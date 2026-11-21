@@ -1,7 +1,9 @@
 import type { JSX } from "@solidjs/web"
 import { createMemo, createSignal, omit, Show } from "solid-js"
 import { cx } from "../lib/cx"
+import { createId } from "../lib/id"
 import { ShellHeaderContext } from "./ShellHeader"
+import { createShowClaims, ShellSidebarContext, SidebarToggle } from "./ShellSidebar"
 
 export interface PanelProps extends Omit<JSX.HTMLAttributes<HTMLElement>, "title"> {
   /** The panel title, in the 38px header. */
@@ -131,8 +133,15 @@ export interface AppShellProps extends Omit<JSX.HTMLAttributes<HTMLDivElement>, 
    * top bar over the whole window, sidebar included, with the product at its start and search in its middle.
    */
   headerPlacement?: "beside" | "across"
-  /** Hides the sidebar on a desktop: the frames take its room. The app keeps a way to bring it back. */
+  /** Hides the sidebar on a desktop: the frames take its room. */
   sidebarHidden?: boolean
+  /**
+   * Lets the person hide the sidebar and bring it back. The shell then places one control for both, the same
+   * small button with the same icon: at the end of the `SidebarHeader` row while the sidebar shows, and at the
+   * start of the first view's header (or of the header bar, when no view has a header) while it is hidden. The app
+   * keeps the value and passes it back as `sidebarHidden`.
+   */
+  onSidebarHiddenChange?: (hidden: boolean) => void
   /** A bar of small indicators along the bottom. */
   statusbar?: JSX.Element
   /** Whether the sidebar drawer is open at phone width. Setting it turns on the scrim. */
@@ -148,6 +157,30 @@ export interface AppShellProps extends Omit<JSX.HTMLAttributes<HTMLDivElement>, 
  * at phone width, where the sidebar is a drawer behind a top bar.
  */
 export function AppShell(props: AppShellProps): JSX.Element {
+  const shows = createShowClaims()
+  const sidebarId = createId("sidebar")
+  const sidebar = {
+    hidden: () => Boolean(props.sidebarHidden),
+    setHidden: (hidden: boolean) => props.onSidebarHiddenChange?.(hidden),
+    id: sidebarId,
+    claimShow: shows.claim,
+  }
+  return (
+    <ShellSidebarContext value={props.onSidebarHiddenChange ? sidebar : null}>
+      <ShellLayout
+        props={props}
+        sidebarId={sidebarId}
+        // The header bar holds the control itself only while no view header can.
+        barShow={() => Boolean(props.onSidebarHiddenChange && props.sidebarHidden && shows.count() === 0)}
+      />
+    </ShellSidebarContext>
+  )
+}
+
+// The shell's body, under the sidebar context, so that the slots the app passes (built when they are read
+// here) find it: the `SidebarHeader` in the sidebar reads it for its toggle.
+function ShellLayout(p: { props: AppShellProps; sidebarId: string; barShow: () => boolean }): JSX.Element {
+  const props = p.props
   const rest = omit(
     props,
     "sidebar",
@@ -158,6 +191,7 @@ export function AppShell(props: AppShellProps): JSX.Element {
     "header",
     "headerPlacement",
     "sidebarHidden",
+    "onSidebarHiddenChange",
     "statusbar",
     "drawerOpen",
     "onDrawerClose",
@@ -218,7 +252,12 @@ export function AppShell(props: AppShellProps): JSX.Element {
         />
       </Show>
       <Show when={sidebar()}>
-        <aside data-part="sidebar" aria-label={props.sidebarLabel ?? "Sidebar"} class="nc-shell__sidebar">
+        <aside
+          id={p.sidebarId}
+          data-part="sidebar"
+          aria-label={props.sidebarLabel ?? "Sidebar"}
+          class="nc-shell__sidebar"
+        >
           {sidebar()}
         </aside>
         <Show when={props.onSidebarResize}>
@@ -260,8 +299,11 @@ export function AppShell(props: AppShellProps): JSX.Element {
         ref={headerBar}
         data-part="shell-header"
         class="nc-shell__header"
-        hidden={!header() && claims() === 0}
+        hidden={!header() && claims() === 0 && !p.barShow()}
       >
+        <Show when={p.barShow()}>
+          <SidebarToggle class="nc-shell__show" />
+        </Show>
         {header()}
       </div>
       <main data-part="shell-content" class="nc-shell__content">

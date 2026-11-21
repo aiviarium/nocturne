@@ -204,6 +204,13 @@ export const PAGES: GalleryPage[] = [
     sections: [["menu/items", "menu/radio", "menu/descriptions"]],
   },
   {
+    id: "account-menu",
+    title: "AccountMenu",
+    group: "Navigation",
+    lead: "The signed-in person's menu: who they are, the app's items, the theme in one row and sign out last. One shape in every app.",
+    sections: ["account-menu/default"],
+  },
+  {
     id: "badge",
     title: "Badge",
     group: "Display",
@@ -223,6 +230,13 @@ export const PAGES: GalleryPage[] = [
     group: "Display",
     lead: "Initials in a circle for people, a rounded square for agents, and the sparkle mark for the assistant.",
     sections: ["avatar/kinds", "avatar/stack"],
+  },
+  {
+    id: "mark",
+    title: "Mark",
+    group: "Display",
+    lead: "The mark of a place: a workspace, a space, a project or the product. Its first letter, an icon or a logo in a rounded square, sized to the row it sits in.",
+    sections: ["mark/sizes"],
   },
   {
     id: "callout",

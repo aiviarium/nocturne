@@ -10,6 +10,7 @@ import { IconButton } from "./IconButton"
 import { DropdownMenu, type MenuEntry } from "./Menu"
 import { type BarAction, useScreen } from "./NavigationBar"
 import { useShellHeader } from "./ShellHeader"
+import { SidebarToggle, useSidebarShow } from "./ShellSidebar"
 import { useViewLayout } from "./ViewLayout"
 
 // The standard header of a view. It never repeats the view's title (the tab shows it): it holds breadcrumbs or
@@ -193,6 +194,8 @@ function DesktopViewHeader(props: ViewHeaderProps): JSX.Element {
   const overflow = () => actions().filter((a) => a.overflow)
   const primary = () => actions().filter((a) => a.primary && !a.overflow)
   const asideToggle = () => Boolean(layout?.hasAside())
+  // While the shell's sidebar is hidden, the first view header brings it back from its start.
+  const showSidebar = useSidebarShow()
   // The pin alone is not something to say: without other content the header stays away, and the tab's menu pins.
   /** Where the up control goes: the crumb before the last, when it leads somewhere. */
   const upTo = () => {
@@ -206,7 +209,7 @@ function DesktopViewHeader(props: ViewHeaderProps): JSX.Element {
     present(props.context) ||
     present(props.children) ||
     actions().length > 0
-  const shown = () => content() || asideToggle()
+  const shown = () => content() || asideToggle() || showSidebar()
   const pin = () => content() && !props.noPin && chrome?.pinnable()
   const menu = (): MenuEntry[] =>
     overflow().map((a) => ({
@@ -224,6 +227,9 @@ function DesktopViewHeader(props: ViewHeaderProps): JSX.Element {
         data-part="view-header"
         data-variant={props.variant ?? "view"}
       >
+        <Show when={showSidebar()}>
+          <SidebarToggle class="nc-view-header__sidebar" />
+        </Show>
         <Show when={upTo()}>
           {(c) => (
             <IconButton
