@@ -1,5 +1,5 @@
 import type { JSX } from "@solidjs/web"
-import { createUniqueId, Show } from "solid-js"
+import { createUniqueId, omit, Show } from "solid-js"
 import { cx } from "../lib/cx"
 import { Icon } from "./Icon"
 
@@ -9,7 +9,7 @@ export interface SettingControlIds {
   descriptionId: string
 }
 
-export interface SettingRowProps {
+export interface SettingRowProps extends Omit<JSX.HTMLAttributes<HTMLDivElement>, "title"> {
   /** The setting's name as a person reads it. */
   title: string
   /** What it changes, in a sentence, under the title. */
@@ -43,12 +43,27 @@ export interface SettingRowProps {
 export function SettingRow(props: SettingRowProps): JSX.Element {
   const id = createUniqueId()
   const ids: SettingControlIds = { labelId: `${id}-label`, descriptionId: `${id}-description` }
+  const rest = omit(
+    props,
+    "title",
+    "description",
+    "name",
+    "category",
+    "modified",
+    "onReset",
+    "inherited",
+    "locked",
+    "control",
+    "muted",
+    "class",
+  )
   const control = (): JSX.Element => {
     const given = props.control
     return typeof given === "function" ? given(ids) : given
   }
   return (
     <div
+      {...rest}
       data-part="setting-row"
       class={cx("nc-setting", props.class)}
       data-modified={props.modified ? "" : undefined}

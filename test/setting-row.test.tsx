@@ -11,6 +11,7 @@ describe("SettingRow", () => {
         title="Notifications"
         description="Tell me when a job ends."
         name="rookery/notifications"
+        data-key="rookery/notifications"
         modified={on()}
         onReset={() => setOn(false)}
         control={(ids) => <Switch aria-labelledby={ids.labelId} checked={on()} onChange={setOn} />}
@@ -19,6 +20,7 @@ describe("SettingRow", () => {
     const row = root.querySelector('[data-part="setting-row"]')!
     expect(row).not.toBeNull()
     expect(row.hasAttribute("data-modified")).toBe(true)
+    expect(row.getAttribute("data-key")).toBe("rookery/notifications")
     const label = row.querySelector(".nc-setting__title")!
     const control = row.querySelector('[role="switch"]')!
     expect(control.getAttribute("aria-labelledby")).toBe(label.id)
