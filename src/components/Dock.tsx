@@ -60,7 +60,11 @@ export interface DockProps {
 export function Dock(props: DockProps): JSX.Element {
   const group = createId("dock")
   const min = () => props.min ?? 200
-  const change = (layout: DockLayout) => props.onLayoutChange(layout)
+  // The layout functions give back the same layout when nothing changes, such as focusing the focused frame; the app
+  // hears only of a change, so a press on a frame does not draw it again under the pointer.
+  const change = (layout: DockLayout) => {
+    if (layout !== props.layout) props.onLayoutChange(layout)
+  }
   const many = () => dockFrames(props.layout).length > 1
   const columnOf = (id: string) => props.layout.columns.find((column) => column.id === id)
   const frameOf = (id: string) => dockFrames(props.layout).find((frame) => frame.id === id)
