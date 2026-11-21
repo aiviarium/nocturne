@@ -133,7 +133,7 @@ export function dockRemove(layout: DockLayout, tab: string): DockLayout {
 /** Shows a tab in its frame and focuses the frame. */
 export function dockShow(layout: DockLayout, tab: string): DockLayout {
   const frame = dockFrameOf(layout, tab)
-  if (!frame) return layout
+  if (!frame || (frame.active === tab && layout.focused === frame.id)) return layout
   return { ...mapFrame(layout, frame.id, (one) => ({ ...one, active: tab })), focused: frame.id }
 }
 

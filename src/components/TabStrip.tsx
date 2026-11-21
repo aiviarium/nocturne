@@ -250,16 +250,16 @@ export function TabStrip(props: TabStripProps): JSX.Element {
           }
         }}
       >
-        <For each={props.items}>
+        <For each={props.items} keyed={(item) => item.id}>
           {(item, index) => (
             <div
-              ref={(el) => tabs.set(item.id, el)}
+              ref={(el) => tabs.set(item().id, el)}
               data-part="tab-strip-tab"
-              data-tab={item.id}
-              data-active={props.value === item.id ? "" : undefined}
-              data-pinned={item.pinned ? "" : undefined}
-              data-dirty={item.dirty ? "" : undefined}
-              data-loading={item.loading ? "" : undefined}
+              data-tab={item().id}
+              data-active={props.value === item().id ? "" : undefined}
+              data-pinned={item().pinned ? "" : undefined}
+              data-dirty={item().dirty ? "" : undefined}
+              data-loading={item().loading ? "" : undefined}
               data-drop-before={dropAt() === index() ? "" : undefined}
               class="nc-tabstrip__tab"
               draggable={props.dragGroup && !touch() ? "true" : undefined}
@@ -267,10 +267,10 @@ export function TabStrip(props: TabStripProps): JSX.Element {
                 if (!props.dragGroup || !event.dataTransfer) return
                 event.dataTransfer.setData(
                   dragType(props.dragGroup),
-                  JSON.stringify({ id: item.id, from: stripId() }),
+                  JSON.stringify({ id: item().id, from: stripId() }),
                 )
                 event.dataTransfer.effectAllowed = "move"
-                setDragged({ group: props.dragGroup, id: item.id, from: stripId() })
+                setDragged({ group: props.dragGroup, id: item().id, from: stripId() })
               }}
               onDragEnd={() => {
                 setDropAt(null)
@@ -283,13 +283,13 @@ export function TabStrip(props: TabStripProps): JSX.Element {
               onAuxClick={(event) => {
                 if (event.button === 1 && props.onClose) {
                   event.preventDefault()
-                  props.onClose(item.id)
+                  props.onClose(item().id)
                 }
               }}
               onContextMenu={(event) => {
                 if (!props.menu) return
                 event.preventDefault()
-                openMenu(item.id, event.clientX, event.clientY)
+                openMenu(item().id, event.clientX, event.clientY)
               }}
               onPointerDown={(event) => {
                 setTouch(event.pointerType === "touch" || event.pointerType === "pen")
@@ -297,13 +297,13 @@ export function TabStrip(props: TabStripProps): JSX.Element {
                 cancelPress()
                 const { clientX: x, clientY: y } = event
                 press = {
-                  id: item.id,
+                  id: item().id,
                   x,
                   y,
                   timer: setTimeout(() => {
                     press = undefined
                     swallowClick = true
-                    openMenu(item.id, x, y)
+                    openMenu(item().id, x, y)
                   }, 500),
                 }
               }}
@@ -314,19 +314,19 @@ export function TabStrip(props: TabStripProps): JSX.Element {
               onPointerCancel={cancelPress}
             >
               {/* The tab is the tooltip's trigger: the full title shows over a truncated or pinned one. */}
-              <Tooltip content={tip(item)} placement="bottom" delay={600} type="description">
+              <Tooltip content={tip(item())} placement="bottom" delay={600} type="description">
                 {(trigger) => (
                   <button
                     {...mergeParts(
                       {
-                        ref: (el: HTMLButtonElement) => buttons.set(item.id, el),
+                        ref: (el: HTMLButtonElement) => buttons.set(item().id, el),
                         onClick: (event: MouseEvent) => {
                           if (swallowClick) {
                             swallowClick = false
                             event.preventDefault()
                             return
                           }
-                          props.onChange(item.id)
+                          props.onChange(item().id)
                         },
                         onKeyDown: (e: KeyboardEvent) => onKeyDown(e, index()),
                       },
@@ -334,28 +334,28 @@ export function TabStrip(props: TabStripProps): JSX.Element {
                     )}
                     type="button"
                     role="tab"
-                    aria-selected={aria(props.value === item.id)}
-                    aria-label={item.pinned ? tip(item) : undefined}
-                    tabindex={props.value === item.id ? 0 : -1}
+                    aria-selected={aria(props.value === item().id)}
+                    aria-label={item().pinned ? tip(item()) : undefined}
+                    tabindex={props.value === item().id ? 0 : -1}
                     class="nc-tabstrip__main label"
                   >
                     <Show
-                      when={item.loading}
+                      when={item().loading}
                       fallback={
-                        <Show when={item.icon}>
-                          <Icon name={item.icon} size="sm" />
+                        <Show when={item().icon}>
+                          <Icon name={item().icon} size="sm" />
                         </Show>
                       }
                     >
                       <span class="nc-spinner" role="status" aria-label="Loading" />
                     </Show>
-                    <Show when={!item.pinned}>
-                      <span class="nc-tabstrip__title">{item.label}</span>
-                      <Show when={item.detail}>
-                        <span class="nc-tabstrip__detail">{item.detail}</span>
+                    <Show when={!item().pinned}>
+                      <span class="nc-tabstrip__title">{item().label}</span>
+                      <Show when={item().detail}>
+                        <span class="nc-tabstrip__detail">{item().detail}</span>
                       </Show>
                     </Show>
-                    <Show when={item.pinned && item.dirty}>
+                    <Show when={item().pinned && item().dirty}>
                       <span
                         class="nc-tabstrip__dirty nc-tabstrip__dirty--pinned"
                         aria-label="Unsaved changes"
@@ -364,15 +364,15 @@ export function TabStrip(props: TabStripProps): JSX.Element {
                   </button>
                 )}
               </Tooltip>
-              <Show when={props.onClose && !item.pinned}>
+              <Show when={props.onClose && !item().pinned}>
                 <button
                   type="button"
                   class="nc-tabstrip__close"
                   tabindex="-1"
-                  aria-label={props.closeLabel?.(item) ?? `Close ${item.label}`}
-                  onClick={() => props.onClose?.(item.id)}
+                  aria-label={props.closeLabel?.(item()) ?? `Close ${item().label}`}
+                  onClick={() => props.onClose?.(item().id)}
                 >
-                  <Show when={item.dirty}>
+                  <Show when={item().dirty}>
                     <span class="nc-tabstrip__dirty" role="img" aria-label="Unsaved changes" />
                   </Show>
                   <Icon name="close" size="sm" />

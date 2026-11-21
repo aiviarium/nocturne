@@ -4,6 +4,7 @@ import {
   Dock,
   type DockLayout,
   dockAdd,
+  dockFocus,
   dockFrameOf,
   dockFrames,
   dockLayout,
@@ -159,5 +160,62 @@ describe("Dock and a view's header", () => {
     flush()
     expect(one("[data-dock-tab=one] [data-part=view-header]", dock).textContent).toContain("one")
     expect(strip.querySelector("[data-action=act-one]")).toBeNull()
+  })
+})
+
+describe("closing in a Dock", () => {
+  test("closes a frame's only tab: pressing the frame first does not draw its strip again", () => {
+    let layout0 = dockLayout(["a", "b"])
+    layout0 = dockSplit(layout0, "b", layout0.focused, "right")
+    const [layout, setLayout] = createSignal<DockLayout>(dockFocus(layout0, dockFrameOf(layout0, "a")!.id))
+    let changes = 0
+    const m = mount(() => (
+      <Dock
+        label="Pages"
+        layout={layout()}
+        onLayoutChange={(next) => {
+          changes++
+          // A new object each time, as an app that keeps its own copy gives back.
+          setLayout({ ...next })
+        }}
+        tab={(id) => ({ label: id })}
+        onClose={(id) => setLayout(dockRemove(layout(), id))}
+      >
+        {(id) => <p>{id}</p>}
+      </Dock>
+    ))
+    cleanup.push(m.dispose)
+    const frame = () => one(`[data-dock-frame='${dockFrameOf(layout(), "a")!.id}']`, m.root)
+    const close = one(".nc-tabstrip__close", frame())
+    // Pressing the focused frame changes nothing, so the app hears nothing and the button stays.
+    frame().dispatchEvent(new PointerEvent("pointerdown", { bubbles: true }))
+    flush()
+    expect(changes).toBe(0)
+    expect(close.isConnected).toBe(true)
+    click(close)
+    flush()
+    expect(dockTabs(layout())).toEqual(["b"])
+    expect(m.root.querySelectorAll("[data-dock-frame]")).toHaveLength(1)
+  })
+
+  test("a tab keeps its element when the app gives the strip new items", () => {
+    const [layout, setLayout] = createSignal<DockLayout>(dockLayout(["a", "b"]))
+    const [suffix, setSuffix] = createSignal("")
+    const m = mount(() => (
+      <Dock
+        label="Pages"
+        layout={layout()}
+        onLayoutChange={setLayout}
+        tab={(id) => ({ label: id + suffix() })}
+      >
+        {(id) => <p>{id}</p>}
+      </Dock>
+    ))
+    cleanup.push(m.dispose)
+    const tab = one("[data-part=tab-strip-tab][data-tab=a]", m.root)
+    setSuffix("!")
+    flush()
+    expect(one("[data-part=tab-strip-tab][data-tab=a]", m.root)).toBe(tab)
+    expect(tab.textContent).toContain("a!")
   })
 })
