@@ -75,7 +75,8 @@ export function Select<T extends string = string>(props: SelectProps<T>): JSX.El
   return (
     <div data-part="select" class={cx("nc-field", props.class)}>
       <SelectRoot<T>
-        value={props.value === undefined ? undefined : props.value}
+        // A value no option has, such as "", is no choice yet: the placeholder shows.
+        value={props.value === undefined ? undefined : selected() === undefined ? null : props.value}
         defaultValue={props.value === undefined ? props.defaultValue : undefined}
         onValueChange={(value: T | null) => {
           if (value !== null) props.onChange?.(value)

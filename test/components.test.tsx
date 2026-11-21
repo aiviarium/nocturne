@@ -463,6 +463,22 @@ describe("Select, Switch, Checkbox, RadioGroup, Split", () => {
     expect(seen).toEqual(["ws"])
     expect(button.textContent).toContain("Workspace")
   })
+  test("Select shows its placeholder for a value no option has", () => {
+    track(
+      mount(() => (
+        <Select
+          label="Size"
+          placeholder="Default"
+          value=""
+          options={[
+            { value: "small", label: "Small" },
+            { value: "large", label: "Large" },
+          ]}
+        />
+      )),
+    )
+    expect(one<HTMLButtonElement>("button[aria-haspopup=listbox]").textContent).toContain("Default")
+  })
   test("Select shows an error as TextField does: the error edge, aria-invalid and the message it points to", () => {
     const [error, setError] = createSignal<string | undefined>("Choose a host.")
     track(
