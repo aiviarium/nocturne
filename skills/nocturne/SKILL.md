@@ -40,7 +40,7 @@ Rookery's shell and Crow follow one layout. Keep to it:
 - **Each view has its own `ViewHeader`** inside `ViewLayout`. It holds crumbs or a title and the view's state. The
   primary action is at the right, and the others are in an overflow menu. Views don't share a header.
 - **The account card is at the sidebar's foot**, not in a corner of the page.
-- **The status bar shows connection and background work.** A view puts its actions in its own header.
+- **Views keep their actions out of the status bar.** It shows whether the server is reachable and which jobs run. A view puts its actions in its own header.
 
 ## Overlays and controls
 
