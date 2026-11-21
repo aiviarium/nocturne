@@ -154,7 +154,7 @@ function SidebarPath(props: { path: SidebarPathItem[] }): JSX.Element {
                 data-part="sidebar-crumb"
                 onClick={() => item.onClick()}
               >
-                {item.label}
+                <span class="nc-sidebar-header__crumb-label">{item.label}</span>
               </button>
               {sep()}
             </>
