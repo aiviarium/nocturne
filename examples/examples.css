@@ -472,3 +472,6 @@ form.ex-form {
   align-self: flex-start;
   width: 100%;
 }
+.ex-dock {
+  height: 360px;
+}

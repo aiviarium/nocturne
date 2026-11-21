@@ -84,11 +84,13 @@ It is 13px semibold `text-1`, in a 24px row.
 - `AppShell` holds the sidebar, the app's header, the top bar, the status bar and the phone drawer. The sidebar is on `bg-0`, and content is in `bg-1` frames with radius 8 and an 8px gap.
 - `Frame` has a `TabStrip` header.
 - `Split` and `SplitGroup` have dividers you can drag. A divider is a focusable separator. The arrow keys, Home and End move it. A double click resets it.
+- `Dock` tiles frames, each with a `TabStrip`: columns side by side, frames stacked in a column. Use it when a view shows several things of one kind that people want side by side, such as terminals or editors. Dragging a tab onto another frame's strip moves it there. Dropping it on a side of a frame splits that frame. The split buttons open a new tab to the right or below. New tabs open in the focused frame, which has the stronger edge. The layout is data. `dockLayout`, `dockAdd`, `dockSplit`, `dockRemove` and `dockSync` change it, and the app keeps it. Inside a view, the dock is the view's content: it takes the place of a tab section, and the view's header keeps its actions.
 - `Dialog` is centred, bare, near the top, or a bottom sheet.
 - `LinkProvider` sends `NavItem` and `Button` links through your router.
 
 <Example id="app-shell/two-frames" />
 <Example id="split/horizontal" />
+<Example id="dock/tiles" />
 
 The project is the hub.
 Issues, docs, agent sessions and environments sit inside it, and each module adds its part there.

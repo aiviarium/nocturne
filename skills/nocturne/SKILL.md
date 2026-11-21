@@ -70,6 +70,9 @@ Rookery's shell and Crow follow one layout. Keep to it:
 - **The place is a switcher whenever it is one of a kind** (spaces, projects, hosts), even with one so far. It keeps
   the page. The crumb for that place in the `ViewHeader` has the same `switcher`. At the top level the header shows
   the app's name alone.
+- **Several things of one kind side by side are a `Dock`**, such as a host's terminals: tiled frames, each with a
+  `TabStrip`, that split by their buttons or by dropping a tab on a frame's side. It is the view's content, never a
+  tab section inside it. Keep its layout (`dockLayout`, `dockAdd`, `dockSplit`, `dockSync`) in the app.
 - **One width for every view.** The main column fills its width and content starts at the left: lists, logs,
   forms, settings and overviews alike. `reading` is only for long prose, such as a document's body.
 - **Views keep their actions out of the status bar.** It shows whether the server is reachable and which jobs run. A view puts its actions in its own header.

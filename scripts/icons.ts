@@ -63,6 +63,8 @@ export const NAMES: Record<string, string> = {
   "chevron-left": "ChevronLeft",
   "circle-dot": "CircleDot",
   "columns-2": "Columns2",
+  "split-down": "SquareSplitVertical",
+  "split-right": "SquareSplitHorizontal",
   "eye-off": "EyeOff",
   "git-pull-request": "GitPullRequest",
   "grip-vertical": "GripVertical",

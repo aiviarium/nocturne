@@ -7,6 +7,25 @@ export { aria, ariaChecked } from "./lib/aria"
 export { cx } from "./lib/cx"
 export { type DiffHunk, type DiffLine, diffStrings, diffWords, type FileDiff, parsePatch } from "./lib/diff"
 export {
+  type DockColumn,
+  type DockEdge,
+  type DockFrame,
+  type DockLayout,
+  dockAdd,
+  dockFocus,
+  dockFrameOf,
+  dockFrames,
+  dockLayout,
+  dockMove,
+  dockRemove,
+  dockResizeColumns,
+  dockResizeFrames,
+  dockShow,
+  dockSplit,
+  dockSync,
+  dockTabs,
+} from "./lib/dock"
+export {
   clamp,
   decimalsOf,
   type EvaluateOptions,

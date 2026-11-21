@@ -417,6 +417,13 @@ export const PAGES: GalleryPage[] = [
     sections: ["split/horizontal", "split/second", "split/group", "split/vertical"],
   },
   {
+    id: "dock",
+    title: "Dock",
+    group: "Layout",
+    lead: "Tiled frames, each with its tabs. A tab moves to another frame by drag and drop, or onto a frame's side to split it. The layout is data the app keeps.",
+    sections: ["dock/tiles"],
+  },
+  {
     id: "dialog",
     title: "Dialog",
     group: "Layout",
