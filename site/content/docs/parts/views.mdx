@@ -20,6 +20,8 @@ Header actions come in one order:
 The name of the view is in its tab.
 Never repeat it as a heading.
 The header passes its last crumb to `setTitle` on the app's `ViewChrome`, and the app shows it on the tab.
+An app whose sidebar shows where the person is sets `path` to false on its `ViewChrome`.
+Headers then leave out their crumbs and keep their actions, and a header that needs its path passes `path`.
 
 <DoDont do="design/compact-header" dont="design/inflated-header" />
 

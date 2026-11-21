@@ -668,6 +668,36 @@ describe("ViewHeader", () => {
     expect(titles).toEqual(["Guide", "Reference", undefined])
   })
 
+  test("leaves the path to the app when its chrome says so, and still names the view", () => {
+    const titles: Array<string | undefined> = []
+    const { root } = track(
+      mount(() => (
+        <ViewChrome
+          value={{
+            pinnable: () => false,
+            pinned: () => false,
+            togglePin: () => {},
+            setTitle: (title) => titles.push(title),
+            path: () => false,
+          }}
+        >
+          <ViewHeader
+            crumbs={[{ label: "Hosts", href: "/hosts" }, { label: "box1" }]}
+            actions={[{ id: "new", label: "New", icon: "plus", onClick: () => {} }]}
+          />
+          <ViewHeader crumbs={[{ label: "Jobs" }]} path />
+        </ViewChrome>
+      )),
+    )
+    flush()
+    const headers = Array.from(root.querySelectorAll("[data-part=view-header]"))
+    expect(headers).toHaveLength(2)
+    expect(headers[0]!.querySelector("[data-part=breadcrumbs]")).toBeNull()
+    expect(headers[0]!.querySelector("[data-action=new]")).not.toBeNull()
+    expect(headers[1]!.querySelector("[data-part=breadcrumbs]")?.textContent).toContain("Jobs")
+    expect(titles).toEqual(["box1", "Jobs"])
+  })
+
   test("shows the crumbs and runs actions, with the primary one last", () => {
     const calls: string[] = []
     const { root } = track(

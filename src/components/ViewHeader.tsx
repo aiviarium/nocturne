@@ -77,6 +77,12 @@ export interface ViewChromeValue {
    * it where the view is named, such as the view's tab.
    */
   setTitle?: (title: string | undefined) => void
+  /**
+   * Whether view headers draw their path. False when the app shows where the person is elsewhere, such as in its
+   * sidebar's head: a header then holds its actions and context alone, and still names its view to `setTitle`.
+   * Default true.
+   */
+  path?: () => boolean
 }
 
 // `null` is "no view chrome above": in Solid 2 a default-less context throws instead of reading as undefined.
@@ -109,6 +115,8 @@ export interface ViewHeaderProps {
    * the inspector toggle and the pin still work. Outside an `AppShell` it shows as `view`.
    */
   variant?: "view" | "shell"
+  /** Draw the crumbs here, whatever the app's `ViewChrome` says. */
+  path?: boolean
   /** Short context after the crumbs: a state that is out of the ordinary, a chip. */
   context?: JSX.Element
   /** Free content in the middle: a search field, view switches. */
@@ -207,11 +215,13 @@ function DesktopViewHeader(props: ViewHeaderProps): JSX.Element {
   const linkClick = useLinkClick()
   const navigate = useNavigate()
   const actions = () => props.actions ?? []
-  const fold = () => Math.max(0, Math.min(props.fold ?? 0, (props.crumbs?.length ?? 0) - 1))
+  // The app may show the path elsewhere, such as in its sidebar; the view then shows its actions alone.
+  const crumbs = () => ((props.path ?? chrome?.path?.() ?? true) ? props.crumbs : undefined)
+  const fold = () => Math.max(0, Math.min(props.fold ?? 0, (crumbs()?.length ?? 0) - 1))
   const showOf = (c: ViewCrumb, i: number, all: ViewCrumb[]): PathShow =>
     i === all.length - 1 ? "inline" : (c.show ?? (i < fold() ? "fold" : "inline"))
-  const folded = () => props.crumbs?.filter((c, i, all) => showOf(c, i, all) === "fold") ?? []
-  const path = () => props.crumbs?.filter((c, i, all) => showOf(c, i, all) === "inline") ?? []
+  const folded = () => crumbs()?.filter((c, i, all) => showOf(c, i, all) === "fold") ?? []
+  const path = () => crumbs()?.filter((c, i, all) => showOf(c, i, all) === "inline") ?? []
   /** A folded crumb chosen from its menu: its own handler, else the app's router, else the address. */
   const go = (c: ViewCrumb) => {
     if (c.onClick) return c.onClick()
@@ -229,12 +239,12 @@ function DesktopViewHeader(props: ViewHeaderProps): JSX.Element {
   /** Where the up control goes: the crumb before the last, when it leads somewhere. */
   const upTo = () => {
     if (!props.up || props.back) return undefined
-    const c = props.crumbs?.at(-2)
+    const c = crumbs()?.at(-2)
     return c && (c.href || c.onClick) ? c : undefined
   }
   const content = () =>
     Boolean(props.back) ||
-    present(props.crumbs) ||
+    present(crumbs()) ||
     present(props.context) ||
     present(props.children) ||
     actions().length > 0
@@ -273,7 +283,7 @@ function DesktopViewHeader(props: ViewHeaderProps): JSX.Element {
         <Show
           when={props.back}
           fallback={
-            <Show when={present(props.crumbs)}>
+            <Show when={present(crumbs())}>
               <nav class="nc-view-header__crumbs" aria-label="Breadcrumbs" data-part="breadcrumbs">
                 <Show when={folded().length}>
                   <DropdownMenu
