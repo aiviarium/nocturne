@@ -73,7 +73,7 @@ export function Select<T extends string = string>(props: SelectProps<T>): JSX.El
     <div data-part="select" class={cx("nc-field", props.class)}>
       <SelectRoot<T>
         value={props.value === undefined ? undefined : props.value}
-        defaultValue={props.defaultValue}
+        defaultValue={props.value === undefined ? props.defaultValue : undefined}
         onValueChange={(value: T | null) => {
           if (value !== null) props.onChange?.(value)
         }}

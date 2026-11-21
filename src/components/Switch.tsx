@@ -36,7 +36,7 @@ export function Switch(props: SwitchProps): JSX.Element {
     <SwitchRoot
       data-part="switch"
       checked={props.checked}
-      defaultChecked={props.defaultChecked}
+      defaultChecked={props.checked === undefined ? props.defaultChecked : undefined}
       onCheckedChange={(next: boolean) => props.onChange?.(next)}
       disabled={props.disabled === true || props.disabled === ""}
       class={cx("nc-switch", props.danger && "nc-switch--danger", !props.label && props.class)}
@@ -76,7 +76,7 @@ export function Checkbox(props: CheckboxProps): JSX.Element {
     <CheckboxRoot
       data-part="checkbox"
       checked={toState(props.checked)}
-      defaultChecked={props.defaultChecked}
+      defaultChecked={props.checked === undefined ? props.defaultChecked : undefined}
       onCheckedChange={(next: boolean | "indeterminate") => props.onChange?.(next === true)}
       disabled={props.disabled === true || props.disabled === ""}
       class={cx("nc-check", !props.label && props.class)}
@@ -137,7 +137,7 @@ export function RadioGroup<T extends string = string>(props: RadioGroupProps<T>)
       data-part="radio-group"
       aria-label={props.label}
       value={props.value}
-      defaultValue={props.defaultValue}
+      defaultValue={props.value === undefined ? props.defaultValue : undefined}
       onValueChange={(next: T | null) => {
         if (next !== null) props.onChange?.(next)
       }}

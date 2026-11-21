@@ -357,7 +357,7 @@ export function NumberField(props: NumberFieldProps): JSX.Element {
         id={id}
         ref={(el) => {
           input = el
-          inputRef()?.(el)
+          untrack(inputRef)?.(el)
         }}
         name={props.name}
         class="nc-number__input"

@@ -68,7 +68,11 @@ export function Tabs(props: TabsProps): JSX.Element {
           data-variant="segmented"
           aria-label={props.label}
           value={props.value}
-          defaultValue={props.defaultValue ?? props.items.find((i) => !i.disabled)?.id}
+          defaultValue={
+            props.value === undefined
+              ? (props.defaultValue ?? props.items.find((i) => !i.disabled)?.id)
+              : undefined
+          }
           onValueChange={(next: string | null) => {
             if (next !== null) props.onChange?.(next)
           }}
@@ -87,7 +91,7 @@ export function Tabs(props: TabsProps): JSX.Element {
     >
       <TabsRoot
         value={props.value}
-        defaultValue={props.defaultValue}
+        defaultValue={props.value === undefined ? props.defaultValue : undefined}
         onValueChange={(next: string | null) => {
           if (next !== null) props.onChange?.(next)
         }}
