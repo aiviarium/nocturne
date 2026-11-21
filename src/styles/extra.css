@@ -157,6 +157,12 @@ button.nc-sidebar-header__place--menu { justify-content: flex-start; cursor: poi
 .nc-alltabs .nc-menu { min-width: 0; padding: 0; border: 0; background: transparent; box-shadow: none; }
 [data-theme="light"] .nc-alltabs { background: var(--bg-1); }
 /* Dropping a tab on a frame: the zones sit over its body while a tab is dragged. */
+/* A dock: tiled frames, each with its tabs, filling what holds it. */
+.nc-dock { display: flex; flex: 1; min-width: 0; min-height: 0; height: 100%; }
+.nc-dock > .nc-splitgroup { flex: 1; }
+.nc-dock__panes { position: relative; display: flex; flex: 1; min-width: 0; min-height: 0; }
+.nc-dock__pane { display: flex; flex: 1; flex-direction: column; min-width: 0; min-height: 0; }
+.nc-dock__pane[hidden] { display: none; }
 .nc-dropframe { position: relative; display: flex; flex-direction: column; flex: 1; min-width: 0; min-height: 0; }
 .nc-dropframe > .nc-frame { flex: 1; }
 .nc-dropframe__zones { position: absolute; inset: var(--header) 0 0 0; z-index: 5; }
