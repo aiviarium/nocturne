@@ -693,6 +693,33 @@ describe("ViewHeader", () => {
     expect(went).toEqual(["projects"])
   })
 
+  test("each crumb picks whether it is in the row, in the menu or left out", async () => {
+    const { root } = track(
+      mount(() => (
+        <ViewHeader
+          crumbs={[
+            { label: "Workspace", show: "hidden", onClick: () => {} },
+            { label: "Projects", show: "fold", onClick: () => {} },
+            { label: "Atlas web", onClick: () => {} },
+            { label: "Cycles", show: "hidden", onClick: () => {} },
+            { label: "WEB-142", show: "hidden" },
+          ]}
+        />
+      )),
+    )
+    const crumbs = one("[data-part=breadcrumbs]", root)
+    expect(crumbs.textContent).not.toContain("Workspace")
+    expect(crumbs.textContent).not.toContain("Cycles")
+    expect(one("a", crumbs).textContent).toBe("Atlas web")
+    // The page always shows.
+    expect(one("[aria-current=page]", crumbs).textContent).toBe("WEB-142")
+    click(one("[data-part=crumbs-fold]", crumbs))
+    await tick()
+    expect(
+      Array.from(document.querySelectorAll("[role=menuitem]")).map((e) => e.textContent?.trim()),
+    ).toEqual(["Projects"])
+  })
+
   test("a back control takes the place of the crumbs", () => {
     let back = 0
     const { root } = track(
@@ -1343,6 +1370,36 @@ describe("SidebarHeader", () => {
     click(item as HTMLElement)
     flush()
     expect(calls).toEqual(["fleet", "acme"])
+  })
+
+  test("each level of the path picks whether it is in the row, in the menu or left out", () => {
+    const { root } = track(
+      mount(() => (
+        <SidebarHeader
+          title="build-01"
+          path={[
+            { label: "Acme", show: "hidden", onClick: () => {} },
+            { label: "Infrastructure", show: "fold", onClick: () => {} },
+            { label: "Fleet", onClick: () => {} },
+          ]}
+        />
+      )),
+    )
+    const path = one("[data-part=sidebar-path]", root)
+    expect(path.textContent).not.toContain("Acme")
+    expect(Array.from(path.querySelectorAll("[data-part=sidebar-crumb]")).map((e) => e.textContent)).toEqual([
+      "Fleet",
+    ])
+    expect(path.querySelector("[data-part=sidebar-fold]")).not.toBeNull()
+  })
+
+  test("a path whose levels are all left out shows nothing", () => {
+    const { root } = track(
+      mount(() => (
+        <SidebarHeader title="Personal" path={[{ label: "Rookery", show: "hidden", onClick: () => {} }]} />
+      )),
+    )
+    expect(root.querySelector("[data-part=sidebar-path]")).toBeNull()
   })
 
   test("AppShell hides the sidebar and puts the header across the window when asked", () => {

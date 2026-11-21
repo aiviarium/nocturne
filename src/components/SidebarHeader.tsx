@@ -5,11 +5,17 @@ import { Icon } from "./Icon"
 import { IconButton } from "./IconButton"
 import { DropdownMenu, type MenuEntry } from "./Menu"
 import { SidebarToggle } from "./ShellSidebar"
+import type { PathShow } from "./ViewHeader"
 
 /** A level above the place a drilled-down sidebar shows. */
 export interface SidebarPathItem {
   label: string
   onClick: () => void
+  /**
+   * Whether the level is in the row, in the `…` menu, or left out. Default: the last level is in the row and the
+   * ones before it are in the menu.
+   */
+  show?: PathShow
 }
 
 export interface SidebarHeaderProps {
@@ -23,9 +29,10 @@ export interface SidebarHeaderProps {
    */
   back?: { to: string; onClick: () => void }
   /**
-   * The levels above the place, from the top down, each a button that goes to it: `Fleet` above a host. The row
-   * shows the last one beside the place, as `Fleet / build-01`; the ones before it fold into a `…` menu, so the
-   * place keeps room for its name.
+   * Levels above the place worth showing, from the top down, each a button that goes to it: `Fleet` above a host.
+   * The row shows the last one beside the place, as `Fleet / build-01`; the ones before it fold into a `…` menu, so
+   * the place keeps room for its name. Optional: the view picks what helps and leaves out the rest, such as the
+   * app itself, which back already names.
    */
   path?: SidebarPathItem[]
   /** Makes the title a menu button that switches to another place of the same kind: workspaces, projects. */
@@ -111,42 +118,49 @@ export function SidebarHeader(props: SidebarHeaderProps): JSX.Element {
 
 const FOLD = "nc-sidebar-path-fold:"
 
-/** The levels above the place: the last as a button, the ones before it folded into a menu. */
+/** The levels above the place: those in the row as buttons, the folded ones in a menu before them. */
 function SidebarPath(props: { path: SidebarPathItem[] }): JSX.Element {
-  const folded = () => props.path.slice(0, -1)
-  const last = () => props.path[props.path.length - 1]!
-  return (
-    <span class="nc-sidebar-header__path" data-part="sidebar-path">
-      <Show when={folded().length > 0}>
-        <DropdownMenu
-          label="Levels above"
-          items={folded().map((item, i) => ({ id: `${FOLD}${i}`, label: item.label }))}
-          onSelect={(id) => folded()[Number(id.slice(FOLD.length))]?.onClick()}
-          trigger={(t) => (
-            <button {...t} type="button" class="nc-sidebar-header__crumb" data-part="sidebar-fold">
-              …
-            </button>
-          )}
-        />
-        <span class="nc-sidebar-header__sep" aria-hidden="true">
-          /
-        </span>
-      </Show>
-      <For each={[last()]}>
-        {(item) => (
-          <button
-            type="button"
-            class="nc-sidebar-header__crumb"
-            data-part="sidebar-crumb"
-            onClick={() => item.onClick()}
-          >
-            {item.label}
-          </button>
-        )}
-      </For>
-      <span class="nc-sidebar-header__sep" aria-hidden="true">
-        /
-      </span>
+  const showOf = (item: SidebarPathItem, i: number): PathShow =>
+    item.show ?? (i === props.path.length - 1 ? "inline" : "fold")
+  const folded = () => props.path.filter((item, i) => showOf(item, i) === "fold")
+  const inline = () => props.path.filter((item, i) => showOf(item, i) === "inline")
+  const sep = () => (
+    <span class="nc-sidebar-header__sep" aria-hidden="true">
+      /
     </span>
+  )
+  return (
+    <Show when={folded().length + inline().length > 0}>
+      <span class="nc-sidebar-header__path" data-part="sidebar-path">
+        <Show when={folded().length > 0}>
+          <DropdownMenu
+            label="Levels above"
+            items={folded().map((item, i) => ({ id: `${FOLD}${i}`, label: item.label }))}
+            onSelect={(id) => folded()[Number(id.slice(FOLD.length))]?.onClick()}
+            trigger={(t) => (
+              <button {...t} type="button" class="nc-sidebar-header__crumb" data-part="sidebar-fold">
+                …
+              </button>
+            )}
+          />
+          {sep()}
+        </Show>
+        <For each={inline()}>
+          {(item) => (
+            <>
+              <button
+                type="button"
+                class="nc-sidebar-header__crumb"
+                data-part="sidebar-crumb"
+                onClick={() => item.onClick()}
+              >
+                {item.label}
+              </button>
+              {sep()}
+            </>
+          )}
+        </For>
+      </span>
+    </Show>
   )
 }

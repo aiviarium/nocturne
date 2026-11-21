@@ -21,6 +21,12 @@ import { useViewLayout } from "./ViewLayout"
 // The pin is the frame's: the app provides `ViewChrome`, so a view's "favourite" and the app's pin to the
 // sidebar are one star, shown once, here.
 
+/**
+ * How one part of a path shows: in the row (`inline`), in the `…` menu at its start (`fold`), or not at all
+ * (`hidden`). A view picks it per part, so it keeps the parts that help and leaves out the rest.
+ */
+export type PathShow = "inline" | "fold" | "hidden"
+
 export interface ViewCrumb {
   label: string
   href?: string
@@ -33,6 +39,11 @@ export interface ViewCrumb {
    * of a top bar, a project. It shows a chevron after the label.
    */
   switcher?: { label: string; items: MenuEntry[]; onSelect: (id: string) => void }
+  /**
+   * Whether the crumb is in the row, in the `…` menu, or left out. Default: in the row, or in the menu while it
+   * is among the leading `fold` crumbs. The last crumb is the page and always shows.
+   */
+  show?: PathShow
 }
 
 export interface ViewAction {
@@ -181,8 +192,10 @@ function DesktopViewHeader(props: ViewHeaderProps): JSX.Element {
   const navigate = useNavigate()
   const actions = () => props.actions ?? []
   const fold = () => Math.max(0, Math.min(props.fold ?? 0, (props.crumbs?.length ?? 0) - 1))
-  const folded = () => props.crumbs?.slice(0, fold()) ?? []
-  const path = () => props.crumbs?.slice(fold()) ?? []
+  const showOf = (c: ViewCrumb, i: number, all: ViewCrumb[]): PathShow =>
+    i === all.length - 1 ? "inline" : (c.show ?? (i < fold() ? "fold" : "inline"))
+  const folded = () => props.crumbs?.filter((c, i, all) => showOf(c, i, all) === "fold") ?? []
+  const path = () => props.crumbs?.filter((c, i, all) => showOf(c, i, all) === "inline") ?? []
   /** A folded crumb chosen from its menu: its own handler, else the app's router, else the address. */
   const go = (c: ViewCrumb) => {
     if (c.onClick) return c.onClick()
