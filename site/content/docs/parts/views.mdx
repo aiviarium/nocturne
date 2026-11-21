@@ -26,6 +26,17 @@ The header shows a full path, a stripped path with `fold`, or only a back contro
 With `variant="shell"` it shows in the app's top bar, and `up` adds an arrow to the level above.
 [Navigation](./navigation.mdx) says which to use, and how the columns, bars and drill levels work together.
 
+### Width
+
+Every view in an app uses the same width, so moving between them doesn't move the content.
+The main column fills its width, and its content starts at its left edge.
+Lists, tables, logs, forms and overviews all follow this rule.
+A form lays out its fields in columns inside its sections instead of narrowing the view.
+
+`reading` is only for long prose, such as a document's body or an article.
+It centres the column at a reading width.
+Don't use it for forms or settings: one centred page among full-width pages reads as a different app.
+
 ## Card
 
 A `Card` is a box of content.

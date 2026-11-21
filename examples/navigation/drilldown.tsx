@@ -24,7 +24,7 @@ import type { ExampleMeta } from "../_kit/types"
 
 export const meta: ExampleMeta = {
   title: "Drilling down from projects to an issue",
-  note: "Open Atlas web, then open an issue with its arrow. The sidebar drills down with the main column. Its header row has back once you are inside a project, the place as a switcher, the command palette and the toggle that hides the sidebar, with search under it. Hide the sidebar and the same toggle brings it back from the start of the view's header. Inside a project the sidebar shows the project's places. The frames start at the top, and each view keeps its crumbs and actions in its own header.",
+  note: "Open Atlas web, then open an issue with its arrow. The sidebar drills down with the main column. Its header row has back once you are inside a project, the level above it (Projects), the place as a switcher, the command palette and the toggle that hides the sidebar, with search under it. Hide the sidebar and the same toggle brings it back from the start of the view's header. Inside a project the sidebar shows the project's places. The frames start at the top, and each view keeps its crumbs and actions in its own header.",
   surface: "none",
   frame: "A whole app window: the shared sidebar and a view beside it.",
   height: 560,
@@ -82,6 +82,7 @@ export default function Drilldown() {
       title={inside() ? project.name : "Acme"}
       mark={<Mark name={inside() ? project.name : "Acme"} hue={inside() ? "sky" : "accent"} decorative />}
       back={inside() ? { to: "Projects", onClick: toProjects } : undefined}
+      path={inside() ? [{ label: "Projects", onClick: toProjects }] : undefined}
       switcher={
         inside()
           ? {

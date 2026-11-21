@@ -1315,6 +1315,36 @@ describe("SidebarHeader", () => {
     expect(header.querySelector("input[aria-label=Search]")).not.toBeNull()
   })
 
+  test("shows the level above beside the place and folds the ones before it into a menu", () => {
+    const calls: string[] = []
+    const { root } = track(
+      mount(() => (
+        <SidebarHeader
+          title="build-01"
+          back={{ to: "Fleet", onClick: () => calls.push("back") }}
+          path={[
+            { label: "Acme", onClick: () => calls.push("acme") },
+            { label: "Fleet", onClick: () => calls.push("fleet") },
+          ]}
+        />
+      )),
+    )
+    const path = one("[data-part=sidebar-path]", root)
+    const crumb = one("[data-part=sidebar-crumb]", path)
+    expect(crumb.textContent).toBe("Fleet")
+    click(crumb)
+    expect(calls).toEqual(["fleet"])
+    click(one("[data-part=sidebar-fold]", path))
+    flush()
+    const item = Array.from(document.querySelectorAll("[role=menuitem]")).find((el) =>
+      el.textContent?.includes("Acme"),
+    )
+    expect(item).toBeDefined()
+    click(item as HTMLElement)
+    flush()
+    expect(calls).toEqual(["fleet", "acme"])
+  })
+
   test("AppShell hides the sidebar and puts the header across the window when asked", () => {
     const [hidden, setHidden] = createSignal(false)
     const { root } = track(
