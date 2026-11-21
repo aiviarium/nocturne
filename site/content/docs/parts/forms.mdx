@@ -1,6 +1,6 @@
 ---
 title: Forms
-description: InlineField, the form fields, NumberField, Slider and PropertyList.
+description: InlineField, the form fields, NumberField, Slider, PropertyList and SettingRow.
 ---
 
 ## InlineField
@@ -82,5 +82,19 @@ They are not for exact numbers over a large range.
 - An empty value is an em dash, never "None".
 
 <Example id="property-list/variants" />
+
+## SettingRow
+
+`SettingRow` is one setting of a settings page.
+Its title, description and key are at the left, and its control is at the right.
+
+- Settings pages have no save button. Each change applies at once, and typed text saves when the field loses focus.
+- `modified` draws an accent edge and a "Modified" chip. With `onReset`, the chip resets the value to the one the scope inherits.
+- `inherited` says where a value comes from when the scope shown does not set it, such as "From Server".
+- `locked` marks a value no scope can change.
+- The control is a `Switch`, `Select`, `NumberField` or `TextField` without a label. `control` can be a function that gets the ids of the title and the description, for `aria-labelledby`.
+- Put the rows of one plugin or area in a `Card` with `padding="none"`.
+
+<Example id="setting-row/default" />
 
 <GalleryLink page="text-field" />

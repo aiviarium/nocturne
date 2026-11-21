@@ -20,7 +20,7 @@ Nocturne draws them with its `nc-*` classes and keeps a data-driven API.
 ## Rules
 
 1. **Use a part, don't build one.** A list is `RowList` and `ListRow`, a table `DataTable`, facts `PropertyList`,
-   a figure `Stat`, nothing to show `EmptyState`, a state `State`. If a part lacks something, add a variant to the
+   a figure `Stat`, a setting `SettingRow`, nothing to show `EmptyState`, a state `State`. If a part lacks something, add a variant to the
    part in Nocturne, not a one-off in the app.
 2. **No raw colours, radii or font sizes.** Use the tokens in `src/styles/tokens.css` (`--bg-*`, `--text-*`,
    `--line*`, `--accent*`, `--space-*`, `--radius-*`, `--control-*`, `--row-*`). Nocturne's `lint:tokens` fails on

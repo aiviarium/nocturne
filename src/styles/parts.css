@@ -610,3 +610,27 @@ button.nc-lrow__toggle:hover { color: var(--text-1); }
 .nc-composer__thumb-remove .nc-icon { width: 10px; height: 10px; }
 .nc-composer__thumb-remove:focus-visible { outline: none; box-shadow: var(--focus-ring); }
 :root[data-phone] .nc-composer__thumb-remove::after { content: ""; position: absolute; inset: calc(50% - var(--phone-hit) / 2); }
+
+/* SettingRow: a setting's text at the left and its control at the right, rows a hairline apart. A modified
+   row carries an accent edge, so the changes at a scope show at a glance. */
+.nc-setting { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) minmax(180px, 280px); align-items: center; column-gap: var(--space-4); row-gap: var(--space-2); padding: var(--space-3) var(--nc-pad, var(--space-3)); }
+.nc-setting + .nc-setting { border-top: 1px solid var(--line-soft); }
+.nc-setting[data-modified]::before { content: ""; position: absolute; inset-block: var(--space-2); inset-inline-start: 0; width: 2px; border-radius: var(--radius-sm); background: var(--accent); }
+.nc-setting__text { display: flex; flex-direction: column; gap: var(--space-1); min-width: 0; }
+.nc-setting__head { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); min-width: 0; }
+.nc-setting__category { color: var(--text-3); font-size: var(--nc-type-body); line-height: var(--nc-type-body-line); }
+.nc-setting__category::after { content: " ›"; }
+.nc-setting__title { color: var(--text-1); font-size: var(--nc-type-body); line-height: var(--nc-type-body-line); font-weight: 500; }
+.nc-setting[data-muted] .nc-setting__title { color: var(--text-2); }
+.nc-setting__description { margin: 0; color: var(--text-2); font-size: var(--nc-type-label); line-height: var(--nc-type-label-line); }
+.nc-setting__name { color: var(--text-3); font-family: var(--font-mono); font-size: var(--nc-type-label); line-height: var(--nc-type-label-line); overflow-wrap: anywhere; }
+.nc-setting__inherited { color: var(--text-3); font-size: var(--nc-type-label); line-height: var(--nc-type-label-line); }
+.nc-setting__chip { display: inline-flex; align-items: center; gap: var(--space-1); height: 18px; padding: 0 var(--space-2); border: 1px solid var(--line); border-radius: var(--radius-full); background: none; color: var(--text-2); font: inherit; font-size: var(--nc-type-label); line-height: 1; }
+.nc-setting__chip--reset { border-color: var(--accent-line); color: var(--accent-strong); cursor: pointer; }
+.nc-setting__chip--reset:hover { background: var(--accent-tint); }
+.nc-setting__chip--reset:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.nc-setting__control { display: flex; justify-content: flex-end; min-width: 0; }
+.nc-setting__control > :is(.nc-field, [data-part="text-field"], [data-part="select"], [data-part="number-field"]) { flex: 1; min-width: 0; }
+:root[data-phone] .nc-setting { grid-template-columns: minmax(0, 1fr); }
+:root[data-phone] .nc-setting__control { justify-content: flex-start; }
+:root[data-phone] .nc-setting__control:has(> [data-part="switch"]) { position: absolute; inset-block-start: var(--space-3); inset-inline-end: var(--nc-pad, var(--space-3)); }
