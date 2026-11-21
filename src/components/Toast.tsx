@@ -1,8 +1,16 @@
 import type { JSX } from "@solidjs/web"
-import { createSignal, For, onCleanup, Show } from "solid-js"
-import { Overlay } from "../lib/overlay"
-import { Button } from "./Button"
-import { IconButton } from "./IconButton"
+import {
+  createToaster,
+  ToastAction,
+  ToastClose,
+  ToastDescription,
+  ToastRegion as ToastRegionRoot,
+  Toast as ToastRoot,
+  ToastTitle,
+  type ToastType,
+} from "@ui-sdk/solid/toast"
+import { Show } from "solid-js"
+import { Icon } from "./Icon"
 import { type DotStatus, StatusDot } from "./StatusDot"
 
 export type ToastTone = "neutral" | "success" | "warning" | "danger" | "info"
@@ -24,24 +32,16 @@ export interface ToastItem extends ToastOptions {
   id: number
 }
 
-const [toasts, setToasts] = createSignal<ToastItem[]>([])
+// One queue for the app; ui-sdk's toaster times, stacks, pauses on hover and focus, and announces them.
+const toaster = createToaster()
 let nextId = 1
 
-/** Show a toast. Returns its id for `dismissToast`. */
-export function toast(options: ToastOptions): number {
-  const id = nextId++
-  setToasts((list) => [...list, { ...options, id }])
-  return id
-}
-
-/** Remove a toast. */
-export function dismissToast(id: number): void {
-  setToasts((list) => list.filter((t) => t.id !== id))
-}
-
-/** Remove every toast. */
-export function clearToasts(): void {
-  setToasts([])
+const TYPE: Record<ToastTone, ToastType> = {
+  neutral: "default",
+  success: "success",
+  warning: "warning",
+  danger: "error",
+  info: "info",
 }
 
 const DOT: Record<ToastTone, DotStatus> = {
@@ -52,63 +52,67 @@ const DOT: Record<ToastTone, DotStatus> = {
   info: "ai",
 }
 
-function ToastView(props: { item: ToastItem }): JSX.Element {
-  const duration = () => props.item.duration ?? 5000
-  let timer: ReturnType<typeof setTimeout> | undefined
-  const arm = () => {
-    clearTimeout(timer)
-    if (duration() > 0) timer = setTimeout(() => dismissToast(props.item.id), duration())
-  }
-  arm()
-  onCleanup(() => clearTimeout(timer))
-  return (
-    <div
-      data-part="toast"
-      data-tone={props.item.tone ?? "neutral"}
-      role={props.item.tone === "danger" ? "alert" : "status"}
-      class="nc-toast"
-      onPointerEnter={() => clearTimeout(timer)}
-      onPointerLeave={arm}
-    >
-      <StatusDot status={DOT[props.item.tone ?? "neutral"]} />
-      <span class="nc-toast__text">
-        <span class="nc-toast__title">{props.item.title}</span>
-        <Show when={props.item.description}>
-          <span class="nc-toast__desc nc-meta">{props.item.description}</span>
-        </Show>
-      </span>
-      <Show when={props.item.action}>
-        {(action) => (
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={() => {
-              action().onClick()
-              dismissToast(props.item.id)
-            }}
-          >
-            {action().label}
-          </Button>
-        )}
-      </Show>
-      <IconButton label="Dismiss" icon="close" tooltip={false} onClick={() => dismissToast(props.item.id)} />
-    </div>
-  )
+const toneOf = (type: string | undefined): ToastTone =>
+  (Object.keys(TYPE) as ToastTone[]).find((t) => TYPE[t] === type) ?? "neutral"
+
+/** Show a toast. Returns its id for `dismissToast`. */
+export function toast(options: ToastOptions): number {
+  const id = nextId++
+  const tone = options.tone ?? "neutral"
+  toaster(options.title, {
+    id: String(id),
+    description: options.description,
+    type: TYPE[tone],
+    priority: tone === "danger" ? "assertive" : "polite",
+    duration: options.duration === 0 ? Number.POSITIVE_INFINITY : (options.duration ?? 5000),
+    action: options.action
+      ? { label: options.action.label, onAction: () => options.action?.onClick() }
+      : undefined,
+  })
+  return id
+}
+
+/** Remove a toast. */
+export function dismissToast(id: number): void {
+  toaster.dismiss(String(id))
+}
+
+/** Remove every toast. */
+export function clearToasts(): void {
+  toaster.dismiss()
 }
 
 /** Where toasts appear: bottom right, stacked. Mount once near the app root. */
-export function ToastRegion(props: { anchor?: HTMLElement }): JSX.Element {
+export function ToastRegion(_props: {
+  /** @deprecated The region renders in the top layer where it sits, and keeps that place's theme. */
+  anchor?: HTMLElement
+}): JSX.Element {
   return (
-    <Overlay anchor={props.anchor}>
-      <div
-        data-part="toast-region"
-        role="region"
-        aria-label="Notifications"
-        aria-live="polite"
-        class="nc-toast-region"
-      >
-        <For each={toasts()}>{(item) => <ToastView item={item} />}</For>
-      </div>
-    </Overlay>
+    <ToastRegionRoot
+      toaster={toaster}
+      side="bottom"
+      align="end"
+      data-part="toast-region"
+      aria-label="Notifications"
+      class="nc-toast-region"
+    >
+      {(item) => (
+        <ToastRoot data-part="toast" data-tone={toneOf(item.type)} class="nc-toast">
+          <StatusDot status={DOT[toneOf(item.type)]} />
+          <span class="nc-toast__text">
+            <ToastTitle class="nc-toast__title" />
+            <Show when={item.description}>
+              <ToastDescription class="nc-toast__desc nc-meta" />
+            </Show>
+          </span>
+          <Show when={item.action}>
+            <ToastAction class="nc-btn nc-btn--ghost nc-btn--sm" />
+          </Show>
+          <ToastClose class="nc-icon-btn" aria-label="Dismiss">
+            <Icon name="close" />
+          </ToastClose>
+        </ToastRoot>
+      )}
+    </ToastRegionRoot>
   )
 }
