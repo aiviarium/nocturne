@@ -56,6 +56,8 @@ Rookery's shell and Crow follow one layout. Keep to it:
   actions are at the right, the rarely used ones in its overflow menu. Views don't share a header.
 - **The path shows once.** When the sidebar's head shows where the person is, the app sets `path: () => false` on
   `ViewChrome`: headers keep their actions and leave out the crumbs, which still name the view's tab (`setTitle`).
+  In a `Dock` such a header's actions move into the tab's strip. Never put a toolbar row under a header. Its view
+  switch and the place in the view go in the header's middle, beside the actions.
 - **The account is an `AccountMenu` at the sidebar's foot**, not in a corner of the page. It says who is signed in,
   holds the app's items, the theme as one row of icons and sign out.
 - **The sidebar toggle is the shell's.** Pass `sidebarHidden` and `onSidebarHiddenChange` to `AppShell`. The same

@@ -88,6 +88,16 @@ export interface ViewChromeValue {
 // `null` is "no view chrome above": in Solid 2 a default-less context throws instead of reading as undefined.
 export const ViewChrome = createContext<ViewChromeValue | null>(null)
 
+/**
+ * A place in the bar above a view, such as its tab's strip in a `Dock`. A header with only actions to show (its
+ * path left to the app, no back control, context or middle content) draws them there, so the view has one bar.
+ */
+export interface ViewHeaderSlotValue {
+  mount: () => HTMLElement
+}
+
+export const ViewHeaderSlot = createContext<ViewHeaderSlotValue | null>(null)
+
 export interface ViewHeaderProps {
   /**
    * The path to where the view is. Every crumb but the last is a link; the last is the page. A label that does
@@ -197,6 +207,24 @@ export function ViewHeader(props: ViewHeaderProps): JSX.Element {
     onCleanup(() => setTitle(undefined))
   }
   if (useScreen()) return <PhoneViewHeader {...props} />
+  const slot = useContext(ViewHeaderSlot)
+  const pathShown = () => (props.path ?? chrome?.path?.() ?? true) && present(props.crumbs)
+  const slotted = () =>
+    slot !== null &&
+    props.variant !== "shell" &&
+    !pathShown() &&
+    !props.back &&
+    !present(props.context) &&
+    !present(props.children)
+  if (slot !== null && props.variant !== "shell") {
+    return (
+      <Show when={slotted()} fallback={<DesktopViewHeader {...props} />}>
+        <Portal mount={slot.mount()} ref={(el: HTMLDivElement) => el.classList.add("nc-view-header-slot")}>
+          <DesktopViewHeader {...props} class={cx("nc-view-header--slot", props.class)} />
+        </Portal>
+      </Show>
+    )
+  }
   const shell = useShellHeader()
   if (props.variant === "shell" && shell) {
     onCleanup(shell.claim())
