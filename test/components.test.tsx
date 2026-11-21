@@ -144,41 +144,45 @@ describe("Tabs", () => {
     { id: "backlog", label: "Backlog", disabled: true },
     { id: "all", label: "All issues", count: 4 },
   ]
-  test("selects on click and keeps one tab tabbable", () => {
+  test("segmented tabs are one choice of a few: a click picks one and only it is tabbable", () => {
     const seen: string[] = []
     const { root } = track(
-      mount(() => <Tabs label="Filter" items={items} onChange={(id) => seen.push(id)} />),
+      mount(() => (
+        <Tabs label="Filter" items={items} defaultValue="active" onChange={(id) => seen.push(id)} />
+      )),
     )
-    const tabs = all<HTMLButtonElement>("[role=tab]")
-    expect(tabs.map((t) => t.getAttribute("aria-selected"))).toEqual(["true", "false", "false"])
+    const tabs = all<HTMLButtonElement>("[role=radio]")
+    expect(tabs.map((t) => t.getAttribute("aria-checked"))).toEqual(["true", "false", "false"])
     click(tabs[2] as HTMLElement)
     expect(seen).toEqual(["all"])
-    expect(tabs.map((t) => t.getAttribute("aria-selected"))).toEqual(["false", "false", "true"])
-    expect(tabs.map((t) => t.getAttribute("tabindex"))).toEqual(["-1", "-1", "0"])
-    expect(root.querySelector("[role=tablist]")?.getAttribute("aria-label")).toBe("Filter")
+    expect(tabs.map((t) => t.getAttribute("aria-checked"))).toEqual(["false", "false", "true"])
+    expect(tabs[0]?.getAttribute("tabindex")).toBe("-1")
+    expect(tabs[2]?.getAttribute("tabindex")).toBe("0")
+    expect(root.querySelector("[data-part=tabs]")?.getAttribute("aria-label")).toBe("Filter")
   })
-  test("arrow keys move and select, skipping disabled tabs; Home and End jump", () => {
+  test("underline tabs: arrow keys move and select; a disabled tab takes focus but not the selection", async () => {
     track(mount(() => <Tabs label="Filter" items={items} variant="underline" />))
     const tabs = all<HTMLButtonElement>("[role=tab]")
     tabs[0]?.focus()
     press(tabs[0] as HTMLElement, "ArrowRight")
+    expect(document.activeElement).toBe(tabs[1])
+    expect(tabs[0]?.getAttribute("aria-selected")).toBe("true")
+    press(tabs[1] as HTMLElement, "ArrowRight")
     expect(document.activeElement).toBe(tabs[2])
     expect(tabs[2]?.getAttribute("aria-selected")).toBe("true")
-    press(tabs[2] as HTMLElement, "ArrowRight")
+    press(tabs[2] as HTMLElement, "Home")
     expect(document.activeElement).toBe(tabs[0])
     press(tabs[0] as HTMLElement, "End")
     expect(document.activeElement).toBe(tabs[2])
-    press(tabs[2] as HTMLElement, "Home")
-    expect(document.activeElement).toBe(tabs[0])
   })
   test("is controlled when value is set", () => {
     const [value, setValue] = createSignal("all")
     track(mount(() => <Tabs label="Filter" items={items} value={value()} onChange={setValue} />))
-    const tabs = all<HTMLButtonElement>("[role=tab]")
-    expect(tabs[2]?.getAttribute("aria-selected")).toBe("true")
+    const tabs = all<HTMLButtonElement>("[role=radio]")
+    expect(tabs[2]?.getAttribute("aria-checked")).toBe("true")
     click(tabs[0] as HTMLElement)
     expect(value()).toBe("active")
-    expect(tabs[0]?.getAttribute("aria-selected")).toBe("true")
+    expect(tabs[0]?.getAttribute("aria-checked")).toBe("true")
   })
 })
 

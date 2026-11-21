@@ -435,42 +435,36 @@ describe("TabDropFrame", () => {
 })
 
 describe("TabPanel", () => {
-  test("shows its content only while its tab is selected, labelled by that tab", () => {
+  test("inside underline Tabs, shows its content only while its tab is selected, labelled by that tab", async () => {
     const [value, setValue] = createSignal("one")
     const { root } = track(
       mount(() => (
-        <>
-          <Tabs
-            label="Sections"
-            idPrefix="t"
-            value={value()}
-            onChange={setValue}
-            items={[
-              { id: "one", label: "One" },
-              { id: "two", label: "Two" },
-            ]}
-          />
-          <TabPanel idPrefix="t" id="one" value={value()}>
-            First
-          </TabPanel>
-          <TabPanel idPrefix="t" id="two" value={value()}>
-            Second
-          </TabPanel>
-        </>
+        <Tabs
+          label="Sections"
+          variant="underline"
+          value={value()}
+          onChange={setValue}
+          items={[
+            { id: "one", label: "One" },
+            { id: "two", label: "Two" },
+          ]}
+        >
+          <TabPanel id="one">First</TabPanel>
+          <TabPanel id="two">Second</TabPanel>
+        </Tabs>
       )),
     )
-    const [first, second] = all("[data-part=tab-panel]").filter((el) => root.contains(el))
-    expect(first!.getAttribute("role")).toBe("tabpanel")
-    expect(document.getElementById(first!.getAttribute("aria-labelledby") as string)?.textContent).toBe("One")
-    expect(first!.hidden).toBe(false)
-    expect(first!.textContent).toBe("First")
-    expect(second!.hidden).toBe(true)
-    expect(second!.textContent).toBe("")
+    const panels = () => all("[data-part=tab-panel]").filter((el) => root.contains(el) && !el.hidden)
+    expect(panels()).toHaveLength(1)
+    const first = panels()[0]!
+    expect(first.getAttribute("role")).toBe("tabpanel")
+    expect(document.getElementById(first.getAttribute("aria-labelledby") as string)?.textContent).toBe("One")
+    expect(first.textContent).toBe("First")
     click(all("[role=tab]")[1]!)
-    expect(first!.hidden).toBe(true)
-    expect(first!.textContent).toBe("")
-    expect(second!.hidden).toBe(false)
-    expect(second!.textContent).toBe("Second")
+    flush()
+    await tick()
+    expect(value()).toBe("two")
+    expect(panels().map((p) => p.textContent)).toEqual(["Second"])
   })
 })
 

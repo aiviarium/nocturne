@@ -14,7 +14,6 @@ export default function UnderlineTabs() {
       <Tabs
         variant="underline"
         label="Inbox"
-        idPrefix="inbox"
         value={section()}
         onChange={setSection}
         items={[
@@ -24,19 +23,20 @@ export default function UnderlineTabs() {
           { id: "comments", label: "Comments" },
           { id: "archived", label: "Archived", disabled: true },
         ]}
-      />
-      <TabPanel idPrefix="inbox" id="all" value={section()}>
-        <span class="nc-muted">Everything addressed to you, newest first.</span>
-      </TabPanel>
-      <TabPanel idPrefix="inbox" id="mentions" value={section()}>
-        <span class="nc-muted">Places where someone mentioned you.</span>
-      </TabPanel>
-      <TabPanel idPrefix="inbox" id="assignments" value={section()}>
-        <span class="nc-muted">Work assigned to you.</span>
-      </TabPanel>
-      <TabPanel idPrefix="inbox" id="comments" value={section()}>
-        <span class="nc-muted">Replies on threads you follow.</span>
-      </TabPanel>
+      >
+        <TabPanel id="all">
+          <span class="nc-muted">Everything addressed to you, newest first.</span>
+        </TabPanel>
+        <TabPanel id="mentions">
+          <span class="nc-muted">Places where someone mentioned you.</span>
+        </TabPanel>
+        <TabPanel id="assignments">
+          <span class="nc-muted">Work assigned to you.</span>
+        </TabPanel>
+        <TabPanel id="comments">
+          <span class="nc-muted">Replies on threads you follow.</span>
+        </TabPanel>
+      </Tabs>
     </div>
   )
 }

@@ -79,8 +79,8 @@ textarea.nc-textarea { width: 100%; height: auto; min-height: calc(var(--control
 /* Tabs and navigation entries sit edge to edge in strips and lists that clip: their ring is inside. */
 .nc-tab:focus-visible, .nc-nav-item:focus-visible { outline: none; box-shadow: var(--focus-ring-inset); }
 .nc-tab { border-radius: var(--radius-xs); }
-.nc-seg__item[disabled], .nc-tab[disabled] { color: var(--text-4); cursor: not-allowed; }
-.nc-seg__item:not([aria-selected="true"]):hover { color: var(--text-1); }
+.nc-seg__item:is([disabled], [data-disabled]), .nc-tab:is([disabled], [data-disabled]) { color: var(--text-4); cursor: not-allowed; }
+.nc-seg__item:not([aria-selected="true"], [data-checked]):hover { color: var(--text-1); }
 .nc-tab:not([aria-selected="true"]):hover { color: var(--text-1); }
 button.nc-nav-item { display: flex; width: 100%; gap: 10px; justify-content: flex-start; border: 0; background: transparent; font: inherit; text-align: left; cursor: pointer; }
 .nc-nav-item .nc-count { margin-left: auto; }
@@ -102,8 +102,8 @@ button.nc-sidebar-header__place--menu { justify-content: flex-start; cursor: poi
 .nc-tabstrip__actions { display: flex; align-items: center; gap: var(--space-1); margin-left: auto; padding-left: var(--space-2); flex: none; }
 /* Tabs shrink to a minimum width, then the strip scrolls. Each tab sits in its tooltip's anchor, which is the flex item. */
 /* A tab is as wide as its title needs, up to a limit; when the strip is full the tabs shrink before it scrolls. */
-.nc-tabstrip__tabs > .nc-tooltip-anchor { display: flex; flex: 0 1 auto; min-width: 96px; max-width: 224px; }
-.nc-tabstrip__tabs > .nc-tooltip-anchor:has([data-pinned]) { flex: none; min-width: 0; max-width: none; }
+.nc-tabstrip__tabs > .nc-tabstrip__tab { flex: 0 1 auto; min-width: 96px; max-width: 224px; }
+.nc-tabstrip__tabs > .nc-tabstrip__tab[data-pinned] { flex: none; min-width: 0; max-width: none; }
 .nc-tabstrip__tab { position: relative; display: flex; align-items: center; flex: 1; min-width: 0; height: var(--control-md); border-radius: var(--radius-sm); color: var(--text-2); }
 .nc-tabstrip__tab:hover { background: var(--bg-3); color: var(--text-1); }
 .nc-tabstrip__tab[data-active] { background: var(--bg-4); color: var(--text-1); }
@@ -652,9 +652,9 @@ button.nc-effort:focus-visible { outline: none; box-shadow: var(--focus-ring); }
 .nc-view-layout { position: relative; display: flex; height: 100%; min-height: 0; min-width: 0; }
 .nc-view-layout[data-dragging] { cursor: col-resize; user-select: none; }
 .nc-view-layout__sidebar { position: relative; display: flex; flex-direction: column; flex: none; box-sizing: border-box; width: var(--nc-view-sidebar, 240px); min-height: 0; overflow: visible; background: var(--bg-1); }
-.nc-view-layout__sidebar > :not(.nc-tooltip-anchor) { min-height: 0; overflow: auto; }
+.nc-view-layout__sidebar > :not(.nc-tooltip-anchor, [role="tooltip"]) { min-height: 0; overflow: auto; }
 /* The content scrolls inside its own padding, so a selected item's fill is an inset pill, as in the shell's sidebar. */
-.nc-view-layout__sidebar > :not(.nc-tooltip-anchor):not(.nc-view-layout__over-head) { box-sizing: border-box; padding: var(--space-2); }
+.nc-view-layout__sidebar > :not(.nc-tooltip-anchor, [role="tooltip"]):not(.nc-view-layout__over-head) { box-sizing: border-box; padding: var(--space-2); }
 .nc-view-layout__sidebar--over { position: absolute; inset: 0 auto 0 0; z-index: 30; max-width: 85%; border-right: 1px solid var(--line); box-shadow: var(--shadow-overlay); }
 .nc-view-layout__rail { display: flex; flex: none; flex-direction: column; align-items: center; box-sizing: border-box; width: 36px; padding-top: var(--space-1); border-right: 1px solid var(--line-soft); }
 .nc-view-layout__activity { display: flex; flex: none; flex-direction: column; align-items: center; gap: var(--space-1); box-sizing: border-box; width: 36px; padding: var(--space-1) 0; border-right: 1px solid var(--line-soft); }
@@ -729,3 +729,4 @@ button.nc-effort:focus-visible { outline: none; box-shadow: var(--focus-ring); }
 .nc-log__line--state .nc-log__text { color: var(--accent-text); }
 .nc-log__empty { color: var(--text-3); }
 .nc-log__jump { position: absolute; right: var(--space-3); bottom: var(--space-3); box-shadow: var(--shadow-overlay); }
+.nc-tabs ~ [data-part="tab-panel"] { margin-top: var(--space-3); }
