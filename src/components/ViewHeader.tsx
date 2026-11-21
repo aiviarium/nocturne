@@ -1,6 +1,6 @@
 import type { JSX } from "@solidjs/web"
 import { Portal } from "@solidjs/web"
-import { createContext, For, onCleanup, Show, useContext } from "solid-js"
+import { createContext, createEffect, For, onCleanup, Show, useContext } from "solid-js"
 import { aria } from "../lib/aria"
 import { cx } from "../lib/cx"
 import { useLinkClick, useNavigate } from "../lib/link"
@@ -67,11 +67,16 @@ export interface ViewAction {
   count?: number
 }
 
-/** What the app tells a view's header: the pin of what the view shows. */
+/** What the app tells a view's header, and hears from it: the pin of what the view shows, and the view's title. */
 export interface ViewChromeValue {
   pinnable: () => boolean
   pinned: () => boolean
   togglePin: () => void
+  /**
+   * The header names the view here: its last crumb, and undefined when it has none or once it goes. The app shows
+   * it where the view is named, such as the view's tab.
+   */
+  setTitle?: (title: string | undefined) => void
 }
 
 // `null` is "no view chrome above": in Solid 2 a default-less context throws instead of reading as undefined.
@@ -172,6 +177,17 @@ function PhoneViewHeader(props: ViewHeaderProps): JSX.Element {
 }
 
 export function ViewHeader(props: ViewHeaderProps): JSX.Element {
+  const chrome = useContext(ViewChrome)
+  if (chrome?.setTitle) {
+    const setTitle = chrome.setTitle
+    createEffect(
+      () => props.crumbs?.at(-1)?.label,
+      (title) => {
+        setTitle(title)
+      },
+    )
+    onCleanup(() => setTitle(undefined))
+  }
   if (useScreen()) return <PhoneViewHeader {...props} />
   const shell = useShellHeader()
   if (props.variant === "shell" && shell) {

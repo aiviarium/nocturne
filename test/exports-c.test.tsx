@@ -26,6 +26,7 @@ import {
   ToolStep,
   ToolSteps,
   Tooltip,
+  ViewChrome,
   ViewHeader,
   ViewLayout,
   Widget,
@@ -637,6 +638,34 @@ describe("ViewHeader", () => {
   test("renders nothing when it has nothing to say", () => {
     const { root } = track(mount(() => <ViewHeader />))
     expect(root.querySelector("[data-part=view-header]")).toBeNull()
+  })
+
+  test("names its view to the app's chrome by its last crumb, and stops when it goes", () => {
+    const titles: Array<string | undefined> = []
+    const [page, setPage] = createSignal("Guide")
+    const [shown, setShown] = createSignal(true)
+    track(
+      mount(() => (
+        <ViewChrome
+          value={{
+            pinnable: () => false,
+            pinned: () => false,
+            togglePin: () => {},
+            setTitle: (title) => titles.push(title),
+          }}
+        >
+          <Show when={shown()}>
+            <ViewHeader crumbs={[{ label: "Docs", href: "/docs" }, { label: page() }]} />
+          </Show>
+        </ViewChrome>
+      )),
+    )
+    flush()
+    setPage("Reference")
+    flush()
+    setShown(false)
+    flush()
+    expect(titles).toEqual(["Guide", "Reference", undefined])
   })
 
   test("shows the crumbs and runs actions, with the primary one last", () => {
