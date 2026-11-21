@@ -11,6 +11,8 @@ import {
   dockSplit,
   dockSync,
   dockTabs,
+  ViewChrome,
+  ViewHeader,
 } from "../src"
 import { click, mount, one } from "./dom"
 
@@ -120,5 +122,42 @@ describe("Dock", () => {
     expect(one("[data-part=frame][data-focused]", dock).getAttribute("data-dock-frame")).toBe(
       layout().focused,
     )
+  })
+})
+
+describe("Dock and a view's header", () => {
+  test("puts a header with only actions in its tab's strip, and shows the shown tab's alone", () => {
+    const [layout, setLayout] = createSignal<DockLayout>(dockLayout(["one", "two"]))
+    const [path, setPath] = createSignal(false)
+    const ran: string[] = []
+    const m = mount(() => (
+      <ViewChrome value={{ pinnable: () => false, pinned: () => false, togglePin: () => {}, path }}>
+        <Dock label="Pages" layout={layout()} onLayoutChange={setLayout} tab={(id) => ({ label: id })}>
+          {(id) => (
+            <ViewHeader
+              crumbs={[{ label: "Home", href: "/" }, { label: id }]}
+              actions={[{ id: `act-${id}`, label: `Act ${id}`, icon: "plus", onClick: () => ran.push(id) }]}
+            />
+          )}
+        </Dock>
+      </ViewChrome>
+    ))
+    cleanup.push(m.dispose)
+    flush()
+    const dock = one("[data-part=dock]", m.root)
+    const strip = one("[data-part=tab-strip]", dock)
+    const slots = Array.from(strip.querySelectorAll<HTMLElement>("[data-part=dock-header]"))
+    expect(slots).toHaveLength(2)
+    expect(slots.filter((slot) => !slot.hidden)).toHaveLength(1)
+    // No header row in the pane: the actions are in the strip.
+    expect(dock.querySelector("[data-dock-tab] [data-part=view-header]")).toBeNull()
+    click(one("[data-action=act-one]", strip))
+    expect(ran).toEqual(["one"])
+
+    // A header that shows its path is the pane's own row again.
+    setPath(true)
+    flush()
+    expect(one("[data-dock-tab=one] [data-part=view-header]", dock).textContent).toContain("one")
+    expect(strip.querySelector("[data-action=act-one]")).toBeNull()
   })
 })

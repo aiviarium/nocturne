@@ -22,6 +22,9 @@ Never repeat it as a heading.
 The header passes its last crumb to `setTitle` on the app's `ViewChrome`, and the app shows it on the tab.
 An app whose sidebar shows where the person is sets `path` to false on its `ViewChrome`.
 Headers then leave out their crumbs and keep their actions, and a header that needs its path passes `path`.
+In a `Dock`, a header with only actions puts them at the end of its tab's strip, so the view has one bar.
+A header with a back control, context or content in its middle stays a row of the view.
+A view switch goes in its middle, not in a toolbar under it.
 
 <DoDont do="design/compact-header" dont="design/inflated-header" />
 

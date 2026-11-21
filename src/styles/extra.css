@@ -164,6 +164,11 @@ button.nc-sidebar-header__place--menu { justify-content: flex-start; cursor: poi
 .nc-dock__panes { position: relative; display: flex; flex: 1; min-width: 0; min-height: 0; }
 .nc-dock__pane { position: absolute; inset: 0; display: flex; flex-direction: column; min-width: 0; min-height: 0; overflow: hidden; }
 .nc-dock__pane[hidden] { display: none; }
+/* The shown tab's header, at the end of its frame's strip: the view's actions, then the frame's split buttons. */
+.nc-dock__header { display: flex; align-items: center; }
+.nc-dock__header[hidden], .nc-dock__header:empty { display: none; }
+.nc-view-header-slot { display: contents; }
+.nc-view-header.nc-view-header--slot { min-height: 0; padding: 0; border-bottom: 0; background: none; }
 .nc-dropframe { position: relative; display: flex; flex-direction: column; flex: 1; min-width: 0; min-height: 0; }
 .nc-dropframe > .nc-frame { flex: 1; }
 .nc-dropframe__zones { position: absolute; inset: var(--header) 0 0 0; z-index: 5; }
