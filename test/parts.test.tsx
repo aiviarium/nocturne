@@ -385,7 +385,8 @@ describe("IconButton", () => {
     const b = one("button", root)
     expect(b.getAttribute("aria-label")).toBe("Archive")
     expect(b.classList.contains("nc-icon-btn--sm")).toBe(true)
-    expect(b.closest("[data-part=tooltip-anchor]")).not.toBeNull()
+    // The button is the tooltip's trigger: the tooltip names it.
+    expect(b.getAttribute("data-slot")).toBe("tooltip-trigger")
   })
 
   test("with an href it is a labelled link that runs its click handler", () => {

@@ -1,15 +1,15 @@
 import type { JSX } from "@solidjs/web"
+import { createMenuController, MenuContent, MenuContextTrigger, Menu as MenuRoot } from "@ui-sdk/solid/menu"
 import { createSignal, For, omit, onCleanup, Show } from "solid-js"
 import { aria } from "../lib/aria"
 import { cx } from "../lib/cx"
 import { useLinkClick } from "../lib/link"
-import { overlayHost } from "../lib/overlay"
+import { createOverlayRoot } from "../lib/overlay"
 import { usePhone } from "../lib/phone"
 import { createRowSwipe } from "../lib/swipe"
 import { Icon, type IconName } from "./Icon"
-import { Menu, type MenuEntry } from "./Menu"
-import { Popover } from "./Popover"
-import { Sheet } from "./Sheet"
+import { Menu, MenuEntries, type MenuEntry, usePresentation } from "./Menu"
+import { OpenLayer } from "./Popover"
 
 // Grouped inset lists (iOS's inset grouped table): rounded groups of rows on the canvas, a small heading over
 // each group and an optional note under it. For settings, pickers and the phone's lists. A row can carry swipe
@@ -298,7 +298,8 @@ export function SwipeButton(props: { action: SwipeAction; close: () => void }): 
  */
 export function RowMenu(props: {
   at: { x: number; y: number }
-  phone: boolean
+  /** Unused: ui-sdk presents the menu as a sheet on a small touch screen by itself. */
+  phone?: boolean
   label: string
   items: MenuEntry[]
   onClose: () => void
@@ -306,36 +307,25 @@ export function RowMenu(props: {
   origin?: Element
   returnFocus?: () => HTMLElement | undefined
 }): JSX.Element {
-  const anchor = document.createElement("span")
-  anchor.setAttribute("aria-hidden", "true")
-  anchor.style.cssText = `position:fixed;left:${props.at.x}px;top:${props.at.y}px;width:0;height:0;pointer-events:none`
-  // In the themed root of the row, so the menu takes the row's theme and accent (a docs example's, a frame's).
-  overlayHost(props.origin).appendChild(anchor)
+  // In the themed root of the row, so the menu takes the row's theme and accent (a docs example's, a frame's), and
+  // not inside the row, which may be a table's.
+  const host = createOverlayRoot(props.origin)
   onCleanup(() => {
-    anchor.remove()
     // Focus left with the menu (Escape, or a click on nothing): back to the row.
     const back = props.returnFocus?.()
     const now = document.activeElement
     if (back?.isConnected && (!now || now === document.body)) queueMicrotask(() => back.focus())
   })
   return (
-    <Show
-      when={props.phone}
-      fallback={
-        <Popover open anchor={anchor} placement="bottom-start" onClose={props.onClose}>
-          <Menu
-            label={props.label}
-            items={props.items}
-            onSelect={props.onSelect}
-            onRequestClose={props.onClose}
-          />
-        </Popover>
-      }
-    >
-      <Sheet open label={props.label} detents={["fit"]} flush onClose={props.onClose}>
-        <Menu label={props.label} items={props.items} onSelect={props.onSelect} class="nc-menu--sheet" />
-      </Sheet>
-    </Show>
+    <Menu
+      open
+      anchor={props.at}
+      label={props.label}
+      items={props.items}
+      container={host}
+      onSelect={props.onSelect}
+      onClose={props.onClose}
+    />
   )
 }
 
@@ -350,74 +340,41 @@ export function ContextMenu(props: {
   children: JSX.Element
   class?: string
 }): JSX.Element {
-  const phone = usePhone()
-  const [at, setAt] = createSignal<{ x: number; y: number } | null>(null)
-  let timer: ReturnType<typeof setTimeout> | undefined
-  let start: { x: number; y: number } | null = null
-  let fired = false
-  const items = () => (at() ? props.items() : [])
-  let area!: HTMLDivElement
+  const [open, setOpen] = createSignal(false)
+  const presentation = usePresentation()
+  const menu = createMenuController()
   return (
-    <div
-      data-part="context-area"
-      class={cx("nc-context-area", props.class)}
-      onContextMenu={(e) => {
-        e.preventDefault()
-        setAt({ x: e.clientX, y: e.clientY })
-      }}
-      onKeyDown={(e) => {
-        if (e.key === "ContextMenu" || (e.shiftKey && e.key === "F10")) {
-          e.preventDefault()
-          const r = (e.target as HTMLElement).getBoundingClientRect()
-          setAt({ x: r.left + 8, y: r.bottom })
-        }
-      }}
-      onPointerDown={(e) => {
-        if (e.pointerType === "mouse") return
-        fired = false
-        start = { x: e.clientX, y: e.clientY }
-        timer = setTimeout(() => {
-          fired = true
-          setAt(start)
-        }, 500)
-      }}
-      onPointerMove={(e) => {
-        if (start && Math.hypot(e.clientX - start.x, e.clientY - start.y) > 8) clearTimeout(timer)
-      }}
-      onPointerUp={() => clearTimeout(timer)}
-      onPointerCancel={() => clearTimeout(timer)}
-      ref={(el) => {
-        area = el
-        el.addEventListener(
-          "click",
-          (e) => {
-            if (fired) {
-              e.preventDefault()
-              e.stopPropagation()
-              fired = false
-            }
-          },
-          true,
-        )
-      }}
+    <MenuRoot
+      controller={menu}
+      presentation={presentation()}
+      onOpenChange={setOpen}
+      onAction={(value) => props.onSelect(value)}
     >
-      {props.children}
-      <Show when={at()}>
-        {(p) => (
-          <RowMenu
-            at={p()}
-            phone={phone()}
-            label={props.label ?? "Actions"}
-            items={items()}
-            origin={area}
-            onClose={() => setAt(null)}
-            onSelect={(id) => {
-              setAt(null)
-              props.onSelect(id)
-            }}
-          />
-        )}
-      </Show>
-    </div>
+      <MenuContextTrigger
+        controller={menu}
+        data-part="context-area"
+        class={cx("nc-context-area", props.class)}
+        onKeyDown={(event: KeyboardEvent) => {
+          // The keys open it from any control inside the area, at that control.
+          if (event.key === "ContextMenu" || (event.shiftKey && event.key === "F10")) {
+            event.preventDefault()
+            void menu.open({ anchor: event.target as Element })
+          }
+        }}
+      >
+        {props.children}
+      </MenuContextTrigger>
+      <MenuContent
+        data-part="menu"
+        aria-label={props.label ?? "Actions"}
+        class="nc-menu"
+        collisionPadding={8}
+      >
+        <OpenLayer />
+        <Show when={open()}>
+          <MenuEntries items={props.items()} onSelect={props.onSelect} />
+        </Show>
+      </MenuContent>
+    </MenuRoot>
   )
 }

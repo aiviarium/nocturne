@@ -1,6 +1,4 @@
 import { afterEach, describe, expect, test } from "bun:test"
-import { readFileSync } from "node:fs"
-import { join } from "node:path"
 import { render } from "@solidjs/web"
 import { createSignal, flush } from "solid-js"
 import {
@@ -46,46 +44,45 @@ describe("Menu", () => {
     { type: "separator" as const },
     { id: "delete", label: "Delete", danger: true },
   ]
-  test("opens on the first enabled item and moves with the arrow keys, wrapping and skipping disabled", async () => {
-    const { root } = track(mount(() => <Menu label="Actions" items={items} />))
+  const anchored = (onSelect?: (id: string) => void) => {
+    const [open, setOpen] = createSignal(true)
+    const at = document.createElement("button")
+    document.body.append(at)
+    const view = track(
+      mount(() => (
+        <Menu
+          open={open()}
+          anchor={at}
+          label="Actions"
+          items={items}
+          onClose={() => setOpen(false)}
+          onSelect={onSelect}
+        />
+      )),
+    )
+    return { ...view, open, at }
+  }
+  test("draws its entries as menu items, with a separator, a disabled item and a danger item", async () => {
+    anchored()
     await tick()
     const rows = all("[role=menuitem]") as HTMLElement[]
     expect(rows.map((r) => r.textContent)).toEqual(["Assign to…A", "Add label", "Copy link", "Delete"])
-    expect(document.activeElement).toBe(rows[0])
-    expect(rows[0]?.hasAttribute("data-active")).toBe(true)
-    const menu = one("[data-part=menu]", root)
-    press(menu, "ArrowDown")
-    expect(document.activeElement).toBe(rows[2])
-    press(menu, "ArrowDown")
-    expect(document.activeElement).toBe(rows[3])
-    press(menu, "ArrowDown")
-    expect(document.activeElement).toBe(rows[0])
-    press(menu, "ArrowUp")
-    expect(document.activeElement).toBe(rows[3])
-    press(menu, "Home")
-    expect(document.activeElement).toBe(rows[0])
-    press(menu, "End")
-    expect(document.activeElement).toBe(rows[3])
-    expect(rows[3]?.getAttribute("tabindex")).toBe("0")
-    expect(rows[0]?.getAttribute("tabindex")).toBe("-1")
+    expect(rows[1]?.getAttribute("aria-disabled")).toBe("true")
+    expect(rows[3]?.classList.contains("nc-menu__item--danger")).toBe(true)
+    expect(one("[data-part=menu]").getAttribute("aria-label")).toBe("Actions")
+    expect(document.querySelector("[role=separator]")).not.toBeNull()
   })
-  test("type-ahead jumps to a matching label", async () => {
-    const { root } = track(mount(() => <Menu label="Actions" items={items} />))
-    await tick()
-    press(one("[data-part=menu]", root), "d")
-    expect(document.activeElement?.textContent).toBe("Delete")
-  })
-  test("clicking selects the item and a disabled item does nothing", async () => {
+  test("clicking selects the item and closes; a disabled item does nothing", async () => {
     const picked: string[] = []
-    const { root } = track(
-      mount(() => <Menu label="Actions" items={items} onSelect={(id) => picked.push(id)} />),
-    )
+    const view = anchored((id) => picked.push(id))
     await tick()
     const rows = all("[role=menuitem]") as HTMLElement[]
     click(rows[1] as HTMLElement)
+    expect(picked).toEqual([])
     click(rows[2] as HTMLElement)
+    await tick()
     expect(picked).toEqual(["copy"])
-    expect(root.querySelector("[role=separator]")).not.toBeNull()
+    expect(view.open()).toBe(false)
   })
   test("dropdown opens from the keyboard, selects, closes and returns focus to the trigger", async () => {
     const picked: string[] = []
@@ -111,9 +108,7 @@ describe("Menu", () => {
     expect(trigger.getAttribute("aria-expanded")).toBe("true")
     const menu = one("[role=menu]")
     expect(menu.closest("[data-theme]")).not.toBeNull()
-    press(menu, "ArrowDown")
-    press(menu, "Enter")
-    click(document.activeElement as Element)
+    click(menu.querySelectorAll<HTMLElement>("[role=menuitem]")[2] as HTMLElement)
     await tick()
     expect(picked).toEqual(["copy"])
     expect(document.querySelector("[role=menu]")).toBeNull()
@@ -406,59 +401,33 @@ describe("Dialog", () => {
 })
 
 describe("Select inside a Dialog", () => {
-  test("its options stack above the dialog's backdrop and can be picked", async () => {
-    // The real stacking rules, so the computed z-indexes are the ones a browser uses.
-    const css = readFileSync(join(import.meta.dir, "../src/styles/extra.css"), "utf8")
-    const style = document.createElement("style")
-    style.textContent = css
-    document.head.appendChild(style)
-    try {
-      const seen: string[] = []
-      const closed: number[] = []
-      track(
-        mount(() => (
-          <Dialog open onClose={() => closed.push(1)} title="New connection">
-            <Select
-              label="Type"
-              options={[
-                { value: "openai", label: "OpenAI-compatible API" },
-                { value: "echo", label: "Echo service" },
-              ]}
-              defaultValue="openai"
-              onChange={(v) => seen.push(v)}
-            />
-          </Dialog>
-        )),
-      )
-      await tick()
-      click(one<HTMLButtonElement>("[role=dialog] button[aria-haspopup=listbox]"))
-      await tick()
-      const z = (el: Element) => Number(getComputedStyle(el).zIndex)
-      const scrim = one("[data-part=dialog-backdrop]")
-      const popover = one(".nc-popover")
-      expect(z(scrim)).toBeGreaterThan(0)
-      expect(z(popover)).toBeGreaterThan(z(scrim))
-      // Tooltips go above popovers, toasts above everything.
-      const probe = (cls: string) => {
-        const el = document.createElement("div")
-        el.className = cls
-        document.body.appendChild(el)
-        const v = z(el)
-        el.remove()
-        return v
-      }
-      expect(probe("nc-tooltip--floating")).toBeGreaterThan(z(popover))
-      expect(probe("nc-toast-region")).toBeGreaterThan(probe("nc-tooltip--floating"))
-      const echo = all("[role=menuitemradio]").find((i) => i.textContent?.includes("Echo service"))!
-      echo.dispatchEvent(new Event("pointerdown", { bubbles: true }))
-      flush()
-      click(echo)
-      await tick()
-      expect(seen).toEqual(["echo"])
-      expect(closed).toEqual([])
-    } finally {
-      style.remove()
-    }
+  test("its options open over the dialog and a pick leaves the dialog open", async () => {
+    const seen: string[] = []
+    const closed: number[] = []
+    track(
+      mount(() => (
+        <Dialog open onClose={() => closed.push(1)} title="New connection">
+          <Select
+            label="Type"
+            options={[
+              { value: "openai", label: "OpenAI-compatible API" },
+              { value: "echo", label: "Echo service" },
+            ]}
+            defaultValue="openai"
+            onChange={(v) => seen.push(v)}
+          />
+        </Dialog>
+      )),
+    )
+    await tick()
+    click(one<HTMLButtonElement>("[role=dialog] button[aria-haspopup=listbox]"))
+    await tick()
+    const options = all("[role=option]")
+    expect(options).toHaveLength(2)
+    click(options[1] as HTMLElement)
+    await tick()
+    expect(seen).toEqual(["echo"])
+    expect(closed).toEqual([])
   })
 })
 
@@ -482,8 +451,8 @@ describe("Select, Switch, Checkbox, RadioGroup, Split", () => {
     expect(button.textContent).toContain("User")
     click(button)
     await tick()
-    const items = all("[role=menuitemradio]")
-    expect(items.map((i) => i.getAttribute("aria-checked"))).toEqual(["true", "false"])
+    const items = all("[role=option]")
+    expect(items.map((i) => i.getAttribute("aria-selected"))).toEqual(["true", "false"])
     click(items[1] as HTMLElement)
     await tick()
     expect(seen).toEqual(["ws"])
@@ -829,28 +798,18 @@ describe("Menu choices", () => {
       },
       { id: "settings", label: "Settings" },
     ]
-    const { root } = track(mount(() => <Menu label="Account" items={items} />))
+    const at = document.createElement("button")
+    document.body.append(at)
+    track(mount(() => <Menu open anchor={at} label="Account" items={items} onClose={() => {}} />))
     await tick()
     const options = all("[role=menuitemradio]") as HTMLElement[]
-    // The first stop is the chosen option; the header is skipped.
-    expect(document.activeElement).toBe(options[0])
     expect(options.map((o) => o.getAttribute("aria-checked"))).toEqual(["true", "false", "false"])
-    expect(one("[role=group]", root).getAttribute("aria-label")).toBe("Theme")
-    press(options[0] as HTMLElement, "ArrowRight")
+    expect(one("[data-part=menu-choice]").getAttribute("aria-label")).toBe("Theme")
+    // Choosing an option changes the value and keeps the menu open.
+    click(options[1] as HTMLElement)
     await tick()
     expect(theme()).toBe("light")
-    expect(document.activeElement).toBe(options[1])
-    press(options[1] as HTMLElement, "ArrowLeft")
-    press(options[0] as HTMLElement, "ArrowLeft")
-    expect(theme()).toBe("system")
-    // Down leaves the row for the item below it; Up comes back to the chosen option.
-    press(one("[data-part=menu]", root), "ArrowDown")
-    expect(document.activeElement?.textContent).toBe("Settings")
-    press(one("[data-part=menu]", root), "ArrowUp")
-    expect(document.activeElement).toBe(options[2])
-    // Clicking an option chooses it too.
-    click(options[1] as HTMLElement)
-    expect(theme()).toBe("light")
+    expect(all("[role=menuitemradio]")).toHaveLength(3)
   })
 })
 

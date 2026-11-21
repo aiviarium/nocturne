@@ -9,6 +9,8 @@ const here = (path: string) => fileURLToPath(new URL(path, import.meta.url))
 export default defineConfig({
   root: here("."),
   plugins: [solid()],
+  // ui-sdk's Solid package and the core it loads must be one copy; pre-bundling the core would make two.
+  optimizeDeps: { exclude: ["@ui-sdk/core"] },
   resolve: { alias: { "@aiviarium/nocturne": here("../src") } },
   // A library build keeps `process.env.NODE_ENV` as written; the browser has no `process`.
   define: { "process.env.NODE_ENV": JSON.stringify("production") },

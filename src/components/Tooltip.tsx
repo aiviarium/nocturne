@@ -1,10 +1,11 @@
 import type { JSX } from "@solidjs/web"
-import { createSignal, onCleanup, Show } from "solid-js"
-import { floatTo } from "../lib/floating"
-import { createId } from "../lib/id"
-import { Overlay } from "../lib/overlay"
-import type { Placement } from "../lib/position"
+import { TooltipContent, Tooltip as TooltipRoot, TooltipTrigger } from "@ui-sdk/solid/tooltip"
+import { Show } from "solid-js"
+import { type Placement, placementSide } from "../lib/placement"
 import { Kbd } from "./Kbd"
+
+/** TooltipTriggerProps are what a trigger spreads on the element the tooltip describes. */
+export type TooltipTriggerProps = Record<string, unknown>
 
 export interface TooltipProps {
   /** The words shown. For an icon-only button, the same words as its `aria-label`. */
@@ -15,74 +16,46 @@ export interface TooltipProps {
   placement?: Placement
   /** Hover delay in ms before it appears. Keyboard focus shows it at once. Default 400. */
   delay?: number
-  /** The element the tooltip describes. */
-  children: JSX.Element
+  /**
+   * Whether the words name the element (`label`) or add to its name (`description`). By default they name an
+   * element without a name of its own and describe any other.
+   */
+  type?: "label" | "description"
+  /**
+   * The element the tooltip describes. A function receives the trigger's props, to spread on a focusable element
+   * of its own, such as a button; an element is wrapped in a span that takes them.
+   */
+  children: JSX.Element | ((trigger: TooltipTriggerProps) => JSX.Element)
 }
 
 /** An inverted label that appears on hover and keyboard focus. */
 export function Tooltip(props: TooltipProps): JSX.Element {
-  const id = createId("tooltip")
-  const [open, setOpen] = createSignal(false)
-  const [anchor, setAnchor] = createSignal<HTMLElement>()
-  let timer: ReturnType<typeof setTimeout> | undefined
-  const show = (immediate: boolean) => {
-    clearTimeout(timer)
-    if (immediate) setOpen(true)
-    else timer = setTimeout(() => setOpen(true), props.delay ?? 400)
+  const side = () => placementSide(props.placement ?? "top")
+  const render = (trigger: TooltipTriggerProps): JSX.Element => {
+    const children = props.children
+    if (typeof children === "function") return children(trigger)
+    return (
+      <span {...trigger} data-part="tooltip-anchor" class="nc-tooltip-anchor">
+        {children}
+      </span>
+    )
   }
-  const hide = () => {
-    clearTimeout(timer)
-    setOpen(false)
-  }
-  onCleanup(() => clearTimeout(timer))
   return (
-    <span
-      data-part="tooltip-anchor"
-      class="nc-tooltip-anchor"
-      ref={setAnchor}
-      aria-describedby={open() ? id : undefined}
-      onPointerEnter={() => show(false)}
-      onPointerLeave={hide}
-      onPointerDown={hide}
-      onFocusIn={(e) => show(e.target instanceof HTMLElement && e.target.matches(":focus-visible"))}
-      onFocusOut={hide}
-      onKeyDown={(e) => e.key === "Escape" && hide()}
-    >
-      {props.children}
-      <Show when={open() && anchor()}>
-        <Overlay anchor={anchor()}>
-          <TooltipBubble id={id} anchor={anchor() as HTMLElement} placement={props.placement ?? "top"}>
-            {props.content}
-            <Show when={props.shortcut}>
-              <Kbd keys={props.shortcut} />
-            </Show>
-          </TooltipBubble>
-        </Overlay>
-      </Show>
-    </span>
-  )
-}
-
-/** The floating label. Its body owns the float, so the cleanup is registered where Solid allows it. */
-function TooltipBubble(props: {
-  id: string
-  anchor: HTMLElement
-  placement: Placement
-  children: JSX.Element
-}) {
-  let stop: (() => void) | undefined
-  onCleanup(() => stop?.())
-  return (
-    <div
-      data-part="tooltip"
-      id={props.id}
-      role="tooltip"
-      class="nc-tooltip nc-tooltip--floating"
-      ref={(el) => {
-        stop = floatTo(props.anchor, el, { placement: props.placement, offset: 6 })
-      }}
-    >
-      {props.children}
-    </div>
+    <TooltipRoot delay={props.delay ?? 400} type={props.type}>
+      <TooltipTrigger render={render} />
+      <TooltipContent
+        side={side().side}
+        align={side().align}
+        sideOffset={6}
+        collisionPadding={8}
+        data-part="tooltip"
+        class="nc-tooltip nc-tooltip--floating"
+      >
+        {props.content}
+        <Show when={props.shortcut}>
+          <Kbd keys={props.shortcut} />
+        </Show>
+      </TooltipContent>
+    </TooltipRoot>
   )
 }

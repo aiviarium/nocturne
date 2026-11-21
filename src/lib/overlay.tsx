@@ -17,15 +17,24 @@ export function overlayHost(anchor?: Element | null): HTMLElement {
  * opener's theme, so tokens and `nc-*` classes work even outside the app root.
  */
 export function Overlay(props: { anchor?: Element | null; children: JSX.Element }): JSX.Element {
-  const host = overlayHost(untrack(() => props.anchor))
   // Solid 2's Portal renders straight into its mount point, so the overlay root is ours to make.
+  const container = createOverlayRoot(untrack(() => props.anchor))
+  return <Portal mount={container}>{props.children}</Portal>
+}
+
+/**
+ * A `div.nc` in the themed root around `anchor`, removed with the calling scope: where a popup that must not
+ * render in place mounts (a row's menu would otherwise land inside a table row), as ui-sdk's `container`.
+ */
+export function createOverlayRoot(anchor?: Element | null): HTMLElement {
+  const host = overlayHost(anchor)
   const container = document.createElement("div")
   container.classList.add("nc")
   container.setAttribute("data-part", "overlay-root")
   host.appendChild(container)
-  if (host === document.body) followTheme(container, props.anchor ?? document.documentElement)
+  if (host === document.body) followTheme(container, anchor ?? document.documentElement)
   onCleanup(() => container.remove())
-  return <Portal mount={container}>{props.children}</Portal>
+  return container
 }
 
 /**

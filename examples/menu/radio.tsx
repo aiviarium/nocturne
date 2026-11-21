@@ -1,4 +1,4 @@
-import { Menu } from "@aiviarium/nocturne"
+import { Button, DropdownMenu } from "@aiviarium/nocturne"
 import type { ExampleMeta } from "../_kit/types"
 
 export const meta: ExampleMeta = { title: "Group labels, disabled, radio", surface: "well" }
@@ -6,10 +6,10 @@ export const meta: ExampleMeta = { title: "Group labels, disabled, radio", surfa
 export default function SortMenu() {
   return (
     <div class="ex-narrow">
-      <Menu
+      <DropdownMenu
         label="Sort"
+        trigger={(t) => <Button {...t}>Sort</Button>}
         radio
-        autoFocus={false}
         items={[
           { type: "label", label: "Sort by" },
           { id: "updated", label: "Last updated", checked: true },

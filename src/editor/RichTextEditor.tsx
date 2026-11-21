@@ -52,7 +52,6 @@ import {
 import { DictationBlockedError, type Transcriber, useTranscriber } from "../components/Dictation"
 import { Icon } from "../components/Icon"
 import { Menu, type MenuEntry } from "../components/Menu"
-import { Popover } from "../components/Popover"
 import { aria } from "../lib/aria"
 import { cx } from "../lib/cx"
 import { Overlay } from "../lib/overlay"
@@ -1819,24 +1818,20 @@ export function RichTextEditor(props: RichTextEditorProps): JSX.Element {
           </Overlay>
         )}
       </Show>
-      <Popover
+      <Menu
         open={blockMenu() != null}
         anchor={dragButton()}
         placement="bottom-start"
+        label="Block"
+        items={blockMenuItems()}
+        onSelect={onBlockMenu}
+        minWidth="220px"
+        class="nc-block-menu"
         onClose={() => {
           setBlockMenu(null)
           view?.focus()
         }}
-        data-part="block-menu"
-      >
-        <Menu
-          label="Block"
-          items={blockMenuItems()}
-          onSelect={onBlockMenu}
-          onRequestClose={() => setBlockMenu(null)}
-          minWidth="220px"
-        />
-      </Popover>
+      />
 
       <Show when={menuOpen() && trigger()?.kind === "/" && triggerPos()}>
         {(p) => (
@@ -2093,23 +2088,19 @@ export function RichTextEditor(props: RichTextEditorProps): JSX.Element {
           </div>
         )}
       </Show>
-      <Popover
+      <Menu
         open={kindMenu()}
         anchor={textButton()}
-        onClose={() => setKindMenu(false)}
         placement="bottom-start"
-      >
-        <Menu
-          label="Turn into"
-          radio
-          items={Object.entries(KIND_LABEL).map(([id, label]) => ({ id, label, checked: kind() === id }))}
-          onSelect={(id) => {
-            setKindMenu(false)
-            runCommand(turnInto(id))
-          }}
-          onRequestClose={() => setKindMenu(false)}
-        />
-      </Popover>
+        label="Turn into"
+        radio
+        items={Object.entries(KIND_LABEL).map(([id, label]) => ({ id, label, checked: kind() === id }))}
+        onSelect={(id) => {
+          setKindMenu(false)
+          runCommand(turnInto(id))
+        }}
+        onClose={() => setKindMenu(false)}
+      />
 
       <Show when={aiOpen() && aiPos()}>
         {(p) => (

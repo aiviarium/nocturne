@@ -589,7 +589,7 @@ describe("ToolStep and ToolSteps", () => {
 })
 
 describe("Tooltip", () => {
-  test("appears after hovering for its delay, describes the anchor, and goes on leave", async () => {
+  test("is in the page from the start, describes its anchor, and shows on keyboard focus", async () => {
     const { root } = track(
       mount(() => (
         <Tooltip content="Save" shortcut="Ctrl S" delay={0}>
@@ -598,20 +598,18 @@ describe("Tooltip", () => {
       )),
     )
     const anchor = one("[data-part=tooltip-anchor]", root)
-    expect(all("[data-part=tooltip]")).toHaveLength(0)
-    anchor.dispatchEvent(new PointerEvent("pointerenter", { bubbles: false }))
-    flush()
-    await tick()
     const tip = one("[data-part=tooltip]")
     expect(tip.getAttribute("role")).toBe("tooltip")
     expect(tip.textContent).toContain("Save")
     expect(anchor.getAttribute("aria-describedby")).toBe(tip.id)
     expect(root.contains(tip)).toBe(true)
-    anchor.dispatchEvent(new PointerEvent("pointerleave", { bubbles: false }))
+    expect(tip.hasAttribute("data-open")).toBe(false)
+    // Focus from the keyboard shows it, as :focus-visible would.
+    press(document.body, "Tab")
+    one<HTMLButtonElement>("button", anchor).focus()
     flush()
     await tick()
-    expect(all("[data-part=tooltip]")).toHaveLength(0)
-    expect(anchor.hasAttribute("aria-describedby")).toBe(false)
+    expect(tip.hasAttribute("data-open")).toBe(true)
   })
 
   test("Escape hides it", async () => {
@@ -622,14 +620,15 @@ describe("Tooltip", () => {
         </Tooltip>
       )),
     )
-    const anchor = one("[data-part=tooltip-anchor]", root)
-    anchor.dispatchEvent(new PointerEvent("pointerenter", { bubbles: false }))
+    const button = one<HTMLButtonElement>("[data-part=tooltip-anchor] button", root)
+    press(document.body, "Tab")
+    button.focus()
     flush()
     await tick()
-    expect(all("[data-part=tooltip]")).toHaveLength(1)
-    press(one("button", anchor), "Escape")
+    expect(one("[data-part=tooltip]").hasAttribute("data-open")).toBe(true)
+    press(button, "Escape")
     await tick()
-    expect(all("[data-part=tooltip]")).toHaveLength(0)
+    expect(one("[data-part=tooltip]").hasAttribute("data-open")).toBe(false)
   })
 })
 
@@ -1305,12 +1304,9 @@ describe("SidebarHeader", () => {
       (c.matches("[data-part^=sidebar]") ? c : c.querySelector("[data-part^=sidebar]"))?.getAttribute(
         "data-part",
       ) ?? c.textContent
-    expect(Array.from(row.children).map(part)).toEqual([
-      "sidebar-back",
-      "Atlas web",
-      "sidebar-command",
-      "sidebar-toggle",
-    ])
+    // A tooltip sits beside its button, hidden until it shows; it is not one of the row's controls.
+    const controls = Array.from(row.children).filter((c) => c.getAttribute("role") !== "tooltip")
+    expect(controls.map(part)).toEqual(["sidebar-back", "Atlas web", "sidebar-command", "sidebar-toggle"])
     expect(one("[data-part=sidebar-back]", header).getAttribute("aria-label")).toBe("Back to Projects")
     click(one("[data-part=sidebar-back]", header))
     click(one("[data-part=sidebar-command]", header))

@@ -153,7 +153,7 @@
 .nc-menu { display: flex; flex-direction: column; min-width: 200px; padding: 4px; border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--bg-3); box-shadow: var(--shadow-overlay); }
 .nc-menu__label { padding: 6px 8px 4px; color: var(--text-3); font-size: 11px; font-weight: 500; }
 .nc-menu__item { display: flex; align-items: center; gap: 10px; height: var(--control-md); padding: 0 8px; border-radius: var(--radius-sm); color: var(--text-1); font-size: 13px; }
-.nc-menu__item[data-active] { background: var(--bg-4); }
+.nc-menu__item[data-active], .nc-menu__item[data-highlighted] { background: var(--bg-4); }
 .nc-menu__item--danger { color: var(--danger); }
 .nc-menu__key { margin-left: auto; color: var(--text-3); font: 400 10px/16px var(--font-mono); white-space: nowrap; flex-shrink: 0; }
 .nc-menu__sep { height: 1px; margin: 4px 0; background: var(--line); }
