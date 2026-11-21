@@ -1,28 +1,28 @@
 import type { JSX } from "@solidjs/web"
-import { For, omit, Show } from "solid-js"
+import { For, omit } from "solid-js"
 import { cx } from "../lib/cx"
-import { ICON_PATHS as CORE_PATHS, type IconName as CoreIconName } from "./icon-data"
-import { LUCIDE, type LucideName } from "./lucide-data"
+import { ICON_NODES, type IconName } from "./icon-data"
 
-/** A Nocturne core icon, or one of the Lucide icons `@aiviarium/nocturne` carries for what the core set lacks. */
-export type IconName = CoreIconName | LucideName
+export type { IconName }
 
-/** Every icon name the components know: path data for the core icons, nodes for the Lucide extras. */
-export const ICON_PATHS: Readonly<Record<IconName, string | LucideNode>> = { ...CORE_PATHS, ...LUCIDE }
-export { LUCIDE }
+/**
+ * Every icon by name, each a Lucide icon in the `lucide` package's own format. A name is a key here, so
+ * `name in ICON_PATHS` says whether the components know it.
+ */
+export const ICON_PATHS: Readonly<Record<IconName, LucideNode>> = ICON_NODES
 
 /**
  * A Lucide icon in the `lucide` package's own format: a list of `[tag, attributes]` pairs.
  * Import one (`import { Camera } from "lucide"`) and pass it as `node`.
  */
 export type LucideNode = ReadonlyArray<
-  readonly [tag: string, attrs: Record<string, string | number | undefined>]
+  readonly [tag: string, attrs: Readonly<Record<string, string | number | undefined>>]
 >
 
 export interface IconProps extends Omit<JSX.SvgSVGAttributes<SVGSVGElement>, "children" | "name"> {
-  /** One of the 48 Nocturne core icons. */
+  /** One of the icons Nocturne carries, by name. */
   name?: IconName
-  /** Any Lucide icon, the fallback set for what the core icons lack. Used when `name` is not set. */
+  /** Any other Lucide icon. Used when `name` is not set. */
   node?: LucideNode
   /** 13px inside chips, menus and cells, 16px in buttons and navigation (default), 20px in empty states. */
   size?: "sm" | "md" | "lg"
@@ -30,22 +30,19 @@ export interface IconProps extends Omit<JSX.SvgSVGAttributes<SVGSVGElement>, "ch
   label?: string
 }
 
-/** A line icon drawn with `stroke: currentColor`, so it takes the surrounding text colour. */
+/** A Lucide line icon drawn with `stroke: currentColor`, so it takes the surrounding text colour. */
 export function Icon(props: IconProps): JSX.Element {
   const rest = omit(props, "name", "node", "size", "label", "class")
-  const core = () => (props.name && props.name in CORE_PATHS ? (props.name as CoreIconName) : undefined)
-  const node = () =>
-    core() ? undefined : ((props.name ? LUCIDE[props.name as LucideName] : undefined) ?? props.node)
+  const node = () => (props.name ? ICON_NODES[props.name] : undefined) ?? props.node ?? []
   const a11y = () =>
     props.label ? { role: "img" as const, "aria-label": props.label } : { "aria-hidden": "true" as const }
   return (
     <svg
       data-part="icon"
       data-icon={props.name}
-      viewBox={core() || !node() ? "0 0 16 16" : "0 0 24 24"}
+      viewBox="0 0 24 24"
       class={cx(
         "nc-icon",
-        !core() && node() && "nc-icon--lucide",
         props.size === "sm" && "nc-icon--sm",
         props.size === "lg" && "nc-icon--lg",
         props.class,
@@ -53,25 +50,40 @@ export function Icon(props: IconProps): JSX.Element {
       {...a11y()}
       {...rest}
     >
-      <Show
-        when={core()}
-        fallback={<For each={node() ?? []}>{([tag, attrs]) => <LucideShape tag={tag} attrs={attrs} />}</For>}
-      >
-        <path d={CORE_PATHS[core()!]} />
-      </Show>
+      <For each={node()}>{([tag, attrs]) => <IconShape tag={tag} attrs={attrs} />}</For>
     </svg>
   )
 }
 
-function LucideShape(props: {
-  tag: string
-  attrs: Record<string, string | number | undefined>
-}): JSX.Element {
-  const el = document.createElementNS("http://www.w3.org/2000/svg", props.tag)
-  for (const [key, value] of Object.entries(props.attrs)) {
+/** iconElement draws an icon outside Solid, such as in an editor's DOM. */
+export function iconElement(name: IconName, doc: Document = document, className = "nc-icon"): SVGSVGElement {
+  const svg = doc.createElementNS(SVG, "svg")
+  svg.setAttribute("class", className)
+  svg.setAttribute("viewBox", "0 0 24 24")
+  svg.setAttribute("aria-hidden", "true")
+  for (const [tag, attrs] of ICON_NODES[name]) svg.append(shape(tag, attrs, doc))
+  return svg
+}
+
+const SVG = "http://www.w3.org/2000/svg"
+
+function shape(
+  tag: string,
+  attrs: Readonly<Record<string, string | number | undefined>>,
+  doc: Document,
+): Element {
+  const el = doc.createElementNS(SVG, tag)
+  for (const [key, value] of Object.entries(attrs)) {
     if (value !== undefined && key !== "key") el.setAttribute(key, String(value))
   }
-  return el as unknown as JSX.Element
+  return el
+}
+
+function IconShape(props: {
+  tag: string
+  attrs: Readonly<Record<string, string | number | undefined>>
+}): JSX.Element {
+  return shape(props.tag, props.attrs, document) as unknown as JSX.Element
 }
 
 /** The filled stop square used by the composer's Stop button. */

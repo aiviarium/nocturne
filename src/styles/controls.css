@@ -140,7 +140,7 @@
 .nc-qopts__option { cursor: pointer; }
 .nc-qopts__box { display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box; flex: none; width: 14px; height: 14px; border: 1px solid var(--line-strong); border-radius: var(--radius-xs); color: var(--bg-0); }
 .nc-qopts__box[data-on] { border-color: var(--accent-strong); background: var(--accent-strong); }
-.nc-qopts__box .nc-icon { width: 10px; height: 10px; stroke-width: 2.4; }
+.nc-qopts__box .nc-icon { width: 10px; height: 10px; stroke-width: 3.6; }
 .nc-qopts__icon { flex: none; color: var(--text-3); }
 .nc-qopts__empty { padding: var(--space-2); color: var(--text-3); font-size: var(--nc-type-label); }
 

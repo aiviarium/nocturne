@@ -239,7 +239,7 @@ export interface PropertyItem {
   id?: string
   /** The property's name, in text-3. */
   label: string
-  /** A core icon before the label. */
+  /** A named icon before the label. */
   icon?: IconName
   /** The value: text, a `State`, an `Avatar` with a name, chips, or an `InlineField`/`Select` to edit it in place. */
   value: JSX.Element
@@ -299,7 +299,7 @@ export function PropertyList(props: PropertyListProps): JSX.Element {
 export interface MetaItem {
   /** Text, or a node (a `State`, an `Avatar` with a name). */
   label: JSX.Element
-  /** A core icon before it. */
+  /** A named icon before it. */
   icon?: IconName
   /** Mono, for IDs, branches and hashes. */
   mono?: boolean

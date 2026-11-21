@@ -72,8 +72,8 @@ import { Button, DataTable, Composer } from "@aiviarium/nocturne"
   `evaluateExpression` (`src/lib/expression.ts`), a parser with no `eval`.
 - `Composer` is a contenteditable field: picked `/` commands, `@` mentions and `$` skills are atomic chips, and
   its value is a list of text and chip segments (`ComposerValue`).
-- Icons: `<Icon name="home" />` (the 48 core icons in `icons/`) or `<Icon node={Camera} />` with any icon from
-  `lucide`.
+- Icons come from Lucide alone. `<Icon name="home" />` draws one of the icons in `scripts/icons.ts`, and
+  `<Icon node={Camera} />` any other icon from `lucide`.
 - The phone layout and its scale are described in [docs/phone.md](docs/phone.md) and on the site's
   [Phones](site/content/docs/phones.mdx) page.
 - CSS that the bundle lacks is in `src/styles/extra.css`, `parts.css` and the other files next to it.
@@ -111,7 +111,7 @@ bun run build    # writes site/out/
 | `bun run typecheck` | `tsc --noEmit` |
 | `bun run lint` | Biome |
 | `bun run lint:tokens [path ...]` | Fails on hard-coded colours, radii or font sizes in `.css`/`.tsx`/`.ts` under the paths (default `src gallery examples`). `lint-tokens-ignore` on a line opts out. Apps can run it on their own folders |
-| `bun run gen:icons` | Regenerates `src/components/icon-data.ts` from `icons/*.svg` |
+| `bun run gen:icons` | Writes `src/components/icon-data.ts` and `icons/` from `scripts/icons.ts` and `lucide` |
 | `scripts/screenshots.py`, `scripts/screenshot-states.py` | Playwright (Python) screenshots of every gallery page and of interactive states into a folder you name. `--chrome PATH` uses an installed Chrome. Screenshots are not committed |
 | `cd site && bun run check` | Typecheck, lint, link check, Vale and build of the documentation site |
 
@@ -122,7 +122,7 @@ cursors and the rest).
 
 ## Third-party code
 
-`src/components/lucide-data.ts` holds icon data from [Lucide](https://lucide.dev), ISC licence.
+`src/components/icon-data.ts` and `icons/` hold icon data from [Lucide](https://lucide.dev), ISC licence.
 
 ## License
 

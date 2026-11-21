@@ -1,11 +1,11 @@
 ---
 title: Icons
-description: The 48 core icons, and any Lucide icon for what the set lacks.
+description: One family, Lucide, by name or by node.
 icon: Shapes
 ---
 
-The core icons are drawn on a 16px grid with a 1.5 stroke, in `currentColor`.
-The files are in `icons/`, and `bun run gen:icons` writes `src/components/icon-data.ts` from them.
+Every icon is a [Lucide](https://lucide.dev) icon, drawn on its 24px grid with one stroke weight, in `currentColor`.
+Nocturne never draws an icon by hand, so every icon in a view has the same weight and style.
 
 ```tsx
 import { Icon } from "@aiviarium/nocturne"
@@ -15,20 +15,22 @@ import { Camera } from "lucide"
 <Icon node={Camera} />
 ```
 
-`name` takes a core icon.
-`node` takes any icon from `lucide`, for what the core set lacks.
+`name` takes one of the icons in `scripts/icons.ts`.
+`node` takes any other icon from `lucide`.
 
-## The core set
+`scripts/icons.ts` maps each name to its Lucide icon.
+`bun run gen:icons` writes `src/components/icon-data.ts` and the SVG files in `icons/` from it.
+To add a name, add a line there and run the script.
 
-Drawn from the files in `icons/` when the site is built.
+## Every name
 
 <IconGrid />
 
-## Sizes and pairs
+## Sizes
 
 <Example id="icon/sizes" />
-<Example id="icon/pairs" />
 
+Use 13px inside chips, menus and cells, 16px in buttons and navigation, and 20px in empty states.
 An `IconButton` holds a 16px icon at 28px, and a 13px icon at 24px.
 See [Actions](./parts/actions.mdx#iconbutton).
 

@@ -11,7 +11,7 @@ export interface QueryOption {
   value: string
   /** What the builder shows. */
   label: string
-  /** A core icon before the label. */
+  /** A named icon before the label. */
   icon?: string
   /** One line under the label in the picker. */
   description?: string
@@ -23,7 +23,7 @@ export interface QueryField {
   /** What the builder shows: "State", "Estimate". */
   label: string
   type: QueryFieldType
-  /** A core icon before the label in the field menu. */
+  /** A named icon before the label in the field menu. */
   icon?: string
   /** The choices of an `enum`, the people of a `person` field, the targets of a `relation`. */
   options?: QueryOption[]

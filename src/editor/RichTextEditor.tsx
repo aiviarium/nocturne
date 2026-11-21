@@ -50,7 +50,7 @@ import {
   yUndoPlugin,
 } from "y-prosemirror"
 import { DictationBlockedError, type Transcriber, useTranscriber } from "../components/Dictation"
-import { Icon } from "../components/Icon"
+import { ICON_PATHS, Icon, type IconName } from "../components/Icon"
 import { Menu, type MenuEntry } from "../components/Menu"
 import { aria } from "../lib/aria"
 import { cx } from "../lib/cx"
@@ -173,7 +173,7 @@ export interface RichTextEditorProps {
 export interface SelectionAction {
   id: string
   label: string
-  /** A core icon name shown before the label. */
+  /** A named icon name shown before the label. */
   icon?: string
   /** The selection is `view.state.selection`. */
   run(view: EditorView): void
@@ -183,36 +183,11 @@ interface InsertItem {
   id: string
   title: string
   description?: string
-  glyph: string
+  icon: IconName
   key?: string
   keywords?: string
   group: string
   run(view: EditorView): void
-}
-
-const FMT_PATHS = {
-  bold: "M4.5 3h4a2.5 2.5 0 0 1 0 5h-4ZM4.5 8h4.5a2.5 2.5 0 0 1 0 5H4.5Z",
-  italic: "M10 3H7M9 13H6M9 3 7 13",
-  strike: "M3 8h10M10.5 4.5C10 3.6 9 3 8 3c-1.7 0-3 .9-3 2.3M5.5 11.5c.5.9 1.5 1.5 2.5 1.5 1.7 0 3-.9 3-2.3",
-  code: "M5.5 4.5 2 8l3.5 3.5M10.5 4.5 14 8l-3.5 3.5",
-  link: "M6.5 9.5l3-3M7 4.5l1-1a2.5 2.5 0 0 1 3.5 3.5l-1 1M9 11.5l-1 1a2.5 2.5 0 0 1-3.5-3.5l1-1",
-  underline: "M4.5 2.5v5a3.5 3.5 0 0 0 7 0v-5M3.5 13.5h9",
-  drag: "M6 3.5h.01M10 3.5h.01M6 8h.01M10 8h.01M6 12.5h.01M10 12.5h.01",
-}
-
-function Glyph(props: { d: string }) {
-  return (
-    <svg viewBox="0 0 16 16" class="nc-icon" aria-hidden="true">
-      <path
-        d={props.d}
-        fill="none"
-        stroke="currentColor"
-        stroke-width="1.5"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-      />
-    </svg>
-  )
 }
 
 const KIND_LABEL: Record<string, string> = {
@@ -770,7 +745,7 @@ export function RichTextEditor(props: RichTextEditorProps): JSX.Element {
         id: "text",
         title: "Text",
         description: "Plain paragraph",
-        glyph: "Aa",
+        icon: "type",
         group: "Basic blocks",
         run: () => runCommand(turnInto("text")),
       },
@@ -778,7 +753,7 @@ export function RichTextEditor(props: RichTextEditorProps): JSX.Element {
         id: "h1",
         title: "Heading 1",
         description: "Large section heading",
-        glyph: "H1",
+        icon: "heading-1",
         key: "#",
         group: "Basic blocks",
         run: () => runCommand(turnInto("h1")),
@@ -787,7 +762,7 @@ export function RichTextEditor(props: RichTextEditorProps): JSX.Element {
         id: "h2",
         title: "Heading 2",
         description: "Medium section heading",
-        glyph: "H2",
+        icon: "heading-2",
         key: "##",
         group: "Basic blocks",
         run: () => runCommand(turnInto("h2")),
@@ -796,7 +771,7 @@ export function RichTextEditor(props: RichTextEditorProps): JSX.Element {
         id: "h3",
         title: "Heading 3",
         description: "Small section heading",
-        glyph: "H3",
+        icon: "heading-3",
         key: "###",
         group: "Basic blocks",
         run: () => runCommand(turnInto("h3")),
@@ -805,7 +780,7 @@ export function RichTextEditor(props: RichTextEditorProps): JSX.Element {
         id: "task",
         title: "To-do list",
         description: "Track tasks with checkboxes",
-        glyph: "☐",
+        icon: "list-todo",
         key: "[]",
         keywords: "todo checkbox task",
         group: "Basic blocks",
@@ -815,7 +790,7 @@ export function RichTextEditor(props: RichTextEditorProps): JSX.Element {
         id: "bullet",
         title: "Bulleted list",
         description: "A simple list",
-        glyph: "•",
+        icon: "list",
         key: "-",
         keywords: "ul unordered",
         group: "Basic blocks",
@@ -825,7 +800,7 @@ export function RichTextEditor(props: RichTextEditorProps): JSX.Element {
         id: "ordered",
         title: "Numbered list",
         description: "A list with numbers",
-        glyph: "1.",
+        icon: "list-ordered",
         key: "1.",
         keywords: "ol ordered",
         group: "Basic blocks",
@@ -835,7 +810,7 @@ export function RichTextEditor(props: RichTextEditorProps): JSX.Element {
         id: "quote",
         title: "Quote",
         description: "Capture a quote",
-        glyph: "❝",
+        icon: "quote",
         key: ">",
         keywords: "blockquote",
         group: "Basic blocks",
@@ -845,7 +820,7 @@ export function RichTextEditor(props: RichTextEditorProps): JSX.Element {
         id: "callout",
         title: "Callout",
         description: "Make text stand out",
-        glyph: "!",
+        icon: "info",
         key: "!>",
         keywords: "note warning info",
         group: "Basic blocks",
@@ -855,7 +830,7 @@ export function RichTextEditor(props: RichTextEditorProps): JSX.Element {
         id: "code",
         title: "Code",
         description: "Syntax-highlighted snippet",
-        glyph: "{ }",
+        icon: "code",
         key: "```",
         keywords: "snippet pre",
         group: "Basic blocks",
@@ -865,7 +840,7 @@ export function RichTextEditor(props: RichTextEditorProps): JSX.Element {
         id: "divider",
         title: "Divider",
         description: "Separate sections",
-        glyph: "—",
+        icon: "minus",
         key: "---",
         keywords: "hr rule line",
         group: "Basic blocks",
@@ -875,7 +850,7 @@ export function RichTextEditor(props: RichTextEditorProps): JSX.Element {
         id: "table",
         title: "Table",
         description: "Rows and columns",
-        glyph: "▦",
+        icon: "table",
         keywords: "grid",
         group: "Basic blocks",
         run: () => runCommand(insertBlock(makeTable())),
@@ -887,7 +862,7 @@ export function RichTextEditor(props: RichTextEditorProps): JSX.Element {
           id: "image",
           title: "Image",
           description: "Upload or paste a picture",
-          glyph: "▨",
+          icon: "image",
           keywords: "picture photo",
           group: "Media",
           run: () => pickFiles("image/*"),
@@ -896,7 +871,7 @@ export function RichTextEditor(props: RichTextEditorProps): JSX.Element {
           id: "file",
           title: "File",
           description: "Attach a file",
-          glyph: "⎘",
+          icon: "file",
           keywords: "attachment upload",
           group: "Media",
           run: () => pickFiles("*/*"),
@@ -908,7 +883,7 @@ export function RichTextEditor(props: RichTextEditorProps): JSX.Element {
         id: "mention",
         title: "Mention",
         description: "Link a person, page or anything",
-        glyph: "@",
+        icon: "at-sign",
         key: "@",
         keywords: "link person entity",
         group: "Media",
@@ -924,7 +899,7 @@ export function RichTextEditor(props: RichTextEditorProps): JSX.Element {
         id: "ai",
         title: aiCopy().label,
         description: aiCopy().description,
-        glyph: "✦",
+        icon: "sparkle",
         key: "⌘J",
         keywords: "ai assistant write generate",
         group: aiCopy().group,
@@ -935,7 +910,7 @@ export function RichTextEditor(props: RichTextEditorProps): JSX.Element {
         id: "dictate",
         title: "Dictate",
         description: "Speak to write at the cursor",
-        glyph: "◉",
+        icon: "mic",
         key: "⌘⇧␣",
         keywords: "voice speech microphone",
         group: aiCopy().group,
@@ -947,7 +922,7 @@ export function RichTextEditor(props: RichTextEditorProps): JSX.Element {
         id: `block:${b.id}`,
         title: b.title,
         description: b.description,
-        glyph: b.icon && b.icon.length <= 3 ? b.icon : "◇",
+        icon: b.icon !== undefined && b.icon in ICON_PATHS ? (b.icon as IconName) : "box",
         keywords: [b.id, ...(b.keywords ?? [])].join(" "),
         group: "Plugins",
         run: () =>
@@ -1787,7 +1762,7 @@ export function RichTextEditor(props: RichTextEditorProps): JSX.Element {
                 setBlockMenu(h().pos)
               }}
             >
-              <Glyph d={FMT_PATHS.drag} />
+              <Icon name="grip-vertical" />
             </button>
           </div>
         )}
@@ -1861,7 +1836,9 @@ export function RichTextEditor(props: RichTextEditorProps): JSX.Element {
                         onMouseEnter={() => setActive(index)}
                         onClick={() => pickInsert(item)}
                       >
-                        <span class="nc-editor-slash__glyph label">{item.glyph}</span>
+                        <span class="nc-editor-slash__glyph">
+                          <Icon name={item.icon} />
+                        </span>
                         <span class="nc-editor-slash__text">
                           <span class="body">{item.title}</span>
                           <Show when={item.description}>
@@ -2037,15 +2014,15 @@ export function RichTextEditor(props: RichTextEditorProps): JSX.Element {
               <For
                 each={
                   [
-                    ["strong", "Bold", FMT_PATHS.bold],
-                    ["em", "Italic", FMT_PATHS.italic],
-                    ["underline", "Underline", FMT_PATHS.underline],
-                    ["strike", "Strikethrough", FMT_PATHS.strike],
-                    ["code", "Code", FMT_PATHS.code],
+                    ["strong", "Bold", "bold"],
+                    ["em", "Italic", "italic"],
+                    ["underline", "Underline", "underline"],
+                    ["strike", "Strikethrough", "strikethrough"],
+                    ["code", "Code", "code"],
                   ] as const
                 }
               >
-                {([mark, label, d]) => (
+                {([mark, label, icon]) => (
                   <button
                     type="button"
                     class="nc-editor-format__btn"
@@ -2053,7 +2030,7 @@ export function RichTextEditor(props: RichTextEditorProps): JSX.Element {
                     aria-pressed={aria(isActive(mark))}
                     onClick={toggle(mark)}
                   >
-                    <Glyph d={d} />
+                    <Icon name={icon} />
                   </button>
                 )}
               </For>
@@ -2064,7 +2041,7 @@ export function RichTextEditor(props: RichTextEditorProps): JSX.Element {
                 aria-pressed={aria(isActive("link"))}
                 onClick={openLink}
               >
-                <Glyph d={FMT_PATHS.link} />
+                <Icon name="link" />
               </button>
               <For each={props.selectionActions ?? []}>
                 {(a) => (

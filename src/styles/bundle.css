@@ -58,7 +58,7 @@
 .nc-btn[disabled] { background: var(--bg-2); border-color: var(--line-soft); color: var(--text-4); cursor: not-allowed; }
 .nc-icon-btn { display: inline-flex; align-items: center; justify-content: center; width: var(--control-md); height: var(--control-md); padding: 0; border: 0; border-radius: var(--radius-sm); background: transparent; color: var(--text-2); cursor: pointer; }
 .nc-icon-btn:hover, .nc-icon-btn[aria-expanded="true"][aria-haspopup] { background: var(--bg-3); color: var(--text-1); }
-.nc-icon { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+.nc-icon { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
 .nc-icon--sm { width: 13px; height: 13px; }
 
 /* Key hints */

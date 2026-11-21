@@ -77,7 +77,7 @@ The examples on these pages are the same examples, shown in frames.
 | `bun run typecheck` | Runs `tsc --noEmit` |
 | `bun run lint` | Runs Biome |
 | `bun run lint:tokens [path ...]` | Fails on literal colours, radii or font sizes in `.css`, `.tsx` and `.ts` files |
-| `bun run gen:icons` | Writes `src/components/icon-data.ts` from `icons/*.svg` |
+| `bun run gen:icons` | Writes `src/components/icon-data.ts` and `icons/` from `scripts/icons.ts` and `lucide` |
 
 `lint:tokens` checks `src`, `gallery` and `examples` by default.
 A line with `lint-tokens-ignore` is skipped.

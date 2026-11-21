@@ -402,7 +402,7 @@ export class TaskItemView implements NodeView {
     this.box.setAttribute("aria-label", checked ? "Done" : "Not done")
     this.box.disabled = this.env.readOnly()
     this.box.innerHTML = checked
-      ? '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8.5 6.5 11.5 12.5 4.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+      ? '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>'
       : ""
   }
   private toggle() {

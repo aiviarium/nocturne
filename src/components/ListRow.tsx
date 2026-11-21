@@ -137,9 +137,9 @@ export interface ListRowProps
   secondary?: JSX.Element
   /** A third line for rows that carry more (a pull request's branch, checks and reviewers): a `MetaLine`. */
   detail?: JSX.Element
-  /** A core icon at the start. */
+  /** A named icon at the start. */
   icon?: IconName
-  /** A Lucide icon at the start, when the core set lacks one. */
+  /** Any other Lucide icon at the start, as a node. */
   iconNode?: LucideNode
   /** Leading content instead of an icon: an `Avatar`, a checkbox, a coloured dot. It is centred in the same box. */
   leading?: JSX.Element

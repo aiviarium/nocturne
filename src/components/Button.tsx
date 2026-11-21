@@ -16,11 +16,11 @@ export interface ButtonProps extends Omit<JSX.ButtonHTMLAttributes<HTMLButtonEle
   variant?: ButtonVariant
   /** 24px, 28px (default) or 32px. */
   size?: ButtonSize
-  /** A core icon before the label. */
+  /** A named icon before the label. */
   icon?: IconName
-  /** A Lucide icon before the label, when the core set lacks one. */
+  /** Any other Lucide icon before the label, as a node. */
   iconNode?: LucideNode
-  /** A core icon after the label, such as a chevron. */
+  /** A named icon after the label, such as a chevron. */
   iconEnd?: IconName
   /** A shortcut hint inside the button, after the label. */
   kbd?: string

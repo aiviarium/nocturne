@@ -5,7 +5,7 @@
 //   and the type classes
 // - the accent presets of src/lib/accents.ts
 // - the meta of each example in examples/, and the gallery's pages
-// - the core icons in icons/
+// - the named icons in icons/, which gen:icons writes
 //
 // Run with `bun run tokens`. The build and the typecheck run it first.
 import { mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';

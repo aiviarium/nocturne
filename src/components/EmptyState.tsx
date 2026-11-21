@@ -4,7 +4,7 @@ import { cx } from "../lib/cx"
 import { Icon, type IconName } from "./Icon"
 
 export interface EmptyStateProps extends Omit<JSX.HTMLAttributes<HTMLDivElement>, "title"> {
-  /** A core icon, shown at 20px. */
+  /** A named icon, shown at 20px. */
   icon?: IconName
   /** Says what is missing: "No sessions match". */
   title: JSX.Element

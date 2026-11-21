@@ -12,7 +12,7 @@ export interface TabItem {
   label: string
   /** A count after the label, in text-3. Underline tabs only; a zero count is not shown. */
   count?: number | string
-  /** A core icon before the label. */
+  /** A named icon before the label. */
   icon?: IconName
   /** Greys the tab out and skips it. */
   disabled?: boolean

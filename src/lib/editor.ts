@@ -5,8 +5,7 @@
 // "Flat" positions count a chip as one character and every text character as one, so a caret can be named
 // with a single number whatever the DOM looks like (`flatText` gives the matching string, with `CHIP` where
 // a chip stands). Triggers, picks and history all work on flat positions.
-import type { IconName } from "../components/Icon"
-import { ICON_PATHS } from "../components/icon-data"
+import { ICON_PATHS, type IconName, iconElement } from "../components/Icon"
 import type { TriggerChar } from "./triggers"
 
 /** What fills the place of a chip in `flatText`. Not whitespace, so it ends no word. */
@@ -80,8 +79,6 @@ export function flatOfSegments(value: readonly ComposerSegment[]): string {
 
 // ---------- Rendering ----------
 
-const SVG = "http://www.w3.org/2000/svg"
-
 function initialsOf(name: string): string {
   return name
     .split(/\s+/)
@@ -116,17 +113,8 @@ export function renderChip(chip: ComposerChip, doc: Document = document): HTMLEl
     avatar.textContent = initialsOf(chip.label)
     el.append(avatar, chip.label)
   } else if (chip.trigger === "@") {
-    const path = ICON_PATHS[(chip.icon ?? "file") as keyof typeof ICON_PATHS] ?? ICON_PATHS.file
-    if (path) {
-      const svg = doc.createElementNS(SVG, "svg")
-      svg.setAttribute("class", "nc-icon nc-icon--sm")
-      svg.setAttribute("viewBox", "0 0 16 16")
-      svg.setAttribute("aria-hidden", "true")
-      const p = doc.createElementNS(SVG, "path")
-      p.setAttribute("d", path)
-      svg.append(p)
-      el.append(svg)
-    }
+    const name = (chip.icon ?? "file") as IconName
+    el.append(iconElement(name in ICON_PATHS ? name : "file", doc, "nc-icon nc-icon--sm"))
     el.append(chip.label)
   } else {
     el.textContent = `${chip.trigger}${chip.label}`

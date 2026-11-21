@@ -49,7 +49,7 @@ export interface ComposerItem {
   label: string
   /** One line of detail shown under the label. */
   description?: string
-  /** A core icon: the mark in the menu row, and the type icon on a picked reference. */
+  /** A named icon: the mark in the menu row, and the type icon on a picked reference. */
   icon?: IconName
   /** Right-aligned meta in the row: `Ctrl R`, `File`, `Team`. */
   meta?: string
@@ -65,7 +65,7 @@ export interface ComposerAttachment {
   id: string
   /** File name shown on the chip. */
   name: string
-  /** A core icon for the type. Default `file`. */
+  /** A named icon for the type. Default `file`. */
   icon?: IconName
   /** `image` with a `preview` draws a thumbnail in place of the chip. Default `file`. */
   kind?: "image" | "file"

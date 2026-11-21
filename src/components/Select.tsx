@@ -22,7 +22,7 @@ export interface SelectOption<T extends string = string> {
   value: T
   /** Visible text. */
   label: string
-  /** A core icon before the label. */
+  /** A named icon before the label. */
   icon?: IconName
   /** One line under the label. */
   description?: string

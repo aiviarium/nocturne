@@ -234,7 +234,7 @@ export function ShadowTable() {
   );
 }
 
-/** The 48 core icons, in the text colour. */
+/** Every icon Nocturne carries by name, in the text colour. */
 export function IconGrid() {
   return (
     <div className="tk-icons not-prose">

@@ -235,8 +235,8 @@ export const PAGES: GalleryPage[] = [
     id: "icon",
     title: "Icon",
     group: "Display",
-    lead: "The 48 core icons on a 16px grid with a 1.5 stroke, in currentColor. Any Lucide icon works through the node prop, for what the core set lacks.",
-    sections: ["icon/core", "icon/sizes", "icon/pairs"],
+    lead: "One family: Lucide, on its 24px grid with one stroke weight, in currentColor. A name draws an icon Nocturne carries; the node prop takes any other Lucide icon.",
+    sections: ["icon/core", "icon/sizes"],
   },
   {
     id: "skeleton",

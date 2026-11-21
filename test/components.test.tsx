@@ -10,6 +10,7 @@ import {
   Dialog,
   DropdownMenu,
   Frame,
+  ICON_PATHS,
   Icon,
   LinkProvider,
   Menu,
@@ -646,7 +647,7 @@ describe("WidgetTimer", () => {
 })
 
 describe("Icon", () => {
-  test("a Lucide icon carries the class that gives it the core set's stroke weight; a core icon does not", () => {
+  test("a named icon and a Lucide node draw on the same grid with the same class", () => {
     const { root } = track(
       mount(() => (
         <>
@@ -655,10 +656,17 @@ describe("Icon", () => {
         </>
       )),
     )
-    const [core, lucide] = Array.from(root.querySelectorAll("svg"))
-    expect(core?.classList.contains("nc-icon--lucide")).toBe(false)
-    expect(lucide?.classList.contains("nc-icon--lucide")).toBe(true)
-    expect(lucide?.getAttribute("viewBox")).toBe("0 0 24 24")
+    const [named, node] = Array.from(root.querySelectorAll("svg"))
+    for (const svg of [named, node]) {
+      expect(svg?.getAttribute("viewBox")).toBe("0 0 24 24")
+      expect(svg?.getAttribute("class")).toBe("nc-icon")
+    }
+    expect(named?.querySelectorAll("rect, path, circle, line").length).toBeGreaterThan(0)
+  })
+
+  test("every name draws something", () => {
+    for (const name of Object.keys(ICON_PATHS))
+      expect(ICON_PATHS[name as keyof typeof ICON_PATHS].length).toBeGreaterThan(0)
   })
 })
 
