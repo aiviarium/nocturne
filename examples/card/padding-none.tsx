@@ -3,7 +3,7 @@ import type { ExampleMeta } from "../_kit/types"
 
 export const meta: ExampleMeta = {
   title: "Padding none, and the panel",
-  note: "A table or media runs to the edge with padding none. A Panel is a tool region with a 38px header; its body has the same 12px padding.",
+  note: "A table or media runs to the edge with padding none. A Panel is a tool region with a 44px header; its body has the same 12px padding.",
   surface: "well",
 }
 

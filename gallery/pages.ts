@@ -7,6 +7,8 @@ export interface GalleryPage {
   group: string
   /** One line under the title. */
   lead: string
+  /** The page is one example at the size of the window, with a link to open it alone. */
+  full?: boolean
   sections: Array<string | string[]>
 }
 
@@ -21,6 +23,63 @@ export const PAGES: GalleryPage[] = [
       ["overview/chips", "overview/table"],
       ["overview/metrics", "overview/chat"],
     ],
+  },
+  {
+    id: "shell",
+    title: "Shell",
+    group: "Shell",
+    lead: "The whole window, drawn by createShell from one registry of scopes, lenses, places, records and panels. The app passes its router, storage and window handlers.",
+    full: true,
+    sections: ["app-shell/workbench"],
+  },
+  {
+    id: "title-bar",
+    title: "Title bar",
+    group: "Shell",
+    lead: "The app icon, the history arrows and the path at the left. The scope box with its lenses on the window's centre. Status and the window controls at the right. All text sits at the drill size on one baseline.",
+    sections: [
+      "title-bar/narrow",
+      "title-bar/search",
+      ["scope-path/segments", "lens-switch/box"],
+      "command-palette/box",
+      "switcher/scopes",
+      "history/walk",
+      "window-controls/styles",
+    ],
+  },
+  {
+    id: "sidebar",
+    title: "Sidebar",
+    group: "Shell",
+    lead: "The places of the scope you are in, with the filter at the top and the account at the foot. Below 140px it folds to an icon rail. Going into a scope changes the tree; ↑ goes back up.",
+    sections: [
+      "navigation/fold-rail",
+      "nav-item/sidebar",
+      "navigation/drilldown",
+      "navigation/page-tree",
+      "account-menu/default",
+    ],
+  },
+  {
+    id: "view-header",
+    title: "View header and trail",
+    group: "Shell",
+    lead: "Each view has one 44px header: its title, or its trail once it drills to a record, then a stepper and the actions. A title and the same label as a crumb have one size, so nothing moves.",
+    sections: ["trail/record", "navigation/columns"],
+  },
+  {
+    id: "panels",
+    title: "Panels",
+    group: "Shell",
+    lead: "The rail at the window's edge opens a panel at the right and one under the view. Borders resize, and only the one being dragged lights up.",
+    sections: ["panel/rail", "panel/variants", "resize-handle/columns"],
+  },
+  {
+    id: "appearance",
+    title: "Appearance",
+    group: "Shell",
+    lead: "Theme, accent and the lens tint line, applied at once and kept in the app's storage. The account menu's Appearance item opens the same settings.",
+    sections: ["appearance/settings"],
   },
   {
     id: "list-row",
@@ -190,25 +249,11 @@ export const PAGES: GalleryPage[] = [
     sections: ["tabs/segmented", "tab-strip/frames", "tabs/underline"],
   },
   {
-    id: "nav-item",
-    title: "NavItem",
-    group: "Navigation",
-    lead: "A sidebar row: icon, label and optional meta. Selection is an inset rounded fill, never an edge bar.",
-    sections: ["nav-item/sidebar"],
-  },
-  {
     id: "menu",
     title: "Menu",
     group: "Navigation",
     lead: "The surface shared by dropdowns, context menus and the command palette. Roving focus with Arrow Up/Down (wrapping), Home, End and type-ahead.",
     sections: [["menu/items", "menu/radio", "menu/descriptions"]],
-  },
-  {
-    id: "account-menu",
-    title: "AccountMenu",
-    group: "Navigation",
-    lead: "The signed-in person's menu: who they are, the app's items, the theme in one row and sign out last. One shape in every app.",
-    sections: ["account-menu/default"],
   },
   {
     id: "badge",
@@ -380,60 +425,6 @@ export const PAGES: GalleryPage[] = [
     group: "Live",
     lead: "Scrollable monospace log output for live and completed streams. Sticks to the bottom while following, pauses when scrolled up, and pairs with StreamState.",
     sections: ["log-viewer/live"],
-  },
-  {
-    id: "panel",
-    title: "Panel and Frame",
-    group: "Layout",
-    lead: "A bg-1 card with a 44px header holding the title, the state and the actions. Footers only for pagination or totals.",
-    sections: ["panel/variants"],
-  },
-  {
-    id: "app-shell",
-    title: "AppShell",
-    group: "Layout",
-    lead: "The app shell: the title bar, then the sidebar, the square raised view surface, the docked bottom and right panels and the panel rail at the window's edge. The sidebar folds to a 48px rail below 140px. On a phone the sidebar is a drawer.",
-    sections: ["app-shell/workbench", "app-shell/two-frames"],
-  },
-  {
-    id: "navigation",
-    title: "Navigation",
-    group: "Layout",
-    lead: "How the shared sidebar, the view's columns, the header and the stack work together. Going deeper changes the main column, not the sidebar. A domain with enough nested data drills down; the rest nests in place. The crumbs show a full path, a stripped path or only a back control, as the target needs.",
-    sections: [
-      "navigation/drilldown",
-      "navigation/topbar",
-      ["navigation/back-only", "navigation/page-tree"],
-      "navigation/columns",
-      ["navigation/crumbs-stripped", "navigation/crumbs-full"],
-      "navigation/phone-drilldown",
-    ],
-  },
-  {
-    id: "title-bar",
-    title: "Title bar",
-    group: "Layout",
-    lead: "The window's 44px title bar: the app icon, the history arrows and the scope path at the left, the scope box with its lenses on the window's centre, status and the window controls at the right. All text on it is at the drill size on one baseline. The box moves only to clear the path or the right side, then the path folds, then the lenses drop their labels, then they fold into +N. ⌘K turns the box into the command palette.",
-    sections: [
-      "title-bar/workbench",
-      "title-bar/narrow",
-      "title-bar/search",
-      ["scope-path/segments", "lens-switch/box"],
-      "command-palette/box",
-    ],
-  },
-  {
-    id: "shell-parts",
-    title: "Shell parts",
-    group: "Layout",
-    lead: "The parts the app shell is built from: the switcher every path segment and record crumb opens, the trail at the drill size, resizable borders, back and forward over the window's stops, the window controls and the appearance settings. Routing, storage and the native window come in through adapters and props.",
-    sections: [
-      "switcher/scopes",
-      "trail/record",
-      "resize-handle/columns",
-      "history/walk",
-      ["window-controls/styles", "appearance/settings"],
-    ],
   },
   {
     id: "split",

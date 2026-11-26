@@ -1,219 +1,60 @@
 import {
-  Avatar,
-  Button,
   createAppearance,
   createShell,
   EmptyState,
-  ListRow,
   memoryRouter,
   memoryStorage,
-  PropertyList,
-  RowList,
   Shell,
   type ShellLens,
   type ShellPanelTab,
   type ShellPlace,
-  type ShellRegistry,
   type ShellScope,
   ShellViewHeader,
-  State,
+  type ShellViewProps,
   TitleBarItem,
-  useShell,
+  ViewLayout,
 } from "@aiviarium/nocturne"
-import { createSignal, For, Show } from "solid-js"
-import { ISSUE_STATE, ISSUES, type Issue, STATE_NAME } from "../_kit/issues"
+import { createSignal } from "solid-js"
 import { LENSES } from "../_kit/shell"
 import type { ExampleMeta } from "../_kit/types"
+import {
+  HOSTS,
+  type Host,
+  INBOX,
+  ISSUE_VIEWS,
+  issueByKey,
+  issuesIn,
+  PROJECTS,
+  type Project,
+  REPORTS,
+  SESSIONS,
+  sessionsOf,
+} from "../_kit/workbench/data"
+import { FilesView, LogsView, SessionsView } from "../_kit/workbench/host"
+import { InboxView, TriageView } from "../_kit/workbench/inbox"
+import { IssueDetails, IssuesView } from "../_kit/workbench/issues"
+import { HostsView, ProjectsView, settingsView } from "../_kit/workbench/settings"
 
 export const meta: ExampleMeta = {
   title: "The app shell",
-  note: "One registry (createShell) draws the whole window: the path and its switchers, the lens box, the sidebar for the scope you are in, the view header's trail and stepper, the rail and its panels, and the palette (⌘K). Switch lenses (⌘1…⌘3) and back: each lens remembers its place. Open an issue and step with J and K; Esc goes back up. Details (⌥D) drills to a related issue in its own header. On a host's Sessions the view is the terminal, so the rail drops the Terminal panel (⌘J) there.",
+  note: "Switch lenses with ⌘1 to ⌘3; each lens remembers its place. Open an issue and step with J and K, and Esc goes back up. ⌥D opens Details. On a host, Sessions is the terminal, so the rail drops the Terminal panel there. ⌘K opens the palette.",
   surface: "none",
 }
 
 const STORAGE = memoryStorage()
 
-interface Project {
-  id: string
-  name: string
-  hue: "sky" | "orchid" | "mint"
-}
-const PROJECTS: Project[] = [
-  { id: "atlas", name: "Atlas web", hue: "sky" },
-  { id: "fleet", name: "Fleet agent", hue: "orchid" },
-]
-const HOSTS = [
-  { id: "build-01", name: "build-01", ok: true },
-  { id: "build-02", name: "build-02", ok: false },
-]
-
-const VIEWS = [
-  { id: "active", label: "Active", test: (i: Issue) => i.state !== "done" && i.state !== "backlog" },
-  { id: "backlog", label: "Backlog", test: (i: Issue) => i.state === "backlog" },
-  { id: "all", label: "All issues", test: () => true },
-]
-const issuesIn = (view?: string) => ISSUES.filter((VIEWS.find((v) => v.id === view) ?? VIEWS[0]!).test)
-const issue = (key: string) => ISSUES.find((i) => i.key === key)
-/** The issue a Details panel links to from another: the next one in the list. */
-const related = (key: string) => ISSUES[(ISSUES.findIndex((i) => i.key === key) + 1) % ISSUES.length]!
-
-const LOGS = [
-  "17:42:01 info  deploy  web@4f2a1c rolling out to 3 hosts",
-  "17:42:09 info  deploy  build-01 healthy",
-  "17:42:31 warn  deploy  build-02 healthcheck slow (28s)",
-  "17:43:02 error deploy  build-03 healthcheck timed out after 30s",
-  "17:43:04 info  deploy  rolled back build-03",
-]
-
-// ── Views: each place's, mounted once per place and fed from `shell.loc()` ─────────────────────────────
-
-function Blank(props: { shell: ShellRegistry }) {
+function Blank(props: ShellViewProps) {
   return (
-    <>
-      <ShellViewHeader />
+    <ViewLayout id="workbench.blank" header={<ShellViewHeader />}>
       <EmptyState
         title={`${props.shell.loc().place?.label ?? "This place"} is empty`}
         description="Nothing here yet."
       />
-    </>
+    </ViewLayout>
   )
 }
 
-function Issues(props: { shell: ShellRegistry }) {
-  const loc = () => props.shell.loc()
-  const list = () => issuesIn(loc().view?.id)
-  return (
-    <>
-      <ShellViewHeader
-        actions={[
-          { id: "filter", label: "Filter", icon: "filter", onClick: () => {} },
-          { id: "new", label: "New issue", icon: "plus", onClick: () => {} },
-        ]}
-      />
-      <Show
-        when={loc().record ? issue(loc().record!) : undefined}
-        fallback={
-          <RowList label="Issues">
-            <For each={list()}>
-              {(i) => {
-                const st = ISSUE_STATE[i.state]
-                return (
-                  <ListRow
-                    icon="circle-dot"
-                    title={i.title}
-                    secondary={i.key}
-                    status={st ? <State status={st[0]}>{st[1]}</State> : undefined}
-                    meta={i.updated}
-                    unread={Boolean(i.unread)}
-                    selected={props.shell.selection() === i.key}
-                    onClick={() => props.shell.toPlace(undefined, "issues", loc().view?.id, i.key)}
-                  />
-                )
-              }}
-            </For>
-          </RowList>
-        }
-      >
-        {(i) => (
-          <article class="ex-record">
-            <h1 class="heading">{i().title}</h1>
-            <p class="nc-muted">
-              {STATE_NAME[i().state]}. Updated {i().updated} ago. Press J or K for the next or previous issue
-              in {loc().view?.label ?? "Active"}, Esc for the list.
-            </p>
-          </article>
-        )}
-      </Show>
-    </>
-  )
-}
-
-function Listing(props: {
-  shell: ShellRegistry
-  rows: Array<{ id: string; label: string; detail: string }>
-}) {
-  return (
-    <>
-      <ShellViewHeader />
-      <RowList label={props.shell.loc().module.id}>
-        <For each={props.rows}>
-          {(r) => (
-            <ListRow
-              icon={props.shell.loc().module.icon}
-              title={r.label}
-              secondary={r.detail}
-              onClick={() => props.shell.go(`/${props.shell.loc().module.id}/${r.id}`)}
-            />
-          )}
-        </For>
-      </RowList>
-    </>
-  )
-}
-
-function Terminal(props: { shell: ShellRegistry }) {
-  return (
-    <>
-      <ShellViewHeader />
-      <pre class="ex-term">{`mira@${String((props.shell.loc().frame.item as { id: string }).id)}:~$ tail -f deploy.log\n${LOGS.join("\n")}`}</pre>
-    </>
-  )
-}
-
-function Logs() {
-  return (
-    <>
-      <ShellViewHeader />
-      <pre class="ex-term">{LOGS.join("\n")}</pre>
-    </>
-  )
-}
-
-function IssueDetails(props: { id: string }) {
-  const shell = useShell()
-  const i = () => issue(props.id)
-  return (
-    <Show when={i()}>
-      {(it) => (
-        <div class="ex-pad">
-          <PropertyList
-            items={[
-              { label: "Key", value: <span class="nc-mono">{it().key}</span> },
-              { label: "State", value: STATE_NAME[it().state] },
-              {
-                label: "Assignee",
-                value: it().assignee ? (
-                  <span class="nc-person">
-                    <Avatar name={it().assignee!} size="sm" />
-                    <span>{it().assignee}</span>
-                  </span>
-                ) : (
-                  "No one"
-                ),
-              },
-              {
-                label: "Related",
-                value: (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => shell?.drill("details", related(it().key).key)}
-                  >
-                    {related(it().key).key}
-                  </Button>
-                ),
-              },
-            ]}
-          />
-        </div>
-      )}
-    </Show>
-  )
-}
-
-// ── The registry ─────────────────────────────────────────────────────────────────────────────────────
-
-const lens = (id: string, places: ShellPlace[], extra: Partial<ShellLens> = {}): ShellLens => ({
+const lens = <T,>(id: string, places: ShellPlace<T>[], extra: Partial<ShellLens<T>> = {}): ShellLens<T> => ({
   ...LENSES.find((l) => l.id === id)!,
   places,
   ...extra,
@@ -225,50 +66,66 @@ const project: ShellScope<Project> = {
   noun: "project",
   mark: (p) => ({ name: p.name, hue: p.hue }),
   items: () => PROJECTS,
-  inspect: (p) => <EmptyState size="sm" title={p.name} description="Open an issue to see its details." />,
+  inspect: (p) => <EmptyState size="sm" title={p.name} description="Select an issue to see its details." />,
   lenses: [
-    lens("explore", [
-      { id: "map", label: "Map", icon: "grid", view: Blank },
-      { id: "notes", label: "Notes", icon: "file", view: Blank },
+    lens<Project>("explore", [
+      { id: "triage", label: "Triage", icon: "inbox", view: TriageView, count: () => REPORTS.length },
+      { id: "ideas", label: "Ideas", icon: "star", view: Blank },
     ]),
-    lens("product", [
-      { id: "roadmap", label: "Roadmap", icon: "calendar", view: Blank },
+    lens<Project>("product", [
       { id: "specs", label: "Specs", icon: "book-open", view: Blank },
+      { id: "roadmap", label: "Roadmap", icon: "calendar", view: Blank },
     ]),
-    lens(
-      "build",
-      [
-        {
-          id: "issues",
-          label: "Issues",
-          icon: "list",
-          view: Issues,
-          noun: "issue",
-          views: VIEWS.map((v) => ({ id: v.id, label: v.label })),
-          count: () => issuesIn("active").length,
-          records: (_p, view) => issuesIn(view).map((i) => ({ id: i.key, label: i.key, hint: i.title })),
-          recordLabel: (key) => issue(key)?.key,
-          inspect: (key) => <IssueDetails id={key} />,
-        },
-        { id: "cycles", label: "Cycles", icon: "refresh-cw", view: Blank },
-        { id: "prs", label: "Pull requests", icon: "git-pull-request", view: Blank, count: () => 2 },
-      ],
-      { open: { right: "details" } },
-    ),
+    lens<Project>("build", [
+      {
+        id: "issues",
+        label: "Issues",
+        icon: "list-todo",
+        view: IssuesView,
+        noun: "issue",
+        views: ISSUE_VIEWS.map((v) => ({ id: v.id, label: v.label })),
+        count: (p) => issuesIn(p.id, "active").length,
+        records: (p, view) => issuesIn(p.id, view).map((i) => ({ id: i.key, label: i.key, hint: i.title })),
+        recordLabel: (key) => issueByKey(key)?.key,
+        inspect: (key) => <IssueDetails id={key} />,
+      },
+      { id: "cycles", label: "Cycles", icon: "refresh-cw", view: Blank },
+      { id: "prs", label: "Pull requests", icon: "git-pull-request", view: Blank, count: () => 3 },
+    ]),
   ],
 }
 
-const host: ShellScope<(typeof HOSTS)[number]> = {
+const host: ShellScope<Host> = {
   id: "host",
   label: (h) => h.name,
   noun: "host",
-  mark: (h) => ({ name: h.name, icon: "server", hue: h.ok ? "mint" : "amber" }),
+  mark: (h) => ({ name: h.name, icon: "server", hue: h.state === "degraded" ? "amber" : "mint" }),
   items: () => HOSTS,
   lenses: [
-    lens("operate", [
-      // The view is the terminal: the Terminal panel would show the same sessions.
-      { id: "sessions", label: "Sessions", icon: "terminal", view: Terminal, covers: ["terminal"] },
-      { id: "logs", label: "Logs", icon: "logs", view: Logs },
+    lens<Host>("operate", [
+      {
+        id: "sessions",
+        label: "Sessions",
+        icon: "terminal",
+        view: SessionsView,
+        noun: "session",
+        count: (h) => sessionsOf(h.id).filter((s) => s.state === "running").length,
+        records: (h) => sessionsOf(h.id).map((s) => ({ id: s.id, label: s.title, hint: s.id })),
+        recordLabel: (id) => SESSIONS.find((s) => s.id === id)?.title,
+        // The tabs name the open session: no trail. The view is the terminal, so the panel steps aside.
+        trail: false,
+        covers: ["terminal"],
+      },
+      {
+        id: "files",
+        label: "Files",
+        icon: "folder",
+        view: FilesView,
+        // The view draws its own trail of folders.
+        trail: false,
+        recordLabel: (path) => path.split("/").at(-1),
+      },
+      { id: "logs", label: "Logs", icon: "logs", view: LogsView },
     ]),
   ],
 }
@@ -283,6 +140,10 @@ export default function AppShellWorkbench() {
   const [tab, setTab] = createSignal("s1")
   let made = 0
 
+  // The accent follows the lens on this window only, so the rest of the page keeps its own.
+  let frame: HTMLDivElement | undefined
+  const appearance = createAppearance({ storage: STORAGE, root: () => frame })
+
   const shell = createShell({
     router: memoryRouter("/projects/atlas/build/issues"),
     storage: STORAGE,
@@ -293,25 +154,24 @@ export default function AppShellWorkbench() {
     ],
     scopes: [
       {
-        id: "projects",
-        label: "Projects",
-        icon: "folder",
-        child: project,
-        view: (p) => (
-          <Listing shell={p.shell} rows={PROJECTS.map((x) => ({ id: x.id, label: x.name, detail: x.id }))} />
-        ),
+        id: "inbox",
+        label: "Inbox",
+        icon: "inbox",
+        view: InboxView,
+        count: () => INBOX.filter((n) => n.unread).length,
       },
+      { id: "projects", label: "Projects", icon: "board", child: project, view: ProjectsView },
+      { id: "hosts", label: "Hosts", icon: "server", child: host, view: HostsView },
       {
-        id: "hosts",
-        label: "Hosts",
-        icon: "server",
-        child: host,
-        view: (p) => (
-          <Listing
-            shell={p.shell}
-            rows={HOSTS.map((h) => ({ id: h.id, label: h.name, detail: h.ok ? "Healthy" : "Degraded" }))}
-          />
-        ),
+        id: "settings",
+        label: "Settings",
+        icon: "settings",
+        places: [
+          { id: "general", label: "General", icon: "settings" },
+          { id: "members", label: "Members", icon: "users" },
+          { id: "appearance", label: "Appearance", icon: "monitor" },
+        ],
+        view: settingsView(appearance),
       },
     ],
     panels: [
@@ -357,10 +217,6 @@ export default function AppShellWorkbench() {
     commands: [{ id: "theme", label: "Switch theme", icon: "moon", run: () => appearance.toggleTheme() }],
   })
 
-  // The accent follows the lens on this window only, so the rest of the page keeps its own.
-  let frame: HTMLDivElement | undefined
-  const appearance = createAppearance({ storage: STORAGE, root: () => frame })
-
   return (
     <div
       class="ex-app-window"
@@ -382,7 +238,7 @@ export default function AppShellWorkbench() {
           detail: "mira@acme.dev",
           items: [{ id: "profile", label: "Profile", icon: "user" }],
           theme: { value: appearance.theme(), onChange: (v) => appearance.setTheme(v) },
-          onAppearance: () => {},
+          onAppearance: () => shell.go("/settings/appearance"),
           onSignOut: () => {},
         }}
       />

@@ -3,7 +3,7 @@ import type { ExampleMeta } from "../_kit/types"
 
 export const meta: ExampleMeta = {
   title: "Header, flush body and the frame",
-  note: "A 38px header holding the title, the state and the actions. Footers only for pagination or totals.",
+  note: "A 44px header holding the title, the state and the actions. Footers only for pagination or totals.",
   surface: "well",
 }
 
@@ -21,7 +21,7 @@ export default function Panels() {
         }
         footer={<span class="nc-meta">120×32 · s_7f2a</span>}
       >
-        <span class="nc-muted">Content sits under the 38px header on 12px padding.</span>
+        <span class="nc-muted">Content sits under the 44px header on 12px padding.</span>
       </Panel>
       <Panel
         title="Logs"
@@ -36,13 +36,9 @@ export default function Panels() {
         </pre>
       </Panel>
       <Frame>
-        <span class="nc-muted">
-          A Frame: bg-1, radius 8, a hairline edge. The app shell stacks frames with an 8px gap.
-        </span>
+        <span class="nc-muted">A Frame: bg-1, radius 8, a hairline edge, for a region inside a view.</span>
       </Frame>
-      <Callout tone="info">
-        Panels and frames sit on the bg-0 canvas, separated by a gap, never by shadow.
-      </Callout>
+      <Callout tone="info">Panels and frames are separated by a gap or a hairline, never by shadow.</Callout>
     </div>
   )
 }

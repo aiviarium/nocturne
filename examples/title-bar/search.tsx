@@ -14,7 +14,7 @@ export default function TitleBarSearch() {
         runsIn="browser"
         path={[
           { id: "acme", label: "Acme", onClick: () => {} },
-          { id: "docs", label: "Docs", icon: "book-open" },
+          { id: "docs", label: "Docs" },
         ]}
         keys={false}
       />

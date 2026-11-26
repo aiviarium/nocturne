@@ -23,16 +23,17 @@ body {
   display: flex;
   align-items: center;
   gap: var(--space-2);
+  height: var(--control-md);
   padding: 0 var(--space-2) var(--space-3);
+  font-size: var(--nc-type-drill);
   font-weight: 600;
 }
+/* The page is the raised view surface of an app: square, to the window's edges, a hairline at the sidebar. */
 .g-main {
   display: flex;
   flex-direction: column;
   min-width: 0;
-  margin: var(--space-2) var(--space-2) var(--space-2) 0;
-  border: 1px solid var(--line-soft);
-  border-radius: var(--radius-md);
+  border-left: 1px solid var(--line-soft);
   background: var(--bg-1);
 }
 .g-bar {
@@ -40,13 +41,17 @@ body {
   align-items: center;
   gap: var(--space-4);
   min-height: var(--header);
-  padding: 0 var(--space-3);
+  padding: 0 var(--space-3) 0 var(--space-5);
   border-bottom: 1px solid var(--line-soft);
   flex-wrap: wrap;
 }
+/* The page's name at the drill size, as a view header's title. */
 .g-bar__title {
   margin: 0;
-  font-weight: 600;
+  font-size: var(--nc-type-drill);
+  line-height: var(--nc-type-drill-line);
+  font-weight: var(--nc-type-drill-weight);
+  letter-spacing: var(--nc-type-drill-track);
 }
 .g-bar__spacer {
   flex: 1;
@@ -142,6 +147,9 @@ body {
   border-radius: var(--radius-md);
   background: var(--bg-0);
   min-width: 0;
+}
+.g-lead a {
+  color: var(--text-1);
 }
 @media (max-width: 800px) {
   .g-app {
@@ -265,4 +273,28 @@ html[data-device="iphone"],
   margin-left: -67px;
   border-radius: var(--radius-full);
   background: var(--text-1);
+}
+
+/* A full-size page: the one example takes the rest of the window. */
+.g-main[data-full] {
+  height: 100vh;
+}
+.g-main[data-full] .g-body {
+  flex: 1;
+  min-height: 0;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5) var(--space-5);
+}
+.g-main[data-full] .g-section {
+  flex: 1;
+  min-height: 0;
+}
+/* The page's title already names the one example. */
+.g-main[data-full] .g-section__title {
+  display: none;
+}
+.g-main[data-full] .ex-app-window {
+  flex: 1;
+  height: auto;
+  min-height: 560px;
 }
