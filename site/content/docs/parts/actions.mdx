@@ -67,9 +67,10 @@ Rare actions go behind the overflow button.
 ## The account
 
 `AccountMenu` is the signed-in person's menu, at the foot of the sidebar.
-Its trigger is a row with the avatar and the name, and `trigger="avatar"` shows the avatar alone for a top bar.
+Its trigger is a row with the avatar and the name.
+On the sidebar's icon rail it is the avatar alone, and `trigger="avatar"` gives the same anywhere else.
 At the top of the menu is the signed-in person, with `detail` and `badge` beside the name.
-The app's `items` follow.
+The app's `items` follow, then "Appearance…" with `onAppearance`, which opens the [appearance settings](../shell/appearance.mdx).
 With `theme`, the menu has one theme row, where System, Light and Dark are three icons.
 With `onSignOut`, the last item signs out.
 

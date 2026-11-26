@@ -5,6 +5,7 @@ description: The part to use for each thing a view shows.
 
 Build every view from these parts.
 Views then look and behave alike, however many teams or modules write them.
+The window around them is the [app shell](../shell/index.mdx).
 
 Do not restyle a part for one view.
 If a part lacks something, add a variant to it.
@@ -14,13 +15,20 @@ On a phone each part takes the phone scale by itself, see [Phones](../phones.mdx
 
 | You are showing | Use | Page |
 | --- | --- | --- |
-| The frame of a view | `ViewLayout`, `ViewHeader` | [Views](./views.mdx#the-frame-of-a-view) |
-| Back, the place and search at the top of the app | `SidebarHeader`, or a top bar from `AppShell` | [Navigation](./navigation.mdx#the-top-of-the-app) |
+| The app's window: title bar, sidebar, view surface, panels | `createShell` and `Shell` | [The app shell](../shell/index.mdx) |
+| The path, the lenses, search and the window controls | `TitleBar`, `ScopePath`, `ScopeBox`, `LensSwitch`, `WindowControls` | [Title bar and lenses](../shell/title-bar.mdx) |
+| The sidebar's header and tree | `SidebarHeader`, `Nav` | [Sidebar](../shell/sidebar.mdx) |
+| The header of a view, its trail and stepper | `ShellViewHeader`, `ViewHeader`, `Trail` | [View header and trail](../shell/view-header.mdx) |
+| Details, a terminal, logs beside the view | `PanelRail`, `ShellPanel` | [Panels](../shell/panels.mdx) |
+| Back and forward | `createHistory`, `HistoryArrows` | [History](../shell/history.mdx) |
+| Theme and accent settings | `createAppearance`, `AppearanceSettings` | [Appearance](../shell/appearance.mdx) |
+| The frame of a view | `ViewLayout`, `ShellViewHeader` | [Views](./views.mdx#the-frame-of-a-view) |
 | A box of content | `Card` | [Views](./views.mdx#card) |
 | A tool region with a header | `Panel` | [Views](./views.mdx#panel) |
 | The heading of a section | `SectionHeading` | [Views](./views.mdx#section-heading) |
-| The sidebar, columns, crumbs and drilling down | `AppShell`, `ViewLayout`, `ViewHeader`, `NavigationStack` | [Navigation](./navigation.mdx) |
+| A view's own sidebar, drilling down or nesting, phones | `ViewLayout`, `Nav`, `NavigationStack` | [Navigation](./navigation.mdx) |
 | A list of things | `RowList` and `ListRow` | [Lists](./lists.mdx) |
+| Groups of rows under a foldable heading | `RowSection` | [Lists](./lists.mdx#sections) |
 | Records in lanes | `Board`, `BoardLane`, `BoardCard` | [Records](./records.mdx#board) |
 | A table of records | `DataTable` | [Records](./records.mdx#datatable) |
 | Records edited in place | `DataList` | [Records](./records.mdx#datalist) |

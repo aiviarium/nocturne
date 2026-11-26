@@ -1,6 +1,6 @@
 ---
 title: Sizes
-description: Spacing, radii, controls, rows and the header.
+description: Spacing, radii, controls, rows, headers, the shell's widths and motion.
 ---
 
 ## Spacing
@@ -28,6 +28,7 @@ Any other spacing is a mistake.
 | `--radius-xs` | `kbd`, inline code, marks |
 | `--radius-sm` | Buttons and fields at every size |
 | `--radius-md` | Cards, frames, code blocks |
+| none | Viewport containers, such as the view area and the docked panels |
 | `--radius-lg` | Menus, popovers and board lanes |
 | `--radius-xl` | The composer |
 | `--radius-2xl` | Widgets and the cards on a `WidgetGrid` |
@@ -43,10 +44,41 @@ Fields are 30px, the height of a compact row.
 
 ## Rows and headers
 
-<LengthScale names={['row-compact', 'row-default', 'header']} kind="height" />
+<LengthScale names={['row-default', 'row-compact', 'header']} kind="height" />
 
-Rows in lists and tables are 30px.
-The header of a view or a panel is 44px.
+List rows, table rows, sidebar items and data list rows are 30px, the only row height on a desktop.
+There is no comfortable density.
+`--row-compact` is the same 30px and stays for parts that name it.
+
+The title bar, the sidebar header, the view header and the panel headers are 44px, `--header`.
 On a phone, rows are 44px and 58px, see [Phones](../phones.mdx).
 
 <Example id="foundations/density" />
+
+## The shell
+
+<LengthScale names={['rail', 'sidebar', 'panel-rail']} kind="space" />
+
+| Token | Use |
+| --- | --- |
+| `--rail` | The sidebar folded to its icon rail |
+| `--sidebar` | The sidebar's width before the person resizes it, from 200px to 360px |
+| `--panel-rail` | The panel rail at the window's right edge |
+
+The view area and its docked panels have no radius.
+See [The app shell](../shell/index.mdx#the-layout).
+
+## Motion
+
+<LengthScale names={['ease', 'dur-hover', 'dur-fade', 'dur-accent']} kind="motion" />
+
+| Token | Use |
+| --- | --- |
+| `--ease` | The one easing |
+| `--dur-hover` | Hover, which changes colour only |
+| `--dur-fade` | Things that appear, such as menus, popovers, the palette, dialogs and toasts |
+| `--dur-accent` | The accent's cross-fade on a lens switch |
+
+The durations are 0 under reduced motion.
+Content swaps never animate.
+A new place, lens, record, tab or panel drill replaces the content in the same frame.

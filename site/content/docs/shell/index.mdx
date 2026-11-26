@@ -1,0 +1,66 @@
+---
+title: Overview
+description: The window every Nocturne app shares, drawn from one registry.
+---
+
+The shell is the window around every view.
+An app registers its scopes, lenses, places, records and panels with `createShell`, and `<Shell>` draws the window from them.
+The app writes its views and leaves the frame to the shell.
+
+<Example id="app-shell/workbench" />
+
+## The layout
+
+| Region | What it holds | Size |
+| --- | --- | --- |
+| Title bar | The app icon, the history arrows, the scope path, the lens box on the window's centre, status items and the window controls | 44px across the window |
+| Sidebar | Its header, the current scope's places, the account at its foot | 240px, 200px to 360px, folds to a 48px rail |
+| View surface | The view, with its own 44px header | Fills the rest, down to the window's bottom edge |
+| Docked panels | One panel at the view's right and one under it | Resized by their edge |
+| Panel rail | The buttons that open the panels | 44px at the window's right edge |
+
+The view area is raised on the canvas.
+It and its docked panels are square, because viewport containers have no radius.
+A rounded corner would clash with the title bar's line.
+Buttons, fields, chips, cards, selection fills and everything that floats keep their radius.
+
+The title bar, the sidebar header, the view header and the panel headers are all 44px.
+
+## The pages
+
+| Page | What it covers |
+| --- | --- |
+| [Title bar and lenses](./title-bar.mdx) | The path, the box, the palette and the window controls |
+| [Sidebar](./sidebar.mdx) | The header, the tree, the fold to a rail and the account |
+| [View header and trail](./view-header.mdx) | The title, the trail, the record switcher and the stepper |
+| [Panels](./panels.mdx) | The rail, docked panels, their tabs and `covers` |
+| [History](./history.mdx) | Back and forward over one list of stops |
+| [Appearance](./appearance.mdx) | The theme, the accent that follows lenses and the tint line |
+| [Registering with createShell](./create-shell.mdx) | What the app declares and what the shell derives |
+| [Keyboard](./keyboard.mdx) | Every key the shell binds, and the order Escape closes things in |
+
+## Structure and time
+
+The view and each panel show where they are, as a trail in their own header, and every crumb goes up.
+Where the person was is kept once, for the whole window, in the [history](./history.mdx).
+No view or panel has a back button of its own.
+
+## No flicker
+
+- Switching a place, a lens, a record, an inbox item, a tab or a panel's drill replaces the content in the same frame. Content swaps never fade.
+- The frame, the sidebar and the panels are never remounted. They take new data. A view mounts once per scope, lens and place, and a record or a drill swaps its data only.
+- No transient fallback shows between two states, and the layout settles in the frame the address changes.
+- Only things that appear fade in, such as menus, popovers, the palette, dialogs and toasts. See [Overlays](../overlays.mdx).
+
+## No network code
+
+The shell doesn't touch the location bar, the browser's storage or the native window.
+They come in through adapters the app passes.
+
+| Adapter | Built in | Page |
+| --- | --- | --- |
+| Router | `memoryRouter()`, `hashRouter()`, or the app's own `HistoryRouter` | [History](./history.mdx#routers) |
+| Storage | `webStorage(localStorage)`, `memoryStorage()`, or the app's own `ShellStorage` | [Registering](./create-shell.mdx#storage) |
+| Window | The handlers of `WindowControls`, passed as `window` | [Title bar](./title-bar.mdx#window-controls) |
+
+<GalleryLink page="shell">The shell in the gallery</GalleryLink>

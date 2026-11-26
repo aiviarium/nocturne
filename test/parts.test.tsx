@@ -77,7 +77,7 @@ describe("ListRow", () => {
     expect(rows[1]?.hasAttribute("data-interactive")).toBe(false)
   })
 
-  test("density, lines, unread and muted are data attributes the styles read", () => {
+  test("lines, unread and muted are data attributes the styles read", () => {
     const { root } = track(
       mount(() => (
         <RowList label="Rows">

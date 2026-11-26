@@ -8,6 +8,9 @@ Nocturne is a design system and its SolidJS component library, published as one 
 - `src/styles/`: the design system. `tokens.css` holds the tokens and `bundle.css` the base `nc-*` classes.
   `extra.css`, `parts.css`, `editor.css` and the other files add what the components need. `index.css` loads
   them in cascade layers.
+- `src/shell/`: the app shell. `createShell` is the registry of scopes, lenses, places, records and panels, and
+  `Shell` draws the window from it. The title bar, scope path, lens box, palette, switcher, trail, sidebar header,
+  panel rail and panels, resize handles, history, window controls and appearance are its parts.
 - `src/components/` holds the components, `src/fields/` the field kinds, `src/editor/` the rich text editor and
   `src/lib/` the helpers. `src/index.ts` is the public API.
 - `icons/`: every icon `name` takes, as SVG for the site. `scripts/icons.ts` maps each name to a Lucide icon, and
@@ -18,6 +21,9 @@ Nocturne is a design system and its SolidJS component library, published as one 
 - `scripts/`: `lint-tokens.ts`, `gen-icons.ts` and the Playwright screenshot scripts.
 - `skills/nocturne/`: the skill apps and agents follow to build views with Nocturne.
 - `site/`: the documentation site, which follows aiviarium/docs-base at commit dcffeac. See `site/AGENTS.md`.
+  `site/content/docs/shell/` documents the app shell.
+- `drafts/`, where it exists, holds design drafts on one machine. It is not part of the package or the repository,
+  and nothing in `src/`, `examples/` or the site imports from it.
 
 ## ui-sdk
 
@@ -57,15 +63,19 @@ The site check needs `bun install` in `site/` and the `vale` binary.
 
 ## Rules
 
-- Build views from the parts on the site's "Which part for what" pages (`site/content/docs/parts/`). If a part
-  lacks something, add a variant to it, and update its page.
+- Build the window with `createShell` and `Shell`, and views from the parts on the site's "Which part for what"
+  pages (`site/content/docs/parts/`, starting at `index.mdx`). If a part lacks something, add a variant to it, and
+  update its page. A new kind of thing a view shows gets a row in that table.
 - When tokens, examples or icons change, the site picks them up at build time. When a rule or a size changes,
   update the matching page in `site/content/docs/`. `docs/phone.md` and the Phones page of the site say the same.
 - Use tokens for colours, radii and font sizes. `lint:tokens` fails on literals.
 - Each exported component has a stable `data-part` on its root and at least one test that renders it, checks
   the `data-part` and exercises its main interaction.
 - The library has no network code. Anything that talks to a backend comes in through a provider or a prop
-  (`EditorServices`, `TranscriberProvider`, the field runtime, `ViewLayoutHost`, `ViewChrome`).
+  (`EditorServices`, `TranscriberProvider`, the field runtime, `ViewLayoutHost`, `ViewChrome`). The shell takes the
+  router (`HistoryRouter`: `memoryRouter`, `hashRouter` or the app's), the storage (`ShellStorage`: `webStorage`,
+  `memoryStorage` or the app's) and the native window's handlers (`ShellWindow`) as adapters. Only `hashRouter`
+  touches `location` and `history`, when the app passes it, and `webStorage` wraps the store the app gives it.
 - Keep prose plain and factual. Vale must print nothing on the Markdown and MDX files.
 - Never commit screenshots. `screens/` is ignored, and review shots stay outside the repository.
 - Commits follow Conventional Commits.

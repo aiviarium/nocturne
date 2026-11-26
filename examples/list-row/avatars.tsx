@@ -1,7 +1,7 @@
 import { Avatar, ListRow, RowList } from "@aiviarium/nocturne"
 import type { ExampleMeta } from "../_kit/types"
 
-export const meta: ExampleMeta = { title: "Comfortable, with avatars" }
+export const meta: ExampleMeta = { title: "With avatars" }
 
 export default function AvatarRows() {
   return (

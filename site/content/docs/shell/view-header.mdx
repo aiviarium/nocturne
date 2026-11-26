@@ -1,0 +1,79 @@
+---
+title: View header and trail
+description: The view's one header, its title or trail, the record switcher and the stepper.
+---
+
+Each view has one header, a 44px `ViewHeader`.
+Inside a `Shell` the view uses `ShellViewHeader`, which takes the title, the trail and the stepper from the registry.
+The view adds its actions and the content of the header's middle.
+
+```tsx
+function IssuesView() {
+  return (
+    <ViewLayout id="issues" header={<ShellViewHeader actions={actions} />}>
+      …
+    </ViewLayout>
+  )
+}
+```
+
+<Example id="trail/record" />
+
+## Title or trail
+
+At a place the header shows the place's name, or the saved view's.
+The sidebar already marks the place, and the header has no trail there.
+
+Drilled to a record, the header shows the trail in place of the title: `Issues / WEB-142 ⌄`.
+A place whose records nest, such as folders, gives its own crumbs: `Files / src / auth ⌄`.
+
+- Crumbs are at the drill size, 12px/500, with a "/" in `text-4` between them.
+- The crumbs that go up are `text-3`, and light on hover. The current one is `text-1`. Only the colour changes.
+- "Issues" has the same size, weight and baseline as a title and as the first crumb, so it doesn't move when the view drills.
+- Each crumb goes to what it names. Escape goes up one level.
+- There is no back chevron. The first crumb is the way up, and its tooltip says "Up to Issues".
+- A trail never repeats the title bar's path.
+- When the header is narrow, the leading crumbs fold into one menu.
+
+A view whose own tabs show the record, such as a terminal workbench with a tab per session, sets `trail: false` on its place.
+It then has no trail and no stepper.
+
+## The record switcher
+
+The current record's crumb is a switcher: "WEB-142 ⌄".
+It opens the same filtered menu as the path's segments, "Switch issue…".
+It lists the records of the list the person came from, in that list's order and filter, the current one checked.
+The place's `noun` names it, and `records` gives the list.
+
+## The stepper
+
+At a record, ↑ and ↓ with "4 / 10" sit at the header's right, before the actions.
+They step through the same list as the switcher.
+J and K do the same from the keyboard.
+
+## Actions
+
+The view's actions sit at the header's right in one order:
+
+1. icon actions
+2. pin
+3. overflow
+4. the primary action
+
+An add action is a ghost plus icon button, `icon: "plus"` with `primary` left out.
+A view switch or search goes in the header's middle, as its children.
+Never put a toolbar row under the header.
+
+<DoDont do="design/compact-header" dont="design/inflated-header" />
+
+## Selection and the trail
+
+The Details panel shows the selected row, and the trail stays as it is while the person selects rows.
+Opening a record goes to it and changes the trail.
+The trail is where the record sits, not the list the person came from.
+
+On a phone the header is the screen's navigation bar.
+The trail isn't shown there, and the parent crumb becomes the screen's back control, named after the parent.
+See [Phones](../phones.mdx#navigation).
+
+<GalleryLink page="view-header">The view header in the gallery</GalleryLink>

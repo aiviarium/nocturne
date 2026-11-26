@@ -1,0 +1,57 @@
+---
+title: History
+description: One list of stops for the whole window, walked by keys, mouse buttons and arrows.
+---
+
+The window keeps one history.
+Trails in the headers are structure and go up.
+The history is time and goes back to where the person was.
+
+<Example id="history/walk" />
+
+## Stops
+
+A stop is any move the person makes, to a scope, lens, place, saved view, record or panel drill.
+Each stop is a real entry of the router, carrying its index.
+⌘[ and ⌘], Alt+← and Alt+→, the mouse's back and forward buttons and, in a browser tab, the browser's own arrows all walk the same list.
+With a `storage`, a reload keeps it.
+
+- Lens switches in a row, in one scope, fold into one stop. Switching back to the lens the run began in undoes the run.
+- A lens switch waits while the previous move is still landing, then applies the latest one.
+- A short address, such as `/projects/atlas`, means "the lens worn last there". Its meaning changes as the person moves.
+The history writes each stop's address out in full when it records it.
+
+## The arrows
+
+In a desktop window, `HistoryArrows` is right after the app icon, before the path.
+It is two 20px chevrons in `text-3`.
+
+- Each tooltip names where it goes: "Back to WEB-139, Details › WEB-127".
+- A long press or a right click lists the last ten stops on that side.
+- An arrow with no step dims.
+
+In a browser tab there are no arrows.
+The browser's own do the same job.
+
+## Routers
+
+`createHistory` takes a router, which is the only thing that touches the address.
+
+| Router | For |
+| --- | --- |
+| `memoryRouter(initial)` | Tests, examples and a desktop window without an address bar |
+| `hashRouter()` | A browser tab, with the app's address in the hash: `#/projects/atlas` |
+| The app's own `HistoryRouter` | Any other router: `path`, `state`, `push`, `replace`, `go` and `subscribe` |
+
+`createShell` makes its history over the `router` it is given.
+An app that only needs the history uses `createHistory({ router, describe, storage })`, where `describe` names an address for the arrows' tooltips and the list.
+
+## Going up instead
+
+On WEB-139 with Details at WEB-127, each control gives the same answer however the person got there:
+
+- the panel's "WEB-139" crumb goes back to WEB-139 in the panel
+- the view's "Issues" crumb, or Escape, goes to Issues
+- the sidebar's ↑ goes to Projects
+
+<GalleryLink page="title-bar">The history in the gallery</GalleryLink>

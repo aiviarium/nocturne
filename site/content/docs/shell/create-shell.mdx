@@ -1,0 +1,127 @@
+---
+title: Registering with createShell
+description: What the app declares, how an address resolves, and what the shell derives for each part.
+---
+
+`createShell` is the registry the whole window is derived from.
+The app declares what exists.
+The shell resolves the address into where the person is and derives every part from it.
+
+```tsx
+import {
+  createAppearance, createShell, hashRouter, Shell, webStorage,
+} from "@aiviarium/nocturne"
+
+const storage = webStorage(localStorage)
+
+const shell = createShell({
+  router: hashRouter(),
+  storage,
+  workspace: { id: "acme", name: "Acme" },
+  scopes: [inbox, projects, hosts, settings],
+  panels: [details, terminal],
+})
+
+<Shell
+  shell={shell}
+  appearance={createAppearance({ storage })}
+  account={{ name: "Ada Park", onAppearance }}
+  window={{ style: "mac", onClose }}
+/>
+```
+
+## Scopes
+
+A scope is a module, such as Projects or Hosts, or the items under it, such as one project.
+The modules are the top-level `scopes`, in the sidebar's order, and the first is home.
+
+| Field | What it does |
+| --- | --- |
+| `id`, `label`, `icon`, `mark` | The scope's segment and how the path and the switcher draw it |
+| `child` | The parameter scope under a module, such as a project under Projects |
+| `items`, `itemId`, `noun` | The items of a parameter scope, which its switcher lists: "Switch project…" |
+| `lenses` | Ways of looking at the scope. Their places replace `places` |
+| `places` | The sidebar's tree when the scope has no lenses |
+| `view` | The scope's own view, for an address without a place in it |
+| `panels`, `commands`, `inspect`, `count` | The rail's panels, the palette's actions, what Details shows with nothing selected, a module's count |
+
+## Lenses
+
+A lens extends `Lens` (`id`, `label`, `icon`, `hue`, `purpose`, `source`) with its `places`.
+`panels` picks the panels the rail offers through it, and `open` the ones open the first time it is put on.
+`pinned: false` keeps a plugin's lens in Customise's hidden list until the person shows it.
+
+## Places
+
+| Field | What it does |
+| --- | --- |
+| `view` | The view the place shows. A child place uses its parent's, then the scope's |
+| `views` | Saved views, as child rows. The first is the place's own |
+| `count` | Shown in the sidebar above zero |
+| `records`, `recordLabel`, `noun` | The list the stepper steps over and the record switcher lists |
+| `trail: false` | Leaves out the trail and the stepper, for a view whose tabs show its record |
+| `children` | Places nested under this one |
+| `enters` | The place lists scopes. Opening one nests it in the path |
+| `covers` | Panels whose content the view already is. See [Panels](./panels.mdx#covers) |
+| `inspect` | What a panel such as Details shows for one of the place's records |
+
+## Panels and commands
+
+Panels take `id`, `label`, `icon`, `at` (`right` or `bottom`) and `render`, and optionally `key` (⌥ and the letter), `tabs` and `actions`.
+Commands take `id`, `label` and `run`, with an optional `shortcut` that the palette shows as key caps but doesn't bind.
+
+## The address
+
+An address is a list of segments: `/projects/atlas/build/issues/backlog/WEB-142`.
+That is the module, its item, the lens, the place, the saved view and the record.
+A place that `enters` a scope adds that scope's item and continues with its lens and place.
+A trailing `@details:WEB-127` is a panel's drill.
+
+A short address, such as `/projects/atlas`, opens the scope with the lens worn last there, at the place that lens remembers.
+
+## Derived state
+
+| Call | For |
+| --- | --- |
+| `loc()` | Where the person is, with frames, lens, place, saved view, record and drill |
+| `path()` | The title bar's scope path |
+| `lensBox()` | The box's lenses, the one that is on and the person's order |
+| `sidebar()` | The tree of the current scope, its ↑ and its parents |
+| `header()` | The view header's title, or its trail and stepper |
+| `panels()` | The rail, the open panels and what the view covers |
+| `panelTrail(id)`, `inspect()` | A panel's trail and the subject Details shows |
+| `search`, `actions()` | The palette's results and its `>` list |
+| `title()` | The window's title, such as `WEB-142 · Issues · Build · Atlas web · Acme` |
+
+The moves are `go`, `open`, `enter`, `wear`, `up`, `step`, `select`, `drill`, `drillUp`, `togglePanel` and `closePanel`.
+Each move is a stop in the [history](./history.mdx).
+
+## Views
+
+A place's view and a panel's `render` receive `{ shell }`.
+Inside a `Shell`, `useShell()` returns the same registry.
+A view reads `loc()` and the rest from it, and draws its header with `ShellViewHeader`.
+
+## Shell props
+
+| Prop | What it does |
+| --- | --- |
+| `runsIn` | `desktop` (default) or `browser`. See [Title bar](./title-bar.mdx#desktop-window-or-browser-tab) |
+| `icon`, `appMenu` | The app icon and its menu |
+| `window` | The window controls' style and handlers |
+| `appearance` | The theme and the accent that follows the lens |
+| `account` | The `AccountMenu` at the sidebar's foot |
+| `status` | `TitleBarItem`s before the window controls |
+| `keys` | Binds the [keyboard model](./keyboard.mdx). Default true |
+| `main` | Takes the keys pressed outside every shell when a page has several |
+| `foldBelow` | Below this width the sidebar starts folded. Default 900 |
+
+## Storage
+
+Lens prefs, the history, the sidebar's fold and the widths are kept in the `storage` the app passes. The library doesn't call `localStorage` itself.
+
+- `webStorage(localStorage)` wraps a Web Storage object, with every key under `nc:`. A store that throws reads as empty.
+- `memoryStorage()` lasts as long as the page, for tests and examples.
+- Any object with `get(key)` and `set(key, value)` works.
+
+Without a store, the shell forgets everything on reload.

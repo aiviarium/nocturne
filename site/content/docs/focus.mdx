@@ -7,6 +7,9 @@ icon: Focus
 ## The focus ring
 
 Every interactive element shows the focus ring, `--focus-ring`, on keyboard focus.
+The ring is a 1px line in `--accent-strong` with a 3px spread of the accent around it.
+It follows the accent, so it takes the hue of the lens that is on.
+`bundle.css` derives `--focus-ring-inset` from the same values.
 The parts draw it themselves.
 A global rule in `src/styles/parts.css` gives it to any other button, link, tab or field inside `.nc`.
 
@@ -26,7 +29,7 @@ The ring values are on [Shadows](./tokens/shadows.mdx).
 - Lists and tables are one tab stop. The arrow keys, Home and End move between rows.
 - Menus move with Arrow Up and Down, which wrap, and with Home, End and typing a letter.
 - A `Dialog` moves focus in when it opens. Tab cycles inside, Escape closes it, and focus returns to the button that opened it.
-- Escape closes only the topmost open layer.
+- Escape closes only the topmost open layer. Inside the app shell it then walks the shell's own stack, see [Keyboard](./shell/keyboard.mdx#escape).
 
 ## Contrast
 

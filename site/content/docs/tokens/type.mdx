@@ -17,8 +17,18 @@ Sizes are font size over line height, in px, then the weight.
 ## Sizes in the parts
 
 - Body text in a view is 13/20, `.body`.
+- Every drill is `.drill`, 12/20 at weight 500 with −0.005em tracking. The title bar's path and status items, the labels in the box of lenses, view titles and trails, and panel names and trails share this size and baseline.
+- The sidebar uses the drill size too: 12px/500 labels, 15px icons, an 8px gap, 30px rows and 11px counts. The account name and the filter field are 12px.
+- A page heading is 15/24 at 600, `.heading`.
 - A section heading is 13px semibold, see [Views](../parts/views.mdx#section-heading).
-- Labels above fields and secondary text are 12px.
-- Group labels in a sidebar or menu are 11px in `text-3`, `.section`.
+- Labels above fields and secondary text are 12px, `.label`.
+- Small labels are 11px/500 in `text-3`, `.section`, such as sidebar sections and column heads. They are never in capitals.
 - An inline title is 20/28, `.title`.
+- Counts, keys, dates, sizes and meters use tabular figures.
 - On a phone the parts take larger sizes, see [Phones](../phones.mdx#the-compact-phone-scale).
+
+## State never changes type
+
+Selected, current and hovered text keep their size and weight, so nothing reflows when the selection moves.
+A title and the same label as a crumb have one size, one weight and one baseline.
+The current item differs by colour only.

@@ -4,7 +4,7 @@ import { SESSIONS } from "../_kit/data"
 import type { ExampleMeta } from "../_kit/types"
 
 export const meta: ExampleMeta = {
-  title: "Compact (default), one line",
+  title: "One line",
   note: "Secondary text follows the title on the same line. Actions show on hover, focus and selection.",
 }
 

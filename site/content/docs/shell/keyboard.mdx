@@ -1,0 +1,47 @@
+---
+title: Keyboard
+description: The keys the shell binds, and the order Escape closes things in.
+---
+
+`Shell` has one key binding layer for the whole window.
+The parts inside it get `keys={false}`, so no key is bound twice.
+With several shells in a page, a key goes to the shell it was pressed in.
+With focus on the page itself, it goes to the shell used last, else the one marked `main`.
+
+## The keys
+
+| Keys | What they do |
+| --- | --- |
+| ⌘K | Opens and closes the command palette |
+| ⌘[ and ⌘], Alt+← and Alt+→ | Back and forward in the history |
+| The mouse's back and forward buttons | The same, inside the shell |
+| ⌘1 to ⌘9 | Put on the shown lenses in order |
+| ⌘B, ⌘\\ | Fold or unfold the sidebar |
+| ⌘F, / | Focus the sidebar's filter |
+| ⌘J | Toggle the bottom panel |
+| ⌥ and a panel's letter | Toggle that panel, such as ⌥D for Details |
+| J and K | The next and the previous record |
+| Escape | Closes the topmost thing, see below |
+
+On other systems, Ctrl replaces ⌘.
+Keys that would type a character are left alone while focus is in a field.
+While a menu, a dialog or the palette is open, it takes the keys first.
+
+## Escape
+
+Escape closes one thing at a time, the topmost first:
+
+1. what a view registered with `shell.pushEsc`, such as a peek or a composer
+2. the palette
+3. a panel's drill, one level up
+4. the open record, back to its list
+5. the sidebar's filter
+
+A menu, a dialog or a field takes Escape before the shell.
+Escape inside a docked panel closes the panel.
+Each overlay closes only itself, see [Overlays](../overlays.mdx#the-order).
+
+## Focus
+
+Every focusable part shows the 3px focus ring on keyboard focus, in the accent.
+See [Focus](../focus.mdx).

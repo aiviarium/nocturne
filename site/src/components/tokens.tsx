@@ -133,8 +133,8 @@ export function TypeScale() {
 
 const byPrefix = (prefix: string) => Object.keys(scale).filter((name) => name.startsWith(`${prefix}-`));
 
-/** A scale of lengths: spacing as bars, radii as corners, sizes as heights. */
-export function LengthScale({ prefix, names, kind }: { prefix?: string; names?: string[]; kind: 'space' | 'radius' | 'height' }) {
+/** A scale of lengths: spacing as bars, radii as corners, sizes as heights. Motion tokens have no preview. */
+export function LengthScale({ prefix, names, kind }: { prefix?: string; names?: string[]; kind: 'space' | 'radius' | 'height' | 'motion' }) {
   const tokens = names ?? (prefix ? byPrefix(prefix) : []);
   return (
     <div className="tk-table-wrap not-prose">
@@ -150,7 +150,7 @@ export function LengthScale({ prefix, names, kind }: { prefix?: string; names?: 
           {tokens.map((name) => {
             const value = scale[name];
             const preview =
-              kind === 'space' ? (
+              kind === 'motion' ? null : kind === 'space' ? (
                 <span className="tk-bar" style={{ width: value }} />
               ) : kind === 'radius' ? (
                 <span className="tk-corner" style={{ borderRadius: value }} />
