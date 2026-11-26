@@ -1,7 +1,7 @@
 import type { JSX } from "@solidjs/web"
 import { Command, CommandEmpty, CommandInput, CommandItem, CommandList } from "@ui-sdk/solid/command"
 import { PopoverContent, Popover as PopoverRoot, PopoverTrigger } from "@ui-sdk/solid/popover"
-import { createEffect, createSignal, For, onCleanup, onSettled, Show } from "solid-js"
+import { createEffect, createSignal, For, onCleanup, onSettled, Show, untrack } from "solid-js"
 import { aria } from "../lib/aria"
 import { cx } from "../lib/cx"
 import { createId } from "../lib/id"
@@ -253,7 +253,7 @@ export function TabStrip(props: TabStripProps): JSX.Element {
         <For each={props.items} keyed={(item) => item.id}>
           {(item, index) => (
             <div
-              ref={(el) => tabs.set(item().id, el)}
+              ref={(el) => tabs.set(untrack(item).id, el)}
               data-part="tab-strip-tab"
               data-tab={item().id}
               data-active={props.value === item().id ? "" : undefined}
@@ -319,7 +319,7 @@ export function TabStrip(props: TabStripProps): JSX.Element {
                   <button
                     {...mergeParts(
                       {
-                        ref: (el: HTMLButtonElement) => buttons.set(item().id, el),
+                        ref: (el: HTMLButtonElement) => buttons.set(untrack(item).id, el),
                         onClick: (event: MouseEvent) => {
                           if (swallowClick) {
                             swallowClick = false
