@@ -14,7 +14,6 @@
     "phones",
     "fields",
     "query-builder",
-    "editor",
-    "from-the-prototype"
+    "editor"
   ]
 }
