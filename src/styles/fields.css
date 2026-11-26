@@ -68,7 +68,7 @@
 .nc-calendar__day:focus-visible { outline: none; border-color: var(--accent-strong); box-shadow: var(--focus-ring); }
 .nc-calendar__day[data-outside] { color: var(--text-4); }
 .nc-calendar__day[data-today] { border-color: var(--line-strong); }
-.nc-calendar__day[data-selected] { background: var(--accent-tint); border-color: var(--accent-strong); color: var(--text-1); font-weight: 600; }
+.nc-calendar__day[data-selected] { background: var(--active); border-color: var(--line-strong); color: var(--text-1); }
 
 /* A field of a form: its label above its control, a switch beside its label; one rhythm for every kind. */
 .nc-fieldrow { display: flex; flex-direction: column; gap: var(--space-1); min-width: 0; }

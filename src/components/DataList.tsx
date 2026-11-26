@@ -155,8 +155,6 @@ export interface DataListProps<T> {
    * the select-all checkbox), rows divided by hairlines: records edited as a table, such as a service's environment.
    */
   variant?: "boxed" | "inline" | "table"
-  /** Row height in the `table` variant: 30px `compact` (default) or 36px `comfortable`. */
-  density?: "compact" | "comfortable"
   class?: string
 }
 
@@ -522,7 +520,6 @@ export function DataList<T = string>(props: DataListProps<T>): JSX.Element {
       role="group"
       aria-label={props.label}
       data-variant={variant()}
-      data-density={props.density ?? "compact"}
       data-selecting={selectable() && selection.count() > 0 ? "" : undefined}
       data-touch={touch() ? "" : undefined}
       class={cx(

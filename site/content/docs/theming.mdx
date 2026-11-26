@@ -1,6 +1,6 @@
 ---
 title: Theming
-description: The root class, the dark and light themes, and the accent.
+description: The root class, the dark and light themes, and the accent, which follows lenses.
 icon: SunMoon
 ---
 
@@ -16,6 +16,7 @@ icon: SunMoon
 
 The tokens for each theme are on `[data-theme]`, so a subtree can take the other theme.
 Dark is the default: `tokens.css` declares the dark values on `:root` as well.
+An app with the shell lets [Appearance](./shell/appearance.mdx) set `data-theme` on `<html>`.
 
 <Example id="overview/chips" />
 
@@ -33,15 +34,26 @@ root.style.setProperty("--accent", accentValue("jade", "dark"))
 
 <AccentTable />
 
-The other accent tokens (`--accent-strong`, `--accent-text`, the tint, line and glow) hold the Iris values in `tokens.css`.
-See [Colour](./tokens/colour.mdx#accent).
+`bundle.css` derives the other accent tokens from `--accent` in each theme: `--accent-strong`, `--accent-text`, the tint, line, glow and the focus ring.
+`tokens.css` holds their Iris values, which the site reads for its tables.
+See [Colour](./tokens/colour.mdx#accent) for where the accent may go.
+
+## The accent follows the lens
+
+The lens that is on drives `--accent` and its family for the whole window, overlays included.
+The appearance sets it on `<html>`, as `data-nc-accent` with the lens's hue.
+A scope without lenses uses the base accent, and so does the window when the person turns off "Accent follows lens".
+
+`--accent` is a registered property, so the change cross-fades in `--dur-accent`, 100ms.
+Under reduced motion it changes at once.
+Text selection and the caret never take the accent or the lens's hue.
 
 <Example id="foundations/accents" />
 
 ## Overlays take the theme
 
 Popovers, menus, dialogs, tooltips and toasts render in the top layer, at their place in the page.
-They inherit the theme and accent of that place.
+They inherit the theme and accent of that place, and the accent of `<html>` when they mount at the page's root.
 See [Overlays](./overlays.mdx).
 
 ## Parts and props

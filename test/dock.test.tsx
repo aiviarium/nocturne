@@ -129,14 +129,14 @@ describe("Dock", () => {
 describe("Dock and a view's header", () => {
   test("puts a header with only actions in its tab's strip, and shows the shown tab's alone", () => {
     const [layout, setLayout] = createSignal<DockLayout>(dockLayout(["one", "two"]))
-    const [path, setPath] = createSignal(false)
+    const [titled, setTitled] = createSignal(false)
     const ran: string[] = []
     const m = mount(() => (
-      <ViewChrome value={{ pinnable: () => false, pinned: () => false, togglePin: () => {}, path }}>
+      <ViewChrome value={{ pinnable: () => false, pinned: () => false, togglePin: () => {} }}>
         <Dock label="Pages" layout={layout()} onLayoutChange={setLayout} tab={(id) => ({ label: id })}>
           {(id) => (
             <ViewHeader
-              crumbs={[{ label: "Home", href: "/" }, { label: id }]}
+              title={titled() ? id : undefined}
               actions={[{ id: `act-${id}`, label: `Act ${id}`, icon: "plus", onClick: () => ran.push(id) }]}
             />
           )}
@@ -155,8 +155,8 @@ describe("Dock and a view's header", () => {
     click(one("[data-action=act-one]", strip))
     expect(ran).toEqual(["one"])
 
-    // A header that shows its path is the pane's own row again.
-    setPath(true)
+    // A header with a title is the pane's own row again.
+    setTitled(true)
     flush()
     expect(one("[data-dock-tab=one] [data-part=view-header]", dock).textContent).toContain("one")
     expect(strip.querySelector("[data-action=act-one]")).toBeNull()

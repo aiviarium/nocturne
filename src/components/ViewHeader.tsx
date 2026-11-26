@@ -3,48 +3,21 @@ import { Portal } from "@solidjs/web"
 import { createContext, createEffect, For, onCleanup, Show, useContext } from "solid-js"
 import { aria } from "../lib/aria"
 import { cx } from "../lib/cx"
-import { useLinkClick, useNavigate } from "../lib/link"
+import { Trail, type TrailCrumb } from "../shell/Trail"
 import { Button } from "./Button"
-import { Icon, type IconName } from "./Icon"
+import type { IconName } from "./Icon"
 import { IconButton } from "./IconButton"
 import { DropdownMenu, type MenuEntry } from "./Menu"
 import { type BarAction, useScreen } from "./NavigationBar"
-import { useShellHeader } from "./ShellHeader"
-import { SidebarToggle, useSidebarShow } from "./ShellSidebar"
-import { useViewLayout } from "./ViewLayout"
 
-// The standard header of a view. It never repeats the view's title (the tab shows it): it holds breadcrumbs or
-// context where there is something to say, and the view's actions in one order everywhere: icon actions, the pin,
-// the overflow menu, then the primary action, and the toggle of the layout's right-hand panel last. With nothing
-// to say it renders nothing and takes no room.
+// The standard header of a view, 44px: its title, or its trail when it drilled inside itself ("Issues / WEB-142",
+// the last crumb may be a record switcher), then a record stepper and the view's actions in one order everywhere:
+// icon actions, the pin, the overflow menu, then the primary action. The title and the same label as a crumb share
+// one size and baseline, so nothing moves when the view drills. No leading back chevron: the trail's first crumb is
+// the way up, and Escape goes up too.
 //
 // The pin is the frame's: the app provides `ViewChrome`, so a view's "favourite" and the app's pin to the
 // sidebar are one star, shown once, here.
-
-/**
- * How one part of a path shows: in the row (`inline`), in the `…` menu at its start (`fold`), or not at all
- * (`hidden`). A view picks it per part, so it keeps the parts that help and leaves out the rest.
- */
-export type PathShow = "inline" | "fold" | "hidden"
-
-export interface ViewCrumb {
-  label: string
-  href?: string
-  onClick?: () => void
-  icon?: IconName
-  /** A mark before the label, such as the workspace's logo on the first crumb of a top bar. */
-  mark?: JSX.Element
-  /**
-   * Makes the crumb a menu button that switches to another place of the same kind: the workspace at the start
-   * of a top bar, a project. It shows a chevron after the label.
-   */
-  switcher?: { label: string; items: MenuEntry[]; onSelect: (id: string) => void }
-  /**
-   * Whether the crumb is in the row, in the `…` menu, or left out. Default: in the row, or in the menu while it
-   * is among the leading `fold` crumbs. The last crumb is the page and always shows.
-   */
-  show?: PathShow
-}
 
 export interface ViewAction {
   id: string
@@ -73,24 +46,18 @@ export interface ViewChromeValue {
   pinned: () => boolean
   togglePin: () => void
   /**
-   * The header names the view here: its last crumb, and undefined when it has none or once it goes. The app shows
-   * it where the view is named, such as the view's tab.
+   * The header names the view here: its title or its trail's last crumb, and undefined once it goes. The app shows
+   * it where the view is named, such as the window's title.
    */
   setTitle?: (title: string | undefined) => void
-  /**
-   * Whether view headers draw their path. False when the app shows where the person is elsewhere, such as in its
-   * sidebar's head: a header then holds its actions and context alone, and still names its view to `setTitle`.
-   * Default true.
-   */
-  path?: () => boolean
 }
 
 // `null` is "no view chrome above": in Solid 2 a default-less context throws instead of reading as undefined.
 export const ViewChrome = createContext<ViewChromeValue | null>(null)
 
 /**
- * A place in the bar above a view, such as its tab's strip in a `Dock`. A header with only actions to show (its
- * path left to the app, no back control, context or middle content) draws them there, so the view has one bar.
+ * A place in the bar above a view, such as its tab's strip in a `Dock`. A header with only actions to show (no
+ * title, trail, stepper, context or middle content) draws them there, so the view has one bar.
  */
 export interface ViewHeaderSlotValue {
   mount: () => HTMLElement
@@ -98,36 +65,28 @@ export interface ViewHeaderSlotValue {
 
 export const ViewHeaderSlot = createContext<ViewHeaderSlotValue | null>(null)
 
+/** Steps through the records of the list a record view came from: ↑ and ↓ with "N / M" at the header's right. */
+export interface ViewStepper {
+  /** The record's place in the list, from 0. */
+  index: number
+  total: number
+  prev: () => void
+  next: () => void
+  /** What a record is, for the buttons' names: "issue". Default "item". */
+  noun?: string
+}
+
 export interface ViewHeaderProps {
+  /** The view's name, at the drill size. */
+  title?: string
   /**
-   * The path to where the view is. Every crumb but the last is a link; the last is the page. A label that does
-   * not fit is cut and shows its full text on hover. To strip the path, pass only the crumbs that help.
+   * Where the view stands below its place, in place of the title: "Issues / WEB-142". Every crumb but the last
+   * goes up; the last is the view, and may be a `switcher` over the list it came from.
    */
-  crumbs?: ViewCrumb[]
-  /**
-   * Fold this many leading crumbs into one `…` crumb that opens a menu of them: the path stays short and its
-   * start stays one click away. The view picks it per target.
-   */
-  fold?: number
-  /**
-   * A back control in place of the crumbs, for a target reached from one list that has no useful path (a chat
-   * opened from the session list). It names where it goes. The crumbs are not shown with it.
-   */
-  back?: ViewCrumb
-  /**
-   * An up control before the crumbs: an arrow back to the crumb before the last, named after it. Use it on a
-   * drilled-down target, so the level above is one click at the same place on every level.
-   */
-  up?: boolean
-  /**
-   * `view` (default): the header at the top of the view. `shell`: the header shows in the `AppShell`'s header
-   * bar, beside the sidebar and above the frames, as most apps place the path. It stays part of its view, so
-   * the inspector toggle and the pin still work. Outside an `AppShell` it shows as `view`.
-   */
-  variant?: "view" | "shell"
-  /** Draw the crumbs here, whatever the app's `ViewChrome` says. */
-  path?: boolean
-  /** Short context after the crumbs: a state that is out of the ordinary, a chip. */
+  trail?: TrailCrumb[]
+  /** ↑/↓ and "N / M" at the right, before the actions. */
+  stepper?: ViewStepper
+  /** Short context after the title: a state that is out of the ordinary, a chip. */
   context?: JSX.Element
   /** Free content in the middle: a search field, view switches. */
   children?: JSX.Element
@@ -140,11 +99,14 @@ export interface ViewHeaderProps {
 const present = (x: unknown) =>
   x !== undefined && x !== null && x !== false && !(Array.isArray(x) && !x.length)
 
+/** The name the header gives its view: the title, or the trail's last crumb. */
+const nameOf = (props: ViewHeaderProps) => props.title ?? props.trail?.at(-1)?.label
+
 /**
  * On a phone the header is the screen's navigation bar: its actions become the bar's (two at most, the rest and
  * the pin in its menu), its context the line under the title, and what it holds in the middle a row at the top
- * of the content. The crumbs are not shown: the stack is the way back, and the back control names the screen
- * before. The title stays the view's own (`view.setTitle`), or the last crumb when the view sets none.
+ * of the content. The trail is not shown: the stack is the way back, and the back control names the screen
+ * before. The title stays the view's own (`view.setTitle`), or the header's name when the view sets none.
  */
 function PhoneViewHeader(props: ViewHeaderProps): JSX.Element {
   const screen = useScreen()!
@@ -181,7 +143,7 @@ function PhoneViewHeader(props: ViewHeaderProps): JSX.Element {
   }))
   onCleanup(off)
   const crumbTitle = screen.provide(() => {
-    const last = props.crumbs?.at(-1)?.label
+    const last = nameOf(props)
     return last ? { fallbackTitle: last } : {}
   })
   onCleanup(crumbTitle)
@@ -199,7 +161,7 @@ export function ViewHeader(props: ViewHeaderProps): JSX.Element {
   if (chrome?.setTitle) {
     const setTitle = chrome.setTitle
     createEffect(
-      () => props.crumbs?.at(-1)?.label,
+      () => nameOf(props),
       (title) => {
         setTitle(title)
       },
@@ -208,15 +170,13 @@ export function ViewHeader(props: ViewHeaderProps): JSX.Element {
   }
   if (useScreen()) return <PhoneViewHeader {...props} />
   const slot = useContext(ViewHeaderSlot)
-  const pathShown = () => (props.path ?? chrome?.path?.() ?? true) && present(props.crumbs)
-  const slotted = () =>
-    slot !== null &&
-    props.variant !== "shell" &&
-    !pathShown() &&
-    !props.back &&
-    !present(props.context) &&
-    !present(props.children)
-  if (slot !== null && props.variant !== "shell") {
+  if (slot !== null) {
+    const slotted = () =>
+      !props.title &&
+      !present(props.trail) &&
+      !props.stepper &&
+      !present(props.context) &&
+      !present(props.children)
     return (
       <Show when={slotted()} fallback={<DesktopViewHeader {...props} />}>
         <Portal mount={slot.mount()} ref={(el: HTMLDivElement) => el.classList.add("nc-view-header-slot")}>
@@ -225,58 +185,23 @@ export function ViewHeader(props: ViewHeaderProps): JSX.Element {
       </Show>
     )
   }
-  const shell = useShellHeader()
-  if (props.variant === "shell" && shell) {
-    onCleanup(shell.claim())
-    return (
-      <Portal mount={shell.mount()} ref={(el: HTMLDivElement) => el.classList.add("nc-shell__header-slot")}>
-        <DesktopViewHeader {...props} />
-      </Portal>
-    )
-  }
   return <DesktopViewHeader {...props} />
 }
 
 function DesktopViewHeader(props: ViewHeaderProps): JSX.Element {
   const chrome = useContext(ViewChrome)
-  const layout = useViewLayout()
-  const linkClick = useLinkClick()
-  const navigate = useNavigate()
   const actions = () => props.actions ?? []
-  // The app may show the path elsewhere, such as in its sidebar; the view then shows its actions alone.
-  const crumbs = () => ((props.path ?? chrome?.path?.() ?? true) ? props.crumbs : undefined)
-  const fold = () => Math.max(0, Math.min(props.fold ?? 0, (crumbs()?.length ?? 0) - 1))
-  const showOf = (c: ViewCrumb, i: number, all: ViewCrumb[]): PathShow =>
-    i === all.length - 1 ? "inline" : (c.show ?? (i < fold() ? "fold" : "inline"))
-  const folded = () => crumbs()?.filter((c, i, all) => showOf(c, i, all) === "fold") ?? []
-  const path = () => crumbs()?.filter((c, i, all) => showOf(c, i, all) === "inline") ?? []
-  /** A folded crumb chosen from its menu: its own handler, else the app's router, else the address. */
-  const go = (c: ViewCrumb) => {
-    if (c.onClick) return c.onClick()
-    if (!c.href) return
-    if (navigate && c.href.startsWith("/") && !c.href.startsWith("//")) navigate(c.href)
-    else location.assign(c.href)
-  }
   const icons = () => actions().filter((a) => !a.primary && !a.overflow)
   const overflow = () => actions().filter((a) => a.overflow)
   const primary = () => actions().filter((a) => a.primary && !a.overflow)
-  const asideToggle = () => Boolean(layout?.hasAside())
-  // While the shell's sidebar is hidden, the first view header brings it back from its start.
-  const showSidebar = useSidebarShow()
-  // The pin alone is not something to say: without other content the header stays away, and the tab's menu pins.
-  /** Where the up control goes: the crumb before the last, when it leads somewhere. */
-  const upTo = () => {
-    if (!props.up || props.back) return undefined
-    const c = crumbs()?.at(-2)
-    return c && (c.href || c.onClick) ? c : undefined
-  }
   const content = () =>
-    Boolean(props.back) ||
-    present(crumbs()) ||
+    Boolean(props.title) ||
+    present(props.trail) ||
+    Boolean(props.stepper) ||
     present(props.context) ||
     present(props.children) ||
     actions().length > 0
-  const shown = () => content() || asideToggle() || showSidebar()
+  // The pin alone is not something to say: without other content the header stays away, and the tab's menu pins.
   const pin = () => content() && !props.noPin && chrome?.pinnable()
   const menu = (): MenuEntry[] =>
     overflow().map((a) => ({
@@ -287,135 +212,60 @@ function DesktopViewHeader(props: ViewHeaderProps): JSX.Element {
       danger: a.danger,
       shortcut: a.shortcut,
     }))
+  const noun = () => props.stepper?.noun ?? "item"
   return (
-    <Show when={shown()}>
-      <header
-        class={cx("nc-view-header body", props.variant === "shell" && "nc-view-header--shell", props.class)}
-        data-part="view-header"
-        data-variant={props.variant ?? "view"}
-      >
-        <Show when={showSidebar()}>
-          <SidebarToggle class="nc-view-header__sidebar" />
-        </Show>
-        <Show when={upTo()}>
-          {(c) => (
-            <IconButton
-              label={`Back to ${c().label}`}
-              icon="chevron-left"
-              data-part="view-up"
-              class="nc-view-header__up"
-              onClick={() => go(c())}
-            />
-          )}
-        </Show>
+    <Show when={content()}>
+      <header class={cx("nc-view-header", props.class)} data-part="view-header">
         <Show
-          when={props.back}
+          when={present(props.trail)}
           fallback={
-            <Show when={present(crumbs())}>
-              <nav class="nc-view-header__crumbs" aria-label="Breadcrumbs" data-part="breadcrumbs">
-                <Show when={folded().length}>
-                  <DropdownMenu
-                    label="Earlier in the path"
-                    matchWidth={false}
-                    items={folded().map((c, i) => ({ id: String(i), label: c.label, icon: c.icon }))}
-                    onSelect={(id) => go(folded()[Number(id)]!)}
-                    trigger={(t) => (
-                      <button
-                        {...t}
-                        type="button"
-                        class="nc-view-header__crumb nc-view-header__crumb--link nc-view-header__fold"
-                        aria-label="Earlier in the path"
-                        title={folded()
-                          .map((c) => c.label)
-                          .join(" / ")}
-                        data-part="crumbs-fold"
-                      >
-                        …
-                      </button>
-                    )}
-                  />
-                </Show>
-                <For each={path()}>
-                  {(c, i) => (
-                    <>
-                      <Show when={i() > 0 || folded().length > 0}>
-                        <span class="nc-view-header__sep" aria-hidden="true">
-                          /
-                        </span>
-                      </Show>
-                      <Show when={!c.switcher} fallback={<CrumbSwitcher crumb={c} />}>
-                        <Show
-                          when={(c.href || c.onClick) && i() < path().length - 1}
-                          fallback={
-                            <span
-                              class="nc-view-header__crumb"
-                              aria-current={i() === path().length - 1 ? "page" : undefined}
-                            >
-                              <Show when={c.mark}>
-                                <span class="nc-view-header__mark">{c.mark}</span>
-                              </Show>
-                              <Show when={c.icon}>
-                                <Icon name={c.icon} size="sm" />
-                              </Show>
-                              <span class="nc-view-header__label" title={c.label}>
-                                {c.label}
-                              </span>
-                            </span>
-                          }
-                        >
-                          <a
-                            class="nc-view-header__crumb nc-view-header__crumb--link"
-                            href={c.href ?? "#"}
-                            onClick={(e) => {
-                              if (c.onClick) {
-                                e.preventDefault()
-                                c.onClick()
-                              } else linkClick(e, c.href)
-                            }}
-                          >
-                            <Show when={c.mark}>
-                              <span class="nc-view-header__mark">{c.mark}</span>
-                            </Show>
-                            <Show when={c.icon}>
-                              <Icon name={c.icon} size="sm" />
-                            </Show>
-                            <span class="nc-view-header__label" title={c.label}>
-                              {c.label}
-                            </span>
-                          </a>
-                        </Show>
-                      </Show>
-                    </>
-                  )}
-                </For>
-              </nav>
+            <Show when={props.title}>
+              <h1 class="nc-view-header__title" data-part="view-title">
+                {props.title}
+              </h1>
             </Show>
           }
         >
-          {(b) => (
-            <a
-              class="nc-view-header__back"
-              href={b().href ?? "#"}
-              data-part="view-back"
-              title={`Back to ${b().label}`}
-              onClick={(e) => {
-                const run = b().onClick
-                if (run) {
-                  e.preventDefault()
-                  run()
-                } else linkClick(e, b().href)
-              }}
-            >
-              <Icon name="chevron-left" size="sm" />
-              <span class="nc-view-header__label">{b().label}</span>
-            </a>
-          )}
+          <Trail
+            crumbs={props.trail ?? []}
+            label="Where this view is"
+            upShortcut="Esc"
+            class="nc-view-header__trail"
+          />
         </Show>
         <Show when={props.context}>
           <span class="nc-view-header__context">{props.context}</span>
         </Show>
         <span class="nc-view-header__middle">{props.children}</span>
         <span class="nc-view-header__actions" data-part="view-actions">
+          <Show when={props.stepper}>
+            {(st) => (
+              <span class="nc-view-header__stepper" data-part="view-stepper">
+                <span class="nc-view-header__step-count" data-part="view-step-count">
+                  {st().index + 1} / {st().total}
+                </span>
+                <IconButton
+                  icon="chevron-up"
+                  label={`Previous ${noun()}`}
+                  shortcut="K"
+                  disabled={st().index <= 0}
+                  data-part="view-step-prev"
+                  onClick={() => st().prev()}
+                />
+                <IconButton
+                  icon="chevron-down"
+                  label={`Next ${noun()}`}
+                  shortcut="J"
+                  disabled={st().index >= st().total - 1}
+                  data-part="view-step-next"
+                  onClick={() => st().next()}
+                />
+                <Show when={actions().length > 0 || pin()}>
+                  <span class="nc-view-header__rule" aria-hidden="true" />
+                </Show>
+              </span>
+            )}
+          </Show>
           <For each={icons()} keyed={(a) => a.id}>
             {(a) => (
               <Show
@@ -502,54 +352,8 @@ function DesktopViewHeader(props: ViewHeaderProps): JSX.Element {
               </Button>
             )}
           </For>
-          <Show when={asideToggle()}>
-            <IconButton
-              label={
-                layout!.asideOpen()
-                  ? `Hide ${layout!.asideLabel().toLowerCase()}`
-                  : `Show ${layout!.asideLabel().toLowerCase()}`
-              }
-              icon="panel-right"
-              pressed={layout!.asideOpen()}
-              shortcut={layout!.keys().aside}
-              data-part="view-aside-toggle"
-              onClick={() => layout!.toggleAside()}
-            />
-          </Show>
         </span>
       </header>
     </Show>
-  )
-}
-
-/** A crumb that opens a menu of the other places of its kind. */
-function CrumbSwitcher(props: { crumb: ViewCrumb }): JSX.Element {
-  const s = () => props.crumb.switcher!
-  return (
-    <DropdownMenu
-      label={s().label}
-      items={s().items}
-      matchWidth={false}
-      onSelect={(id) => s().onSelect(id)}
-      trigger={(t) => (
-        <button
-          {...t}
-          type="button"
-          class="nc-view-header__crumb nc-view-header__crumb--link nc-view-header__switcher"
-          data-part="crumb-switcher"
-        >
-          <Show when={props.crumb.mark}>
-            <span class="nc-view-header__mark">{props.crumb.mark}</span>
-          </Show>
-          <Show when={props.crumb.icon}>
-            <Icon name={props.crumb.icon} size="sm" />
-          </Show>
-          <span class="nc-view-header__label" title={props.crumb.label}>
-            {props.crumb.label}
-          </span>
-          <Icon name="chevron-down" size="sm" />
-        </button>
-      )}
-    />
   )
 }

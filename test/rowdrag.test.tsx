@@ -470,13 +470,49 @@ describe("the selection is neutral", () => {
 
   test("a selected row, table row and card take the neutral fill; a checked selection box a neutral mark", () => {
     const decl = (selector: string) => rules.find((r) => r.selector === selector)?.body ?? ""
-    expect(decl(".nc-lrow[data-selected]")).toContain("var(--bg-4)")
-    expect(decl('.nc-table tr[aria-selected="true"] td')).toContain("var(--bg-4)")
-    expect(decl(".nc-board-card[data-selected]")).toContain("var(--bg-4)")
-    expect(decl(".nc-datalist__row[data-selected]")).toContain("var(--bg-4)")
+    expect(decl(".nc-lrow[data-selected]")).toContain("var(--active)")
+    expect(decl('.nc-table tr[aria-selected="true"] td')).toContain("var(--active)")
+    expect(decl(".nc-board-card[data-selected]")).toContain("0 0 0 1px var(--line-strong)")
+    expect(decl(".nc-board-card[data-selected]")).not.toContain("background")
+    expect(decl(".nc-datalist__row[data-selected]")).toContain("var(--active)")
     expect(
       decl(':is(.nc-table__check, .nc-datalist__check, .nc-lrow__check) > .nc-check[aria-checked="true"]'),
     ).toContain("var(--text-2)")
+  })
+
+  test("selection and hover never change type, and a hovered row has no fill", () => {
+    const decl = (selector: string) => rules.find((r) => r.selector === selector)?.body ?? ""
+    const current = [
+      '.nc-nav-item[aria-current="page"]',
+      '.nc-view-header__crumb[aria-current="page"]',
+      '.nc-tab[aria-selected="true"]',
+      '.nc-seg__item:is([aria-selected="true"], [data-checked])',
+      ".nc-tabstrip__tab[data-active]",
+      ".nc-lrow[data-selected]",
+    ]
+    for (const selector of current) {
+      if (!selector.includes("crumb")) expect(decl(selector)).toContain("var(--active)")
+      expect(decl(selector)).not.toMatch(/font-weight|font-size|box-shadow|border-bottom/)
+    }
+    const phone = readFileSync(join(import.meta.dir, "../src/styles/phone.css"), "utf8")
+    expect(phone).not.toContain('.nc-tabbar__item[aria-current="page"] .nc-tabbar__label')
+    expect(decl(".nc-nav-item:hover")).not.toContain("background")
+    expect(rules.some((r) => r.selector === ".nc-lrow[data-interactive]:hover")).toBe(false)
+    expect(css).not.toMatch(/\.nc-setting\[data-modified\]::before/)
+  })
+
+  test("counts, unread dots, matches and drop lines are neutral", () => {
+    const decl = (selector: string) => rules.find((r) => r.selector === selector)?.body ?? ""
+    for (const selector of [
+      ".nc-count",
+      ".nc-lrow__unread[data-on]",
+      ".nc-match",
+      ".nc-rows__drop",
+      ".nc-menu__check",
+    ])
+      expect(decl(selector)).not.toMatch(/--accent/)
+    expect(decl(".nc-lrow__unread[data-on]")).toContain("var(--text-2)")
+    expect(decl(".nc-match")).toContain("var(--text-3)")
   })
 
   test("the checkbox column shows its boxes on hover, focus and while selecting, and hides them otherwise", () => {

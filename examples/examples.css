@@ -224,7 +224,7 @@
   padding-bottom: var(--space-2);
   border-bottom: 1px solid var(--line-subtle);
 }
-/* A view's header bar inside a do/don't frame (38px, as ViewHeader). */
+/* A view's header bar inside a do/don't frame (44px, as ViewHeader). */
 .ex-bar {
   min-height: var(--header);
   padding: 0 var(--space-2) 0 var(--space-3);
@@ -451,16 +451,17 @@ form.ex-form {
   max-width: 28rem;
 }
 
-/* The navigation examples: a view inside a frame of the app shell takes the whole frame. */
-.ex-app-frame {
+/* A view with a panel docked at its right, outside the app shell. */
+.ex-with-panel {
   display: flex;
   flex: 1;
-  flex-direction: column;
+  height: 100%;
+  min-width: 0;
   min-height: 0;
 }
-.ex-app-frame > [data-part="view-layout"] {
+.ex-with-panel > [data-part="view-layout"] {
   flex: 1;
-  min-height: 0;
+  min-width: 0;
 }
 /* A frame of the width the column states example picks. */
 .ex-columns {
@@ -474,4 +475,130 @@ form.ex-form {
 }
 .ex-dock {
   height: 360px;
+}
+
+/* The shell parts' examples: a 44px header for a trail, columns with resizable borders, a title bar strip. */
+.ex-trail-head {
+  display: flex;
+  align-items: center;
+  height: var(--header);
+  padding: 0 var(--space-4);
+  border-bottom: 1px solid var(--line-soft);
+}
+.ex-resize {
+  height: 300px;
+}
+.ex-resize__top {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+.ex-resize__col {
+  position: relative;
+  flex: none;
+  padding: var(--space-3);
+  border-right: 1px solid var(--line-soft);
+}
+.ex-resize__col--end {
+  border-right: 0;
+  border-left: 1px solid var(--line-soft);
+}
+.ex-resize__main {
+  flex: 1;
+  min-width: 0;
+  padding: var(--space-3);
+}
+.ex-resize__bottom {
+  position: relative;
+  flex: none;
+  padding: var(--space-3);
+  border-top: 1px solid var(--line-soft);
+}
+.ex-stops {
+  margin: 0;
+  padding-left: var(--space-5);
+}
+.ex-stops [data-here] {
+  color: var(--text-1);
+}
+.ex-titlebar {
+  display: flex;
+  align-items: center;
+  height: var(--header);
+  padding-left: var(--space-4);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-md);
+  background: var(--bg-0);
+  overflow: hidden;
+}
+.ex-appearance {
+  max-width: 640px;
+}
+
+/* The title bar's examples: a window frame the bar spans, with a short body under it. */
+.ex-window {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-md);
+  background: var(--bg-0);
+  overflow: hidden;
+}
+.ex-window__body {
+  height: 96px;
+  padding: var(--space-3) var(--space-4);
+  background: var(--bg-1);
+}
+
+/* The app shell's example: a whole window. On a gallery page it is a framed box; in a /frame it fills the viewport. */
+.ex-app-window {
+  height: 720px;
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+.ex-term {
+  flex: 1;
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  overflow: auto;
+  color: var(--text-2);
+  font-family: var(--font-mono);
+  font-size: var(--nc-type-label);
+  line-height: var(--nc-type-body-line);
+  white-space: pre;
+}
+.ex-record {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  max-width: 720px;
+  padding: var(--space-6) var(--space-8);
+}
+.ex-record > * {
+  margin: 0;
+}
+/* The flagship's panes: a reader fills its pane under its own header or toolbar. */
+.ex-reader {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+.ex-reader > .nc-split {
+  flex: 1;
+  height: auto;
+}
+.ex-toolbar {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: var(--space-2);
+  height: var(--header);
+  padding: 0 var(--space-3);
+  border-bottom: 1px solid var(--line-soft);
+}
+.ex-settings {
+  padding: var(--space-6) var(--space-4);
 }

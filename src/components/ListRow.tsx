@@ -40,8 +40,6 @@ import { entriesFromButtons, removalToast, SelectionBar } from "./rows"
 import { Checkbox } from "./Switch"
 import { titleOf } from "./Truncate"
 
-export type RowDensity = "compact" | "comfortable"
-
 /**
  * Where a `RowList` sits. `plain`: on its own in a view or a sidebar, inset 6px so selection is an inset fill.
  * `inset`: inside a padded container (a `Card`, a `Panel`, an inspector's section), wherever it is in it: the rows
@@ -87,7 +85,6 @@ export interface RowMenuContext<T> {
 
 /** What a `RowList` tells its rows. */
 interface RowListContext {
-  density: () => RowDensity | undefined
   tree: () => boolean
   addBranch: () => () => void
   editing: () => boolean
@@ -127,7 +124,7 @@ const RowDepth = createContext<number | null>(null)
 const InListbox = createContext(false)
 
 export interface ListRowProps
-  extends Omit<JSX.HTMLAttributes<HTMLDivElement>, "title" | "onClick" | "children"> {
+  extends Omit<JSX.HTMLAttributes<HTMLDivElement>, "title" | "onClick" | "children" | "prefix"> {
   /** What the row is. A string is cut with an ellipsis and its full text is the row's tooltip. */
   title: JSX.Element
   /**
@@ -137,6 +134,11 @@ export interface ListRowProps
   secondary?: JSX.Element
   /** A third line for rows that carry more (a pull request's branch, checks and reviewers): a `MetaLine`. */
   detail?: JSX.Element
+  /**
+   * Short facts before the title, on its line: an issue's key and its state icon. Quiet text at the label size
+   * with tabular figures, so keys of one length line up from row to row.
+   */
+  prefix?: JSX.Element
   /** A named icon at the start. */
   icon?: IconName
   /** Any other Lucide icon at the start, as a node. */
@@ -174,11 +176,6 @@ export interface ListRowProps
   menuLabel?: string
   /** An entry of `menu` was chosen. */
   onMenuSelect?: (id: string) => void
-  /**
-   * `compact` 30px (default), `comfortable` 36px, from the row tokens. Multi-line rows grow with their lines.
-   * Set it on the `RowList` for the whole list; a row's own value wins.
-   */
-  density?: RowDensity
   /** 1 (default), 2 or 3 lines. More than one puts the secondary text and the detail on their own lines. */
   lines?: 1 | 2 | 3
   /**
@@ -243,6 +240,7 @@ export function ListRow(props: ListRowProps): JSX.Element {
     "title",
     "secondary",
     "detail",
+    "prefix",
     "icon",
     "iconNode",
     "leading",
@@ -255,7 +253,6 @@ export function ListRow(props: ListRowProps): JSX.Element {
     "menu",
     "menuLabel",
     "onMenuSelect",
-    "density",
     "lines",
     "selected",
     "unread",
@@ -505,11 +502,20 @@ export function ListRow(props: ListRowProps): JSX.Element {
       </span>
     </Show>
   )
+  // A prefix stays on the title's line: the two shrink together, the title first, and never wrap apart.
+  const head = () => (
+    <Show when={props.prefix} fallback={title()}>
+      <span class="nc-lrow__head">
+        <span class="nc-lrow__prefix">{props.prefix}</span>
+        {title()}
+      </span>
+    </Show>
+  )
   const text = (
     <span class="nc-lrow__text">
-      <Show when={multi() && props.meta} fallback={title()}>
+      <Show when={multi() && props.meta} fallback={head()}>
         <span class="nc-lrow__line">
-          {title()}
+          {head()}
           {metaCell()}
         </span>
       </Show>
@@ -617,7 +623,6 @@ export function ListRow(props: ListRowProps): JSX.Element {
       role={inListbox ? undefined : "listitem"}
       aria-level={branch() && !inListbox ? depth() + 1 : undefined}
       class={cx("nc-lrow", props.class)}
-      data-density={props.density ?? list?.density() ?? "compact"}
       data-lines={lines()}
       data-index={index()}
       data-depth={branch() ? depth() : undefined}
@@ -828,14 +833,12 @@ export interface RowListProps<T> extends Omit<JSX.HTMLAttributes<HTMLDivElement>
   items?: readonly T[]
   /** Stable key of an item: selection is kept by key. Default the index. */
   getKey?: (item: T, index: number) => RowKey
-  /** Height of one row in px, for the virtualised list. Default: the density's row height. */
+  /** Height of one row in px, for the virtualised list. Default 30 (44 on a phone, 28 inline). */
   itemHeight?: number
   /** Rows above which the list is virtualised (it then needs a height from its parent). Default 150. */
   virtualizeAt?: number
   /** Hairlines between rows, for multi-line rows. The inset fill stays the selection. */
   divided?: boolean
-  /** Row height of every row: `compact` 30px (default) or `comfortable` 36px. */
-  density?: RowDensity
   /** Where the list sits: see `RowListVariant`. Default `plain`. */
   variant?: RowListVariant
   /** Flush to the container's edge instead of inset by 6px. Prefer `variant="inset"`, which also fits nested lists. */
@@ -952,7 +955,6 @@ export function RowList<T = unknown>(props: RowListProps<T>): JSX.Element {
     "itemHeight",
     "virtualizeAt",
     "divided",
-    "density",
     "variant",
     "flush",
     "onReorder",
@@ -984,9 +986,7 @@ export function RowList<T = unknown>(props: RowListProps<T>): JSX.Element {
       </RowItem>
     ) : null
   const variant = () => props.variant ?? (props.flush ? "inset" : "plain")
-  const height = () =>
-    props.itemHeight ??
-    (phone() ? 44 : variant() === "inline" ? 28 : props.density === "comfortable" ? 36 : 30)
+  const height = () => props.itemHeight ?? (phone() ? 44 : variant() === "inline" ? 28 : 30)
   let root!: HTMLDivElement
   const [said, setSaid] = createSignal("")
   const announce = (text: string) => {
@@ -1255,7 +1255,6 @@ export function RowList<T = unknown>(props: RowListProps<T>): JSX.Element {
   }
 
   const ctx: RowListContext = {
-    density: () => props.density,
     tree: () => Boolean(props.tree) || branches() > 0,
     addBranch: () => {
       setBranches((n) => n + 1)
@@ -1397,7 +1396,6 @@ export function RowList<T = unknown>(props: RowListProps<T>): JSX.Element {
           type="button"
           class="nc-lrow nc-lrow--add"
           data-part="row-add"
-          data-density={props.density ?? "compact"}
           data-interactive=""
           onClick={() => props.onAdd?.()}
         >
@@ -1493,6 +1491,91 @@ export function RowList<T = unknown>(props: RowListProps<T>): JSX.Element {
       <div class="nc-visually-hidden" role="status" aria-live="polite" aria-atomic="true">
         {said()}
       </div>
+    </div>
+  )
+}
+
+export interface RowSectionProps {
+  /** The group's name: "In progress". */
+  label: string
+  /** A named icon before the name. */
+  icon?: IconName
+  /** Leading content instead of an icon: a coloured state glyph, an avatar. */
+  leading?: JSX.Element
+  /** How many rows the group holds, after the name. */
+  count?: number
+  /** Buttons at the right of the heading, shown while it is hovered or focused ("New issue in In progress"). */
+  actions?: JSX.Element
+  /** A chevron folds the group to its heading. Default true. */
+  collapsible?: boolean
+  /** Whether the rows show. Controlled when set. */
+  expanded?: boolean
+  /** Whether the rows show at first, when `expanded` is not set. Default true. */
+  defaultExpanded?: boolean
+  onExpandedChange?: (expanded: boolean) => void
+  /** The group's `ListRow`s. */
+  children?: JSX.Element
+  class?: string
+}
+
+/**
+ * A group of rows inside a `RowList` under a heading: issues by state, files by kind. The heading names the
+ * group at the body size with its count, and folds it with its chevron. The rows keep the list's shared columns
+ * and its keyboard model, so they line up with every other group and the arrow keys move across groups.
+ */
+export function RowSection(props: RowSectionProps): JSX.Element {
+  const [expanded, setExpanded] = createControllable<boolean>({
+    value: () => props.expanded,
+    defaultValue: props.defaultExpanded ?? true,
+    onChange: (v) => props.onExpandedChange?.(v),
+  })
+  const groupId = createId("row-section")
+  const collapsible = () => props.collapsible !== false
+  const name = () => (
+    <>
+      <Show when={collapsible()}>
+        <Icon name="chevron-down" size="sm" class="nc-row-section__chevron" />
+      </Show>
+      <Show when={props.leading || props.icon}>
+        <span class="nc-row-section__lead">
+          <Show when={props.leading} fallback={<Icon name={props.icon} size="sm" />}>
+            {props.leading}
+          </Show>
+        </span>
+      </Show>
+      <span class="nc-row-section__label">{props.label}</span>
+      <Show when={props.count !== undefined}>
+        <span class="nc-row-section__count">{props.count}</span>
+      </Show>
+    </>
+  )
+  return (
+    <div
+      data-part="row-section"
+      class={cx("nc-row-section", props.class)}
+      data-collapsed={expanded() ? undefined : ""}
+    >
+      <div class="nc-row-section__head">
+        <Show when={collapsible()} fallback={<span class="nc-row-section__name">{name()}</span>}>
+          <button
+            type="button"
+            class="nc-row-section__name"
+            aria-expanded={aria(expanded())}
+            aria-controls={groupId}
+            onClick={() => setExpanded(!expanded())}
+          >
+            {name()}
+          </button>
+        </Show>
+        <Show when={props.actions}>
+          <span class="nc-row-section__actions">{props.actions}</span>
+        </Show>
+      </div>
+      <Show when={expanded()}>
+        <div class="nc-row-section__rows" id={groupId}>
+          {props.children}
+        </div>
+      </Show>
     </div>
   )
 }

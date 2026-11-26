@@ -46,6 +46,7 @@ export const NAMES: Record<string, string> = {
   sidebar: "PanelLeft",
   sort: "ArrowUpDown",
   sparkle: "Sparkles",
+  square: "Square",
   star: "Star",
   tag: "Tag",
   terminal: "SquareTerminal",
@@ -115,6 +116,11 @@ export const NAMES: Record<string, string> = {
   "log-out": "LogOut",
   moon: "Moon",
   sun: "Sun",
+  // The app shell: up a scope, the sidebar's fold and tools, record stepping.
+  "arrow-up": "ArrowUp",
+  "chevron-up": "ChevronUp",
+  "chevrons-down-up": "ChevronsDownUp",
+  "panel-left-open": "PanelLeftOpen",
 }
 
 /**

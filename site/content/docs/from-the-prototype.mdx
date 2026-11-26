@@ -24,7 +24,7 @@ name `@crow/ui`. In the first version they are a repository and a package of the
 | `ChatMedia` | Images and attachments in a message |
 | `LiveWidgets` | Compact live widgets at a size you pick |
 | `LogViewer` | A job's or a service's log |
-| `ShellHeader`, `SidebarHeader` | The shell's top bar, and the sidebar's header with its workspace crumb |
+| `createShell`, `Shell` and the shell's parts | The app's window, see [The app shell](./shell/index.mdx) |
 | The site | Tokens, every part with an example, the gallery, and the phones page |
 
 `docs/phone.md` and the phones page of the site say the same thing about phone mode, so a change to one is
@@ -34,7 +34,8 @@ a change to the other.
 
 - No network code. Anything that talks to a backend comes in through a provider or a prop, such as
   `EditorServices`, `TranscriberProvider`, the field runtime, `ViewLayoutHost` and `ViewChrome`.
-- The shell and the plugins that use these components live in
+  The shell takes its router, its storage and the native window's handlers as adapters.
+- The apps and the plugins that use these components live in
   [Crow](https://github.com/aiviarium/crow).
 
 The release's list of what is left out is Rookery's [Not in this

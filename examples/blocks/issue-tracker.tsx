@@ -12,6 +12,7 @@ import {
   RowList,
   SectionHeading,
   Select,
+  ShellPanel,
   State,
   Tabs,
   TextField,
@@ -42,47 +43,100 @@ export default function IssueTracker() {
   )
   return (
     <div class="ex-screen">
-      <ViewLayout
-        id="block-issues"
-        sidebarLabel="Atlas web"
-        sidebarWidth={220}
-        sidebar={
-          <Nav
-            label="Atlas web"
-            groups={[
-              {
-                label: "Atlas web",
-                items: [
-                  { label: "Overview", icon: "home", href: "#b" },
-                  { label: "Issues", icon: "list", href: "#b", current: true },
-                  { label: "Docs", icon: "file", href: "#b" },
-                  { label: "Agent sessions", icon: "agent", href: "#b" },
-                  { label: "Environments", icon: "server", href: "#b" },
-                ],
-              },
-              {
-                label: "Views",
-                items: [
-                  { label: "Mine", icon: "user", href: "#b" },
-                  { label: "Blocked", icon: "lock", href: "#b", meta: "1" },
-                ],
-              },
-            ]}
-          />
-        }
-        header={
-          <ViewHeader
-            crumbs={[{ label: "Atlas web", href: "#b" }, { label: "Issues" }]}
-            actions={[
-              { id: "export", label: "Export as CSV", overflow: true, onClick: () => {} },
-              { id: "new", label: "New issue", icon: "plus", onClick: () => {} },
-            ]}
-          />
-        }
-        asideLabel="Issue"
-        asideWidth={340}
-        minMain={480}
-        aside={
+      <div class="ex-with-panel">
+        <ViewLayout
+          id="block-issues"
+          sidebarLabel="Atlas web"
+          sidebarWidth={220}
+          sidebar={
+            <Nav
+              label="Atlas web"
+              groups={[
+                {
+                  label: "Atlas web",
+                  items: [
+                    { label: "Overview", icon: "home", href: "#b" },
+                    { label: "Issues", icon: "list", href: "#b", current: true },
+                    { label: "Docs", icon: "file", href: "#b" },
+                    { label: "Agent sessions", icon: "agent", href: "#b" },
+                    { label: "Environments", icon: "server", href: "#b" },
+                  ],
+                },
+                {
+                  label: "Views",
+                  items: [
+                    { label: "Mine", icon: "user", href: "#b" },
+                    { label: "Blocked", icon: "lock", href: "#b", meta: "1" },
+                  ],
+                },
+              ]}
+            />
+          }
+          header={
+            <ViewHeader
+              title="Issues"
+              actions={[
+                { id: "export", label: "Export as CSV", overflow: true, onClick: () => {} },
+                { id: "new", label: "New issue", icon: "plus", onClick: () => {} },
+              ]}
+            />
+          }
+          minMain={480}
+        >
+          <div class="ex-col ex-pad">
+            <FilterBar
+              search={
+                <TextField
+                  variant="search"
+                  label="Search issues"
+                  placeholder="Search issues"
+                  value={query()}
+                  onInput={(e) => setQuery(e.currentTarget.value)}
+                />
+              }
+              end={<FilterCount value={rows().length} unit="Issues" />}
+            >
+              <Tabs
+                label="Scope"
+                value={scope()}
+                onChange={setScope}
+                items={[
+                  { id: "open", label: "Open" },
+                  { id: "all", label: "All" },
+                ]}
+              />
+              <Select
+                aria-label="Label"
+                placeholder="Label"
+                options={[
+                  { value: "bug", label: "Bug" },
+                  { value: "feature", label: "Feature" },
+                ]}
+              />
+            </FilterBar>
+            <RowList label="Issues">
+              <For each={rows()}>
+                {(i) => {
+                  const st = ISSUE_STATE[i.state]
+                  return (
+                    <ListRow
+                      leading={i.assignee ? <Avatar name={i.assignee} size="sm" /> : undefined}
+                      icon={i.assignee ? undefined : "list"}
+                      title={i.title}
+                      secondary={i.key}
+                      status={st ? <State status={st[0]}>{st[1]}</State> : undefined}
+                      meta={i.updated}
+                      unread={Boolean(i.unread)}
+                      selected={selected() === i.id}
+                      onClick={() => setSelected(i.id)}
+                    />
+                  )
+                }}
+              </For>
+            </RowList>
+          </div>
+        </ViewLayout>
+        <ShellPanel at="right" title="Issue">
           <Show when={issue()}>
             {(i) => (
               <div class="ex-col ex-pad">
@@ -128,61 +182,8 @@ export default function IssueTracker() {
               </div>
             )}
           </Show>
-        }
-      >
-        <div class="ex-col ex-pad">
-          <FilterBar
-            search={
-              <TextField
-                variant="search"
-                label="Search issues"
-                placeholder="Search issues"
-                value={query()}
-                onInput={(e) => setQuery(e.currentTarget.value)}
-              />
-            }
-            end={<FilterCount value={rows().length} unit="Issues" />}
-          >
-            <Tabs
-              label="Scope"
-              value={scope()}
-              onChange={setScope}
-              items={[
-                { id: "open", label: "Open" },
-                { id: "all", label: "All" },
-              ]}
-            />
-            <Select
-              aria-label="Label"
-              placeholder="Label"
-              options={[
-                { value: "bug", label: "Bug" },
-                { value: "feature", label: "Feature" },
-              ]}
-            />
-          </FilterBar>
-          <RowList label="Issues">
-            <For each={rows()}>
-              {(i) => {
-                const st = ISSUE_STATE[i.state]
-                return (
-                  <ListRow
-                    leading={i.assignee ? <Avatar name={i.assignee} size="sm" /> : undefined}
-                    icon={i.assignee ? undefined : "list"}
-                    title={i.title}
-                    secondary={i.key}
-                    status={st ? <State status={st[0]}>{st[1]}</State> : undefined}
-                    meta={i.updated}
-                    unread={Boolean(i.unread)}
-                    selected={selected() === i.id}
-                    onClick={() => setSelected(i.id)}
-                  />
-                )
-              }}
-            </For>
-          </RowList>
-        </div>
-      </ViewLayout>
+        </ShellPanel>
+      </div>
     </div>
   )
 }

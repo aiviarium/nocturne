@@ -84,7 +84,7 @@ export interface CardProps extends Omit<JSX.HTMLAttributes<HTMLElement>, "title"
  * A bg-1 surface with a hairline edge and radius 8, padded by one rule (12px), sized to its content unless
  * `fill`. Nested padded containers collapse to one padding: a `Card`, `Panel`, `Stat` or `Widget` that is a
  * card's only child loses its own edge and padding, and a `RowList`, `DataTable` or `EmptyState` alone in it
- * meets the card's inset. Use `Panel` instead for a tool region with a 38px header and actions.
+ * meets the card's inset. Use `Panel` instead for a tool region with a 44px header and actions.
  */
 export function Card(props: CardProps): JSX.Element {
   const rest = omit(

@@ -1,36 +1,31 @@
-import { AppShell, Frame, Nav, State, Switch } from "@aiviarium/nocturne"
+import { Switch, TitleBar, TitleBarItem } from "@aiviarium/nocturne"
 import { createSignal, Show } from "solid-js"
 import type { ExampleMeta } from "../_kit/types"
 
 export const meta: ExampleMeta = {
   title: "A status item only while it matters",
   verdict: "do",
-  note: "Nothing while connected. Drop the connection: a word appears, and goes when it is back.",
+  note: "Nothing while connected. Drop the connection: a word appears in the title bar, and goes when it is back.",
   surface: "none",
 }
 
 export default function StatusbarQuiet() {
   const [down, setDown] = createSignal(false)
   return (
-    <div class="ex-shell-demo">
-      <AppShell
-        sidebarWidth={160}
-        statusbar={
+    <div class="ex-window">
+      <TitleBar
+        runsIn="browser"
+        keys={false}
+        path={[{ id: "acme", label: "Acme" }]}
+        status={
           <Show when={down()}>
-            <State status="warn">Reconnecting…</State>
+            <TitleBarItem icon="refresh-cw" label="Reconnecting…" tone="warning" />
           </Show>
         }
-        sidebar={
-          <Nav
-            label="Workspace"
-            groups={[{ items: [{ label: "Home", icon: "home", href: "#s", current: true }] }]}
-          />
-        }
-      >
-        <Frame>
-          <Switch label="Drop the connection" checked={down()} onChange={setDown} />
-        </Frame>
-      </AppShell>
+      />
+      <div class="ex-window__body">
+        <Switch label="Drop the connection" checked={down()} onChange={setDown} />
+      </div>
     </div>
   )
 }

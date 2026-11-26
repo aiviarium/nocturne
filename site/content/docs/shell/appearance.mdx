@@ -1,0 +1,47 @@
+---
+title: Appearance
+description: The theme, the accent that follows lenses, and the tint line, applied on the root element.
+---
+
+`createAppearance` keeps three choices and applies them at once.
+`AppearanceSettings` draws them as Settings › Appearance.
+
+| Setting | Values | Default |
+| --- | --- | --- |
+| Theme | System, Light, Dark | The theme the root has until a choice is made, or `defaultTheme` |
+| Accent follows lens | On or off. Off, the base accent everywhere | On |
+| Lens tint line | On or off. Off, the plain hairline under the title bar | On |
+
+<Example id="appearance/settings" />
+
+## Where it applies
+
+The appearance writes `data-theme` and the lens's accent on `<html>` by default, or on the `root` it is given.
+Overlays render in the top layer and inherit both.
+A menu takes the accent of the window.
+
+`--accent` is a registered property, so a lens switch cross-fades the accent in 100ms.
+Under reduced motion it changes at once.
+A scope without lenses uses the base accent.
+See [Theming](../theming.mdx#the-accent).
+
+## Where it is opened
+
+- Settings › Appearance in the app.
+- "Appearance…" in the account menu, with `onAppearance`.
+- The account menu's theme row sets the same theme choice.
+
+## Wiring
+
+```tsx
+const storage = webStorage(localStorage)
+const appearance = createAppearance({ storage })
+
+<Shell shell={shell} appearance={appearance} />
+```
+
+The choices are kept in the `storage` passed, under `appearance`.
+Without one they last as long as the page.
+`Shell` passes the appearance to the title bar, whose lens box makes the accent follow the lens that is on.
+
+<GalleryLink page="appearance">Appearance in the gallery</GalleryLink>

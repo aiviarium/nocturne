@@ -8,7 +8,7 @@ Nocturne is a dark-first design system for dense tool interfaces.
 `@aiviarium/nocturne` is its SolidJS component library.
 
 The library has typed wrappers over the `nc-*` classes.
-It adds layout, overlay, data, form and phone components, and a collaborative rich text editor.
+It adds the app shell, layout, overlay, data, form and phone components, and a collaborative rich text editor.
 The stylesheets in `src/styles/` are the design system itself.
 `tokens.css` holds the tokens and `bundle.css` the base classes.
 
@@ -44,11 +44,15 @@ Import each file yourself if you manage layers another way.
 Then put `class="nc"` and a `data-theme` on the root of the app.
 See [Theming](./theming.mdx).
 
+The app registers its scopes with `createShell` and draws its window with `<Shell>`.
+See [The app shell](./shell/index.mdx).
+
 ## What is in it
 
 | Area | Parts |
 | --- | --- |
-| Layout | `AppShell` with sidebar, app header, top bar, status bar and phone drawer. `Frame` with a `TabStrip` header. `ViewLayout`, `ViewHeader`, `Panel`, `Split`, `SplitGroup` and `Dialog` |
+| Shell | `createShell` and `Shell`: the title bar with its path, lens box and palette, the sidebar that folds to a rail, the view header and trail, the panel rail and docked panels, the history and the appearance. See [The app shell](./shell/index.mdx) |
+| Layout | `AppShell`, `Frame` with a `TabStrip` header, `ViewLayout`, `ViewHeader`, `Panel`, `Split`, `SplitGroup`, `Dock` and `Dialog` |
 | Lists and data | `RowList` and `ListRow`, `DataTable`, `DataList`, `Board`, `List` |
 | Forms | `TextField`, `TextArea`, `Select`, `Switch`, `NumberField`, `Slider`, `SchemaForm` and the field kinds |
 | Display | `Badge`, `State`, `Avatar`, `Mark`, `Callout`, `Icon`, `Stat`, `StatCard`, `Widget`, `WidgetGrid` |

@@ -1,0 +1,83 @@
+---
+title: Panels
+description: The panel rail, the docked right and bottom panels, their tabs, covers and resizable borders.
+---
+
+Panels show what a view needs beside it, such as the selection's details, a terminal or logs.
+The rail picks them.
+A panel doesn't repeat the rail as tabs.
+
+<Example id="panel/rail" />
+
+## The rail
+
+`PanelRail` is 44px wide at the window's right edge, on the canvas.
+Its top group opens panels at the view's right, and its bottom group opens panels under the view.
+One panel is open on each side at a time.
+Each button has the panel's name and shortcut in its tooltip.
+
+The panels on offer come from the lens, then the scope, then every registered panel.
+A lens can open panels the first time it is put on, with `open`.
+
+## The docked panel
+
+`ShellPanel` is docked inside the view's raised surface, square like it.
+Its 44px header holds, from left to right:
+
+- the panel's name, or its trail once it drills
+- its real content tabs, when it has them
+- its actions
+- close, also Escape inside the panel, and ⌘J for the bottom panel
+
+There is no split or tiling button.
+
+| Panel | Size | Range |
+| --- | --- | --- |
+| Right | 340px wide | 280px to 520px |
+| Bottom | 280px tall | 140px to 600px |
+
+Both sizes are kept in the shell's storage.
+The right panel floats over the view when docking it would leave the view narrower than 480px.
+
+<Example id="panel/variants" />
+
+## Real tabs
+
+A panel's tabs are its own content, such as a terminal's sessions.
+They come from the panel's `tabs` and use `TabStrip` with full tab management:
+
+- drag to reorder, double-click or Rename to rename
+- × or a middle click to close, and Close others and Close to the right in a tab's menu
+- ⌃Tab and ⌃⇧Tab to cycle, ⌘T for a new tab
+- an overflow menu listing every tab when they don't fit
+- a status dot per tab: running, waiting for input, exited, or failed with its code
+
+## Covers
+
+A place's `covers` names the panels whose content its view already is.
+On a host's Sessions view, which is the terminal, the rail hides the Terminal panel.
+A panel open at the time is hidden while the view shows, and comes back when the person leaves it.
+No surface shows what another already shows.
+
+## A panel's drill
+
+A panel can drill from its subject to a linked record with `shell.drill("details", "WEB-127")`.
+Its header then shows its trail, `WEB-139 / WEB-127`, and the view doesn't move.
+The drill is part of the address.
+It is a stop in the history, it is kept on reload, and it can be linked.
+Selecting another row starts the panel over from that row.
+Escape goes up the drill one level.
+
+## Resizable borders
+
+Every border between columns resizes with `ResizeHandle`, including the sidebar's edge, the panels' edges and the borders inside a view.
+
+- It is invisible until hovered for 120ms, with a 4px hit area over the hairline.
+- Only the handle being dragged lights up.
+- The arrow keys move it when it has focus, with Shift for larger steps, and Home and End go to the limits.
+- A double click resets it.
+- `createStoredWidth(id, { initial, min, max, storage })` keeps each width by id.
+
+<Example id="resize-handle/columns" />
+
+<GalleryLink page="panels">The panels in the gallery</GalleryLink>

@@ -1,7 +1,6 @@
-import { Button, DataTable, IconButton, type RowDensity, Tabs, TextField } from "@aiviarium/nocturne"
-import { createEffect, createSignal } from "solid-js"
+import { Button, DataTable, IconButton, TextField } from "@aiviarium/nocturne"
+import { createSignal } from "solid-js"
 import { HOST_SESSIONS, SESSION_COLUMNS } from "../_kit/sessions"
-import { useDensity } from "../_kit/settings"
 import type { ExampleMeta } from "../_kit/types"
 
 export const meta: ExampleMeta = {
@@ -11,11 +10,6 @@ export const meta: ExampleMeta = {
 }
 
 export default function SessionsTable() {
-  const pageDensity = useDensity()
-  const [density, setDensity] = createSignal<RowDensity>(pageDensity())
-  createEffect(pageDensity, (density) => {
-    setDensity(density)
-  })
   const [query, setQuery] = createSignal("")
   const rows = () => HOST_SESSIONS.filter((s) => s.title.toLowerCase().includes(query().toLowerCase()))
   return (
@@ -25,7 +19,6 @@ export default function SessionsTable() {
       columns={SESSION_COLUMNS}
       getRowId={(r) => r.id}
       selectable
-      density={density()}
       empty={{
         title: "No sessions match",
         description: `name contains “${query()}”`,
@@ -41,15 +34,6 @@ export default function SessionsTable() {
             onInput={(e) => setQuery(e.currentTarget.value)}
           />
           <span class="ex-spacer" />
-          <Tabs
-            label="Density"
-            items={[
-              { id: "compact", label: "Compact" },
-              { id: "comfortable", label: "Comfortable" },
-            ]}
-            value={density()}
-            onChange={(id) => setDensity(id as RowDensity)}
-          />
           <IconButton label="New session" icon="plus" />
         </div>
       }

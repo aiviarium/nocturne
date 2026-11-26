@@ -38,6 +38,10 @@ export const ICON_NODES = {
     ["path", { d: "m8 21-4-4 4-4" }],
     ["path", { d: "M4 17h16" }],
   ],
+  "arrow-up": [
+    ["path", { d: "m5 12 7-7 7 7" }],
+    ["path", { d: "M12 19V5" }],
+  ],
   "arrow-up-right": [
     ["path", { d: "M7 7h10v10" }],
     ["path", { d: "M7 17 17 7" }],
@@ -141,6 +145,11 @@ export const ICON_NODES = {
   "chevron-down": [["path", { d: "m6 9 6 6 6-6" }]],
   "chevron-left": [["path", { d: "m15 18-6-6 6-6" }]],
   "chevron-right": [["path", { d: "m9 18 6-6-6-6" }]],
+  "chevron-up": [["path", { d: "m18 15-6-6-6 6" }]],
+  "chevrons-down-up": [
+    ["path", { d: "m7 20 5-5 5 5" }],
+    ["path", { d: "m7 4 5 5 5-5" }],
+  ],
   "circle-dot": [
     ["circle", { cx: "12", cy: "12", r: "1" }],
     ["circle", { cx: "12", cy: "12", r: "10" }],
@@ -476,6 +485,11 @@ export const ICON_NODES = {
     ["rect", { width: "18", height: "18", x: "3", y: "3", rx: "2" }],
     ["path", { d: "M9 3v18" }],
   ],
+  "panel-left-open": [
+    ["rect", { width: "18", height: "18", x: "3", y: "3", rx: "2" }],
+    ["path", { d: "M9 3v18" }],
+    ["path", { d: "m14 9 3 3-3 3" }],
+  ],
   "panel-right": [
     ["rect", { width: "18", height: "18", x: "3", y: "3", rx: "2" }],
     ["path", { d: "M15 3v18" }],
@@ -618,6 +632,7 @@ export const ICON_NODES = {
     ["path", { d: "M16 3h3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-3" }],
     ["path", { d: "M8 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3" }],
   ],
+  square: [["rect", { width: "18", height: "18", x: "3", y: "3", rx: "2" }]],
   star: [
     [
       "path",

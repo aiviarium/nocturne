@@ -1,12 +1,9 @@
 import type { JSX } from "@solidjs/web"
-import { createMemo, createSignal, omit, Show } from "solid-js"
+import { createMemo, omit, Show } from "solid-js"
 import { cx } from "../lib/cx"
-import { createId } from "../lib/id"
-import { ShellHeaderContext } from "./ShellHeader"
-import { createShowClaims, ShellSidebarContext, SidebarToggle } from "./ShellSidebar"
 
 export interface PanelProps extends Omit<JSX.HTMLAttributes<HTMLElement>, "title"> {
-  /** The panel title, in the 38px header. */
+  /** The panel title, in the 44px header. */
   title?: JSX.Element
   /** Replaces the title with other header content, such as underline `Tabs`. Name the panel with `aria-label`. */
   header?: JSX.Element
@@ -26,7 +23,7 @@ export interface PanelProps extends Omit<JSX.HTMLAttributes<HTMLElement>, "title
 }
 
 /**
- * A tool region: a bg-1 card with a 38px header (title, state, actions), content padded by the card padding
+ * A tool region: a bg-1 card with a 44px header (title, state, actions), content padded by the card padding
  * (12px) underneath and an optional footer. For a plain surface with an optional heading, use `Card`.
  */
 export function Panel(props: PanelProps): JSX.Element {
@@ -79,7 +76,7 @@ export interface FrameProps extends Omit<JSX.HTMLAttributes<HTMLDivElement>, "ti
   focused?: boolean
 }
 
-/** A content frame of the app shell: bg-1, radius 8, a hairline edge, with an optional header bar. */
+/** A content frame: bg-1, radius 8, a hairline edge, with an optional header bar. For tiled frames such as a `Dock`. */
 export function Frame(props: FrameProps): JSX.Element {
   const rest = omit(props, "flush", "header", "focused", "class", "children")
   // Read once, as in AppShell: the header is a TabStrip with state and listeners, and must not be built twice.
@@ -103,216 +100,6 @@ export function Frame(props: FrameProps): JSX.Element {
         <div data-part="frame-body" class={cx("nc-frame__body", !props.flush && "nc-frame__body--padded")}>
           {props.children}
         </div>
-      </Show>
-    </div>
-  )
-}
-
-export interface AppShellProps extends Omit<JSX.HTMLAttributes<HTMLDivElement>, "title"> {
-  /** The sidebar, on bg-0. Usually a `Nav`. At phone width it is a drawer. */
-  sidebar?: JSX.Element
-  /** Accessible name of the sidebar landmark. Default "Sidebar". */
-  sidebarLabel?: string
-  /** Sidebar width in px. Default 232. */
-  sidebarWidth?: number
-  /**
-   * Makes the sidebar resizable: its edge drags, and the arrow keys move it when focused. Called with the new
-   * width (180 to 420 px); the app keeps it and passes it back as `sidebarWidth`.
-   */
-  onSidebarResize?: (width: number) => void
-  /** A bar across the top at phone width only, with the button that opens the drawer. */
-  topbar?: JSX.Element
-  /**
-   * The app's header: a bar on bg-0 at the top of the main column, beside the sidebar and above the frames, for
-   * the path to the open view and its actions. A view fills it with a `ViewHeader` with `variant="shell"`, which
-   * shows here by itself; this slot is for content the app puts there.
-   */
-  header?: JSX.Element
-  /**
-   * Where the header bar goes. `beside` (default): at the top of the main column, beside the sidebar. `across`: a
-   * top bar over the whole window, sidebar included, with the product at its start and search in its middle.
-   */
-  headerPlacement?: "beside" | "across"
-  /** Hides the sidebar on a desktop: the frames take its room. */
-  sidebarHidden?: boolean
-  /**
-   * Lets the person hide the sidebar and bring it back. The shell then places one control for both, the same
-   * small button with the same icon: at the end of the `SidebarHeader` row while the sidebar shows, and at the
-   * start of the first view's header (or of the header bar, when no view has a header) while it is hidden. The app
-   * keeps the value and passes it back as `sidebarHidden`.
-   */
-  onSidebarHiddenChange?: (hidden: boolean) => void
-  /** A bar of small indicators along the bottom. */
-  statusbar?: JSX.Element
-  /** Whether the sidebar drawer is open at phone width. Setting it turns on the scrim. */
-  drawerOpen?: boolean
-  /** Called when the scrim is pressed. */
-  onDrawerClose?: () => void
-  /** Fill the height of the parent instead of growing with the content, so frames scroll inside it. */
-  fill?: boolean
-}
-
-/**
- * The app shell pattern: a sidebar on bg-0 and one or more bg-1 frames with an 8px gap. Frames wrap and stack
- * at phone width, where the sidebar is a drawer behind a top bar.
- */
-export function AppShell(props: AppShellProps): JSX.Element {
-  const shows = createShowClaims()
-  const sidebarId = createId("sidebar")
-  const sidebar = {
-    hidden: () => Boolean(props.sidebarHidden),
-    setHidden: (hidden: boolean) => props.onSidebarHiddenChange?.(hidden),
-    id: sidebarId,
-    claimShow: shows.claim,
-  }
-  return (
-    <ShellSidebarContext value={props.onSidebarHiddenChange ? sidebar : null}>
-      <ShellLayout
-        props={props}
-        sidebarId={sidebarId}
-        // The header bar holds the control itself only while no view header can.
-        barShow={() => Boolean(props.onSidebarHiddenChange && props.sidebarHidden && shows.count() === 0)}
-      />
-    </ShellSidebarContext>
-  )
-}
-
-// The shell's body, under the sidebar context, so that the slots the app passes (built when they are read
-// here) find it: the `SidebarHeader` in the sidebar reads it for its toggle.
-function ShellLayout(p: { props: AppShellProps; sidebarId: string; barShow: () => boolean }): JSX.Element {
-  const props = p.props
-  const rest = omit(
-    props,
-    "sidebar",
-    "sidebarLabel",
-    "sidebarWidth",
-    "onSidebarResize",
-    "topbar",
-    "header",
-    "headerPlacement",
-    "sidebarHidden",
-    "onSidebarHiddenChange",
-    "statusbar",
-    "drawerOpen",
-    "onDrawerClose",
-    "fill",
-    "class",
-    "style",
-    "children",
-  )
-  // Read once: a slot given as JSX is built each time it is read, and reading it for the `when` as well as for the
-  // content would mount it twice (the first copy never shown, but with its effects and listeners running).
-  const topbar = createMemo(() => props.topbar)
-  const sidebar = createMemo(() => props.sidebar)
-  const statusbar = createMemo(() => props.statusbar)
-  const header = createMemo(() => props.header)
-  // Headers of the views that show in the bar. The bar takes room only while one does, or the app fills it.
-  // A view header claims the bar from its own body, which is an owned scope.
-  const [claims, setClaims] = createSignal(0, { ownedWrite: true })
-  let headerBar!: HTMLDivElement
-  const shellHeader = {
-    mount: () => headerBar,
-    claim: () => {
-      setClaims((n) => n + 1)
-      return () => setClaims((n) => n - 1)
-    },
-  }
-  const width = () => props.sidebarWidth ?? 232
-  const resize = (w: number) => props.onSidebarResize?.(Math.max(180, Math.min(420, Math.round(w))))
-  let root!: HTMLDivElement
-  let dragging = false
-  return (
-    <div
-      ref={root}
-      data-part="app-shell"
-      data-fill={props.fill ? "" : undefined}
-      data-drawer={props.drawerOpen ? "open" : undefined}
-      data-header={props.headerPlacement === "across" ? "across" : undefined}
-      data-sidebar={props.sidebarHidden ? "hidden" : undefined}
-      class={cx("nc-shell", props.class)}
-      style={{
-        "--nc-sidebar-width": `${width()}px`,
-        ...(typeof props.style === "object" ? props.style : {}),
-      }}
-      {...rest}
-    >
-      <Show when={topbar()}>
-        <header data-part="topbar" class="nc-shell__topbar">
-          {topbar()}
-        </header>
-      </Show>
-      <Show when={props.drawerOpen !== undefined}>
-        <button
-          type="button"
-          data-part="scrim"
-          class="nc-shell__scrim"
-          aria-label="Close navigation"
-          tabindex="-1"
-          onClick={() => props.onDrawerClose?.()}
-        />
-      </Show>
-      <Show when={sidebar()}>
-        <aside
-          id={p.sidebarId}
-          data-part="sidebar"
-          aria-label={props.sidebarLabel ?? "Sidebar"}
-          class="nc-shell__sidebar"
-        >
-          {sidebar()}
-        </aside>
-        <Show when={props.onSidebarResize}>
-          <div
-            role="separator"
-            tabindex="0"
-            aria-orientation="vertical"
-            aria-label="Resize the sidebar"
-            aria-valuenow={width()}
-            aria-valuemin={180}
-            aria-valuemax={420}
-            title="Drag to resize"
-            class="nc-shell__edge"
-            data-part="sidebar-edge"
-            onPointerDown={(e) => {
-              e.preventDefault()
-              e.currentTarget.setPointerCapture?.(e.pointerId)
-              dragging = true
-            }}
-            onPointerMove={(e) => {
-              if (dragging) resize(e.clientX - root.getBoundingClientRect().left)
-            }}
-            onPointerUp={() => {
-              dragging = false
-            }}
-            onPointerCancel={() => {
-              dragging = false
-            }}
-            onKeyDown={(e) => {
-              const step = e.key === "ArrowRight" ? 16 : e.key === "ArrowLeft" ? -16 : 0
-              if (!step) return
-              e.preventDefault()
-              resize(width() + step)
-            }}
-          />
-        </Show>
-      </Show>
-      <div
-        ref={headerBar}
-        data-part="shell-header"
-        class="nc-shell__header"
-        hidden={!header() && claims() === 0 && !p.barShow()}
-      >
-        <Show when={p.barShow()}>
-          <SidebarToggle class="nc-shell__show" />
-        </Show>
-        {header()}
-      </div>
-      <main data-part="shell-content" class="nc-shell__content">
-        <ShellHeaderContext value={shellHeader}>{props.children}</ShellHeaderContext>
-      </main>
-      <Show when={statusbar()}>
-        <footer data-part="statusbar" class="nc-shell__status">
-          {statusbar()}
-        </footer>
       </Show>
     </div>
   )

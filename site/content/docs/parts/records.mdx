@@ -25,7 +25,7 @@ Use `Board`, `BoardLane` and `BoardCard` for records in lanes.
 ## DataTable
 
 Use `DataTable` for a table of records.
-Rows are 30px compact and 36px comfortable, and columns can sort.
+Rows are 30px, and columns can sort.
 
 - `selectable` works as in a list. A click opens a row, and a click with Cmd, Ctrl or Shift selects. Checkboxes show on hover, on focus, and while something is selected. There is a select-all box. Selection is a neutral fill. The toolbar becomes the bulk bar only while something is selected.
 - `onReorder` moves rows. Drag the row itself, or use Alt and an arrow key. A line shows where it drops, and the table scrolls at its edges. It works only while the table is not sorted by a column.
@@ -51,7 +51,7 @@ Use `DataList` for records edited in place.
 - Environment variables, with `fields` for a name and a value.
 - Any record of a few short fields.
 
-The compact form goes in a form (`boxed`, a box like a field) or in an inspector (`inline`, rows on the edge).
+The compact form goes in a form (`boxed`, a box like a field) or in a panel such as Details (`inline`, rows on the edge).
 `variant="table"` adds a header row, for many records.
 
 It selects, reorders, removes with Undo, adds, and moves by keyboard as a `DataTable` does, with the same row menu.

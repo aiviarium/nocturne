@@ -107,9 +107,9 @@ export function App() {
           }))}
         />
       </aside>
-      <main class="g-main" data-page={page()?.id}>
+      <main class="g-main" data-page={page()?.id} data-full={page()?.full ? "" : undefined}>
         <div class="g-bar">
-          <h1 class="g-bar__title heading">{page()?.title}</h1>
+          <h1 class="g-bar__title">{page()?.title}</h1>
           <span class="g-bar__spacer" />
           <div class="g-swatches" role="group" aria-label="Accent">
             <For each={ACCENTS}>
@@ -146,7 +146,19 @@ export function App() {
           <Show when={page()} keyed>
             {(p) => (
               <>
-                <p class="g-lead">{p.lead}</p>
+                <p class="g-lead">
+                  {p.lead}
+                  <Show when={p.full}>
+                    {" "}
+                    <a
+                      href={`#/frame/${p.sections[0]}?theme=${theme()}&accent=${accentId()}`}
+                      target="_blank"
+                      rel="noopener"
+                    >
+                      Open it alone
+                    </a>
+                  </Show>
+                </p>
                 <Sections sections={p.sections} />
               </>
             )}

@@ -31,7 +31,7 @@ a.nc-btn { text-decoration: none; }
 .nc-btn--danger:not([disabled]):hover { background: color-mix(in srgb, var(--danger) 24%, transparent); }
 .nc-btn[aria-busy="true"] { cursor: progress; }
 .nc-btn .nc-kbd { margin-right: -4px; }
-.nc-icon-btn[aria-pressed="true"] { background: var(--bg-4); color: var(--text-1); }
+.nc-icon-btn[aria-pressed="true"] { background: var(--active); color: var(--text-1); }
 .nc-icon-btn[disabled], .nc-icon-btn[aria-disabled="true"] { color: var(--text-4); cursor: not-allowed; background: transparent; }
 .nc-icon-btn--round { border-radius: var(--radius-full); }
 .nc-tooltip-anchor { display: inline-flex; }
@@ -76,40 +76,13 @@ textarea.nc-textarea { width: 100%; height: auto; min-height: calc(var(--control
 .nc-th-sort:focus-visible { outline: none; box-shadow: var(--focus-ring); }
 /* Tabs and navigation entries sit edge to edge in strips and lists that clip: their ring is inside. */
 .nc-tab:focus-visible, .nc-nav-item:focus-visible { outline: none; box-shadow: var(--focus-ring-inset); }
-.nc-tab { border-radius: var(--radius-xs); }
+.nc-tab { border-radius: var(--radius-sm); }
 .nc-seg__item:is([disabled], [data-disabled]), .nc-tab:is([disabled], [data-disabled]) { color: var(--text-4); cursor: not-allowed; }
 .nc-seg__item:not([aria-selected="true"], [data-checked]):hover { color: var(--text-1); }
 .nc-tab:not([aria-selected="true"]):hover { color: var(--text-1); }
-button.nc-nav-item { display: flex; width: 100%; gap: 10px; justify-content: flex-start; border: 0; background: transparent; font: inherit; text-align: left; cursor: pointer; }
-.nc-nav-item .nc-count { margin-left: auto; }
-/* The top of the app's sidebar: back, the place (a switcher), the command palette and the toggle, search under them. */
-.nc-sidebar-header { display: flex; flex-direction: column; gap: var(--space-2); }
-.nc-sidebar-header__row { display: flex; align-items: center; gap: 2px; min-width: 0; height: var(--control-md); }
-.nc-sidebar-header__place { display: flex; flex: 1; align-items: center; justify-content: flex-start; gap: var(--space-2); min-width: 0; height: var(--control-md); padding: 0 var(--space-2); border: 0; border-radius: var(--radius-sm); background: transparent; color: var(--text-1); font-family: inherit; font-size: var(--nc-type-body); font-weight: 600; line-height: var(--nc-type-label-line); text-align: left; }
-button.nc-sidebar-header__place--menu { justify-content: flex-start; cursor: pointer; }
-.nc-sidebar-header__place--menu:hover, .nc-sidebar-header__place--menu[aria-expanded="true"] { background: var(--bg-3); }
-.nc-sidebar-header__place--menu:focus-visible { outline: none; box-shadow: var(--focus-ring-inset); }
-.nc-sidebar-header__place > .nc-icon { flex: none; color: var(--text-3); }
-.nc-sidebar-header__mark { display: inline-flex; flex: none; }
-.nc-sidebar-header__name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-/* The row lines up with the nav under it, whose icons sit 8px in and whose labels start at 34px: a 20px mark is
-   centred on the icon column, back's chevron is too, and the name starts where the labels do. */
-.nc-sidebar-header__place:has(> .nc-sidebar-header__mark) { padding-left: 6px; }
-.nc-sidebar-header__row > [data-part="sidebar-back"] { flex: none; margin-left: var(--space-1); }
-.nc-sidebar-header__row > [data-part="sidebar-back"] + .nc-sidebar-header__place { padding-left: var(--space-1); }
-/* The levels above the place: they give way first, down to a few letters each, so the place keeps its name. */
-.nc-sidebar-header__path { display: flex; flex: 0 1000 auto; align-items: center; min-width: 7ch; overflow: hidden; color: var(--text-3); }
-.nc-sidebar-header__crumb { flex: 0 1 auto; min-width: 3ch; height: var(--control-sm); padding: 0 var(--space-1); overflow: hidden; border: 0; border-radius: var(--radius-sm); background: transparent; color: var(--text-3); font-family: inherit; font-size: var(--nc-type-body); line-height: var(--nc-type-label-line); text-overflow: ellipsis; white-space: nowrap; cursor: pointer; }
-.nc-sidebar-header__crumb { display: inline-flex; align-items: center; text-align: left; }
-/* When the row is short, the levels further up give way before the one beside the place. */
-.nc-sidebar-header__crumb { flex-shrink: 1000; }
-.nc-sidebar-header__path > .nc-sidebar-header__crumb:nth-last-child(2) { flex-shrink: 1; }
-.nc-sidebar-header__crumb-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.nc-sidebar-header__crumb:hover, .nc-sidebar-header__crumb[aria-expanded="true"] { background: var(--bg-3); color: var(--text-1); }
-.nc-sidebar-header__crumb:focus-visible { outline: none; box-shadow: var(--focus-ring-inset); }
-.nc-sidebar-header__sep { flex: none; padding: 0 2px; color: var(--text-4); }
-.nc-sidebar-header__path + .nc-sidebar-header__place { flex: 0 1 auto; margin-right: auto; padding-left: var(--space-1); }
-.nc-sidebar-header__row > [data-part="sidebar-back"] + .nc-sidebar-header__path { margin-left: 2px; }
+button.nc-nav-item { display: flex; width: 100%; gap: 8px; justify-content: flex-start; border: 0; background: transparent; font-family: inherit; text-align: left; cursor: pointer; }
+/* In the sidebar a count is a plain number, like the meta. */
+.nc-nav-item .nc-count { min-width: 0; height: auto; margin-left: auto; padding: 0; background: none; color: var(--text-3); font-size: var(--nc-type-section); font-weight: 400; }
 
 .nc-tabstrip { position: relative; display: flex; align-items: center; flex: 1; min-width: 0; min-height: var(--header); padding: 0 var(--space-1) 0 6px; }
 .nc-tabstrip__tabs { display: flex; align-items: center; gap: 2px; flex: 0 1 auto; min-width: 0; overflow-x: auto; scrollbar-width: none; overscroll-behavior-x: contain; }
@@ -120,8 +93,9 @@ button.nc-sidebar-header__place--menu { justify-content: flex-start; cursor: poi
 .nc-tabstrip__tabs > .nc-tabstrip__tab { flex: 0 1 auto; min-width: 96px; max-width: 224px; }
 .nc-tabstrip__tabs > .nc-tabstrip__tab[data-pinned] { flex: none; min-width: 0; max-width: none; }
 .nc-tabstrip__tab { position: relative; display: flex; align-items: center; flex: 1; min-width: 0; height: var(--control-md); border-radius: var(--radius-sm); color: var(--text-2); }
-.nc-tabstrip__tab:hover { background: var(--bg-3); color: var(--text-1); }
-.nc-tabstrip__tab[data-active] { background: var(--bg-4); color: var(--text-1); }
+.nc-tabstrip__tab { transition: background-color var(--dur-hover) var(--ease), color var(--dur-hover) var(--ease); }
+.nc-tabstrip__tab:hover { color: var(--text-1); }
+.nc-tabstrip__tab[data-active] { background: var(--active); color: var(--text-1); }
 .nc-tabstrip__tab[draggable="true"] { cursor: grab; }
 .nc-tabstrip__tab { -webkit-touch-callout: none; user-select: none; -webkit-user-select: none; }
 .nc-tabstrip__main, .nc-tabstrip__close { height: 100%; border: 0; background: transparent; color: inherit; cursor: inherit; }
@@ -138,13 +112,13 @@ button.nc-sidebar-header__place--menu { justify-content: flex-start; cursor: poi
 .nc-tabstrip__tab:hover .nc-tabstrip__close, .nc-tabstrip__tab:focus-within .nc-tabstrip__close, .nc-tabstrip__tab .nc-tabstrip__close:focus-visible { opacity: 1; }
 @media (hover: none) { .nc-tabstrip__tab:not([data-active]) .nc-tabstrip__close { opacity: 1; } }
 /* Unsaved changes: a dot where the close button is, until the tab is hovered or focused. */
-.nc-tabstrip__dirty { position: absolute; top: 50%; left: 50%; width: 8px; height: 8px; margin: -4px 0 0 -4px; border-radius: var(--radius-full); background: var(--accent-strong); }
+.nc-tabstrip__dirty { position: absolute; top: 50%; left: 50%; width: 8px; height: 8px; margin: -4px 0 0 -4px; border-radius: var(--radius-full); background: var(--text-2); }
 .nc-tabstrip__dirty--pinned { top: 4px; left: auto; right: 4px; width: 6px; height: 6px; margin: 0; }
 .nc-tabstrip__tab[data-dirty] .nc-tabstrip__close .nc-icon { opacity: 0; }
 .nc-tabstrip__tab[data-dirty]:hover .nc-tabstrip__close .nc-icon, .nc-tabstrip__tab[data-dirty]:focus-within .nc-tabstrip__close .nc-icon { opacity: 1; }
 .nc-tabstrip__tab[data-dirty]:hover .nc-tabstrip__dirty, .nc-tabstrip__tab[data-dirty]:focus-within .nc-tabstrip__dirty { opacity: 0; }
 .nc-tabstrip__tab[data-dirty]:not([data-active]) .nc-tabstrip__close { opacity: 1; }
-.nc-tabstrip__tab[data-drop-before]::before, .nc-tabstrip__tabs[data-drop-end]::after { content: ""; position: absolute; top: 4px; bottom: 4px; left: -2px; width: 2px; border-radius: var(--radius-xs); background: var(--accent-strong); }
+.nc-tabstrip__tab[data-drop-before]::before, .nc-tabstrip__tabs[data-drop-end]::after { content: ""; position: absolute; top: 4px; bottom: 4px; left: -2px; width: 2px; border-radius: var(--radius-xs); background: var(--text-3); }
 .nc-tabstrip__tabs[data-drop-end]::after { position: static; flex: none; align-self: stretch; margin: 4px 0; }
 .nc-tabstrip__more { display: flex; align-items: center; flex: none; padding-left: var(--space-1); }
 .nc-tabstrip__more-anchor { display: inline-flex; }
@@ -222,7 +196,7 @@ button.nc-menu__item, div.nc-menu__item { box-sizing: border-box; width: 100%; b
 .nc-menu__text { flex: 1; min-width: 0; text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .nc-menu__text--stack { display: flex; flex-direction: column; }
 .nc-menu__desc { color: var(--text-3); white-space: normal; }
-.nc-menu__check { margin-left: auto; color: var(--accent-text); }
+.nc-menu__check { margin-left: auto; color: var(--text-1); }
 .nc-menu__empty { padding: var(--space-2); color: var(--text-3); }
 .nc-menu__tabs { display: flex; gap: var(--space-1); padding: 2px 2px var(--space-1); }
 .nc-menu__tab { height: var(--control-sm); padding: 0 var(--space-2); border: 0; border-radius: var(--radius-xs); background: transparent; color: var(--text-2); cursor: pointer; }
@@ -232,9 +206,8 @@ button.nc-menu__item, div.nc-menu__item { box-sizing: border-box; width: 100%; b
 .nc-trigger-mark[data-trigger="$"] { background: var(--success-tint); color: var(--success); }
 .nc-trigger-mark[data-kind="person"] { background: var(--bg-4); color: var(--text-1); }
 .nc-trigger-mark[data-kind="doc"] { background: color-mix(in srgb, var(--label-orchid) 16%, transparent); color: var(--label-orchid); }
-.nc-match { background: transparent; color: var(--info); font-weight: 600; }
-[data-trigger="/"] .nc-match { color: var(--accent-text); }
-[data-trigger="$"] .nc-match { color: var(--success); }
+/* A filter match: underlined in text-3, at the text's own colour and weight. */
+.nc-match { background: transparent; color: inherit; text-decoration: underline; text-decoration-color: var(--text-3); text-underline-offset: 2px; }
 .nc-composer-popover { max-width: min(560px, 100vw); }
 .nc-composer-menu { box-sizing: border-box; width: 100%; max-height: 320px; overflow-y: auto; }
 
@@ -247,15 +220,14 @@ button.nc-menu__item, div.nc-menu__item { box-sizing: border-box; width: 100%; b
 /* ---------- Data table ---------- */
 .nc-datatable { display: flex; flex-direction: column; overflow: hidden; }
 .nc-datatable__scroll { overflow-x: auto; }
-.nc-table--comfortable th, .nc-table--comfortable td { height: var(--row-default); }
 .nc-table__group th { height: var(--row-default); background: var(--bg-1); color: var(--text-2); font-size: var(--nc-type-label); font-weight: 500; }
 .nc-table__check { width: 28px; padding-right: 0; }
 .nc-table__check > .nc-check { vertical-align: middle; }
 .nc-table th.is-num { text-align: right; }
-.nc-table tbody tr:hover td { background: var(--bg-2); }
-.nc-table tbody tr[aria-selected="true"]:hover td { background: var(--bg-4); }
+.nc-table tbody tr:hover .nc-table__time { color: var(--text-2); }
+.nc-table tbody tr[aria-selected="true"]:hover td { background: var(--active); }
 .nc-table__row--clickable { cursor: pointer; }
-.nc-table__time { color: var(--text-3); }
+.nc-table__time { color: var(--text-3); transition: color var(--dur-hover) var(--ease); }
 .nc-null { color: var(--text-4); }
 .nc-th-sort { display: inline-flex; align-items: center; gap: var(--space-1); padding: 0; border: 0; border-radius: var(--radius-xs); background: transparent; color: inherit; font: inherit; cursor: pointer; }
 .nc-th-sort:hover { color: var(--text-1); }
@@ -533,62 +505,8 @@ button.nc-effort:focus-visible { outline: none; box-shadow: var(--focus-ring); }
 .nc-frame__header { display: flex; align-items: center; min-height: var(--header); border-bottom: 1px solid var(--line-soft); }
 .nc-frame__body { flex: 1; min-height: 0; overflow: auto; }
 .nc-frame__body--padded { padding: var(--space-4); }
-.nc-shell { display: grid; grid-template-columns: var(--nc-sidebar-width, 232px) minmax(0, 1fr); grid-template-rows: auto auto minmax(0, 1fr) auto; grid-template-areas: "top top" "side head" "side main" "status status"; min-height: 100%; background: var(--bg-0); color: var(--text-1); }
-.nc-shell[data-fill] { height: 100%; }
-.nc-shell[data-header="across"] { grid-template-areas: "top top" "head head" "side main" "status status"; }
-.nc-shell[data-header="across"] > .nc-shell__header { gap: var(--space-3); padding: 0 var(--space-2) 0 var(--space-4); }
-.nc-shell[data-header="across"] .nc-view-header__middle { justify-content: center; }
-.nc-shell[data-header="across"] .nc-view-header__middle > .nc-search { flex: 0 1 440px; }
-.nc-shell[data-sidebar="hidden"] { grid-template-columns: 0 minmax(0, 1fr); }
-.nc-shell[data-sidebar="hidden"] > .nc-shell__sidebar, .nc-shell[data-sidebar="hidden"] > .nc-shell__edge { display: none; }
-.nc-shell[data-sidebar="hidden"] > .nc-shell__content { padding-left: var(--space-2); }
-/* The control that brings the sidebar back, in the header bar when no view header holds it: at the frames' left
-   edge, as the view header's would be. */
-.nc-shell[data-sidebar="hidden"] > .nc-shell__header { padding-left: var(--space-2); }
-.nc-shell__show { flex: none; }
-.nc-view-header__sidebar { flex: none; margin-left: calc(-1 * var(--space-2)); }
-.nc-view-header--shell .nc-view-header__sidebar { margin-left: 0; }
-.nc-shell__topbar { grid-area: top; display: none; align-items: center; gap: var(--space-2); min-height: var(--header); padding: 0 var(--space-1); }
-.nc-shell__scrim { display: none; padding: 0; border: 0; }
-.nc-shell__sidebar { grid-area: side; box-sizing: border-box; display: flex; flex-direction: column; gap: var(--space-3); min-height: 0; padding: var(--space-3) var(--space-2) var(--space-2); overflow: auto; background: var(--bg-0); }
-/* The edge of a resizable sidebar: a line that shows on hover, drag or focus, over the sidebar's right edge. */
-.nc-shell__edge { grid-area: side; justify-self: end; z-index: 3; width: 1px; margin-right: -4px; padding: 0 3px; background: transparent; background-clip: content-box; cursor: col-resize; outline: none; }
-.nc-shell__edge:hover, .nc-shell__edge:active { background-color: var(--accent-line); }
-.nc-shell__edge:focus-visible { background-color: var(--accent-strong); }
-/* The app's header: the path to the open view and its actions, on bg-0 beside the sidebar and above the frames.
-   It lines up with the frames' left edge, and the frames start right under it. */
-.nc-shell__header { grid-area: head; display: flex; align-items: center; min-width: 0; min-height: var(--header); padding-right: var(--space-2); }
-.nc-shell__header[hidden] { display: none; }
-.nc-shell__header-slot { display: contents; }
-.nc-shell:has(> .nc-shell__header:not([hidden])) > .nc-shell__content { padding-top: 0; }
-.nc-shell__header .nc-view-header--shell { flex: 1; min-width: 0; padding: 0; border-bottom: 0; }
-.nc-view-header__up { flex: none; margin-right: calc(-1 * var(--space-1)); }
-.nc-shell__content { grid-area: main; display: flex; flex-wrap: wrap; align-items: stretch; gap: var(--space-2); min-width: 0; padding: var(--space-2) var(--space-2) var(--space-2) 0; }
-.nc-shell__content > .nc-frame, .nc-shell__content > .nc-panel { flex: 1 1 320px; }
-.nc-shell[data-fill] > .nc-shell__content { flex-wrap: nowrap; min-height: 0; }
-/* A status bar under the frames is their bottom edge; without one they keep the same gap as at the top. */
-.nc-shell[data-fill]:has(> .nc-shell__status) > .nc-shell__content { padding-bottom: 0; }
-.nc-shell__status { grid-area: status; display: flex; align-items: center; gap: var(--space-4); min-height: var(--control-md); padding: 0 var(--space-3); }
 @media (max-width: 720px) {
-  .nc-shell, .nc-shell[data-sidebar="hidden"] { grid-template-columns: minmax(0, 1fr); grid-template-areas: "top" "head" "main" "status"; }
-  .nc-shell__header, .nc-shell[data-sidebar="hidden"] > .nc-shell__header { padding: 0 var(--space-2); }
-  /* The sidebar is a drawer here, which hiding does not apply to: it stays in the drawer, and its toggles go. */
-  .nc-shell[data-sidebar="hidden"] > .nc-shell__sidebar { display: flex; }
-  .nc-shell [data-part="sidebar-toggle"] { display: none; }
-  .nc-shell__header:has(> .nc-shell__show:only-child) { display: none; }
-  .nc-shell__topbar { display: flex; }
-  .nc-shell__edge { display: none; }
-  .nc-shell__sidebar { position: fixed; inset: 0 auto 0 0; z-index: 75; width: min(280px, 85vw); border-right: 1px solid var(--line-soft); transform: translateX(-100%); transition: transform 160ms ease; }
-  .nc-shell[data-drawer="open"] > .nc-shell__sidebar { transform: none; }
-  .nc-shell[data-drawer="open"] > .nc-shell__scrim { display: block; position: fixed; inset: 0; z-index: 74; background: color-mix(in srgb, var(--bg-0) 60%, transparent); }
-  .nc-shell__content { padding: 0 var(--space-2) var(--space-2); flex-direction: column; flex-wrap: nowrap; }
-  .nc-shell[data-fill]:has(> .nc-shell__status) > .nc-shell__content { padding-bottom: 0; }
-  .nc-shell__status { gap: var(--space-3); }
-  /* Fingers: the app shell's own controls are at least 44px square. */
-  .nc-shell__topbar .nc-icon-btn, .nc-shell__status .nc-icon-btn, .nc-shell__status .nc-btn, .nc-frame__header .nc-icon-btn, .nc-panel-header .nc-icon-btn { min-width: 44px; min-height: 44px; }
-  .nc-shell__sidebar .nc-nav-item, .nc-shell__sidebar .nc-search { min-height: 44px; }
-  .nc-shell__sidebar .nc-icon-btn { min-width: 44px; min-height: 44px; }
-  .nc-shell__sidebar .nc-search input { min-height: 40px; }
+  .nc-frame__header .nc-icon-btn, .nc-panel-header .nc-icon-btn { min-width: 44px; min-height: 44px; }
   .nc-frame__header, .nc-tabstrip { min-height: 52px; }
   .nc-dropframe__zones { top: 52px; }
   .nc-tabstrip__tab { height: 44px; }
@@ -611,7 +529,8 @@ button.nc-effort:focus-visible { outline: none; box-shadow: var(--focus-ring); }
 .nc-split--vertical > .nc-split__divider { width: auto; height: var(--space-2); cursor: row-resize; }
 .nc-split__divider::before { content: ""; position: absolute; inset: 0 calc(50% - 0.5px); background: var(--line-soft); transition: background 120ms; }
 .nc-split--vertical > .nc-split__divider::before { inset: calc(50% - 0.5px) 0; }
-.nc-split__divider:hover::before, .nc-split[data-dragging] > .nc-split__divider::before, .nc-split__divider:focus-visible::before { background: var(--accent-strong); }
+.nc-split__divider:hover::before, .nc-split[data-dragging] > .nc-split__divider::before { background: var(--text-4); }
+.nc-split__divider:focus-visible::before { background: var(--accent-strong); }
 .nc-split__divider:focus-visible { box-shadow: var(--focus-ring); border-radius: var(--radius-xs); }
 /* Phone: panes stack in a scrolling column and the dividers go. */
 @media (max-width: 720px) {
@@ -649,8 +568,7 @@ button.nc-effort:focus-visible { outline: none; box-shadow: var(--focus-ring); }
 .nc-list:focus-visible { box-shadow: var(--focus-ring-inset); border-radius: var(--radius-sm); }
 .nc-list__space { position: relative; }
 .nc-list__row { position: absolute; left: 0; right: 0; box-sizing: border-box; display: flex; align-items: center; gap: var(--space-2); padding: 0 var(--space-3); border-radius: var(--radius-sm); cursor: default; }
-.nc-list__row:hover { background: var(--bg-2); }
-.nc-list__row[data-active] { background: var(--bg-4); }
+.nc-list__row[data-active] { background: var(--active); }
 
 /* ---------- Light theme ----------
    Status hues pass 4.5:1 on white, but not on their own tints, where the badges, deltas, diff numbers and chips
@@ -694,8 +612,8 @@ button.nc-effort:focus-visible { outline: none; box-shadow: var(--focus-ring); }
 
 .nc-menu__slot { flex: none; width: 13px; height: 13px; }
 
-/* View layout: a view's own sidebar, the main column and a secondary panel (ViewLayout). The sidebar and the
-   panel sit on bg-1 like the frame, divided from the main column by a hairline that is also the drag handle. */
+/* View layout: a view's own sidebar and the main column (ViewLayout). The sidebar sits on bg-1 like the view,
+   divided from the main column by a hairline that is also the drag handle. */
 .nc-view-layout { position: relative; display: flex; height: 100%; min-height: 0; min-width: 0; }
 .nc-view-layout[data-dragging] { cursor: col-resize; user-select: none; }
 .nc-view-layout__sidebar { position: relative; display: flex; flex-direction: column; flex: none; box-sizing: border-box; width: var(--nc-view-sidebar, 240px); min-height: 0; overflow: visible; background: var(--bg-1); }
@@ -704,10 +622,9 @@ button.nc-effort:focus-visible { outline: none; box-shadow: var(--focus-ring); }
 .nc-view-layout__sidebar > :not(.nc-tooltip-anchor, [role="tooltip"]):not(.nc-view-layout__over-head) { box-sizing: border-box; padding: var(--space-2); }
 .nc-view-layout__sidebar--over { position: absolute; inset: 0 auto 0 0; z-index: 30; max-width: 85%; border-right: 1px solid var(--line); box-shadow: var(--shadow-overlay); }
 .nc-view-layout__rail { display: flex; flex: none; flex-direction: column; align-items: center; box-sizing: border-box; width: 36px; padding-top: var(--space-1); border-right: 1px solid var(--line-soft); }
-.nc-view-layout__activity { display: flex; flex: none; flex-direction: column; align-items: center; gap: var(--space-1); box-sizing: border-box; width: 36px; padding: var(--space-1) 0; border-right: 1px solid var(--line-soft); }
 .nc-view-layout__edge { flex: none; width: 1px; margin: 0 -3px; padding: 0 3px; background: var(--line-soft); background-clip: content-box; cursor: col-resize; z-index: 3; }
 .nc-view-layout__edge { outline: none; }
-.nc-view-layout__edge:hover, .nc-view-layout[data-dragging] .nc-view-layout__edge { background-color: var(--accent-line); }
+.nc-view-layout__edge:hover, .nc-view-layout[data-dragging] .nc-view-layout__edge { background-color: var(--text-4); }
 /* The divider is a resize handle in the tab order: keyboard focus shows it in the focus colour. */
 .nc-view-layout__edge:focus-visible { background-color: var(--accent-strong); }
 .nc-view-layout__body { display: flex; flex: 1; flex-direction: column; min-width: 0; min-height: 0; }
@@ -715,41 +632,13 @@ button.nc-effort:focus-visible { outline: none; box-shadow: var(--focus-ring); }
 .nc-view-layout__main { flex: 1; min-width: 0; min-height: 0; }
 .nc-view-layout__main--scroll { overflow: auto; }
 .nc-view-layout__main[data-reading] > * { box-sizing: border-box; width: 100%; max-width: var(--nc-view-reading, 720px); margin-inline: auto; }
-.nc-view-layout__aside { flex: none; box-sizing: border-box; width: var(--nc-view-aside, 260px); max-width: 35%; min-height: 0; overflow: auto; background: var(--bg-1); }
-.nc-view-layout__aside--over { position: absolute; inset: 0 0 0 auto; z-index: 30; max-width: 85%; border-left: 1px solid var(--line); box-shadow: var(--shadow-overlay); }
-/* Behind a column opened over the main column: a scrim that closes it. The sidebar has a close control on top. */
+/* Behind a sidebar opened over the main column: a scrim that closes it. The sidebar has a close control on top. */
 .nc-view-layout__scrim { position: absolute; inset: 0; z-index: 29; background: color-mix(in srgb, var(--bg-0) 50%, transparent); }
 .nc-view-layout__over-head { display: flex; flex: none; align-items: center; justify-content: flex-end; height: var(--header); padding: 0 var(--space-2); }
 .nc-view-layout__sidebar > .nc-view-layout__over-head { overflow: visible; }
 
-/* View header (ViewHeader): breadcrumbs and context, then the actions in one order. No title: the tab has it. */
-.nc-view-header { display: flex; flex: none; align-items: center; gap: var(--space-2); box-sizing: border-box; min-height: var(--header); padding: 0 var(--space-2) 0 var(--space-4); border-bottom: 1px solid var(--line-soft); }
-.nc-view-header__crumbs { display: flex; align-items: center; gap: 6px; min-width: 0; overflow: hidden; color: var(--text-2); font: inherit; white-space: nowrap; }
-.nc-view-header__crumb { display: inline-flex; align-items: center; gap: 6px; min-width: 0; overflow: hidden; color: inherit; text-decoration: none; text-overflow: ellipsis; }
-.nc-view-header__crumb[aria-current="page"] { color: var(--text-1); font-weight: 500; }
-.nc-view-header__crumb--link:hover { color: var(--text-1); }
-.nc-view-header__crumb--link:focus-visible { outline: none; box-shadow: var(--focus-ring-inset); border-radius: var(--radius-xs); }
-.nc-view-header__sep { flex: none; color: var(--text-3); }
-/* A cut crumb ends in an ellipsis and shows its full text as its title. The fold is the folded start of the path. */
-.nc-view-header__label { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
-.nc-view-header__mark { display: inline-flex; flex: none; }
-.nc-view-header__switcher { flex: none; height: var(--control-sm); margin-left: calc(-1 * var(--space-1)); padding: 0 var(--space-1); border: 0; border-radius: var(--radius-xs); background: none; color: var(--text-1); font: inherit; font-weight: 600; cursor: pointer; }
-.nc-view-header__switcher:hover, .nc-view-header__switcher[aria-expanded="true"] { background: var(--bg-3); }
-.nc-view-header__switcher > .nc-icon { color: var(--text-3); }
-.nc-view-header__fold { flex: none; padding: 0 var(--space-1); border: 0; border-radius: var(--radius-xs); background: none; cursor: pointer; font: inherit; }
-.nc-view-header__fold:hover, .nc-view-header__fold[aria-expanded="true"] { background: var(--bg-3); }
-/* The back control in place of the crumbs: the way back to the list a target was opened from. */
-.nc-view-header__back { display: inline-flex; align-items: center; gap: var(--space-1); min-width: 0; margin-left: calc(-1 * var(--space-1)); padding: 0 var(--space-1); border-radius: var(--radius-xs); color: var(--text-2); text-decoration: none; white-space: nowrap; }
-.nc-view-header__back:hover { color: var(--text-1); }
-.nc-view-header__back:focus-visible { outline: none; box-shadow: var(--focus-ring-inset); }
-.nc-view-header__context { display: inline-flex; align-items: center; gap: var(--space-2); min-width: 0; }
-.nc-view-header__middle { display: flex; flex: 1; align-items: center; gap: var(--space-2); min-width: 0; }
-.nc-view-header__middle:empty { min-width: 0; }
-.nc-view-header__actions { display: flex; flex: none; align-items: center; gap: 2px; }
-.nc-view-header__actions > .nc-btn { margin-left: var(--space-1); }
 @media (max-width: 720px) {
-  .nc-view-layout__sidebar, .nc-view-layout__aside { max-width: 85%; }
-  .nc-view-header { padding-left: var(--space-3); }
+  .nc-view-layout__sidebar { max-width: 85%; }
 }
 /* A label never runs into its shortcut or detail. */
 .nc-menu__item .nc-menu__key { padding-left: var(--space-4); max-width: 50%; overflow: hidden; text-overflow: ellipsis; }
@@ -780,10 +669,11 @@ button.nc-effort:focus-visible { outline: none; box-shadow: var(--focus-ring); }
 
 /* Account menu (AccountMenu): the trigger at the foot of the sidebar is a row like a nav item, with the avatar in
    the icon column; in a top bar it is the avatar alone. The menu opens on who is signed in. */
-.nc-account { display: inline-flex; align-items: center; gap: var(--space-2); min-width: 0; padding: 0; border: 0; border-radius: var(--radius-sm); background: transparent; color: var(--text-2); font: inherit; font-size: var(--nc-type-body); text-align: left; cursor: pointer; }
-.nc-account:hover, .nc-account[aria-expanded="true"] { background: var(--bg-3); color: var(--text-1); }
+.nc-account { display: inline-flex; align-items: center; gap: var(--space-2); min-width: 0; padding: 0; border: 0; border-radius: var(--radius-sm); background: transparent; color: var(--text-2); font: inherit; font-size: var(--nc-type-drill); font-weight: var(--nc-type-drill-weight); text-align: left; cursor: pointer; transition: background-color var(--dur-hover) var(--ease), color var(--dur-hover) var(--ease); }
+.nc-account:hover { color: var(--text-1); }
+.nc-account[aria-expanded="true"] { background: var(--hover); color: var(--text-1); }
 .nc-account:focus-visible { outline: none; box-shadow: var(--focus-ring-inset); }
-.nc-account--row { display: flex; box-sizing: border-box; width: 100%; height: var(--control-md); padding: 0 var(--space-2) 0 6px; }
+.nc-account--row { display: flex; box-sizing: border-box; width: 100%; height: var(--row-default); padding: 0 var(--space-2) 0 6px; }
 .nc-account--avatar { justify-content: center; width: var(--control-md); height: var(--control-md); border-radius: var(--radius-full); }
 .nc-account__trigger-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .nc-account__chevron { color: var(--text-3); }

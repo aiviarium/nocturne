@@ -40,10 +40,14 @@ Change both together. Sizes are CSS pixels (iOS points).
 
 ## Navigation
 
-A drill-down on a desktop is a stack on a phone. The shared sidebar of `AppShell` is a drawer, and the
-inspector of `ViewLayout` is a sheet behind a button in the bar. Each drill level is a screen of a
-`NavigationStack`, and the back control shows the title of the screen before. `ViewHeader` doesn't show
-crumbs or a `back` control there, because the stack is the way back. List screens have a large title.
+A phone app has a tab bar, a navigation stack for each tab, and one navigation bar for each screen. The bar
+has the back control, the title and at most two actions. List and root screens have a large title. A view
+built from `ViewLayout` and `ViewHeader` gets this with no extra code.
+
+A drill-down on a desktop is a stack on a phone. In the app shell the sidebar is a drawer and the right panel
+covers the view. The panel rail is hidden. The trail's parent crumb becomes the screen's back control, named
+after the parent. `ViewHeader` doesn't show the trail or the stepper there, because the stack is the way back.
+Time is the system's back gesture, and where the two differ, the gesture decides.
 
 ## The on-screen keyboard
 

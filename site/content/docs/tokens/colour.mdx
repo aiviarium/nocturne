@@ -10,19 +10,36 @@ Tints show as they look on a card.
 
 Neutral greys with no tint.
 `bg-0` is the canvas, `bg-1` the frames and cards, and `bg-2` fields and nested cards.
-`bg-3` is hover and the button fill, and `bg-4` is selection.
+`bg-3` is the button fill.
+The view area is raised on the canvas, and headers and list group heads have no fill.
 
 <ColourTable prefix={['bg']} />
 
+The state fills come from `text-1`.
+
+<ColourTable names={['hover', 'active', 'press']} />
+
+- `hover` is behind an icon-only button on hover, to show its hit area.
+- `active` is selection and the current item.
+- `press` is the fill while pressed.
+
+Rows, sidebar items, chips and text buttons take no fill on hover: only their text and icons lighten.
+
 ## Hairlines
 
-`line-subtle` divides table rows, `line-soft` edges cards and code, `line` edges controls, and `line-strong` is the strongest edge.
+Lines are translucent white in dark and a translucent near-black in light, and look the same on every background.
+`line-subtle` divides table rows, `line-soft` edges cards and code, `line` edges controls, and `line-strong` is the strongest edge, such as the ring of a selected card.
 
 <ColourTable prefix={['line']} />
 
 ## Text
 
 <ColourTable prefix={['text']} />
+
+Text selection is neutral: `--selection` is `text-1` at 22% in both themes, and the caret is `text-1`.
+Neither takes the accent or a lens's hue, in fields, the palette, the composer, the terminal or prose.
+
+<ColourTable names={['selection']} />
 
 `text-3` is the faintest colour for anything a person reads.
 `text-4` is for disabled and decorative marks only, such as separators and the dash of an empty value.
@@ -38,6 +55,19 @@ The primary button is filled with the text colour.
 
 `--accent` is the one colour an app sets, see [Theming](../theming.mdx#the-accent).
 The values here are Iris, the default.
+The accent follows the hue of the lens that is on.
+
+The accent is used for these only:
+
+- focus rings, including the palette's 3px glow around its field
+- the icon of the lens that is on
+- the tint line under the title bar
+- the one primary action of a view, a composer or a dialog
+- checked switches and checkboxes
+- text links
+
+It never marks selected rows, active tabs or nav items, counts and badges, unread dots, tags, progress, toggled buttons, menu checks, filter matches, drop lines or hover.
+Those are neutral, or take the status colours the data needs.
 
 <ColourTable prefix={['accent']} />
 <ColourTable names={['on-accent']} />
@@ -76,7 +106,8 @@ Hue goes in the foreground, such as an icon, the dot and word of a `State`, or t
 - Coloured fills are for icon tiles and buttons: an accent or danger button, the tile behind an icon.
 - No hue fill has a hue edge, and a danger button has no red edge.
 - A hue edge is never the only mark of a state on a card. Approval cards have a hairline edge, and show their state with a dot and a word.
-- Selection and hover are neutral fills, `bg-4` and `bg-3`.
+- Selection is the neutral `active` fill with a step up in text colour, from `text-2` to `text-1`. It never adds a bar or an underline, and never changes the size or the weight. Hover on rows, sidebar items and text buttons only lightens the text.
+- A selected card takes a `line-strong` ring.
   So are the selected rows of a table and its bulk bar, a running tool step and the composer while the assistant works.
   A running step has the hue in its text.
 

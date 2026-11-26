@@ -1,176 +1,107 @@
 ---
 title: Navigation
-description: The shared sidebar, the columns and bars of a view, drilling down or nesting, crumbs, selection and phones.
+description: How a person moves through an app, the bars of the window, a view's own sidebar, drilling down or nesting, and phones.
 ---
 
-This page shows how the navigation parts work together in an app.
-Each part has its own page for its props.
+Every app moves through the [app shell](../shell/index.mdx).
+This page shows how its parts work together, and where a view adds navigation of its own.
 
-## The shared sidebar
-
-The app's sidebar is the `sidebar` of `AppShell`, usually a `Nav`.
-Every view shares it, and it is usually there.
-Pass `onSidebarResize` to make it resizable: its edge drags, and the arrow keys move it when it has focus.
-The app keeps the width and passes it back as `sidebarWidth`.
-The width runs from 180px to 420px.
-
-Going deeper drills down the sidebar with the main column.
-Inside a domain of its own, such as a project, the sidebar shows that domain's places.
-The sidebar keeps its width while it drills down.
-
-A row that opens a level has `drill`, and a chevron ends it.
-Entering the level opens its places and leaves the page as it was, so no row in it is current until the person picks one.
-A group's heading may have one `action`, such as adding a space to the Spaces group.
-It shows on hover and focus, and always while the group is empty.
-
-## The top of the app
-
-An app puts its navigation controls in one of two places.
-Pick one for the whole app.
-
-### The sidebar header
-
-Most apps use this one.
-`SidebarHeader` is the first thing in the sidebar.
-Its row holds, from left to right:
-
-- `back`, once you have drilled into a domain. A chevron goes to the place above, and its name says where.
-- `path`, optional. The levels above the place, as buttons with slashes: `Fleet / build-01`. Each level has `show`: `inline` puts it in the row, `fold` puts it in a `…` menu at the start of the path, and `hidden` leaves it out. Without `show`, the last level is in the row and the ones before it go to the menu. Leave out levels that don't help. The app itself is one, as back already names it: a space reads `‹ Personal`, not `‹ Rookery / Personal`. Keep a parent in the row when the place makes little sense without it, such as the fleet above a host.
-- The place the sidebar shows, with its `Mark`. With `switcher` it opens a menu of the other places of that kind, such as workspaces, projects or hosts. Give it a switcher whenever the place is one of a kind, even when it is the only one so far, so the control is always there.
-- The command palette, with `onCommand`.
-- The toggle that hides the sidebar. It shows when the app passes `onSidebarHiddenChange` to `AppShell`.
-
-The row is aligned to the `Nav` under it.
-Back's chevron and a 20px mark are centred on the column of the nav icons, and the name starts at the left edge of the nav labels.
-
-`AppShell` places the sidebar toggle.
-The app keeps `sidebarHidden` and changes it in `onSidebarHiddenChange`.
-When the sidebar is shown, the toggle is at the end of the `SidebarHeader` row.
-When the sidebar is hidden, a toggle of the same size and icon is at the start of the first view's header.
-A shell with no view header shows it in its header bar.
-Views don't add an action of their own for it.
-`SidebarToggle` is the same control, for a header of the app's own.
-
-A search field goes under the row, as the children.
-There is no bar across the top.
-The frames start at the top of the window, and each view keeps its crumbs and actions in its own `ViewHeader`.
-
-<Example id="navigation/drilldown" />
-
-### A top bar
-
-A workspace that needs room for columns of its own, such as an editor, puts the controls in a bar across the whole window.
-Pass `headerPlacement="across"` to `AppShell`.
-The view fills it with a `ViewHeader` with `variant="shell"`.
-Its crumbs start with the workspace, a crumb with a `mark` and a `switcher` that opens the other workspaces.
-Its actions end the bar, with its children, such as search, in the middle.
-The header is still part of its view, so the inspector toggle and the pin work as before.
-
-Without `headerPlacement`, the bar is beside the sidebar, over the frames.
-`up` adds an arrow before the crumbs that goes to the level above.
-
-<Example id="navigation/topbar" />
-
-## Columns
-
-A view has these columns, from left to right.
-
-| Column | What goes in it | Width | When there is no room |
-| --- | --- | --- | --- |
-| Rail | An activity bar, the `rail` of `ViewLayout` | 36px | It stays |
-| Shared sidebar | The app's places from `AppShell`, or the places of the domain you drilled into | 180px to 420px, the person resizes it | A drawer on a phone |
-| View sidebar | The view's own navigation, such as saved views or a page tree | 180px to 420px, 240px at first | Hides and leaves the rail |
-| Main column | What the view shows | At least `minMain`, 560px by default | It stays |
-| Inspector | The properties of the selection, an outline | 200px to 360px, 260px at first | Collapses behind its toggle |
-| Bottom panel | Output, logs, a terminal, in a vertical `Split` | Dragged by its divider | It stays |
-
-`ViewLayout` lays out the view sidebar, the main column and the inspector.
-Each side column resizes by its edge, and a click on the edge hides it.
-Widths and collapsed columns are kept per view on the device.
-
-- A side column collapses by itself when the main column would get narrower than `minMain`.
-- Opened by hand, a column docks beside the main column while the main column keeps 360px.
-- Below that, the column opens over the main column, with a scrim. Escape or a click on the scrim closes it.
-
-Alt B toggles the view sidebar and Alt Shift B toggles the inspector.
-Tab moves focus through the columns in order.
-Escape in a column opened over the main column closes it and returns focus to its toggle.
-
-<Example id="navigation/columns" />
-
-## Bars
+## Where things go
 
 | Bar | What belongs in it |
 | --- | --- |
-| Top bar | On a phone, the control that opens the drawer. Nothing on a desktop |
-| Sidebar header | Back, the place and its switcher, the command palette, the sidebar toggle, and search |
+| Title bar | The app icon, the history arrows, the scope path with its switchers, the lens box, status items, the window controls |
+| Sidebar header | ↑ when there is a parent scope, the filter, collapse all, minimise |
+| Sidebar | The current scope's places, with their counts |
 | Sidebar foot | The `AccountMenu` |
-| App header | In a top bar, the path from the workspace on, search, and the view's actions |
-| `TabStrip` of a `Frame` | One tab for each open view, with the name of the view |
-| `ViewHeader` | The crumbs or a back control, short context, and the actions of the view, when there is no top bar |
-| Status bar | Only what is out of the ordinary, such as a lost connection |
+| `ViewHeader` | The view's title or trail, the record switcher, the stepper, the view's actions |
+| Panel header | The panel's name or trail, its real tabs, its actions, close |
 
 Each thing goes in one bar, and the other bars don't repeat it.
-The name of the view is in its tab.
-The header never repeats it as a heading.
-The view's actions sit in its header, with no second toolbar under it.
+A trail leaves out the title bar's path.
+Panel headers leave out the rail's panels.
+The view's header is its one bar, with no toolbar row under it.
 
 <DoDont do="design/compact-header" dont="design/inflated-header" />
+
+## Structure and time
+
+The path, the trails and the sidebar's ↑ are structure: each crumb goes up to what it names.
+Back and forward are time, and the window keeps them once, in its [history](../shell/history.mdx).
+No surface has a back button of its own.
+
+| To go | Use |
+| --- | --- |
+| Up from a record to its list | The view's first crumb, or Escape |
+| Up from a panel's drill | The panel's first crumb, or Escape |
+| Up to the parent scope | The sidebar's ↑, or a path segment |
+| To a sibling scope or record | The switcher on its path segment or crumb |
+| Back to where the person was | ⌘[, Alt+←, the mouse's back button, the desktop arrow or the browser's |
+
+## Scope by drilling
+
+Going into a domain, such as a space, a host or a project, drills the sidebar into that domain's places.
+The domain is a segment of the path and of the address.
+Entering it opens it as the person left it, with the lens worn last and the place that lens remembers.
+The core and the plugins contribute places and lenses through `createShell`, and the shell reads them.
+See [Sidebar](../shell/sidebar.mdx).
+
+<Example id="navigation/drilldown" />
 
 ## Drill down or nest
 
 Drill down when the target is a domain of its own with enough nested data to fill a view.
 Projects drill down to the issues of a project and then to one issue.
-The fleet drills down to a host and then to its sessions, tasks, units, logs and processes.
+The fleet drills down to a host and then to its sessions, files and logs.
 
 Nest in place when the data is a part of one view.
-Use `Nav` groups for saved views and sections, and a tree for pages.
-Choosing an item in place changes the main column and keeps the view.
+Use saved views for a place's lists, and a tree for pages.
+Choosing an item in place changes the view and keeps the tree.
 
-To choose, ask whether the target has its own lists, its own inspector and its own actions.
+To choose, ask whether the target has its own lists, its own panels and its own actions.
 If it does, drill down.
 If it is one more level of the same list, nest it.
 
 <Example id="navigation/page-tree" />
 
-## Crumbs
+## A view's own sidebar
 
-The crumbs show the path to where you are.
-The view picks one of three forms for each target.
-An app can set `show` from a person's setting, so people choose how much of the path they see.
+A view with navigation of its own, such as a page tree or a list of chats, uses the sidebar of `ViewLayout`.
 
-- **Full path.** Each level as a crumb, as in `Atlas web / Issues`. Use it when the path is short, and in a tree, where the crumbs show where the page sits.
-- **Stripped path.** Drop or fold levels, so the levels that help you move stay. `fold={1}` turns the first crumb into `…`, a menu of the folded levels, as in `… / Atlas web / WEB-142`. A crumb's `show` picks for that crumb alone: `fold` moves it into the menu and `hidden` leaves it out, wherever it is in the path. The last crumb is the page and always shows.
-- **Back control only.** `back` shows a back control in place of the crumbs, named after the list it returns to. Use it for a target reached from one list, such as a chat opened from the session list.
+| Column | What goes in it | Width |
+| --- | --- | --- |
+| View sidebar | The view's own navigation | 180px to 420px, 240px at first |
+| Main column | What the view shows | At least `minMain`, 560px by default |
 
-A crumb for one of a kind, such as a project or a host, has a `switcher`: a menu of the others of that kind.
-Picking one keeps the page, so `Hosts / build-01 / Files` becomes `Hosts / forge / Files`.
-The sidebar's place has the same switcher, with the same items.
+The view sidebar resizes by its edge and collapses with its control.
+Widths and collapsed columns are kept per view on the device.
 
-Every crumb but the last is a link.
-The last crumb is the page, in `text-1` with `aria-current="page"`.
-A crumb that does not fit is cut, and it shows its full text on hover.
-The path is where the item sits, not the list you came from.
-An issue's path contains its project and leaves out the saved view.
+- It collapses by itself when the main column would get narrower than `minMain`.
+- Opened by hand, it docks beside the main column while the main column keeps 360px.
+- Below that, it opens over the main column, with a scrim. Escape or a click on the scrim closes it.
 
-<DoDont do="navigation/crumbs-stripped" dont="navigation/crumbs-full" />
-<Example id="navigation/back-only" />
+The selection's details go in the shell's right panel, not in a column of the view.
+See [Panels](../shell/panels.mdx).
 
-## Selection and the path
+<Example id="navigation/columns" />
 
-The inspector shows the selection, and the path stays as it is while you select rows.
-Opening an item goes to it and changes the path.
-Give each row an open action, and give the inspector one too.
+## Selection and the trail
+
+The Details panel shows the selection, and the trail stays as it is while the person selects rows.
+Opening an item goes to it and changes the trail.
+Give each row an open action.
 
 ## Phones
 
-On a phone the shared sidebar is a drawer, and the inspector is a sheet behind a button in the bar.
+On a phone the sidebar is a drawer and the right panel covers the view.
+The rail is hidden.
 Each drill level is a screen of a `NavigationStack`.
-The back control shows the title of the screen before, and the crumbs are not shown.
+The trail's parent crumb becomes the screen's back control, named after the parent, and the crumbs are not shown.
+Time is the system's back gesture.
 List screens have a large title.
 A view built from `ViewLayout` and `ViewHeader` gets this with no extra code.
 See [Phones](../phones.mdx#navigation).
 
 <Example id="navigation/phone-drilldown" />
 
-<GalleryLink page="navigation">The navigation examples in the gallery</GalleryLink>
+<GalleryLink page="sidebar">The navigation examples in the gallery</GalleryLink>

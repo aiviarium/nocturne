@@ -13,8 +13,9 @@ from pathlib import Path
 from playwright.sync_api import sync_playwright
 
 PAGES = (
-    "overview button icon-button dropdown text-field select selection tabs nav-item menu badge state avatar callout icon "
-    "skeleton toast schema-form data-table stat-card list code-block diff-view chat-message composer widget stream-state panel app-shell split dialog popover"
+    "overview shell title-bar sidebar view-header panels appearance button icon-button dropdown text-field select "
+    "selection tabs menu badge state avatar callout icon skeleton toast schema-form data-table stat-card list "
+    "code-block diff-view chat-message composer widget stream-state split dialog popover"
 ).split()
 
 parser = argparse.ArgumentParser()

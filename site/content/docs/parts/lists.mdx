@@ -12,8 +12,7 @@ A table of columns is a `DataTable`, see [Records](./records.mdx#datatable).
 
 | Setting | Row height |
 | --- | --- |
-| `density="compact"`, the default | 30px |
-| `density="comfortable"` | 36px |
+| One line, the only desktop row height | 30px |
 | `lines={2}` or `lines={3}` | Rows with more text |
 | On a phone | 44px for one line, 58px for two |
 
@@ -27,11 +26,16 @@ The time ends the first line, and the state ends the second.
 In order:
 
 1. `icon` (16px) or `leading` (an `Avatar size="sm"`), in a fixed 20px box
-2. `title`
-3. `secondary`
-4. `status`, one `State`
-5. `meta`, a time or a count in `text-3`
-6. `actions` or `persistentActions`
+2. `prefix`, short facts before the title on its line, such as an issue's key and its state icon
+3. `title`
+4. `secondary`
+5. `status`, one `State`
+6. `meta`, a time or a count in `text-3`
+7. `actions` or `persistentActions`
+
+The prefix is quiet text at the label size, with tabular figures, so keys of one length line up from row to row.
+It stays on the title's line, and the two shrink together.
+A state glyph in it is an `Icon` with a `tone`: `success`, `warning`, `danger`, `info`, or `quiet` for `text-3`.
 
 `actions` are `IconButton size="sm"`.
 They show on hover, focus and selection.
@@ -57,8 +61,9 @@ The secondary text gives way first.
 
 ## Row states
 
-- `selected` is the inset fill, `bg-4`, 6px from the edge of the list.
-- `unread` bolds the title and puts a dot at the leading edge of the row, inside the fill. In a list that tracks it, pass `unread={false}` on the read rows, so the column of the dot stays and nothing moves.
+- `selected` is the faint inset fill, `active`, 6px from the edge of the list, with a step up in text colour to `text-1`. The size and weight stay, and there is no edge bar.
+- Hover only lightens the quiet text and the icons, with no fill.
+- `unread` bolds the title and puts a dot in `text-2` at the leading edge of the row, inside the fill. The dot is neutral, never the accent. In a list that tracks it, pass `unread={false}` on the read rows, so the column of the dot stays and nothing moves.
 - `muted` dims the row.
 - `movable={false}` pins a row in a list with `onReorder`.
 
@@ -67,6 +72,14 @@ You drag the row itself, and Delete is in its menu and on the Delete key.
 
 <DoDont do="design/drag-the-row" dont="design/grip-and-delete" />
 <DoDont do="design/selection-neutral" dont="design/selection-accent" />
+
+## Sections
+
+`RowSection` groups rows under a heading inside a `RowList`, such as issues by state.
+The heading shows the group's name at the body size, with its count, an optional icon or `leading` glyph, and buttons that show on hover and focus.
+Its chevron folds the group to its heading, and `expanded` or `defaultExpanded` set whether the rows show.
+The rows keep the list's shared columns and its keyboard model, so they line up across groups, and the arrow keys move from one group to the next.
+Group heads have no fill, and groups are set apart by space.
 
 ## Links and long lists
 
@@ -80,11 +93,11 @@ Its rows then take the widest trailing cell seen so far for each column.
 
 ## Variants
 
-`density` and `variant` belong to the list.
+`variant` belongs to the list.
 
 | Variant | Where |
 | --- | --- |
-| `inset` | In a card, panel or inspector at any depth. Titles sit on the text edge of the container, and the fill is 6px from its edge |
+| `inset` | In a card or panel at any depth, such as the Details panel. Titles sit on the text edge of the container, and the fill is 6px from its edge |
 | `inline` | In a property value or a form. 28px rows on the edge of the content |
 | `boxed` | A group of its own |
 

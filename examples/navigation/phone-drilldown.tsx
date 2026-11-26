@@ -33,7 +33,6 @@ export default function PhoneDrilldown() {
   return (
     <div class="ex-phone-app">
       <AppShell
-        fill
         sidebarLabel="Workspace"
         drawerOpen={drawer()}
         onDrawerClose={() => setDrawer(false)}

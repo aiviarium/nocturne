@@ -2,18 +2,16 @@ import {
   AppShell,
   Avatar,
   Button,
-  Frame,
   IconButton,
   ListRow,
-  Mark,
   MetaLine,
   Nav,
   PropertyList,
   RowList,
   SectionHeading,
+  ShellPanel,
   SidebarHeader,
   State,
-  TextField,
   ViewHeader,
   ViewLayout,
 } from "@aiviarium/nocturne"
@@ -24,7 +22,7 @@ import type { ExampleMeta } from "../_kit/types"
 
 export const meta: ExampleMeta = {
   title: "Drilling down from projects to an issue",
-  note: "Open Atlas web, then open an issue with its arrow. The sidebar drills down with the main column. Its header row has back once you are inside a project, the level above it (Projects), the place as a switcher, the command palette and the toggle that hides the sidebar, with search under it. Hide the sidebar and the same toggle brings it back from the start of the view's header. Inside a project the sidebar shows the project's places. The frames start at the top, and each view keeps its crumbs and actions in its own header.",
+  note: "Open Atlas web, then open an issue with its arrow. The sidebar drills down with the main column. Its header row has ↑ once you are inside a project, the filter and the minimise button, which folds the sidebar to its icon rail. Inside a project the sidebar shows the project's places. Each view keeps its title or trail and its actions in its own header.",
   surface: "none",
   frame: "A whole app window: the shared sidebar and a view beside it.",
   height: 560,
@@ -56,7 +54,6 @@ function Properties(props: { issue: Issue }) {
 
 export default function Drilldown() {
   const [place, setPlace] = createSignal<Place>({ at: "projects" })
-  const [width, setWidth] = createSignal(240)
   const [selected, setSelected] = createSignal("1")
   const project = PROJECTS[0]!
   const issueOf = (id: string) => ISSUES.find((i) => i.id === id)
@@ -64,51 +61,15 @@ export default function Drilldown() {
   const toIssues = (view = "active") => setPlace({ at: "issues", view })
   const open = (id: string) => setPlace({ at: "issue", issue: id })
 
-  const projectCrumbs = [
-    { label: "Projects", onClick: toProjects },
-    { label: project.name, onClick: () => toIssues() },
-  ]
-
-  // The sidebar drills down with the main column. Its header row holds back (inside a project), the place it
-  // shows as a switcher, the command palette and the toggle; search sits under it. The frames start at the top.
-  const [hidden, setHidden] = createSignal(false)
+  // The sidebar drills down with the main column. Its header row holds ↑ (inside a project), the filter and the
+  // minimise button; the title bar's path names the place.
   const view = () => {
     const p = place()
     return p.at === "issues" ? p.view : undefined
   }
   const inside = () => place().at !== "projects"
   const header = () => (
-    <SidebarHeader
-      title={inside() ? project.name : "Acme"}
-      mark={<Mark name={inside() ? project.name : "Acme"} hue={inside() ? "sky" : "accent"} decorative />}
-      back={inside() ? { to: "Projects", onClick: toProjects } : undefined}
-      path={inside() ? [{ label: "Projects", onClick: toProjects }] : undefined}
-      switcher={
-        inside()
-          ? {
-              label: "Switch project",
-              items: PROJECTS.map((p) => ({ id: p.id, label: p.name })),
-              onSelect: () => toIssues(),
-            }
-          : {
-              label: "Switch workspace",
-              items: [
-                { id: "acme", label: "Acme" },
-                { id: "personal", label: "Personal" },
-              ],
-              onSelect: () => {},
-            }
-      }
-      onCommand={() => {}}
-      commandShortcut="Ctrl K"
-    >
-      <TextField
-        variant="search"
-        label="Search"
-        placeholder={inside() ? `Search ${project.name}` : "Search"}
-        kbd="/"
-      />
-    </SidebarHeader>
+    <SidebarHeader up={inside() ? { label: "Projects", onClick: toProjects } : undefined} />
   )
   const appNav = () => (
     <Nav
@@ -152,73 +113,48 @@ export default function Drilldown() {
   return (
     <div class="ex-screen">
       <AppShell
-        fill
         sidebarLabel="Workspace"
-        sidebarWidth={width()}
-        onSidebarResize={setWidth}
-        sidebarHidden={hidden()}
-        onSidebarHiddenChange={setHidden}
-        sidebar={
-          <>
-            {header()}
-            {inside() ? projectNav() : appNav()}
-          </>
-        }
+        foldBelow={0}
+        sidebarHeader={header()}
+        sidebar={inside() ? projectNav() : appNav()}
       >
-        <Frame flush class="ex-app-frame">
-          <Switch>
-            <Match when={place().at === "projects"}>
-              <ViewLayout
-                id="nav-drill-projects"
-                header={
-                  <ViewHeader
-                    crumbs={[{ label: "Projects" }]}
-                    actions={[{ id: "new", label: "New project", icon: "plus", onClick: () => {} }]}
-                  />
-                }
-              >
-                <RowList label="Projects">
-                  <For each={PROJECTS}>
-                    {(p) => (
-                      <ListRow
-                        icon="board"
-                        title={p.name}
-                        secondary={p.key}
-                        meta={p.updated}
-                        onClick={() => toIssues()}
-                      />
-                    )}
-                  </For>
-                </RowList>
-              </ViewLayout>
-            </Match>
-            <Match when={place().at === "issues" && (place() as { view: string }).view}>
-              {(current) => (
+        <Switch>
+          <Match when={place().at === "projects"}>
+            <ViewLayout
+              id="nav-drill-projects"
+              header={
+                <ViewHeader
+                  title="Projects"
+                  actions={[{ id: "new", label: "New project", icon: "plus", onClick: () => {} }]}
+                />
+              }
+            >
+              <RowList label="Projects">
+                <For each={PROJECTS}>
+                  {(p) => (
+                    <ListRow
+                      icon="board"
+                      title={p.name}
+                      secondary={p.key}
+                      meta={p.updated}
+                      onClick={() => toIssues()}
+                    />
+                  )}
+                </For>
+              </RowList>
+            </ViewLayout>
+          </Match>
+          <Match when={place().at === "issues" && (place() as { view: string }).view}>
+            {(current) => (
+              <div class="ex-with-panel">
                 <ViewLayout
                   id="nav-drill-issues"
                   minMain={360}
                   header={
                     <ViewHeader
-                      crumbs={[
-                        ...projectCrumbs,
-                        { label: ISSUE_VIEWS.find((v) => v.id === current())!.label },
-                      ]}
+                      title={ISSUE_VIEWS.find((v) => v.id === current())!.label}
                       actions={[{ id: "new", label: "New issue", icon: "plus", onClick: () => {} }]}
                     />
-                  }
-                  asideLabel="Issue"
-                  aside={
-                    <Show when={issueOf(selected())}>
-                      {(i) => (
-                        <div class="ex-col ex-pad">
-                          <span class="label">{i().title}</span>
-                          <Properties issue={i()} />
-                          <Button size="sm" icon="arrow-up-right" onClick={() => open(i().id)}>
-                            Open
-                          </Button>
-                        </div>
-                      )}
-                    </Show>
                   }
                 >
                   <RowList label="Issues">
@@ -250,26 +186,34 @@ export default function Drilldown() {
                     </For>
                   </RowList>
                 </ViewLayout>
-              )}
-            </Match>
-            <Match when={place().at === "issue" && issueOf((place() as { issue: string }).issue)}>
-              {(i) => (
+                <ShellPanel at="right" title="Issue">
+                  <Show when={issueOf(selected())}>
+                    {(i) => (
+                      <div class="ex-col ex-pad">
+                        <span class="label">{i().title}</span>
+                        <Properties issue={i()} />
+                        <Button size="sm" icon="arrow-up-right" onClick={() => open(i().id)}>
+                          Open
+                        </Button>
+                      </div>
+                    )}
+                  </Show>
+                </ShellPanel>
+              </div>
+            )}
+          </Match>
+          <Match when={place().at === "issue" && issueOf((place() as { issue: string }).issue)}>
+            {(i) => (
+              <div class="ex-with-panel">
                 <ViewLayout
                   id="nav-drill-issue"
                   minMain={360}
                   reading
                   header={
                     <ViewHeader
-                      fold={1}
-                      crumbs={[...projectCrumbs, { label: i().key }]}
+                      trail={[{ label: "Issues", onClick: () => toIssues() }, { label: i().key }]}
                       actions={[{ id: "copy", label: "Copy link", icon: "link", onClick: () => {} }]}
                     />
-                  }
-                  asideLabel="Properties"
-                  aside={
-                    <div class="ex-col ex-pad">
-                      <Properties issue={i()} />
-                    </div>
                   }
                 >
                   <div class="ex-col ex-pad">
@@ -281,10 +225,15 @@ export default function Drilldown() {
                     </p>
                   </div>
                 </ViewLayout>
-              )}
-            </Match>
-          </Switch>
-        </Frame>
+                <ShellPanel at="right" title="Properties">
+                  <div class="ex-col ex-pad">
+                    <Properties issue={i()} />
+                  </div>
+                </ShellPanel>
+              </div>
+            )}
+          </Match>
+        </Switch>
       </AppShell>
     </div>
   )

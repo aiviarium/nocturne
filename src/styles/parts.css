@@ -5,13 +5,20 @@
    type class. */
 
 :root {
-  /* The type scale of tokens.css (.body, .label, .section, .heading, .title, .figure-xl). */
+  /* The type scale of tokens.css (.body, .drill, .label, .section, .heading, .title, .figure-xl). */
   --nc-type-section: 11px;
+  --nc-type-section-track: 0.01em;
+  /* The drill size: the title bar's path, view titles, trails, panel names and the sidebar's nav share it, so a
+     label keeps its size and baseline when it moves between those roles. */
+  --nc-type-drill: 12px;
+  --nc-type-drill-line: 20px;
+  --nc-type-drill-weight: 500;
+  --nc-type-drill-track: -0.005em;
   --nc-type-label: 12px;
   --nc-type-label-line: 16px;
   --nc-type-body: 13px;
   --nc-type-body-line: 20px;
-  --nc-type-heading: 16px;
+  --nc-type-heading: 15px;
   --nc-type-heading-line: 24px;
   --nc-type-title: 20px;
   --nc-type-title-line: 28px;
@@ -176,22 +183,39 @@ a.nc-ccard, button.nc-ccard { text-decoration: none; cursor: pointer; font: inhe
 /* A wrapper around rows (a context menu area, an element an app queries) passes the columns through. */
 .nc-rows__list > :not(.nc-lrow):has(> .nc-lrow) { display: grid; grid-template-columns: subgrid; }
 .nc-rows__list > :not(.nc-lrow):has(> .nc-lrow) > * { grid-column: 1 / -1; min-width: 0; }
+/* A group of rows under a heading (RowSection): the heading spans the list; the rows keep the shared columns. */
+.nc-rows__list > .nc-row-section, .nc-row-section__rows { display: grid; grid-template-columns: subgrid; }
+.nc-row-section > *, .nc-row-section__rows > * { grid-column: 1 / -1; min-width: 0; }
+.nc-row-section__rows { row-gap: 1px; padding-bottom: var(--space-1); }
+.nc-row-section__rows > .nc-lrow { grid-template-columns: subgrid; }
+.nc-row-section + .nc-row-section { margin-top: var(--space-1); }
+.nc-row-section__head { display: flex; align-items: center; gap: var(--space-1); min-height: 36px; padding: 0 var(--nc-inset); font-size: var(--nc-type-body); line-height: var(--nc-type-body-line); }
+.nc-row-section__name { display: inline-flex; align-items: center; gap: var(--space-2); min-width: 0; height: var(--control-md); padding: 0 var(--space-2) 0 0; border: 0; border-radius: var(--radius-sm); background: none; color: var(--text-1); font: inherit; font-weight: 500; }
+.nc button.nc-row-section__name { justify-content: flex-start; line-height: inherit; }
+.nc-row-section__name:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+.nc-row-section__chevron { flex: none; color: var(--text-4); transition: color var(--dur-hover) var(--ease); }
+.nc-row-section__name:hover .nc-row-section__chevron { color: var(--text-2); }
+.nc-row-section[data-collapsed] .nc-row-section__chevron { transform: rotate(-90deg); }
+.nc-row-section__lead { display: inline-flex; flex: none; align-items: center; justify-content: center; min-width: var(--nc-lrow-lead); color: var(--text-3); }
+.nc-row-section__label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nc-row-section__count { color: var(--text-3); font-weight: 400; font-variant-numeric: tabular-nums; }
+.nc-row-section__actions { display: inline-flex; align-items: center; gap: 2px; margin-left: auto; opacity: 0; transition: opacity var(--dur-hover) var(--ease); }
+.nc-row-section__head:is(:hover, :focus-within) .nc-row-section__actions { opacity: 1; }
 .nc-rows--virtual { flex: 1; }
 .nc-rows--virtual .nc-list__row { padding: 0; border-radius: 0; }
 .nc-rows--virtual .nc-list__row:hover, .nc-rows--virtual .nc-list__row[data-active] { background: transparent; }
 .nc-rows--virtual .nc-list__row > .nc-lrow { flex: 1; }
 .nc-rows--divided .nc-rows__list .nc-lrow + .nc-lrow::before { content: ""; position: absolute; top: -1px; left: var(--nc-inset); right: var(--nc-inset); height: 1px; background: var(--line-subtle); pointer-events: none; }
-.nc-rows--divided .nc-rows__list .nc-lrow:is(:hover, [data-selected])::before,
-.nc-rows--divided .nc-rows__list .nc-lrow:is(:hover, [data-selected]) + .nc-lrow::before { opacity: 0; }
+.nc-rows--divided .nc-rows__list .nc-lrow[data-selected]::before,
+.nc-rows--divided .nc-rows__list .nc-lrow[data-selected] + .nc-lrow::before { opacity: 0; }
 
 .nc-lrow { position: relative; display: grid; grid-template-columns: var(--nc-lrow-cols); align-items: center; box-sizing: border-box; min-width: 0; min-height: var(--row-compact); padding: 0 var(--nc-inset); border-radius: var(--radius-sm); color: var(--text-1); font-size: var(--nc-type-body); line-height: var(--nc-type-body-line); }
-.nc-lrow[data-density="comfortable"] { min-height: var(--row-default); }
 .nc-lrow[data-lines="2"], .nc-lrow[data-lines="3"] { align-items: start; padding-top: var(--nc-inset); padding-bottom: var(--nc-inset); }
-.nc-lrow[data-interactive]:hover { background: var(--bg-2); }
-/* A finger has no hover: a tapped row is filled only while it is pressed, not after. */
-.nc-lrow[data-touch][data-interactive]:hover:not([data-selected]) { background: transparent; }
-.nc-lrow[data-touch][data-interactive]:active:not([data-selected]) { background: var(--bg-3); }
-.nc-lrow[data-selected] { background: var(--bg-4); }
+/* Hover lightens the row's quiet text, with no fill; selection is the faint fill. A finger has no hover: a tapped
+   row is filled only while it is pressed, not after. */
+.nc-lrow[data-interactive]:hover :is(.nc-lrow__secondary, .nc-lrow__detail, .nc-lrow__meta, .nc-lrow__status, .nc-lrow__lead, .nc-lrow__prefix) { color: var(--text-2); }
+.nc-lrow[data-touch][data-interactive]:active:not([data-selected]) { background: var(--press); }
+.nc-lrow[data-selected] { background: var(--active); }
 .nc-lrow:has(> .nc-lrow__main:focus-visible) { box-shadow: var(--focus-ring); }
 .nc-lrow__main { grid-column: main; display: flex; align-items: center; min-width: 0; padding: 0; border: 0; background: transparent; color: inherit; font: inherit; text-align: left; text-decoration: none; }
 .nc button.nc-lrow__main { justify-content: flex-start; white-space: normal; line-height: inherit; }
@@ -200,26 +224,31 @@ a.nc-ccard, button.nc-ccard { text-decoration: none; cursor: pointer; font: inhe
    actions (and interactive leading content, such as a checkbox) above it. */
 .nc-lrow[data-interactive] .nc-lrow__main { cursor: pointer; }
 .nc-lrow[data-interactive] .nc-lrow__main::after { content: ""; position: absolute; inset: 0; border-radius: inherit; }
-.nc-lrow__lead { grid-column: lead; display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box; min-width: var(--nc-lrow-lead); height: var(--nc-lrow-lead); margin-right: var(--nc-lrow-gap); color: var(--text-2); }
+.nc-lrow__lead { grid-column: lead; display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box; min-width: var(--nc-lrow-lead); height: var(--nc-lrow-lead); margin-right: var(--nc-lrow-gap); color: var(--text-3); transition: color var(--dur-hover) var(--ease); }
+.nc-lrow[data-selected] .nc-lrow__lead { color: var(--text-2); }
 .nc-lrow__lead:has(input, button, a, [tabindex]) { position: relative; z-index: 1; }
 .nc-lrow__text { display: flex; align-items: baseline; gap: var(--space-2); flex: 1; min-width: 0; }
 .nc-lrow[data-lines="2"] .nc-lrow__text, .nc-lrow[data-lines="3"] .nc-lrow__text { flex-direction: column; align-items: stretch; gap: 0; }
+/* Short facts before the title (a key, a state icon): quiet, at the label size, with figures that line up. */
+.nc-lrow__head { display: flex; align-items: baseline; gap: var(--space-2); flex: 0 1 auto; min-width: 0; }
+.nc-lrow__prefix { display: inline-flex; align-items: center; gap: var(--space-2); flex: none; align-self: center; color: var(--text-3); font-size: var(--nc-type-label); line-height: var(--nc-type-label-line); font-variant-numeric: tabular-nums; white-space: nowrap; transition: color var(--dur-hover) var(--ease); }
+.nc-lrow__prefix > .nc-icon { flex: none; }
 .nc-lrow__title { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 /* One line: the secondary text gives way first, and once fewer than 4em of it would show it wraps out of
    the single visible line instead of leaving a sliver. */
 .nc-lrow[data-lines="1"] .nc-lrow__text { flex-wrap: wrap; max-height: var(--nc-type-body-line); overflow: hidden; }
 .nc-lrow[data-lines="1"] .nc-lrow__text > .nc-lrow__secondary { flex: 1 1 4em; max-width: max-content; }
-.nc-lrow__secondary, .nc-lrow__detail { flex: 0 100 auto; min-width: 0; overflow: hidden; color: var(--text-3); font-size: var(--nc-type-label); line-height: var(--nc-type-label-line); text-overflow: ellipsis; white-space: nowrap; }
+.nc-lrow__secondary, .nc-lrow__detail { flex: 0 100 auto; min-width: 0; overflow: hidden; color: var(--text-3); transition: color var(--dur-hover) var(--ease); font-size: var(--nc-type-label); line-height: var(--nc-type-label-line); text-overflow: ellipsis; white-space: nowrap; }
 .nc-lrow__detail { display: flex; margin-top: 2px; }
 /* On a row of two or three lines the text spans the status and meta columns: the time ends the first line and
    the state the second, both at the trailing edge of the times of one-line rows. */
 .nc-lrow:is([data-lines="2"], [data-lines="3"]) > .nc-lrow__main { grid-column: main / actions; }
 .nc-lrow__line { display: flex; align-items: baseline; gap: var(--space-2); min-width: 0; }
-.nc-lrow__line > :is(.nc-lrow__title, .nc-lrow__secondary) { flex: 0 1 auto; margin-right: auto; }
+.nc-lrow__line > :is(.nc-lrow__head, .nc-lrow__title, .nc-lrow__secondary) { flex: 0 1 auto; margin-right: auto; }
 .nc-lrow__line > :is(.nc-lrow__status, .nc-lrow__meta) { flex: none; max-width: 60%; }
 .nc-lrow[data-unread] .nc-lrow__title { font-weight: 600; }
-/* On the selected fill (bg-4) text-3 is under 4.5:1: the row's secondary text and meta take text-2 there. */
-.nc-lrow[data-selected] :is(.nc-lrow__secondary, .nc-lrow__detail, .nc-lrow__meta, .nc-lrow__status, .nc-metaline, .nc-state) { color: var(--text-2); }
+/* Selection steps the row's quiet text up a level, text-3 to text-2. */
+.nc-lrow[data-selected] :is(.nc-lrow__secondary, .nc-lrow__detail, .nc-lrow__meta, .nc-lrow__status, .nc-lrow__prefix, .nc-metaline, .nc-state) { color: var(--text-2); }
 .nc-lrow[data-muted] .nc-lrow__title { color: var(--text-2); }
 .nc-lrow__status, .nc-lrow__meta { min-width: 0; max-width: 100%; overflow: hidden; color: var(--text-3); font-size: var(--nc-type-label); line-height: var(--nc-type-label-line); text-overflow: ellipsis; white-space: nowrap; }
 /* A state's dots line up at the column's start, times at its end. The state is inline so its word can be cut. */
@@ -228,6 +257,9 @@ a.nc-ccard, button.nc-ccard { text-decoration: none; cursor: pointer; font: inhe
 .nc-lrow__status > .nc-state > .nc-dot { display: inline-block; margin-right: 6px; vertical-align: 1px; }
 .nc-lrow > .nc-lrow__meta { grid-column: meta; justify-self: end; margin-left: var(--nc-lrow-gap); }
 .nc-lrow__meta { font-variant-numeric: tabular-nums; }
+/* Metadata made of parts (labels, an avatar, a time) sits in a row, ending on the column's edge, so avatars and
+   times line up from row to row. Plain text metadata keeps its ellipsis. */
+.nc-lrow > .nc-lrow__meta:has(> *) { display: inline-flex; align-items: center; justify-content: flex-end; gap: var(--space-2); }
 .nc-lrow[data-lines="2"] > .nc-lrow__actions, .nc-lrow[data-lines="3"] > .nc-lrow__actions { margin-top: 2px; }
 .nc-lrow[data-lines="2"] .nc-lrow__lead, .nc-lrow[data-lines="3"] .nc-lrow__lead { margin-top: 0; }
 .nc-lrow__actions { position: relative; z-index: 1; grid-column: actions; justify-self: end; display: inline-flex; align-items: center; gap: 2px; margin-left: var(--nc-lrow-gap); margin-right: calc(var(--space-1) * -1); }
@@ -237,7 +269,7 @@ a.nc-ccard, button.nc-ccard { text-decoration: none; cursor: pointer; font: inhe
 /* The unread dot is the first column, inside the row's fill on its leading edge. A row that tracks unread
    (`unread` true or false) keeps the column, so marking it read moves nothing. */
 .nc-lrow__unread { grid-column: unread; width: 6px; height: 6px; margin-right: 6px; border-radius: var(--radius-full); }
-.nc-lrow__unread[data-on] { background: var(--accent-strong); }
+.nc-lrow__unread[data-on] { background: var(--text-2); }
 .nc-lrow[data-lines="2"] .nc-lrow__unread, .nc-lrow[data-lines="3"] .nc-lrow__unread { margin-top: 7px; }
 /* Swipe actions (touch): the cells slide over the tray at the row's edge. */
 .nc-lrow[data-swipe] { overflow: clip; }
@@ -260,7 +292,7 @@ a.nc-ccard, button.nc-ccard { text-decoration: none; cursor: pointer; font: inhe
 .nc-rows--inset { margin-inline: calc((var(--nc-pad) - var(--nc-inset)) * -1); padding-inline: 0; }
 .nc-rows--inline { margin-inline: calc(var(--nc-inset) * -1); padding: 0; }
 .nc-card__body > .nc-rows--inline { margin-block: 0; }
-.nc-rows--inline .nc-lrow[data-density="compact"][data-lines="1"] { min-height: var(--control-md); }
+.nc-rows--inline .nc-lrow[data-lines="1"] { min-height: var(--control-md); }
 .nc-props__value > :is(.nc-rows, .nc-datalist) { flex: 1 1 100%; min-width: 0; }
 .nc-props__label:has(+ .nc-props__value > :is(.nc-rows, .nc-datalist)) { align-self: start; }
 .nc-rows--boxed { overflow: clip; padding: 0; border: 1px solid var(--line-soft); border-radius: var(--radius-md); }
@@ -294,7 +326,7 @@ button.nc-lrow__toggle:hover { color: var(--text-1); }
 .nc-lrow[data-lifted], .nc-list__row[data-lifted] { z-index: 3; pointer-events: none; }
 .nc-lrow[data-lifted], .nc-list__row[data-lifted] > .nc-lrow { background: var(--bg-3); box-shadow: var(--shadow-overlay); }
 .nc-lrow[data-grabbed] { background: var(--bg-3); }
-.nc-rows__drop { position: absolute; z-index: 2; left: var(--nc-inset); right: var(--nc-inset); height: 2px; margin-top: -1px; border-radius: var(--radius-full); background: var(--accent); pointer-events: none; }
+.nc-rows__drop { position: absolute; z-index: 2; left: var(--nc-inset); right: var(--nc-inset); height: 2px; margin-top: -1px; border-radius: var(--radius-full); background: var(--text-3); pointer-events: none; }
 .nc-rows--flush .nc-rows__drop, .nc-rows--inset .nc-rows__drop, .nc-rows--inline .nc-rows__drop { left: 0; right: 0; }
 .nc-lrow__check { position: relative; z-index: 1; grid-column: check; display: inline-flex; align-items: center; margin-right: var(--nc-lrow-gap); }
 /* Renaming: the title is an InlineField, over nothing (the row's stretched click area is off). */
@@ -326,8 +358,7 @@ button.nc-lrow__toggle:hover { color: var(--text-1); }
 .nc-datalist--inline { margin-inline: calc(var(--nc-inset) * -1); }
 .nc-datalist__row { position: relative; align-items: center; column-gap: var(--space-1); min-height: var(--row-compact); padding: 0 var(--space-1) 0 var(--nc-inset); outline: none; }
 .nc-datalist--inline .nc-datalist__row { min-height: var(--control-md); }
-.nc-datalist--table[data-density="comfortable"] .nc-datalist__row:not(.nc-datalist__row--add) { min-height: var(--row-default); }
-.nc-datalist__row[data-selected] { background: var(--bg-4); }
+.nc-datalist__row[data-selected] { background: var(--active); }
 .nc-datalist__row:focus-visible { box-shadow: inset 0 0 0 1px var(--accent-strong); }
 .nc-datalist--movable .nc-datalist__row:not(.nc-datalist__row--add) { -webkit-user-select: none; user-select: none; }
 .nc-datalist--movable .nc-datalist__row :is(input, textarea) { -webkit-user-select: text; user-select: text; }
@@ -354,7 +385,7 @@ button.nc-lrow__toggle:hover { color: var(--text-1); }
 .nc-datalist__row[data-dragging] > :not(.nc-datalist__tray) { transition: none; }
 .nc-datalist__row[data-lifted] { z-index: 3; background: var(--bg-3); box-shadow: var(--shadow-overlay); pointer-events: none; }
 .nc-datalist__row[data-grabbed] { background: var(--bg-3); }
-.nc-datalist__drop { position: absolute; z-index: 2; left: 0; right: 0; height: 2px; margin-top: -1px; border-radius: var(--radius-full); background: var(--accent); pointer-events: none; }
+.nc-datalist__drop { position: absolute; z-index: 2; left: 0; right: 0; height: 2px; margin-top: -1px; border-radius: var(--radius-full); background: var(--text-3); pointer-events: none; }
 .nc-datalist__error { grid-column: fields / end; grid-row: 2; padding: 0 0 var(--space-1) var(--space-1); color: var(--danger-ink, var(--danger)); font-size: var(--nc-type-label); line-height: var(--nc-type-label-line); }
 .nc-datalist__row[data-invalid] .nc-inline-field { color: var(--text-1); }
 .nc button.nc-datalist__add { grid-column: fields / -1; justify-content: flex-start; gap: var(--space-2); width: 100%; min-height: var(--control-md); padding: 0 var(--space-1); border: 0; border-radius: var(--radius-xs); background: transparent; color: var(--text-3); font: inherit; font-size: var(--nc-type-body); }
@@ -383,7 +414,7 @@ button.nc-lrow__toggle:hover { color: var(--text-1); }
 .nc-table tbody tr[data-lifted] { position: relative; z-index: 3; box-shadow: var(--shadow-overlay); pointer-events: none; }
 .nc-table tbody tr[data-lifted] td, .nc-table tbody tr[data-grabbed] td { background: var(--bg-3); }
 .nc-datatable--reordering, .nc-datatable--reordering * { cursor: grabbing; -webkit-user-select: none; user-select: none; }
-.nc-datatable__drop { position: absolute; z-index: 2; left: 0; right: 0; height: 2px; margin-top: -1px; border-radius: var(--radius-full); background: var(--accent); pointer-events: none; }
+.nc-datatable__drop { position: absolute; z-index: 2; left: 0; right: 0; height: 2px; margin-top: -1px; border-radius: var(--radius-full); background: var(--text-3); pointer-events: none; }
 
 /* ---------- Inline-edit fields ---------- */
 .nc-inline-field { box-sizing: border-box; width: 100%; min-width: 0; margin: 0 calc(var(--nc-inset) * -1); padding: 0 calc(var(--nc-inset) - 1px); border: 1px solid transparent; border-radius: var(--radius-sm); background: transparent; color: var(--text-1); font-family: inherit; font-size: var(--nc-type-body); line-height: var(--nc-type-body-line); outline: none; text-overflow: ellipsis; resize: none; }
@@ -397,7 +428,7 @@ button.nc-lrow__toggle:hover { color: var(--text-1); }
    A state's edge survives hover and focus: an invalid field (TextField, TextArea, Select, SchemaForm's fields, an
    InlineField given aria-invalid) keeps its danger edge under the pointer, and when focused shows the focus ring
    in danger instead of the accent, so the error stays visible while it is being fixed. */
-:root, [data-theme] { --focus-ring-danger: 0 0 0 1px var(--danger), 0 0 0 4px color-mix(in srgb, var(--danger) 28%, transparent); }
+:root, [data-theme] { --focus-ring-danger: 0 0 0 1px var(--danger), 0 0 0 3px color-mix(in srgb, var(--danger) 28%, transparent); }
 .nc-input--error, .nc-input--error:hover, .nc-input[aria-invalid="true"], .nc-input[aria-invalid="true"]:hover,
 .nc-inline-field[aria-invalid="true"], .nc-inline-field[aria-invalid="true"]:hover { border-color: var(--danger); }
 .nc-input--error:focus, .nc-input[aria-invalid="true"]:focus, .nc-input--error[aria-expanded="true"],
@@ -537,7 +568,7 @@ button.nc-lrow__toggle:hover { color: var(--text-1); }
    are for icon tiles and buttons; never a hue outline around a hue fill, nor a hue edge as the only mark of a
    state on a card. */
 .nc-approval { border-color: var(--line-soft); }
-.nc-table tr[aria-selected="true"] td, .nc-table tbody tr[aria-selected="true"]:hover td { background: var(--bg-4); }
+.nc-table tr[aria-selected="true"] td, .nc-table tbody tr[aria-selected="true"]:hover td { background: var(--active); }
 .nc-bulkbar { border-bottom-color: var(--line-soft); background: var(--bg-2); color: var(--text-1); }
 .nc-step--running, .nc-step--button.nc-step--running { background: transparent; color: var(--accent-text); }
 .nc-composer--running, .nc-composer[data-dictation="recording"] { border-color: var(--line-strong); box-shadow: none; }
@@ -612,10 +643,9 @@ button.nc-lrow__toggle:hover { color: var(--text-1); }
 :root[data-phone] .nc-composer__thumb-remove::after { content: ""; position: absolute; inset: calc(50% - var(--phone-hit) / 2); }
 
 /* SettingRow: a setting's text at the left and its control at the right, rows a hairline apart. A modified
-   row carries an accent edge, so the changes at a scope show at a glance. */
+   row shows its reset chip; no edge bar. */
 .nc-setting { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) minmax(180px, 280px); align-items: center; column-gap: var(--space-4); row-gap: var(--space-2); padding: var(--space-3) var(--nc-pad, var(--space-3)); }
 .nc-setting + .nc-setting { border-top: 1px solid var(--line-soft); }
-.nc-setting[data-modified]::before { content: ""; position: absolute; inset-block: var(--space-2); inset-inline-start: 0; width: 2px; border-radius: var(--radius-sm); background: var(--accent); }
 .nc-setting__text { display: flex; flex-direction: column; gap: var(--space-1); min-width: 0; }
 .nc-setting__head { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); min-width: 0; }
 .nc-setting__head > .nc-infotip { margin-inline-start: calc(-1 * var(--space-1)); }
@@ -626,9 +656,9 @@ button.nc-lrow__toggle:hover { color: var(--text-1); }
 .nc-setting__name { color: var(--text-3); font-family: var(--font-mono); font-size: var(--nc-type-label); line-height: var(--nc-type-label-line); overflow-wrap: anywhere; }
 .nc-setting__inherited { color: var(--text-3); font-size: var(--nc-type-label); line-height: var(--nc-type-label-line); }
 .nc-setting__chip { display: inline-flex; align-items: center; gap: var(--space-1); height: 18px; padding: 0 var(--space-2); border: 1px solid var(--line); border-radius: var(--radius-full); background: none; color: var(--text-2); font: inherit; font-size: var(--nc-type-label); line-height: 1; }
-.nc-setting__chip--reset { border-color: var(--accent-line); color: var(--accent-strong); cursor: pointer; }
-.nc-setting__chip--reset:hover { background: var(--accent-tint); }
-.nc-setting__chip--reset:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.nc-setting__chip--reset { color: var(--text-2); cursor: pointer; transition: color var(--dur-hover) var(--ease); }
+.nc-setting__chip--reset:hover { color: var(--text-1); }
+.nc-setting__chip--reset:focus-visible { outline: none; box-shadow: var(--focus-ring); }
 .nc-setting__control { display: flex; justify-content: flex-end; min-width: 0; }
 .nc-setting__control > :is(.nc-field, [data-part="text-field"], [data-part="select"], [data-part="number-field"]) { flex: 1; min-width: 0; }
 :root[data-phone] .nc-setting { grid-template-columns: minmax(0, 1fr); }

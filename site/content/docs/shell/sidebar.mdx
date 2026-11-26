@@ -1,0 +1,81 @@
+---
+title: Sidebar
+description: The sidebar header, the tree of the current scope, the fold to an icon rail and the account.
+---
+
+The sidebar shows the places of the scope the window is in.
+Going into a scope, such as a project or a host, replaces the tree with that scope's places.
+The title bar's path names the scope, so the sidebar doesn't.
+
+<Example id="navigation/fold-rail" />
+
+## The header
+
+`SidebarHeader` is a 44px row, from left to right:
+
+1. ↑, only when the scope has a parent. Its tooltip names it: "Up to Projects".
+2. The filter field, which fills the free width. With no ↑ it starts at the left edge, and the row looks the same either way.
+3. Collapse all, when the tree has parents.
+4. Minimise, which folds the sidebar to its rail.
+
+The title bar's path names the scope, and the header leaves it out.
+The field is quiet at rest and 28px tall, with 12px text.
+⌘F or / focuses it.
+Typing filters the tree in place.
+Matches and their parents stay, with the match underlined in `text-3`.
+Escape clears it.
+
+## The tree
+
+`Nav` draws the tree at the drill size.
+
+| What | Size |
+| --- | --- |
+| Row | 30px |
+| Label | 12px/500 |
+| Icon | 15px, `text-3` at rest |
+| Gap between icon and label | 8px |
+| Count | 11px, plain `text-3` figures |
+
+A child view starts at its parent's label, 8 + 15 + 8px from the row's edge.
+The current item takes the `active` fill and `text-1`, at the same size and weight.
+Hover only lightens the label and the icon.
+A count shows above zero.
+
+A place with `enters` lists scopes: opening one of its rows nests that scope in the path, and the tree drills into it.
+Entering a scope opens it as the person left it, with the lens worn last and the place that lens remembers.
+
+<Example id="navigation/drilldown" />
+<Example id="nav-item/sidebar" />
+
+## The icon rail
+
+Minimise, ⌘B or ⌘\\, or a drag of the edge below 140px folds the sidebar to a 48px rail.
+
+- The tree's top-level places show as 32px icon buttons with their names in tooltips.
+- A place whose children count shows a neutral dot.
+- The account shows as its avatar at the foot.
+- The header is one button where ↑ was, "Show sidebar" (⌘B), which restores the last full width. A drag of the rail's edge past 140px does the same.
+
+Below 900px window width the sidebar starts folded, and unfolding opens it until the window widens.
+`foldBelow` changes the width, and 0 turns it off.
+The fold and the width are kept in the shell's storage.
+
+## The account
+
+The sidebar's foot is an `AccountMenu`.
+It says who is signed in, holds the app's items, "Appearance…" with `onAppearance`, the theme as one row of three icons, and sign out last.
+Folded, it is the avatar alone.
+
+## Drill or nest
+
+Drill into a scope when the target is a domain of its own, with its own lists, panels and actions.
+Projects drill to a project, and the fleet to a host.
+
+Nest in place when the data is a part of one view.
+Saved views are child rows under their place, and a page tree stays a tree.
+Choosing an item in place changes the view and keeps the tree.
+
+<Example id="navigation/page-tree" />
+
+<GalleryLink page="sidebar">The sidebar in the gallery</GalleryLink>

@@ -14,6 +14,7 @@ The components keep the props they had before.
 
 An overlay renders in the top layer of the browser, at the place in the page where you put it.
 It inherits the theme and `--accent` of that place, so a menu opened in a light panel is light.
+The accent of a lens is set on `<html>`, so overlays take it wherever they mount.
 The menu of a table row is the one exception: it renders next to the table, in a `div.nc` that copies the table's theme.
 
 ## The order
@@ -23,6 +24,13 @@ Escape closes only the topmost open overlay.
 A modal dialog or sheet makes the page behind it inert until it closes.
 
 <Example id="patterns/overlay-stack" minHeight={420} />
+
+## Motion
+
+Menus, popovers, the palette, dialogs and toasts fade in over `--dur-fade`, 90ms.
+They are the only parts that fade.
+A view, a panel or a list that swaps its content does it in the same frame.
+Under reduced motion nothing fades.
 
 ## Popover
 
@@ -45,6 +53,7 @@ On a phone a dialog with a title is a `Sheet`, which rests at the height of its 
 ## Tooltips and toasts
 
 A tooltip shows the label of an `IconButton` with its shortcut.
+Tooltips are dark in both themes: `bg-3` with `text-1` in dark, and `text-1` with `bg-0` text in light.
 
 Toasts are short notices in a live region at the bottom right.
 Danger toasts are announced assertively, and hover or focus pauses the timer.

@@ -1,0 +1,5 @@
+{
+  "title": "The app shell",
+  "icon": "AppWindow",
+  "pages": ["index", "title-bar", "sidebar", "view-header", "panels", "history", "appearance", "create-shell", "keyboard"]
+}

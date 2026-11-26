@@ -1,7 +1,7 @@
 import type { JSX } from "@solidjs/web"
 import { Command, CommandEmpty, CommandInput, CommandItem, CommandList } from "@ui-sdk/solid/command"
 import { PopoverContent, Popover as PopoverRoot, PopoverTrigger } from "@ui-sdk/solid/popover"
-import { createEffect, createSignal, For, onCleanup, onSettled, Show } from "solid-js"
+import { createEffect, createSignal, For, onCleanup, onSettled, Show, untrack } from "solid-js"
 import { aria } from "../lib/aria"
 import { cx } from "../lib/cx"
 import { createId } from "../lib/id"
@@ -27,6 +27,20 @@ export interface TabStripItem {
   dirty?: boolean
   /** Loading: a spinner in place of the icon. */
   loading?: boolean
+  /**
+   * The state of what the tab runs, such as a terminal session's, as a dot before the title: `running`, `input`
+   * (waiting for the person), `exited` or `failed`.
+   */
+  status?: TabStatus
+}
+
+export type TabStatus = "running" | "input" | "exited" | "failed"
+
+const STATUS_LABEL: Record<TabStatus, string> = {
+  running: "Running",
+  input: "Needs input",
+  exited: "Exited",
+  failed: "Failed",
 }
 
 export interface TabStripDrop {
@@ -253,13 +267,14 @@ export function TabStrip(props: TabStripProps): JSX.Element {
         <For each={props.items} keyed={(item) => item.id}>
           {(item, index) => (
             <div
-              ref={(el) => tabs.set(item().id, el)}
+              ref={(el) => tabs.set(untrack(item).id, el)}
               data-part="tab-strip-tab"
               data-tab={item().id}
               data-active={props.value === item().id ? "" : undefined}
               data-pinned={item().pinned ? "" : undefined}
               data-dirty={item().dirty ? "" : undefined}
               data-loading={item().loading ? "" : undefined}
+              data-status={item().status}
               data-drop-before={dropAt() === index() ? "" : undefined}
               class="nc-tabstrip__tab"
               draggable={props.dragGroup && !touch() ? "true" : undefined}
@@ -319,7 +334,7 @@ export function TabStrip(props: TabStripProps): JSX.Element {
                   <button
                     {...mergeParts(
                       {
-                        ref: (el: HTMLButtonElement) => buttons.set(item().id, el),
+                        ref: (el: HTMLButtonElement) => buttons.set(untrack(item).id, el),
                         onClick: (event: MouseEvent) => {
                           if (swallowClick) {
                             swallowClick = false
@@ -348,6 +363,16 @@ export function TabStrip(props: TabStripProps): JSX.Element {
                       }
                     >
                       <span class="nc-spinner" role="status" aria-label="Loading" />
+                    </Show>
+                    <Show when={item().status}>
+                      {(st) => (
+                        <span
+                          class="nc-tabstrip__status"
+                          data-status={st()}
+                          role="img"
+                          aria-label={STATUS_LABEL[st()]}
+                        />
+                      )}
                     </Show>
                     <Show when={!item().pinned}>
                       <span class="nc-tabstrip__title">{item().label}</span>

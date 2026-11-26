@@ -1,7 +1,6 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test"
 import { createSignal, flush, Show } from "solid-js"
 import {
-  AppShell,
   ContextWidget,
   compactCount,
   NavigationScreen,
@@ -9,7 +8,6 @@ import {
   ScreenRefresh,
   ScreenSearch,
   Sheet,
-  SidebarHeader,
   Skeleton,
   State,
   StatusDot,
@@ -632,6 +630,49 @@ describe("Tooltip", () => {
     await tick()
     expect(one("[data-part=tooltip]").hasAttribute("data-open")).toBe(false)
   })
+
+  test("a press closes it, even past the button's own onClick, and keeps it shut until the pointer leaves", async () => {
+    let clicks = 0
+    const { root } = track(
+      mount(() => (
+        <Tooltip content="Run" delay={0}>
+          {(t) => (
+            <button {...t} type="button" onClick={() => clicks++}>
+              R
+            </button>
+          )}
+        </Tooltip>
+      )),
+    )
+    const button = one<HTMLButtonElement>("button", root)
+    const tip = () => one("[data-part=tooltip]")
+    press(document.body, "Tab")
+    button.focus()
+    flush()
+    await tick()
+    expect(tip().hasAttribute("data-open")).toBe(true)
+    button.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true }))
+    click(button)
+    flush()
+    await tick()
+    expect(clicks).toBe(1)
+    expect(tip().hasAttribute("data-open")).toBe(false)
+    // Focus coming back to it while the pointer is still on it opens nothing.
+    button.blur()
+    press(document.body, "Tab")
+    button.focus()
+    flush()
+    await tick()
+    expect(tip().hasAttribute("data-open")).toBe(false)
+    // Once the pointer has left, it shows again.
+    button.dispatchEvent(new PointerEvent("pointerleave"))
+    button.blur()
+    press(document.body, "Tab")
+    button.focus()
+    flush()
+    await tick()
+    expect(tip().hasAttribute("data-open")).toBe(true)
+  })
 })
 
 describe("ViewHeader", () => {
@@ -640,7 +681,7 @@ describe("ViewHeader", () => {
     expect(root.querySelector("[data-part=view-header]")).toBeNull()
   })
 
-  test("names its view to the app's chrome by its last crumb, and stops when it goes", () => {
+  test("names its view to the app's chrome by its title or last crumb, and stops when it goes", () => {
     const titles: Array<string | undefined> = []
     const [page, setPage] = createSignal("Guide")
     const [shown, setShown] = createSignal(true)
@@ -655,8 +696,9 @@ describe("ViewHeader", () => {
           }}
         >
           <Show when={shown()}>
-            <ViewHeader crumbs={[{ label: "Docs", href: "/docs" }, { label: page() }]} />
+            <ViewHeader trail={[{ label: "Docs", onClick: () => {} }, { label: page() }]} />
           </Show>
+          <ViewHeader title="Jobs" />
         </ViewChrome>
       )),
     )
@@ -665,45 +707,15 @@ describe("ViewHeader", () => {
     flush()
     setShown(false)
     flush()
-    expect(titles).toEqual(["Guide", "Reference", undefined])
+    expect(titles).toEqual(["Guide", "Jobs", "Reference", undefined])
   })
 
-  test("leaves the path to the app when its chrome says so, and still names the view", () => {
-    const titles: Array<string | undefined> = []
-    const { root } = track(
-      mount(() => (
-        <ViewChrome
-          value={{
-            pinnable: () => false,
-            pinned: () => false,
-            togglePin: () => {},
-            setTitle: (title) => titles.push(title),
-            path: () => false,
-          }}
-        >
-          <ViewHeader
-            crumbs={[{ label: "Hosts", href: "/hosts" }, { label: "box1" }]}
-            actions={[{ id: "new", label: "New", icon: "plus", onClick: () => {} }]}
-          />
-          <ViewHeader crumbs={[{ label: "Jobs" }]} path />
-        </ViewChrome>
-      )),
-    )
-    flush()
-    const headers = Array.from(root.querySelectorAll("[data-part=view-header]"))
-    expect(headers).toHaveLength(2)
-    expect(headers[0]!.querySelector("[data-part=breadcrumbs]")).toBeNull()
-    expect(headers[0]!.querySelector("[data-action=new]")).not.toBeNull()
-    expect(headers[1]!.querySelector("[data-part=breadcrumbs]")?.textContent).toContain("Jobs")
-    expect(titles).toEqual(["box1", "Jobs"])
-  })
-
-  test("shows the crumbs and runs actions, with the primary one last", () => {
+  test("shows the title and runs actions, with the primary one last", () => {
     const calls: string[] = []
     const { root } = track(
       mount(() => (
         <ViewHeader
-          crumbs={[{ label: "Docs", onClick: () => calls.push("crumb") }, { label: "Guide" }]}
+          title="Guide"
           actions={[
             { id: "new", label: "Publish", primary: true, onClick: () => calls.push("publish") },
             { id: "filter", label: "Filter", icon: "filter", onClick: () => calls.push("filter") },
@@ -712,179 +724,12 @@ describe("ViewHeader", () => {
       )),
     )
     const header = one("[data-part=view-header]", root)
-    const crumbs = one("[data-part=breadcrumbs]", header)
-    expect(one("[aria-current=page]", crumbs).textContent).toBe("Guide")
-    click(one("a", crumbs))
+    expect(one("[data-part=view-title]", header).textContent).toBe("Guide")
     const buttons = Array.from(one("[data-part=view-actions]", header).querySelectorAll("[data-action]"))
     expect(buttons.map((b) => b.getAttribute("data-action"))).toEqual(["filter", "new"])
     click(buttons[0]!)
     click(buttons[1]!)
-    expect(calls).toEqual(["crumb", "filter", "publish"])
-  })
-
-  test("folds the start of the path into a menu, and every crumb shows its full text", async () => {
-    const went: string[] = []
-    const { root } = track(
-      mount(() => (
-        <ViewHeader
-          fold={2}
-          crumbs={[
-            { label: "Workspace", onClick: () => went.push("workspace") },
-            { label: "Projects", onClick: () => went.push("projects") },
-            { label: "Atlas web", onClick: () => went.push("atlas") },
-            { label: "WEB-142" },
-          ]}
-        />
-      )),
-    )
-    const crumbs = one("[data-part=breadcrumbs]", root)
-    const fold = one("[data-part=crumbs-fold]", crumbs)
-    expect(fold.getAttribute("title")).toBe("Workspace / Projects")
-    expect(crumbs.querySelectorAll("a").length).toBe(1)
-    expect(one("a", crumbs).textContent).toBe("Atlas web")
-    expect(one("[aria-current=page]", crumbs).textContent).toBe("WEB-142")
-    expect(one("[aria-current=page] [title]", crumbs).getAttribute("title")).toBe("WEB-142")
-    click(fold)
-    await tick()
-    const items = Array.from(document.querySelectorAll("[role=menuitem]"))
-    expect(items.map((e) => e.textContent?.trim())).toEqual(["Workspace", "Projects"])
-    click(items[1]!)
-    expect(went).toEqual(["projects"])
-  })
-
-  test("each crumb picks whether it is in the row, in the menu or left out", async () => {
-    const { root } = track(
-      mount(() => (
-        <ViewHeader
-          crumbs={[
-            { label: "Workspace", show: "hidden", onClick: () => {} },
-            { label: "Projects", show: "fold", onClick: () => {} },
-            { label: "Atlas web", onClick: () => {} },
-            { label: "Cycles", show: "hidden", onClick: () => {} },
-            { label: "WEB-142", show: "hidden" },
-          ]}
-        />
-      )),
-    )
-    const crumbs = one("[data-part=breadcrumbs]", root)
-    expect(crumbs.textContent).not.toContain("Workspace")
-    expect(crumbs.textContent).not.toContain("Cycles")
-    expect(one("a", crumbs).textContent).toBe("Atlas web")
-    // The page always shows.
-    expect(one("[aria-current=page]", crumbs).textContent).toBe("WEB-142")
-    click(one("[data-part=crumbs-fold]", crumbs))
-    await tick()
-    expect(
-      Array.from(document.querySelectorAll("[role=menuitem]")).map((e) => e.textContent?.trim()),
-    ).toEqual(["Projects"])
-  })
-
-  test("a back control takes the place of the crumbs", () => {
-    let back = 0
-    const { root } = track(
-      mount(() => (
-        <ViewHeader
-          back={{ label: "Sessions", onClick: () => back++ }}
-          crumbs={[{ label: "Agents" }, { label: "Fix the redirect" }]}
-        />
-      )),
-    )
-    expect(root.querySelector("[data-part=breadcrumbs]")).toBeNull()
-    const control = one("[data-part=view-back]", root)
-    expect(control.textContent).toBe("Sessions")
-    expect(control.getAttribute("title")).toBe("Back to Sessions")
-    click(control)
-    expect(back).toBe(1)
-  })
-
-  test("inside a layout with a side panel it shows the panel's toggle", () => {
-    const { root } = track(
-      mount(() => (
-        <ViewLayout id="test.header" header={<ViewHeader />} aside={<p>Outline</p>} asideLabel="Outline">
-          <p>Main</p>
-        </ViewLayout>
-      )),
-    )
-    const toggle = one("[data-part=view-aside-toggle]", root)
-    expect(toggle.getAttribute("aria-label")).toBe("Show outline")
-  })
-
-  test("goes up one level from its arrow, named after the level above", () => {
-    const went: string[] = []
-    const { root } = track(
-      mount(() => (
-        <ViewHeader
-          up
-          crumbs={[
-            { label: "Projects", onClick: () => went.push("projects") },
-            { label: "Atlas web", onClick: () => went.push("atlas") },
-            { label: "WEB-142" },
-          ]}
-        />
-      )),
-    )
-    const up = one("[data-part=view-up]", root)
-    expect(up.getAttribute("aria-label")).toBe("Back to Atlas web")
-    click(up)
-    expect(went).toEqual(["atlas"])
-  })
-
-  test("the shell variant shows in the AppShell's header and keeps the bar hidden without it", () => {
-    const [deep, setDeep] = createSignal(true)
-    const { root } = track(
-      mount(() => (
-        <AppShell sidebar={<span>nav</span>}>
-          <Show when={deep()}>
-            <ViewHeader variant="shell" crumbs={[{ label: "Projects" }]} />
-          </Show>
-        </AppShell>
-      )),
-    )
-    const bar = one("[data-part=shell-header]", root)
-    expect(bar.hidden).toBe(false)
-    const header = one("[data-part=view-header]", bar)
-    expect(header.getAttribute("data-variant")).toBe("shell")
-    expect(one("[data-part=shell-content]", root).querySelector("[data-part=view-header]")).toBeNull()
-    setDeep(false)
-    flush()
-    expect(bar.hidden).toBe(true)
-    expect(bar.querySelector("[data-part=view-header]")).toBeNull()
-  })
-
-  test("the shell variant shows in place outside an AppShell", () => {
-    const { root } = track(mount(() => <ViewHeader variant="shell" crumbs={[{ label: "Projects" }]} />))
-    expect(one("[data-part=view-header]", root).getAttribute("data-variant")).toBe("shell")
-  })
-
-  test("a crumb with a switcher opens the other places of its kind", async () => {
-    const chosen: string[] = []
-    const { root } = track(
-      mount(() => (
-        <ViewHeader
-          crumbs={[
-            {
-              label: "Acme",
-              switcher: {
-                label: "Switch workspace",
-                items: [
-                  { id: "acme", label: "Acme" },
-                  { id: "personal", label: "Personal" },
-                ],
-                onSelect: (id) => chosen.push(id),
-              },
-            },
-            { label: "Projects" },
-          ]}
-        />
-      )),
-    )
-    const button = one("[data-part=crumb-switcher]", root)
-    expect(button.textContent).toBe("Acme")
-    click(button)
-    await tick()
-    const personal = all("[role=menuitem]").find((m) => m.textContent?.includes("Personal"))!
-    click(personal)
-    expect(chosen).toEqual(["personal"])
+    expect(calls).toEqual(["filter", "publish"])
   })
 })
 
@@ -1367,171 +1212,5 @@ describe("RateWidget", () => {
     flush()
     expect(one(".nc-widget__eyebrow", root).textContent).toBe("Output")
     expect(root.querySelectorAll("[data-part=widget-stats] dt")).toHaveLength(2)
-  })
-})
-
-describe("SidebarHeader", () => {
-  test("holds back, the place, the command palette and the toggle in one row, and search under it", () => {
-    const calls: string[] = []
-    const { root } = track(
-      mount(() => (
-        <SidebarHeader
-          title="Atlas web"
-          back={{ to: "Projects", onClick: () => calls.push("back") }}
-          onCommand={() => calls.push("command")}
-        >
-          <input aria-label="Search" />
-        </SidebarHeader>
-      )),
-    )
-    const header = one("[data-part=sidebar-header]", root)
-    const row = one(".nc-sidebar-header__row", header)
-    const part = (c: Element) =>
-      (c.matches("[data-part^=sidebar]") ? c : c.querySelector("[data-part^=sidebar]"))?.getAttribute(
-        "data-part",
-      ) ?? c.textContent
-    // A tooltip sits beside its button, hidden until it shows; it is not one of the row's controls.
-    const controls = Array.from(row.children).filter((c) => c.getAttribute("role") !== "tooltip")
-    // Outside a shell that lets the sidebar hide, there is no toggle.
-    expect(controls.map(part)).toEqual(["sidebar-back", "Atlas web", "sidebar-command"])
-    expect(one("[data-part=sidebar-back]", header).getAttribute("aria-label")).toBe("Back to Projects")
-    click(one("[data-part=sidebar-back]", header))
-    click(one("[data-part=sidebar-command]", header))
-    expect(calls).toEqual(["back", "command"])
-    expect(header.querySelector("input[aria-label=Search]")).not.toBeNull()
-  })
-
-  test("shows the level above beside the place and folds the ones before it into a menu", () => {
-    const calls: string[] = []
-    const { root } = track(
-      mount(() => (
-        <SidebarHeader
-          title="build-01"
-          back={{ to: "Fleet", onClick: () => calls.push("back") }}
-          path={[
-            { label: "Acme", onClick: () => calls.push("acme") },
-            { label: "Fleet", onClick: () => calls.push("fleet") },
-          ]}
-        />
-      )),
-    )
-    const path = one("[data-part=sidebar-path]", root)
-    const crumb = one("[data-part=sidebar-crumb]", path)
-    expect(crumb.textContent).toBe("Fleet")
-    click(crumb)
-    expect(calls).toEqual(["fleet"])
-    click(one("[data-part=sidebar-fold]", path))
-    flush()
-    const item = Array.from(document.querySelectorAll("[role=menuitem]")).find((el) =>
-      el.textContent?.includes("Acme"),
-    )
-    expect(item).toBeDefined()
-    click(item as HTMLElement)
-    flush()
-    expect(calls).toEqual(["fleet", "acme"])
-  })
-
-  test("each level of the path picks whether it is in the row, in the menu or left out", () => {
-    const { root } = track(
-      mount(() => (
-        <SidebarHeader
-          title="build-01"
-          path={[
-            { label: "Acme", show: "hidden", onClick: () => {} },
-            { label: "Infrastructure", show: "fold", onClick: () => {} },
-            { label: "Fleet", onClick: () => {} },
-          ]}
-        />
-      )),
-    )
-    const path = one("[data-part=sidebar-path]", root)
-    expect(path.textContent).not.toContain("Acme")
-    expect(Array.from(path.querySelectorAll("[data-part=sidebar-crumb]")).map((e) => e.textContent)).toEqual([
-      "Fleet",
-    ])
-    expect(path.querySelector("[data-part=sidebar-fold]")).not.toBeNull()
-  })
-
-  test("a path whose levels are all left out shows nothing", () => {
-    const { root } = track(
-      mount(() => (
-        <SidebarHeader title="Personal" path={[{ label: "Rookery", show: "hidden", onClick: () => {} }]} />
-      )),
-    )
-    expect(root.querySelector("[data-part=sidebar-path]")).toBeNull()
-  })
-
-  test("AppShell hides the sidebar and puts the header across the window when asked", () => {
-    const [hidden, setHidden] = createSignal(false)
-    const { root } = track(
-      mount(() => (
-        <AppShell headerPlacement="across" sidebarHidden={hidden()} sidebar={<SidebarHeader title="Acme" />}>
-          <ViewHeader variant="shell" crumbs={[{ label: "Projects" }]} />
-        </AppShell>
-      )),
-    )
-    const shell = one("[data-part=app-shell]", root)
-    expect(shell.getAttribute("data-header")).toBe("across")
-    expect(shell.hasAttribute("data-sidebar")).toBe(false)
-    setHidden(true)
-    flush()
-    expect(shell.getAttribute("data-sidebar")).toBe("hidden")
-  })
-
-  test("AppShell keeps one sidebar toggle: in the sidebar header, then at the start of the first view header", () => {
-    const [hidden, setHidden] = createSignal(false)
-    const { root } = track(
-      mount(() => (
-        <AppShell
-          sidebarHidden={hidden()}
-          onSidebarHiddenChange={setHidden}
-          sidebar={<SidebarHeader title="Acme" />}
-        >
-          <ViewHeader crumbs={[{ label: "Projects" }]} />
-          <ViewHeader crumbs={[{ label: "Issues" }]} />
-        </AppShell>
-      )),
-    )
-    const toggles = () => all("[data-part=sidebar-toggle]")
-    expect(toggles()).toHaveLength(1)
-    const hide = toggles()[0] as HTMLElement
-    expect(hide.closest("[data-part=sidebar-header]")).not.toBeNull()
-    expect(hide.getAttribute("aria-label")).toBe("Hide the sidebar")
-    expect(hide.getAttribute("aria-controls")).toBe(one("[data-part=sidebar]", root).id)
-    click(hide)
-    expect(hidden()).toBe(true)
-    // Hidden: the first view header holds the toggle, before its crumbs; the second has none. The sidebar's own
-    // stays in the hidden sidebar.
-    const shown = all("[data-part=view-header] [data-part=sidebar-toggle]")
-    expect(shown).toHaveLength(1)
-    const show = shown[0] as HTMLElement
-    const headers = all("[data-part=view-header]")
-    expect(show.closest("[data-part=view-header]")).toBe(headers[0] as HTMLElement)
-    expect(headers[0]?.firstElementChild).toBe(show)
-    expect(show.getAttribute("aria-label")).toBe("Show the sidebar")
-    expect(show.getAttribute("aria-expanded")).toBe("false")
-    click(show)
-    expect(hidden()).toBe(false)
-    expect(all("[data-part=view-header] [data-part=sidebar-toggle]")).toHaveLength(0)
-  })
-
-  test("with no view header, the shell's header bar brings the hidden sidebar back", () => {
-    const [hidden, setHidden] = createSignal(true)
-    const { root } = track(
-      mount(() => (
-        <AppShell
-          sidebarHidden={hidden()}
-          onSidebarHiddenChange={setHidden}
-          sidebar={<SidebarHeader title="Acme" />}
-        >
-          <p>Content</p>
-        </AppShell>
-      )),
-    )
-    const bar = one<HTMLElement>("[data-part=shell-header]", root)
-    expect(bar.hidden).toBe(false)
-    click(one("[data-part=sidebar-toggle]", bar))
-    expect(hidden()).toBe(false)
-    expect(bar.hidden).toBe(true)
   })
 })

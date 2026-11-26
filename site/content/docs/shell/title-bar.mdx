@@ -1,0 +1,113 @@
+---
+title: Title bar and lenses
+description: The app icon, the history arrows, the scope path, the box of lenses, the palette, status and the window controls.
+---
+
+`TitleBar` is 44px across the whole window.
+It has three zones.
+
+| Zone | From left to right |
+| --- | --- |
+| Left | The app icon, the history arrows in a desktop window, the scope path |
+| Centre | The scope box, on the window's centre |
+| Right | The app's status items, then the window controls |
+
+Every text in the bar is at the drill size, 12px/500 on a 20px line, on one baseline.
+In a desktop window the bar is the drag region, marked with `data-drag-region` or the attribute in `dragAttribute`.
+`Shell` builds the bar from the registry.
+The app passes only `icon`, `appMenu`, `status` and `window` to `Shell`.
+
+<Example id="title-bar/narrow" />
+
+## The app icon
+
+The icon is the app's mark alone, with no chip or tinted box behind it.
+With `appMenu` it is a menu button that opens the application menu.
+The path starts right after it, or after the arrows, with the normal gap.
+
+## The scope path
+
+`ScopePath` names the scopes from the workspace down to the one the window shows, with "/" between them.
+The workspace and the current scope read in `text-1`.
+The segments between go up and are quiet `text-3` text.
+Only the colour tells them apart, and size and weight stay the same.
+
+A segment for one of a kind, such as a project or a host, has a caret that opens a `Switcher`.
+The switcher is in the filter format, with a focused field ("Switch project…"), sections, each entry's mark, and the current one checked.
+Typing narrows the list, the arrow keys and Enter pick, and Escape clears the field and then closes.
+Every path segment and every record crumb opens the same switcher at the same size.
+
+<Example id="scope-path/segments" />
+<Example id="switcher/scopes" />
+
+## The scope box
+
+`ScopeBox` sits on the window's absolute centre, not after the path.
+It moves only when it would come within 16px of the path or the right-hand items, and then just enough to clear them.
+With still no room, the path folds its leading segments into "…", then the lenses drop their labels, then they fold one by one into the box's `+N` menu.
+The lens that is on always stays.
+
+The magnifier is at the box's left end, then the lenses: `⌕ │ Explore │ Product │ Build │ +1 ⌄`.
+A scope without lenses has a search field in the box instead, "Search Docs…" with its shortcut.
+
+<Example id="title-bar/search" />
+
+## Lenses
+
+A lens is a way of looking at a scope, with its own places, panels and hue.
+`LensSwitch` draws a scope's lenses as a segmented control.
+The lens that is on is a raised neutral segment with its icon in full hue.
+The others are quiet text with their icons in a muted mix of their hue, brighter on hover.
+
+- ⌘1 to ⌘9 put on the shown lenses in order.
+- The `⌄` menu lists the hidden lenses and opens Customise, where each lens can be hidden or moved by dragging, or by Alt and an arrow key.
+- A lens a plugin adds with `pinned: false` starts hidden.
+- Each lens remembers its place, so switching back returns to where the person was in it.
+
+<Example id="lens-switch/box" />
+
+## The tint line
+
+A 1px line runs under the bar.
+It takes the hue of the lens that is on, strongest under that lens's segment, and fades out over 32px at the window's edges.
+Its bright spot jumps to the new lens on a switch, and its hue cross-fades in 100ms.
+A scope without lenses, or the person's choice in [Appearance](./appearance.mdx), gives the plain neutral hairline.
+
+## The command palette
+
+⌘K or the magnifier turns the box into `CommandPalette` in place.
+The field starts with the scope's chips and the lens that is on.
+
+- Typing searches the scope.
+- `:` lists the scope's lenses, and `>` the actions: the scope's commands, the panels and the workspace's commands.
+- The arrow keys move, Enter runs, and Escape clears the field and then closes.
+- Backspace in an empty field drops the last chip, which widens the search.
+
+The focused field has a 3px glow in the accent, which is its focus ring.
+
+<Example id="command-palette/box" />
+
+## Status items
+
+`status` takes `TitleBarItem`s: an icon and a few words at the drill size, quiet until hovered.
+A `tone` colours text that needs attention, such as "1 failing".
+Show an item only while it matters.
+
+## Window controls
+
+`WindowControls` is always at the bar's right end, on every platform, with nothing after it.
+The library draws it in the `mac` or `win` style.
+The mac dots are neutral and take their colours only while the group is hovered, and close turns red on Windows.
+The app passes the handlers that talk to its native window (`onMinimise`, `onMaximise`, `onClose`, `maximised`).
+The library calls nothing itself.
+
+<Example id="window-controls/styles" />
+
+## Desktop window or browser tab
+
+`runsIn` says who draws back and forward.
+
+- `desktop`, the default, shows the history arrows after the app icon and the window controls at the right. The bar is the drag region.
+- `browser`: no arrows and no window controls. The browser's own arrows walk the same history.
+
+<GalleryLink page="title-bar">The title bar in the gallery</GalleryLink>

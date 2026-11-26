@@ -7,6 +7,8 @@ export interface GalleryPage {
   group: string
   /** One line under the title. */
   lead: string
+  /** The page is one example at the size of the window, with a link to open it alone. */
+  full?: boolean
   sections: Array<string | string[]>
 }
 
@@ -23,10 +25,67 @@ export const PAGES: GalleryPage[] = [
     ],
   },
   {
+    id: "shell",
+    title: "Shell",
+    group: "Shell",
+    lead: "The whole window, drawn by createShell from one registry of scopes, lenses, places, records and panels. The app passes its router, storage and window handlers.",
+    full: true,
+    sections: ["app-shell/workbench"],
+  },
+  {
+    id: "title-bar",
+    title: "Title bar",
+    group: "Shell",
+    lead: "The app icon, the history arrows and the path at the left. The scope box with its lenses on the window's centre. Status and the window controls at the right. All text sits at the drill size on one baseline.",
+    sections: [
+      "title-bar/narrow",
+      "title-bar/search",
+      ["scope-path/segments", "lens-switch/box"],
+      "command-palette/box",
+      "switcher/scopes",
+      "history/walk",
+      "window-controls/styles",
+    ],
+  },
+  {
+    id: "sidebar",
+    title: "Sidebar",
+    group: "Shell",
+    lead: "The places of the scope you are in, with the filter at the top and the account at the foot. Below 140px it folds to an icon rail. Going into a scope changes the tree; ↑ goes back up.",
+    sections: [
+      "navigation/fold-rail",
+      "nav-item/sidebar",
+      "navigation/drilldown",
+      "navigation/page-tree",
+      "account-menu/default",
+    ],
+  },
+  {
+    id: "view-header",
+    title: "View header and trail",
+    group: "Shell",
+    lead: "Each view has one 44px header: its title, or its trail once it drills to a record, then a stepper and the actions. A title and the same label as a crumb have one size, so nothing moves.",
+    sections: ["trail/record", "navigation/columns"],
+  },
+  {
+    id: "panels",
+    title: "Panels",
+    group: "Shell",
+    lead: "The rail at the window's edge opens a panel at the right and one under the view. Borders resize, and only the one being dragged lights up.",
+    sections: ["panel/rail", "panel/variants", "resize-handle/columns"],
+  },
+  {
+    id: "appearance",
+    title: "Appearance",
+    group: "Shell",
+    lead: "Theme, accent and the lens tint line, applied at once and kept in the app's storage. The account menu's Appearance item opens the same settings.",
+    sections: ["appearance/settings"],
+  },
+  {
     id: "list-row",
     title: "List row",
     group: "Shared parts",
-    lead: "One row of a list: leading icon or avatar in a fixed box, title, secondary text, then status, metadata and actions. The rows of a RowList share their columns, so icons, titles, states and times line up. The whole row is the link; selection is the inset fill. Compact 30px, comfortable 36px; 44 and 58px on a phone, where contextual actions go to a swipe and a long press.",
+    lead: "One row of a list: leading icon or avatar in a fixed box, title, secondary text, then status, metadata and actions. The rows of a RowList share their columns, so icons, titles, states and times line up. The whole row is the link; selection is the inset fill. 30px rows; 44 and 58px on a phone, where contextual actions go to a swipe and a long press.",
     sections: [
       "list-row/one-line",
       "list-row/avatars",
@@ -190,25 +249,11 @@ export const PAGES: GalleryPage[] = [
     sections: ["tabs/segmented", "tab-strip/frames", "tabs/underline"],
   },
   {
-    id: "nav-item",
-    title: "NavItem",
-    group: "Navigation",
-    lead: "A sidebar row: icon, label and optional meta. Selection is an inset rounded fill, never an edge bar.",
-    sections: ["nav-item/sidebar"],
-  },
-  {
     id: "menu",
     title: "Menu",
     group: "Navigation",
     lead: "The surface shared by dropdowns, context menus and the command palette. Roving focus with Arrow Up/Down (wrapping), Home, End and type-ahead.",
     sections: [["menu/items", "menu/radio", "menu/descriptions"]],
-  },
-  {
-    id: "account-menu",
-    title: "AccountMenu",
-    group: "Navigation",
-    lead: "The signed-in person's menu: who they are, the app's items, the theme in one row and sign out last. One shape in every app.",
-    sections: ["account-menu/default"],
   },
   {
     id: "badge",
@@ -380,34 +425,6 @@ export const PAGES: GalleryPage[] = [
     group: "Live",
     lead: "Scrollable monospace log output for live and completed streams. Sticks to the bottom while following, pauses when scrolled up, and pairs with StreamState.",
     sections: ["log-viewer/live"],
-  },
-  {
-    id: "panel",
-    title: "Panel and Frame",
-    group: "Layout",
-    lead: "A bg-1 card with a 38px header holding the title, the state and the actions. Footers only for pagination or totals.",
-    sections: ["panel/variants"],
-  },
-  {
-    id: "app-shell",
-    title: "AppShell",
-    group: "Layout",
-    lead: "The app shell pattern: a sidebar on bg-0, content in one or more bg-1 frames with radius 8 and an 8px gap. Frames wrap and stack at phone width.",
-    sections: ["app-shell/two-frames"],
-  },
-  {
-    id: "navigation",
-    title: "Navigation",
-    group: "Layout",
-    lead: "How the shared sidebar, the view's columns, the header and the stack work together. Going deeper changes the main column, not the sidebar. A domain with enough nested data drills down; the rest nests in place. The crumbs show a full path, a stripped path or only a back control, as the target needs.",
-    sections: [
-      "navigation/drilldown",
-      "navigation/topbar",
-      ["navigation/back-only", "navigation/page-tree"],
-      "navigation/columns",
-      ["navigation/crumbs-stripped", "navigation/crumbs-full"],
-      "navigation/phone-drilldown",
-    ],
   },
   {
     id: "split",
