@@ -144,3 +144,4 @@ export {
 } from "./lib/selection"
 export { createRowSwipe, type RowSwipeControl, type RowSwipeOptions, touchScreen } from "./lib/swipe"
 export { filterItems, findTrigger, type TriggerChar } from "./lib/triggers"
+export * from "./shell"

@@ -46,6 +46,7 @@ export const NAMES: Record<string, string> = {
   sidebar: "PanelLeft",
   sort: "ArrowUpDown",
   sparkle: "Sparkles",
+  square: "Square",
   star: "Star",
   tag: "Tag",
   terminal: "SquareTerminal",

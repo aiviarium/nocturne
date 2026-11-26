@@ -410,6 +410,19 @@ export const PAGES: GalleryPage[] = [
     ],
   },
   {
+    id: "shell-parts",
+    title: "Shell parts",
+    group: "Layout",
+    lead: "The parts the app shell is built from: the switcher every path segment and record crumb opens, the trail at the drill size, resizable borders, back and forward over the window's stops, the window controls and the appearance settings. Routing, storage and the native window come in through adapters and props.",
+    sections: [
+      "switcher/scopes",
+      "trail/record",
+      "resize-handle/columns",
+      "history/walk",
+      ["window-controls/styles", "appearance/settings"],
+    ],
+  },
+  {
     id: "split",
     title: "Split",
     group: "Layout",
