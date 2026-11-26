@@ -5,7 +5,7 @@ import type { ExampleMeta } from "../_kit/types"
 
 export const meta: ExampleMeta = {
   title: "The scope path",
-  note: "Segments at the drill size with “/” between them. One that goes up is quiet; one with a switcher, and the last, read brighter, and their caret opens the switcher in the filter format. The title bar decides how many leading segments fold into “…”.",
+  note: "Segments at the drill size with “/” between them. The workspace and the scope you are in read in full colour; the segments between go up and are quiet. Only the colour changes, never the weight. A caret opens a switcher. The title bar folds leading segments into “…” when space runs out.",
 }
 
 export default function ScopePathSegments() {

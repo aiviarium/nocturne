@@ -1,7 +1,7 @@
 // The title bar's path: the scopes from the workspace down to the one the window shows, at the drill size with "/"
-// between them. A segment that goes up is quiet text; one with a switcher (and the last one) names where the person
-// is at that level and reads in --text-1, with a caret that opens the switcher. The title bar decides how many
-// leading segments fold into "…".
+// between them. The workspace (the first segment) and the scope the window shows (the last) read in --text-1; the
+// segments between go up and are quiet --text-3 text. Only colour tells them apart: size and weight stay. A segment
+// with a switcher has a caret that opens it. The title bar decides how many leading segments fold into "…".
 import type { JSX } from "@solidjs/web"
 import { createMemo, createSignal, For, Show } from "solid-js"
 import { Icon, type IconName } from "../components/Icon"
@@ -14,7 +14,7 @@ export interface ScopeSegment {
   /** Stable across renders: the title bar measures by it. */
   id: string
   label: string
-  /** Drawn before the label: a project's mark. */
+  /** Drawn before the label: a scope's mark, such as a project's. The workspace and the modules have none. */
   mark?: ShellMark
   icon?: IconName
   /** Goes to this scope. Without it, a press on the label opens the switcher. */
@@ -78,14 +78,19 @@ export function ScopePath(props: ScopePathProps): JSX.Element {
       </Show>
       <For each={shown()} keyed={(s) => s.id}>
         {(seg, i) => (
-          <SegmentView seg={seg()} sep={i() > 0 || hidden().length > 0} last={seg().id === lastId()} />
+          <SegmentView
+            seg={seg()}
+            sep={i() > 0 || hidden().length > 0}
+            first={i() === 0 && hidden().length === 0}
+            last={seg().id === lastId()}
+          />
         )}
       </For>
     </nav>
   )
 }
 
-function SegmentView(props: { seg: ScopeSegment; sep: boolean; last: boolean }): JSX.Element {
+function SegmentView(props: { seg: ScopeSegment; sep: boolean; first: boolean; last: boolean }): JSX.Element {
   const [open, setOpen] = createSignal(false)
   const s = () => props.seg
   const label = (onClick: () => void) => (
@@ -106,7 +111,7 @@ function SegmentView(props: { seg: ScopeSegment; sep: boolean; last: boolean }):
       class="nc-scope-path__seg"
       data-seg={s().id}
       data-last={props.last ? "" : undefined}
-      data-strong={props.last || s().switcher ? "" : undefined}
+      data-strong={props.last || props.first ? "" : undefined}
       data-open={open() ? "" : undefined}
     >
       <Show when={props.sep}>

@@ -283,7 +283,10 @@ describe("ScopePath", () => {
     click(one("[data-seg=projects] .nc-scope-path__label", nav))
     expect(went).toEqual(["projects"])
     const last = one("[data-seg=atlas]", nav)
+    // The workspace and the current scope read strong; the segment between goes up in quiet text.
     expect(last.hasAttribute("data-strong")).toBe(true)
+    expect(one("[data-seg=ws]", nav).hasAttribute("data-strong")).toBe(true)
+    expect(one("[data-seg=projects]", nav).hasAttribute("data-strong")).toBe(false)
     expect(one(".nc-scope-path__label", last).getAttribute("aria-current")).toBe("page")
     // The label of a segment without its own place opens the switcher, like its caret.
     click(one(".nc-scope-path__label", last))

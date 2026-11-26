@@ -751,7 +751,6 @@ export function createShell(options: ShellOptions) {
     out.push({
       id: "ws",
       label: ws.name,
-      mark: { name: ws.name, hue: ws.hue },
       onClick: () => navigate([scopes[0]!.id]),
       switcher:
         others.length > 1
@@ -778,22 +777,29 @@ export function createShell(options: ShellOptions) {
     out.push({
       id: mod.key,
       label: labelOf(mod),
-      icon: l.module.icon,
       onClick: modLast ? undefined : () => navigate([l.module.id]),
-      switcher: {
-        noun: "module",
-        sections: [
-          { title: "Modules", entries: moduleEntries(l.module) },
-          ...(modLast && child
-            ? [{ title: "Open", entries: itemEntries(child, mod).map((e) => ({ ...e, id: `i:${e.id}` })) }]
-            : []),
-        ],
-        onPick: (e) => {
-          if (e.id.startsWith("m:")) return navigate([e.id.slice(2)])
-          const it = child?.items?.().find((x) => idOf(child, x) === e.id.slice(2))
-          if (child && it !== undefined) returnTo(frame(child, it, mod, [l.module.id, idOf(child, it)]))
-        },
-      },
+      // A module that goes up is plain text, as every parent is; at the end of the path it switches.
+      switcher: !modLast
+        ? undefined
+        : {
+            noun: "module",
+            sections: [
+              { title: "Modules", entries: moduleEntries(l.module) },
+              ...(child
+                ? [
+                    {
+                      title: "Open",
+                      entries: itemEntries(child, mod).map((e) => ({ ...e, id: `i:${e.id}` })),
+                    },
+                  ]
+                : []),
+            ],
+            onPick: (e) => {
+              if (e.id.startsWith("m:")) return navigate([e.id.slice(2)])
+              const it = child?.items?.().find((x) => idOf(child, x) === e.id.slice(2))
+              if (child && it !== undefined) returnTo(frame(child, it, mod, [l.module.id, idOf(child, it)]))
+            },
+          },
     })
     l.frames.slice(1).forEach((f, i, rest) => {
       const last = i === rest.length - 1

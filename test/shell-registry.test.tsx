@@ -173,7 +173,17 @@ describe("createShell", () => {
     const s = make("/projects/atlas/build/issues")
     flush()
     expect(s.path().map((x) => x.label)).toEqual(["Acme", "Projects", "Atlas web"])
+    // The workspace and the module are plain text; the scope the window shows keeps its mark.
+    const [ws, mod] = s.path()
+    expect([ws!.mark, ws!.icon, mod!.mark, mod!.icon, mod!.switcher]).toEqual([
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+    ])
     const last = s.path().at(-1)!
+    expect(last.mark?.name).toBe("Atlas web")
     expect(last.switcher?.noun).toBe("project")
     expect(last.switcher?.sections[0]?.entries.map((e) => [e.label, !!e.current])).toEqual([
       ["Atlas web", true],
