@@ -1,29 +1,34 @@
-/* Nocturne — generated from tokens.json */
+/* Nocturne's tokens: the colours of each theme, the scales and the type classes. bundle.css derives the accent's
+   family, the focus rings and the reduced-motion values from these; the site reads this file at build time. */
 :root, [data-theme="dark"] {
-  --bg-0: #0A0A0B;
-  --bg-1: #111113;
-  --bg-2: #18181B;
-  --bg-3: #202024;
-  --bg-4: #2A2A2F;
-  --line-subtle: #1C1C20;
-  --line-soft: #222227;
-  --line: #2A2A30;
-  --line-strong: #3A3A42;
-  --text-1: #EDEDEF;
-  --text-2: #A1A1AA;
-  --text-3: #80808A;
-  --text-4: #52525B;
-  --primary: #EDEDEF;
-  --on-primary: #0A0A0B;
-  --accent: #6262EE;
-  --accent-strong: #8F8FFA;
-  --accent-text: #C4C4FB;
-  --accent-tint: rgba(98,98,238,0.18);
-  --accent-line: rgba(98,98,238,0.48);
-  --accent-subtle: #1E1E3E;
-  --accent-glow: rgba(143,143,250,0.85);
-  /* Text selection: neutral, never the accent, so a goggle's or brand's hue never tints selected text. */
-  --selection: rgba(255,255,255,0.22);
+  --bg-0: #0B0C0D;
+  --bg-1: #0E0F10;
+  --bg-2: #141516;
+  --bg-3: #1A1B1D;
+  --bg-4: #222326;
+  --line-subtle: rgba(255,255,255,0.045);
+  --line-soft: rgba(255,255,255,0.065);
+  --line: rgba(255,255,255,0.09);
+  --line-strong: rgba(255,255,255,0.14);
+  --text-1: #F2F3F4;
+  --text-2: #B4B6BB;
+  --text-3: #8A8D93;
+  --text-4: #5D6066;
+  --primary: #F2F3F4;
+  --on-primary: #08090A;
+  --accent: #6872E5;
+  --accent-strong: #8B98EF;
+  --accent-text: #BBC5F8;
+  --accent-tint: rgba(104,114,229,0.16);
+  --accent-line: rgba(104,114,229,0.50);
+  --accent-subtle: #1C1F30;
+  --accent-glow: rgba(139,152,239,0.85);
+  /* Text selection: neutral, never the accent, so a lens's or brand's hue never tints selected text. */
+  --selection: rgba(242,243,244,0.22);
+  /* State fills, from --text-1: hover (icon-only buttons), active (selection, current), press. */
+  --hover: rgba(242,243,244,0.035);
+  --active: rgba(242,243,244,0.05);
+  --press: rgba(242,243,244,0.07);
   --on-accent: #FFFFFF;
   --success: #3FCF8E;
   --warning: #F2B33D;
@@ -57,37 +62,41 @@
   --diff-del: rgba(255,99,105,0.09);
   --diff-add-word: rgba(63,207,142,0.28);
   --diff-del-word: rgba(255,99,105,0.28);
-  --shadow-overlay: 0 12px 32px rgba(0,0,0,0.5);
-  --focus-ring: 0 0 0 1px #8F8FFA, 0 0 0 4px rgba(98,98,238,0.30);
-  --focus-ring-inset: inset 0 0 0 1px #8F8FFA, inset 0 0 0 3px rgba(98,98,238,0.30);
+  --shadow-overlay: 0 0 0 1px rgba(255,255,255,0.08), 0 4px 8px rgba(0,0,0,0.3), 0 16px 40px rgba(0,0,0,0.45);
+  --shadow-raised: 0 0 0 1px rgba(255,255,255,0.06), 0 1px 2px rgba(0,0,0,0.4);
+  --focus-ring: 0 0 0 1px #8B98EF, 0 0 0 3px rgba(104,114,229,0.28);
+  --focus-ring-inset: inset 0 0 0 1px #8B98EF, inset 0 0 0 3px rgba(104,114,229,0.28);
   --glow-live: 0 0 8px rgba(63,207,142,0.85);
-  --glow-ai: 0 0 10px rgba(143,143,250,0.85);
+  --glow-ai: 0 0 10px rgba(139,152,239,0.85);
   color-scheme: dark;
 }
 [data-theme="light"] {
-  --bg-0: #F3F3F5;
+  --bg-0: #F7F7F8;
   --bg-1: #FFFFFF;
-  --bg-2: #F8F8FA;
-  --bg-3: #EFEFF2;
-  --bg-4: #E5E5EA;
-  --line-subtle: #EEEEF1;
-  --line-soft: #E5E5EA;
-  --line: #DADADF;
-  --line-strong: #C3C3CB;
-  --text-1: #111114;
-  --text-2: #4F4F58;
-  --text-3: #6B6B75;
-  --text-4: #A8A8B0;
-  --primary: #18181B;
+  --bg-2: #FAFAFA;
+  --bg-3: #F2F2F3;
+  --bg-4: #E9E9EB;
+  --line-subtle: rgba(10,12,16,0.05);
+  --line-soft: rgba(10,12,16,0.07);
+  --line: rgba(10,12,16,0.10);
+  --line-strong: rgba(10,12,16,0.16);
+  --text-1: #16171A;
+  --text-2: #45474D;
+  --text-3: #6B6E75;
+  --text-4: #9DA0A6;
+  --primary: #16171A;
   --on-primary: #FFFFFF;
-  --accent: #5B5BE0;
-  --accent-strong: #4A4AC8;
-  --accent-text: #3A3A9E;
-  --accent-tint: rgba(91,91,224,0.10);
-  --accent-line: rgba(91,91,224,0.40);
-  --accent-subtle: #EDEDFC;
-  --accent-glow: rgba(74,74,200,0.45);
-  --selection: rgba(0,0,0,0.16);
+  --accent: #5E68D8;
+  --accent-strong: #4951AB;
+  --accent-text: #2D3371;
+  --accent-tint: rgba(94,104,216,0.10);
+  --accent-line: rgba(94,104,216,0.40);
+  --accent-subtle: #EDF0FD;
+  --accent-glow: rgba(73,81,171,0.45);
+  --selection: rgba(22,23,26,0.22);
+  --hover: rgba(22,23,26,0.03);
+  --active: rgba(22,23,26,0.045);
+  --press: rgba(22,23,26,0.07);
   --on-accent: #FFFFFF;
   --success: #12875A;
   --warning: #9A6200;
@@ -121,11 +130,12 @@
   --diff-del: rgba(209,52,59,0.08);
   --diff-add-word: rgba(18,135,90,0.22);
   --diff-del-word: rgba(209,52,59,0.22);
-  --shadow-overlay: 0 1px 2px rgba(17,17,20,0.06), 0 12px 32px rgba(17,17,20,0.12);
-  --focus-ring: 0 0 0 1px #4A4AC8, 0 0 0 4px rgba(91,91,224,0.25);
-  --focus-ring-inset: inset 0 0 0 1px #4A4AC8, inset 0 0 0 3px rgba(91,91,224,0.25);
+  --shadow-overlay: 0 0 0 1px rgba(10,12,16,0.08), 0 4px 8px rgba(10,12,16,0.06), 0 16px 40px rgba(10,12,16,0.12);
+  --shadow-raised: 0 0 0 1px rgba(10,12,16,0.07), 0 1px 2px rgba(10,12,16,0.05);
+  --focus-ring: 0 0 0 1px #4951AB, 0 0 0 3px rgba(94,104,216,0.25);
+  --focus-ring-inset: inset 0 0 0 1px #4951AB, inset 0 0 0 3px rgba(94,104,216,0.25);
   --glow-live: 0 0 6px rgba(18,135,90,0.5);
-  --glow-ai: 0 0 8px rgba(74,74,200,0.45);
+  --glow-ai: 0 0 8px rgba(73,81,171,0.45);
   color-scheme: light;
 }
 :root {
@@ -148,24 +158,35 @@
   --control-md: 28px;
   --control-lg: 32px;
   --row-compact: 30px;
-  --row-default: 36px;
-  --header: 38px;
-  --font-sans: Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --row-default: 30px;
+  --header: 44px;
+  --rail: 48px;
+  --sidebar: 240px;
+  --panel-rail: 44px;
+  --font-sans: "Inter var", Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --font-features: "cv01", "cv08", "ss03";
+  /* Motion: one easing; hover changes colour only, fades are for things that appear, the accent cross-fades.
+     bundle.css sets them to 0 under reduced motion. Content swaps never animate. */
+  --ease: cubic-bezier(0.2, 0, 0, 1);
+  --dur-hover: 80ms;
+  --dur-fade: 90ms;
+  --dur-accent: 100ms;
 }
 .display { font-family: var(--font-sans); font-size: 56px; line-height: 60px; font-weight: 600; letter-spacing: -0.04em; }
 .figure-xl { font-family: var(--font-sans); font-size: 32px; line-height: 36px; font-weight: 600; letter-spacing: -0.02em; }
 .title { font-family: var(--font-sans); font-size: 20px; line-height: 28px; font-weight: 600; letter-spacing: -0.01em; }
-.heading { font-family: var(--font-sans); font-size: 16px; line-height: 24px; font-weight: 600; }
+.heading { font-family: var(--font-sans); font-size: 15px; line-height: 24px; font-weight: 600; letter-spacing: -0.01em; }
 .body-lg { font-family: var(--font-sans); font-size: 14px; line-height: 22px; font-weight: 400; }
 .body { font-family: var(--font-sans); font-size: 13px; line-height: 20px; font-weight: 400; }
+.drill { font-family: var(--font-sans); font-size: 12px; line-height: 20px; font-weight: 500; letter-spacing: -0.005em; }
 .label { font-family: var(--font-sans); font-size: 12px; line-height: 16px; font-weight: 500; }
-.section { font-family: var(--font-sans); font-size: 11px; line-height: 16px; font-weight: 500; letter-spacing: 0.02em; }
+.section { font-family: var(--font-sans); font-size: 11px; line-height: 16px; font-weight: 500; letter-spacing: 0.01em; }
 .code { font-family: var(--font-mono); font-size: 12.5px; line-height: 20px; font-weight: 400; }
 .mono { font-family: var(--font-mono); font-size: 12px; line-height: 16px; font-weight: 400; }
 .kbd { font-family: var(--font-mono); font-size: 11px; line-height: 16px; font-weight: 500; }
 
-/* Selected text is neutral everywhere. */
+/* Selected text and the caret are neutral everywhere. */
 ::selection {
   background: var(--selection);
 }

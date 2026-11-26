@@ -8,7 +8,7 @@ export interface AccentPreset {
 
 /** The accent presets. Set `--accent` to `dark` or `light` on an element that carries `data-theme`. */
 export const ACCENTS: readonly AccentPreset[] = [
-  { id: "iris", name: "Iris", dark: "#6262EE", light: "#5B5BE0" }, // lint-tokens-ignore
+  { id: "iris", name: "Iris", dark: "#6872E5", light: "#5E68D8" }, // lint-tokens-ignore
   { id: "azure", name: "Azure", dark: "#3B82F6", light: "#2563EB" }, // lint-tokens-ignore
   { id: "jade", name: "Jade", dark: "#10B981", light: "#0E9F6E" }, // lint-tokens-ignore
   { id: "ember", name: "Ember", dark: "#F97316", light: "#EA580C" }, // lint-tokens-ignore

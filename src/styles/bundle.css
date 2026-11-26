@@ -7,15 +7,20 @@
    To scope an accent to part of a page, set --accent on an element that also
    carries data-theme ("dark" or "light"), so the derived tokens recompute there. */
 
+/* The accent is a registered colour, so a change (a scope's or lens's accent set on <html>, or the app's) cross-fades
+   in --dur-accent instead of snapping. It inherits, so overlays portalled to <body> take the accent of <html>. */
+@property --accent { syntax: "<color>"; inherits: true; initial-value: #6872E5; }
 :root, [data-theme] {
   --accent-strong: color-mix(in oklch, var(--accent) 74%, #FFFFFF);
   --accent-text: color-mix(in oklch, var(--accent) 42%, #FFFFFF);
-  --accent-tint: color-mix(in srgb, var(--accent) 18%, transparent);
-  --accent-line: color-mix(in srgb, var(--accent) 48%, transparent);
-  --accent-subtle: color-mix(in oklch, var(--accent) 24%, var(--bg-0));
+  --accent-tint: color-mix(in srgb, var(--accent) 16%, transparent);
+  --accent-line: color-mix(in srgb, var(--accent) 50%, transparent);
+  --accent-subtle: color-mix(in oklch, var(--accent) 18%, var(--bg-1));
   --accent-glow: color-mix(in srgb, var(--accent-strong) 85%, transparent);
-  --focus-ring: 0 0 0 1px var(--accent-strong), 0 0 0 4px color-mix(in srgb, var(--accent) 30%, transparent);
+  --focus-ring: 0 0 0 1px var(--accent-strong), 0 0 0 3px color-mix(in srgb, var(--accent) 28%, transparent);
+  --focus-ring-inset: inset 0 0 0 1px var(--accent-strong), inset 0 0 0 3px color-mix(in srgb, var(--accent) 28%, transparent);
   --glow-ai: 0 0 10px var(--accent-glow);
+  transition: --accent var(--dur-accent) linear;
 }
 [data-theme="light"] {
   --accent-strong: color-mix(in oklch, var(--accent) 84%, #000000);
@@ -24,15 +29,20 @@
   --accent-line: color-mix(in srgb, var(--accent) 40%, transparent);
   --accent-subtle: color-mix(in oklch, var(--accent) 10%, #FFFFFF);
   --accent-glow: color-mix(in srgb, var(--accent-strong) 45%, transparent);
-  --focus-ring: 0 0 0 1px var(--accent-strong), 0 0 0 4px color-mix(in srgb, var(--accent) 25%, transparent);
+  --focus-ring: 0 0 0 1px var(--accent-strong), 0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent);
+  --focus-ring-inset: inset 0 0 0 1px var(--accent-strong), inset 0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent);
   --glow-ai: 0 0 8px var(--accent-glow);
+}
+@media (prefers-reduced-motion: reduce) {
+  :root, [data-theme] { --dur-hover: 0ms; --dur-fade: 0ms; --dur-accent: 0ms; }
 }
 /* Text on an accent fill: white on dark accents, near-black on light ones (amber, lime, cyan). */
 @supports (color: oklch(from red l c h)) {
   :root, [data-theme] { --on-accent: oklch(from var(--accent) clamp(0.16, (0.70 - l) * 1000, 1) 0.005 h); }
 }
 
-.nc { font-family: var(--font-sans); font-size: 13px; line-height: 20px; color: var(--text-1); -webkit-font-smoothing: antialiased; }
+.nc { font-family: var(--font-sans); font-size: 13px; line-height: 20px; font-feature-settings: var(--font-features); color: var(--text-1); caret-color: var(--text-1); -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+:root, [data-theme] { caret-color: var(--text-1); }
 .nc-mono { font-family: var(--font-mono); }
 .nc-num { font-variant-numeric: tabular-nums; }
 /* Control base: every button inside .nc gets flex centring and a 16px line box, so labels and
@@ -99,7 +109,7 @@
 
 /* Navigation */
 .nc-nav { display: flex; flex-direction: column; gap: 1px; }
-.nc-nav__label { padding: 6px 8px 4px; color: var(--text-3); font-size: 11px; font-weight: 500; letter-spacing: 0.02em; }
+.nc-nav__label { padding: 6px 8px 4px; color: var(--text-3); font-size: 11px; font-weight: 500; letter-spacing: 0.01em; }
 .nc-nav-item { display: flex; align-items: center; gap: 10px; height: var(--control-md); padding: 0 8px; border-radius: var(--radius-sm); color: var(--text-2); text-decoration: none; font-size: 13px; }
 .nc-nav-item:hover, .nc-nav-item[aria-expanded="true"][aria-haspopup] { background: var(--bg-3); color: var(--text-1); }
 .nc-nav-item[aria-current="page"] { background: var(--bg-4); color: var(--text-1); font-weight: 500; }

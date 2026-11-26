@@ -5,13 +5,20 @@
    type class. */
 
 :root {
-  /* The type scale of tokens.css (.body, .label, .section, .heading, .title, .figure-xl). */
+  /* The type scale of tokens.css (.body, .drill, .label, .section, .heading, .title, .figure-xl). */
   --nc-type-section: 11px;
+  --nc-type-section-track: 0.01em;
+  /* The drill size: the title bar's path, view titles, trails, panel names and the sidebar's nav share it, so a
+     label keeps its size and baseline when it moves between those roles. */
+  --nc-type-drill: 12px;
+  --nc-type-drill-line: 20px;
+  --nc-type-drill-weight: 500;
+  --nc-type-drill-track: -0.005em;
   --nc-type-label: 12px;
   --nc-type-label-line: 16px;
   --nc-type-body: 13px;
   --nc-type-body-line: 20px;
-  --nc-type-heading: 16px;
+  --nc-type-heading: 15px;
   --nc-type-heading-line: 24px;
   --nc-type-title: 20px;
   --nc-type-title-line: 28px;
@@ -397,7 +404,7 @@ button.nc-lrow__toggle:hover { color: var(--text-1); }
    A state's edge survives hover and focus: an invalid field (TextField, TextArea, Select, SchemaForm's fields, an
    InlineField given aria-invalid) keeps its danger edge under the pointer, and when focused shows the focus ring
    in danger instead of the accent, so the error stays visible while it is being fixed. */
-:root, [data-theme] { --focus-ring-danger: 0 0 0 1px var(--danger), 0 0 0 4px color-mix(in srgb, var(--danger) 28%, transparent); }
+:root, [data-theme] { --focus-ring-danger: 0 0 0 1px var(--danger), 0 0 0 3px color-mix(in srgb, var(--danger) 28%, transparent); }
 .nc-input--error, .nc-input--error:hover, .nc-input[aria-invalid="true"], .nc-input[aria-invalid="true"]:hover,
 .nc-inline-field[aria-invalid="true"], .nc-inline-field[aria-invalid="true"]:hover { border-color: var(--danger); }
 .nc-input--error:focus, .nc-input[aria-invalid="true"]:focus, .nc-input--error[aria-expanded="true"],
