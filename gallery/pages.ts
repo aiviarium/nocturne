@@ -410,6 +410,19 @@ export const PAGES: GalleryPage[] = [
     ],
   },
   {
+    id: "title-bar",
+    title: "Title bar",
+    group: "Layout",
+    lead: "The window's 44px title bar: the app icon, the history arrows and the scope path at the left, the scope box with its lenses on the window's centre, status and the window controls at the right. All text on it is at the drill size on one baseline. The box moves only to clear the path or the right side, then the path folds, then the lenses drop their labels, then they fold into +N. ⌘K turns the box into the command palette.",
+    sections: [
+      "title-bar/workbench",
+      "title-bar/narrow",
+      "title-bar/search",
+      ["scope-path/segments", "lens-switch/box"],
+      "command-palette/box",
+    ],
+  },
+  {
     id: "shell-parts",
     title: "Shell parts",
     group: "Layout",

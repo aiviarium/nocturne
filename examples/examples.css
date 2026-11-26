@@ -533,3 +533,19 @@ form.ex-form {
 .ex-appearance {
   max-width: 640px;
 }
+
+/* The title bar's examples: a window frame the bar spans, with a short body under it. */
+.ex-window {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-md);
+  background: var(--bg-0);
+  overflow: hidden;
+}
+.ex-window__body {
+  height: 96px;
+  padding: var(--space-3) var(--space-4);
+  background: var(--bg-1);
+}
