@@ -151,15 +151,17 @@ button.nc-title-bar__app:hover, button.nc-title-bar__app[aria-expanded="true"] {
 /* Buttons on the bar keep the drill line (over the base `.nc button`), so every label shares one baseline. */
 .nc-title-bar button, .nc-scope-path button, .nc-scope-box button { line-height: var(--nc-type-drill-line); }
 
-/* The line under the bar: 1px over its bottom edge. Neutral: the plain hairline. With a lens on (and the tint line
+/* The line under the bar: 1px over its bottom edge, fading out over the last 32px at both window edges. Neutral:
+   the plain hairline. With a lens on (and the tint line
    turned on), the lens's hue on top of the hairline, strongest under the lens that is on and fading out over 32px at
    the window's edges, so every divider that meets the line meets a visible part. Hue and spot move in 100ms. */
-.nc-title-bar::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 1px; background: var(--line-subtle); pointer-events: none; }
+.nc-title-bar { --nc-tint-edge: 32px; }
+.nc-title-bar::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 1px; background: linear-gradient(90deg, transparent 0, var(--line-subtle) var(--nc-tint-edge), var(--line-subtle) calc(100% - var(--nc-tint-edge)), transparent 100%); pointer-events: none; }
 .nc-title-bar[data-hue] { --nc-lens: var(--nc-hue); }
 .nc-title-bar[data-tint="lens"]::after {
   background:
-    linear-gradient(90deg, transparent 0, color-mix(in oklab, var(--nc-lens) 30%, transparent) 32px, color-mix(in oklab, var(--nc-lens) 85%, transparent) var(--nc-lens-x), color-mix(in oklab, var(--nc-lens) 30%, transparent) calc(100% - 32px), transparent 100%),
-    linear-gradient(var(--line-subtle), var(--line-subtle));
+    linear-gradient(90deg, transparent 0, color-mix(in oklab, var(--nc-lens) 30%, transparent) var(--nc-tint-edge), color-mix(in oklab, var(--nc-lens) 85%, transparent) var(--nc-lens-x), color-mix(in oklab, var(--nc-lens) 30%, transparent) calc(100% - var(--nc-tint-edge)), transparent 100%),
+    linear-gradient(90deg, transparent 0, var(--line-subtle) var(--nc-tint-edge), var(--line-subtle) calc(100% - var(--nc-tint-edge)), transparent 100%);
 }
 
 /* ── Scope path ───────────────────────────────────────────────────────────────────────────────────────────
