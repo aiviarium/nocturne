@@ -124,7 +124,7 @@ const RowDepth = createContext<number | null>(null)
 const InListbox = createContext(false)
 
 export interface ListRowProps
-  extends Omit<JSX.HTMLAttributes<HTMLDivElement>, "title" | "onClick" | "children"> {
+  extends Omit<JSX.HTMLAttributes<HTMLDivElement>, "title" | "onClick" | "children" | "prefix"> {
   /** What the row is. A string is cut with an ellipsis and its full text is the row's tooltip. */
   title: JSX.Element
   /**
@@ -134,6 +134,11 @@ export interface ListRowProps
   secondary?: JSX.Element
   /** A third line for rows that carry more (a pull request's branch, checks and reviewers): a `MetaLine`. */
   detail?: JSX.Element
+  /**
+   * Short facts before the title, on its line: an issue's key and its state icon. Quiet text at the label size
+   * with tabular figures, so keys of one length line up from row to row.
+   */
+  prefix?: JSX.Element
   /** A named icon at the start. */
   icon?: IconName
   /** Any other Lucide icon at the start, as a node. */
@@ -235,6 +240,7 @@ export function ListRow(props: ListRowProps): JSX.Element {
     "title",
     "secondary",
     "detail",
+    "prefix",
     "icon",
     "iconNode",
     "leading",
@@ -496,11 +502,20 @@ export function ListRow(props: ListRowProps): JSX.Element {
       </span>
     </Show>
   )
+  // A prefix stays on the title's line: the two shrink together, the title first, and never wrap apart.
+  const head = () => (
+    <Show when={props.prefix} fallback={title()}>
+      <span class="nc-lrow__head">
+        <span class="nc-lrow__prefix">{props.prefix}</span>
+        {title()}
+      </span>
+    </Show>
+  )
   const text = (
     <span class="nc-lrow__text">
-      <Show when={multi() && props.meta} fallback={title()}>
+      <Show when={multi() && props.meta} fallback={head()}>
         <span class="nc-lrow__line">
-          {title()}
+          {head()}
           {metaCell()}
         </span>
       </Show>
@@ -1476,6 +1491,91 @@ export function RowList<T = unknown>(props: RowListProps<T>): JSX.Element {
       <div class="nc-visually-hidden" role="status" aria-live="polite" aria-atomic="true">
         {said()}
       </div>
+    </div>
+  )
+}
+
+export interface RowSectionProps {
+  /** The group's name: "In progress". */
+  label: string
+  /** A named icon before the name. */
+  icon?: IconName
+  /** Leading content instead of an icon: a coloured state glyph, an avatar. */
+  leading?: JSX.Element
+  /** How many rows the group holds, after the name. */
+  count?: number
+  /** Buttons at the right of the heading, shown while it is hovered or focused ("New issue in In progress"). */
+  actions?: JSX.Element
+  /** A chevron folds the group to its heading. Default true. */
+  collapsible?: boolean
+  /** Whether the rows show. Controlled when set. */
+  expanded?: boolean
+  /** Whether the rows show at first, when `expanded` is not set. Default true. */
+  defaultExpanded?: boolean
+  onExpandedChange?: (expanded: boolean) => void
+  /** The group's `ListRow`s. */
+  children?: JSX.Element
+  class?: string
+}
+
+/**
+ * A group of rows inside a `RowList` under a heading: issues by state, files by kind. The heading names the
+ * group at the body size with its count, and folds it with its chevron. The rows keep the list's shared columns
+ * and its keyboard model, so they line up with every other group and the arrow keys move across groups.
+ */
+export function RowSection(props: RowSectionProps): JSX.Element {
+  const [expanded, setExpanded] = createControllable<boolean>({
+    value: () => props.expanded,
+    defaultValue: props.defaultExpanded ?? true,
+    onChange: (v) => props.onExpandedChange?.(v),
+  })
+  const groupId = createId("row-section")
+  const collapsible = () => props.collapsible !== false
+  const name = () => (
+    <>
+      <Show when={collapsible()}>
+        <Icon name="chevron-down" size="sm" class="nc-row-section__chevron" />
+      </Show>
+      <Show when={props.leading || props.icon}>
+        <span class="nc-row-section__lead">
+          <Show when={props.leading} fallback={<Icon name={props.icon} size="sm" />}>
+            {props.leading}
+          </Show>
+        </span>
+      </Show>
+      <span class="nc-row-section__label">{props.label}</span>
+      <Show when={props.count !== undefined}>
+        <span class="nc-row-section__count">{props.count}</span>
+      </Show>
+    </>
+  )
+  return (
+    <div
+      data-part="row-section"
+      class={cx("nc-row-section", props.class)}
+      data-collapsed={expanded() ? undefined : ""}
+    >
+      <div class="nc-row-section__head">
+        <Show when={collapsible()} fallback={<span class="nc-row-section__name">{name()}</span>}>
+          <button
+            type="button"
+            class="nc-row-section__name"
+            aria-expanded={aria(expanded())}
+            aria-controls={groupId}
+            onClick={() => setExpanded(!expanded())}
+          >
+            {name()}
+          </button>
+        </Show>
+        <Show when={props.actions}>
+          <span class="nc-row-section__actions">{props.actions}</span>
+        </Show>
+      </div>
+      <Show when={expanded()}>
+        <div class="nc-row-section__rows" id={groupId}>
+          {props.children}
+        </div>
+      </Show>
     </div>
   )
 }

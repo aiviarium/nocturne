@@ -7,9 +7,11 @@ import {
   DataListInput,
   dropSlot,
   gestureOf,
+  Icon,
   ListRow,
   type RowKey,
   RowList,
+  RowSection,
   reorderItems,
   selectRows,
   slotToIndex,
@@ -540,5 +542,51 @@ describe("DataList", () => {
     row.focus()
     press(row, "ArrowDown", { altKey: true })
     expect(seen.at(-1)).toEqual(["b", "a", "c"])
+  })
+})
+
+describe("RowSection and a row's prefix", () => {
+  test("groups rows under a heading that folds them; the arrow keys cross groups", async () => {
+    const folds: boolean[] = []
+    track(
+      mount(() => (
+        <RowList label="Issues">
+          <RowSection label="In progress" count={2} onExpandedChange={(v) => folds.push(v)}>
+            <ListRow title="One" prefix={<span>WEB-1</span>} onClick={() => {}} />
+            <ListRow title="Two" onClick={() => {}} />
+          </RowSection>
+          <RowSection label="Done" count={1} icon="check">
+            <ListRow title="Three" onClick={() => {}} />
+          </RowSection>
+        </RowList>
+      )),
+    )
+    await tick()
+    const sections = all("[data-part=row-section]")
+    expect(sections.length).toBe(2)
+    expect(one(".nc-row-section__label", sections[0]).textContent).toBe("In progress")
+    expect(one(".nc-row-section__count", sections[0]).textContent).toBe("2")
+    // The prefix sits on the title's line, inside the row's link, before the title.
+    const prefix = one(".nc-lrow__main .nc-lrow__prefix")
+    expect(prefix.textContent).toBe("WEB-1")
+    expect(prefix.nextElementSibling?.classList.contains("nc-lrow__title")).toBe(true)
+
+    mains()[1]?.focus()
+    press(mains()[1] as HTMLElement, "ArrowDown")
+    expect(focused()?.textContent).toBe("Three")
+
+    const toggle = one<HTMLButtonElement>(".nc-row-section__name", sections[0])
+    expect(toggle.getAttribute("aria-expanded")).toBe("true")
+    click(toggle)
+    await tick()
+    expect(folds).toEqual([false])
+    expect(sections[0]!.hasAttribute("data-collapsed")).toBe(true)
+    expect(toggle.getAttribute("aria-expanded")).toBe("false")
+    expect(titles().length + all(".nc-row-section .nc-lrow").length).toBe(1)
+  })
+
+  test("an icon takes a status tone", () => {
+    track(mount(() => <Icon name="check" tone="danger" />))
+    expect(one("[data-part=icon]").getAttribute("data-tone")).toBe("danger")
   })
 })

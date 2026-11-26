@@ -183,6 +183,24 @@ a.nc-ccard, button.nc-ccard { text-decoration: none; cursor: pointer; font: inhe
 /* A wrapper around rows (a context menu area, an element an app queries) passes the columns through. */
 .nc-rows__list > :not(.nc-lrow):has(> .nc-lrow) { display: grid; grid-template-columns: subgrid; }
 .nc-rows__list > :not(.nc-lrow):has(> .nc-lrow) > * { grid-column: 1 / -1; min-width: 0; }
+/* A group of rows under a heading (RowSection): the heading spans the list; the rows keep the shared columns. */
+.nc-rows__list > .nc-row-section, .nc-row-section__rows { display: grid; grid-template-columns: subgrid; }
+.nc-row-section > *, .nc-row-section__rows > * { grid-column: 1 / -1; min-width: 0; }
+.nc-row-section__rows { row-gap: 1px; padding-bottom: var(--space-1); }
+.nc-row-section__rows > .nc-lrow { grid-template-columns: subgrid; }
+.nc-row-section + .nc-row-section { margin-top: var(--space-1); }
+.nc-row-section__head { display: flex; align-items: center; gap: var(--space-1); min-height: 36px; padding: 0 var(--nc-inset); font-size: var(--nc-type-body); line-height: var(--nc-type-body-line); }
+.nc-row-section__name { display: inline-flex; align-items: center; gap: var(--space-2); min-width: 0; height: var(--control-md); padding: 0 var(--space-2) 0 0; border: 0; border-radius: var(--radius-sm); background: none; color: var(--text-1); font: inherit; font-weight: 500; }
+.nc button.nc-row-section__name { justify-content: flex-start; line-height: inherit; }
+.nc-row-section__name:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+.nc-row-section__chevron { flex: none; color: var(--text-4); transition: color var(--dur-hover) var(--ease); }
+.nc-row-section__name:hover .nc-row-section__chevron { color: var(--text-2); }
+.nc-row-section[data-collapsed] .nc-row-section__chevron { transform: rotate(-90deg); }
+.nc-row-section__lead { display: inline-flex; flex: none; align-items: center; justify-content: center; min-width: var(--nc-lrow-lead); color: var(--text-3); }
+.nc-row-section__label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nc-row-section__count { color: var(--text-3); font-weight: 400; font-variant-numeric: tabular-nums; }
+.nc-row-section__actions { display: inline-flex; align-items: center; gap: 2px; margin-left: auto; opacity: 0; transition: opacity var(--dur-hover) var(--ease); }
+.nc-row-section__head:is(:hover, :focus-within) .nc-row-section__actions { opacity: 1; }
 .nc-rows--virtual { flex: 1; }
 .nc-rows--virtual .nc-list__row { padding: 0; border-radius: 0; }
 .nc-rows--virtual .nc-list__row:hover, .nc-rows--virtual .nc-list__row[data-active] { background: transparent; }
@@ -195,7 +213,7 @@ a.nc-ccard, button.nc-ccard { text-decoration: none; cursor: pointer; font: inhe
 .nc-lrow[data-lines="2"], .nc-lrow[data-lines="3"] { align-items: start; padding-top: var(--nc-inset); padding-bottom: var(--nc-inset); }
 /* Hover lightens the row's quiet text, with no fill; selection is the faint fill. A finger has no hover: a tapped
    row is filled only while it is pressed, not after. */
-.nc-lrow[data-interactive]:hover :is(.nc-lrow__secondary, .nc-lrow__detail, .nc-lrow__meta, .nc-lrow__status, .nc-lrow__lead) { color: var(--text-2); }
+.nc-lrow[data-interactive]:hover :is(.nc-lrow__secondary, .nc-lrow__detail, .nc-lrow__meta, .nc-lrow__status, .nc-lrow__lead, .nc-lrow__prefix) { color: var(--text-2); }
 .nc-lrow[data-touch][data-interactive]:active:not([data-selected]) { background: var(--press); }
 .nc-lrow[data-selected] { background: var(--active); }
 .nc-lrow:has(> .nc-lrow__main:focus-visible) { box-shadow: var(--focus-ring); }
@@ -211,6 +229,10 @@ a.nc-ccard, button.nc-ccard { text-decoration: none; cursor: pointer; font: inhe
 .nc-lrow__lead:has(input, button, a, [tabindex]) { position: relative; z-index: 1; }
 .nc-lrow__text { display: flex; align-items: baseline; gap: var(--space-2); flex: 1; min-width: 0; }
 .nc-lrow[data-lines="2"] .nc-lrow__text, .nc-lrow[data-lines="3"] .nc-lrow__text { flex-direction: column; align-items: stretch; gap: 0; }
+/* Short facts before the title (a key, a state icon): quiet, at the label size, with figures that line up. */
+.nc-lrow__head { display: flex; align-items: baseline; gap: var(--space-2); flex: 0 1 auto; min-width: 0; }
+.nc-lrow__prefix { display: inline-flex; align-items: center; gap: var(--space-2); flex: none; align-self: center; color: var(--text-3); font-size: var(--nc-type-label); line-height: var(--nc-type-label-line); font-variant-numeric: tabular-nums; white-space: nowrap; transition: color var(--dur-hover) var(--ease); }
+.nc-lrow__prefix > .nc-icon { flex: none; }
 .nc-lrow__title { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 /* One line: the secondary text gives way first, and once fewer than 4em of it would show it wraps out of
    the single visible line instead of leaving a sliver. */
@@ -222,11 +244,11 @@ a.nc-ccard, button.nc-ccard { text-decoration: none; cursor: pointer; font: inhe
    the state the second, both at the trailing edge of the times of one-line rows. */
 .nc-lrow:is([data-lines="2"], [data-lines="3"]) > .nc-lrow__main { grid-column: main / actions; }
 .nc-lrow__line { display: flex; align-items: baseline; gap: var(--space-2); min-width: 0; }
-.nc-lrow__line > :is(.nc-lrow__title, .nc-lrow__secondary) { flex: 0 1 auto; margin-right: auto; }
+.nc-lrow__line > :is(.nc-lrow__head, .nc-lrow__title, .nc-lrow__secondary) { flex: 0 1 auto; margin-right: auto; }
 .nc-lrow__line > :is(.nc-lrow__status, .nc-lrow__meta) { flex: none; max-width: 60%; }
 .nc-lrow[data-unread] .nc-lrow__title { font-weight: 600; }
 /* Selection steps the row's quiet text up a level, text-3 to text-2. */
-.nc-lrow[data-selected] :is(.nc-lrow__secondary, .nc-lrow__detail, .nc-lrow__meta, .nc-lrow__status, .nc-metaline, .nc-state) { color: var(--text-2); }
+.nc-lrow[data-selected] :is(.nc-lrow__secondary, .nc-lrow__detail, .nc-lrow__meta, .nc-lrow__status, .nc-lrow__prefix, .nc-metaline, .nc-state) { color: var(--text-2); }
 .nc-lrow[data-muted] .nc-lrow__title { color: var(--text-2); }
 .nc-lrow__status, .nc-lrow__meta { min-width: 0; max-width: 100%; overflow: hidden; color: var(--text-3); font-size: var(--nc-type-label); line-height: var(--nc-type-label-line); text-overflow: ellipsis; white-space: nowrap; }
 /* A state's dots line up at the column's start, times at its end. The state is inline so its word can be cut. */
@@ -235,6 +257,9 @@ a.nc-ccard, button.nc-ccard { text-decoration: none; cursor: pointer; font: inhe
 .nc-lrow__status > .nc-state > .nc-dot { display: inline-block; margin-right: 6px; vertical-align: 1px; }
 .nc-lrow > .nc-lrow__meta { grid-column: meta; justify-self: end; margin-left: var(--nc-lrow-gap); }
 .nc-lrow__meta { font-variant-numeric: tabular-nums; }
+/* Metadata made of parts (labels, an avatar, a time) sits in a row, ending on the column's edge, so avatars and
+   times line up from row to row. Plain text metadata keeps its ellipsis. */
+.nc-lrow > .nc-lrow__meta:has(> *) { display: inline-flex; align-items: center; justify-content: flex-end; gap: var(--space-2); }
 .nc-lrow[data-lines="2"] > .nc-lrow__actions, .nc-lrow[data-lines="3"] > .nc-lrow__actions { margin-top: 2px; }
 .nc-lrow[data-lines="2"] .nc-lrow__lead, .nc-lrow[data-lines="3"] .nc-lrow__lead { margin-top: 0; }
 .nc-lrow__actions { position: relative; z-index: 1; grid-column: actions; justify-self: end; display: inline-flex; align-items: center; gap: 2px; margin-left: var(--nc-lrow-gap); margin-right: calc(var(--space-1) * -1); }

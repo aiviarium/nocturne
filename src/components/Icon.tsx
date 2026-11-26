@@ -28,11 +28,18 @@ export interface IconProps extends Omit<JSX.SvgSVGAttributes<SVGSVGElement>, "ch
   size?: "sm" | "md" | "lg"
   /** Accessible name. Without it the icon is decorative and hidden from assistive technology. */
   label?: string
+  /**
+   * A status colour for an icon that carries one (an issue's state: blocked, in review). `quiet` is text-3.
+   * Without it the icon takes the surrounding text colour.
+   */
+  tone?: IconTone
 }
+
+export type IconTone = "success" | "warning" | "danger" | "info" | "quiet"
 
 /** A Lucide line icon drawn with `stroke: currentColor`, so it takes the surrounding text colour. */
 export function Icon(props: IconProps): JSX.Element {
-  const rest = omit(props, "name", "node", "size", "label", "class")
+  const rest = omit(props, "name", "node", "size", "label", "tone", "class")
   const node = () => (props.name ? ICON_NODES[props.name] : undefined) ?? props.node ?? []
   const a11y = () =>
     props.label ? { role: "img" as const, "aria-label": props.label } : { "aria-hidden": "true" as const }
@@ -40,6 +47,7 @@ export function Icon(props: IconProps): JSX.Element {
     <svg
       data-part="icon"
       data-icon={props.name}
+      data-tone={props.tone}
       viewBox="0 0 24 24"
       class={cx(
         "nc-icon",

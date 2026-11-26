@@ -77,6 +77,11 @@
 .nc-icon-btn:not([disabled], [aria-disabled="true"]):active { background: var(--press); }
 .nc-icon { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
 .nc-icon--sm { width: 13px; height: 13px; }
+.nc-icon[data-tone="success"] { color: var(--success); }
+.nc-icon[data-tone="warning"] { color: var(--warning); }
+.nc-icon[data-tone="danger"] { color: var(--danger); }
+.nc-icon[data-tone="info"] { color: var(--info); }
+.nc-icon[data-tone="quiet"] { color: var(--text-3); }
 
 /* Key hints */
 .nc-kbd { display: inline-flex; align-items: center; height: 18px; padding: 0 5px; border-radius: var(--radius-xs); background: var(--bg-4); color: var(--text-2); font: 500 10.5px/16px var(--font-mono); white-space: nowrap; flex-shrink: 0; }
