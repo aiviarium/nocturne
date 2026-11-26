@@ -1,0 +1,536 @@
+import { afterEach, describe, expect, test } from "bun:test"
+import { createRoot, flush } from "solid-js"
+import {
+  createShell,
+  memoryRouter,
+  memoryStorage,
+  Shell,
+  type ShellLens,
+  type ShellOptions,
+  type ShellRegistry,
+  type ShellScope,
+  ShellViewHeader,
+} from "../src"
+import { all, click, mount, one, tick } from "./dom"
+
+let cleanup: Array<() => void> = []
+afterEach(() => {
+  for (const c of cleanup) c()
+  cleanup = []
+  document.body.innerHTML = ""
+})
+
+const ISSUES = [
+  { id: "WEB-142", title: "Flaky deploy test", state: "active" },
+  { id: "WEB-141", title: "Empty state", state: "active" },
+  { id: "WEB-139", title: "Sign-in loop", state: "active" },
+  { id: "WEB-120", title: "Old idea", state: "backlog" },
+]
+const issuesIn = (view?: string) => ISSUES.filter((i) => i.state === (view ?? "active"))
+
+const View = (props: { shell: ShellRegistry }) => (
+  <div data-test="view">
+    <ShellViewHeader />
+    <span data-test="where">{props.shell.address()}</span>
+  </div>
+)
+
+const agent: ShellScope<{ id: string; name: string }> = {
+  id: "agent",
+  label: (a) => a.name,
+  noun: "agent",
+  items: () => [
+    { id: "review", name: "Review agent" },
+    { id: "triage", name: "Triage agent" },
+  ],
+  places: [
+    { id: "runs", label: "Runs", icon: "play", view: View },
+    { id: "prompt", label: "Prompt", icon: "file", view: View },
+  ],
+}
+
+const projectLenses: ShellLens[] = [
+  {
+    id: "explore",
+    label: "Explore",
+    icon: "sparkle",
+    hue: "orchid",
+    places: [
+      { id: "map", label: "Map", icon: "grid", view: View },
+      { id: "notes", label: "Notes", icon: "file", view: View },
+    ],
+  },
+  {
+    id: "product",
+    label: "Product",
+    icon: "book-open",
+    hue: "amber",
+    places: [{ id: "roadmap", label: "Roadmap", icon: "calendar", view: View }],
+  },
+  {
+    id: "build",
+    label: "Build",
+    icon: "code",
+    hue: "mint",
+    open: { right: "details" },
+    places: [
+      {
+        id: "issues",
+        label: "Issues",
+        icon: "list",
+        view: View,
+        noun: "issue",
+        views: [
+          { id: "active", label: "Active" },
+          { id: "backlog", label: "Backlog" },
+        ],
+        count: () => issuesIn().length,
+        records: (_p, view) => issuesIn(view).map((i) => ({ id: i.id, label: i.id, hint: i.title })),
+        inspect: (id) => <p data-test="inspect">{id}</p>,
+      },
+      { id: "agents", label: "Agents", icon: "agent", view: View, enters: agent },
+    ],
+  },
+]
+
+const project: ShellScope<{ id: string; name: string }> = {
+  id: "project",
+  label: (p) => p.name,
+  noun: "project",
+  mark: (p) => ({ name: p.name, hue: "sky" }),
+  items: () => [
+    { id: "atlas", name: "Atlas web" },
+    { id: "borealis", name: "Borealis" },
+  ],
+  lenses: projectLenses,
+}
+
+const host: ShellScope<{ id: string; name: string }> = {
+  id: "host",
+  label: (h) => h.name,
+  noun: "host",
+  items: () => [{ id: "build-01", name: "build-01" }],
+  lenses: [
+    {
+      id: "operate",
+      label: "Operate",
+      icon: "server",
+      hue: "sky",
+      places: [
+        { id: "sessions", label: "Sessions", icon: "terminal", view: View, covers: ["terminal"] },
+        { id: "logs", label: "Logs", icon: "logs", view: View },
+      ],
+    },
+  ],
+}
+
+const options = (path: string, extra: Partial<ShellOptions> = {}): ShellOptions => ({
+  router: memoryRouter(path),
+  storage: memoryStorage(),
+  workspace: { id: "acme", name: "Acme" },
+  scopes: [
+    { id: "projects", label: "Projects", icon: "folder", view: View, child: project },
+    { id: "hosts", label: "Hosts", icon: "server", view: View, child: host },
+  ],
+  panels: [
+    {
+      id: "details",
+      label: "Details",
+      icon: "panel-right",
+      at: "right",
+      key: "d",
+      render: (p) => <div data-test="details">{p.shell.inspect()}</div>,
+    },
+    {
+      id: "terminal",
+      label: "Terminal",
+      icon: "terminal",
+      at: "bottom",
+      key: "t",
+      render: () => <pre data-test="terminal">$</pre>,
+    },
+  ],
+  ...extra,
+})
+
+/** A registry outside the DOM, disposed after the test. */
+function make(path: string, extra?: Partial<ShellOptions>): ShellRegistry {
+  return createRoot((dispose) => {
+    const s = createShell(options(path, extra))
+    cleanup.push(() => {
+      s.dispose()
+      dispose()
+    })
+    return s
+  })
+}
+
+const key = (k: string, init: KeyboardEventInit = {}) =>
+  new KeyboardEvent("keydown", { key: k, bubbles: true, cancelable: true, ...init })
+
+describe("createShell", () => {
+  test("derives the path, the lens box and the sidebar from the registration", () => {
+    const s = make("/projects/atlas/build/issues")
+    flush()
+    expect(s.path().map((x) => x.label)).toEqual(["Acme", "Projects", "Atlas web"])
+    const last = s.path().at(-1)!
+    expect(last.switcher?.noun).toBe("project")
+    expect(last.switcher?.sections[0]?.entries.map((e) => [e.label, !!e.current])).toEqual([
+      ["Atlas web", true],
+      ["Borealis", false],
+    ])
+    expect(s.lensBox().lenses.map((l) => l.id)).toEqual(["explore", "product", "build"])
+    expect(s.lensBox().lens).toBe("build")
+    const side = s.sidebar()
+    expect(side.up?.label).toBe("Projects")
+    const items = side.groups[0]!.items
+    expect(items.map((i) => i.label)).toEqual(["Issues", "Agents"])
+    expect(items[0]!.current).toBe(true)
+    expect(items[0]!.count).toBe(3)
+    expect(items[0]!.items?.map((i) => i.label)).toEqual(["Backlog"])
+    expect(s.header().title).toBe("Issues")
+    expect(s.title()).toBe("Issues · Build · Atlas web · Projects · Acme")
+  })
+
+  test("the workspace's sidebar lists the modules and their items", () => {
+    const s = make("/projects")
+    flush()
+    const groups = s.sidebar().groups
+    expect(groups[0]!.items.map((i) => i.label)).toEqual(["Projects", "Hosts"])
+    expect(groups[1]!.items.map((i) => i.label)).toEqual(["Atlas web", "Borealis"])
+    expect(s.sidebar().up).toBeUndefined()
+    expect(s.lensBox().lenses).toEqual([])
+  })
+
+  test("every move is a history entry with its address in full", async () => {
+    const s = make("/projects")
+    flush()
+    s.go("/projects/atlas")
+    flush()
+    s.toPlace(undefined, "issues", "backlog")
+    flush()
+    s.toPlace(undefined, "issues", undefined, "WEB-141")
+    flush()
+    expect(s.history.stops().map((x) => x.path)).toEqual([
+      "/projects",
+      "/projects/atlas/explore/map",
+      "/projects/atlas/build/issues/backlog",
+      "/projects/atlas/build/issues/WEB-141",
+    ])
+    expect(s.history.here()?.label).toBe("WEB-141")
+    s.history.back()
+    await tick()
+    expect(s.loc().view?.id).toBe("backlog")
+  })
+
+  test("a record has a trail with a switcher and a stepper; J and K step", () => {
+    const s = make("/projects/atlas/build/issues/WEB-142")
+    flush()
+    const h = s.header()
+    expect(h.trail?.map((c) => c.label)).toEqual(["Issues", "WEB-142"])
+    expect(h.trail?.[1]?.switcher?.sections[0]?.entries.map((e) => e.id)).toEqual([
+      "WEB-142",
+      "WEB-141",
+      "WEB-139",
+    ])
+    expect(h.stepper).toMatchObject({ index: 0, total: 3, noun: "issue" })
+    expect(s.handleKey(key("j"))).toBe(true)
+    flush()
+    expect(s.loc().record).toBe("WEB-141")
+    s.handleKey(key("j"))
+    flush()
+    expect(s.loc().record).toBe("WEB-139")
+    expect(s.handleKey(key("j"))).toBe(false)
+    s.handleKey(key("k"))
+    flush()
+    expect(s.loc().record).toBe("WEB-141")
+  })
+
+  test("switching lenses back and forth never leaves the scope; back goes to where the run began", async () => {
+    const s = make("/projects/atlas/build/issues/WEB-142")
+    flush()
+    s.go("/projects/atlas/build/agents")
+    flush()
+    s.wear("product")
+    flush()
+    await tick(3)
+    s.wear("explore")
+    flush()
+    await tick(3)
+    // Back on the lens the run began on: the run is undone.
+    s.wear("build")
+    flush()
+    await tick(3)
+    expect(s.address()).toBe("/projects/atlas/build/agents")
+    // The run left one stop ahead (forward goes to it); behind is where the person was before.
+    expect(s.history.index()).toBe(1)
+    expect(s.history.behind().map((x) => x.path)).toEqual(["/projects/atlas/build/issues/WEB-142"])
+    // Fast: four switches before any lands.
+    s.wear("product")
+    s.wear("build")
+    s.wear("explore")
+    s.wear("product")
+    flush()
+    await tick(6)
+    flush()
+    expect(s.loc().frame.key).toBe("projects:>project:atlas")
+    expect(s.loc().lens?.id).toBe("product")
+    s.history.back()
+    await tick(3)
+    expect(s.address()).toBe("/projects/atlas/build/agents")
+  })
+
+  test("each lens remembers its last place in each scope", async () => {
+    const s = make("/projects/atlas/build/issues/WEB-139")
+    flush()
+    s.wear("explore")
+    flush()
+    await tick(3)
+    s.toPlace(undefined, "notes")
+    flush()
+    s.wear("build")
+    flush()
+    await tick(3)
+    expect(s.address()).toBe("/projects/atlas/build/issues/WEB-139")
+    s.wear("explore")
+    flush()
+    await tick(3)
+    expect(s.address()).toBe("/projects/atlas/explore/notes")
+    // Another scope and back: the scope opens through the lens worn last, where it was.
+    s.go("/hosts/build-01")
+    flush()
+    s.go("/projects/atlas")
+    flush()
+    expect(s.address()).toBe("/projects/atlas/explore/notes")
+    // Borealis has no memory yet: its first lens.
+    s.go("/projects/borealis")
+    flush()
+    expect(s.address()).toBe("/projects/borealis/explore/map")
+  })
+
+  test("a place that enters a scope nests it; up returns to the place it was entered from", () => {
+    const s = make("/projects/atlas/build/agents/review")
+    flush()
+    expect(s.path().map((x) => x.label)).toEqual(["Acme", "Projects", "Atlas web", "Review agent"])
+    expect(s.loc().place?.id).toBe("runs")
+    expect(s.sidebar().up?.label).toBe("Atlas web")
+    s.sidebar().up!.onClick()
+    flush()
+    expect(s.address()).toBe("/projects/atlas/build/agents")
+  })
+
+  test("⌘1…⌘9 put on the shown lenses in the person's order", async () => {
+    const s = make("/projects/atlas/build/issues")
+    flush()
+    s.lensBox().setPrefs({ order: ["build", "explore", "product"], hidden: ["explore"] })
+    flush()
+    expect(s.handleKey(key("2", { metaKey: true }))).toBe(true)
+    flush()
+    await tick(3)
+    expect(s.loc().lens?.id).toBe("product")
+    expect(s.handleKey(key("3", { metaKey: true }))).toBe(false)
+  })
+
+  test("Esc closes the topmost: the palette, a panel's drill, the record, then the filter", () => {
+    const s = make("/projects/atlas/build/issues/WEB-142")
+    flush()
+    s.setFilter("iss")
+    s.drill("details", "WEB-139")
+    flush()
+    expect(s.panelTrail("details").map((c) => c.label)).toEqual(["WEB-142", "WEB-139"])
+    s.setPaletteOpen(true)
+    flush()
+    const esc = () => {
+      const handled = s.handleKey(key("Escape"))
+      flush()
+      return handled
+    }
+    expect(esc()).toBe(true)
+    expect(s.paletteOpen()).toBe(false)
+    expect(s.loc().aside).toBeDefined()
+    expect(esc()).toBe(true)
+    expect(s.loc().aside).toBeUndefined()
+    expect(s.loc().record).toBe("WEB-142")
+    expect(esc()).toBe(true)
+    expect(s.loc().record).toBeUndefined()
+    expect(s.filter()).toBe("iss")
+    expect(esc()).toBe(true)
+    expect(s.filter()).toBe("")
+    expect(esc()).toBe(false)
+  })
+
+  test("what a view pushes on the Esc stack closes before the rest", () => {
+    const s = make("/projects/atlas/build/issues/WEB-142")
+    flush()
+    let closed = 0
+    const remove = s.pushEsc(() => {
+      closed++
+      remove()
+    })
+    s.handleKey(key("Escape"))
+    flush()
+    expect(closed).toBe(1)
+    expect(s.loc().record).toBe("WEB-142")
+  })
+
+  test("panels: ⌥ letters toggle, ⌘J the bottom one, and `covers` hides one", () => {
+    const s = make("/projects/atlas/build/issues")
+    flush()
+    expect(s.panels().right?.id).toBe("details")
+    s.handleKey(key("∂", { altKey: true, code: "KeyD" }))
+    flush()
+    expect(s.panels().right).toBeUndefined()
+    s.handleKey(key("j", { metaKey: true }))
+    flush()
+    expect(s.panels().bottom?.id).toBe("terminal")
+    s.go("/hosts/build-01/operate/sessions")
+    flush()
+    s.showPanel("terminal")
+    flush()
+    expect(s.panels().covers).toEqual(["terminal"])
+    expect(s.handleKey(key("†", { altKey: true, code: "KeyT" }))).toBe(false)
+    expect(
+      s
+        .actions()
+        .find((x) => x.title === "Panels")
+        ?.commands.map((c) => c.id),
+    ).toEqual(["panel:details"])
+  })
+
+  test("the palette searches the scope through the lens, then the workspace", () => {
+    const s = make("/projects/atlas/build/issues")
+    flush()
+    const chips = [
+      { id: "projects:>project:atlas", label: "Atlas web" },
+      { id: "lens:build", label: "Build" },
+    ]
+    const empty = s.search({ text: "", chips })
+    expect(empty[0]!.title).toBe("Atlas web · Build")
+    expect(empty[0]!.commands.map((c) => c.label)).toEqual(["Issues", "Issues: Backlog", "Agents"])
+    const typed = s.search({ text: "flaky", chips: chips.slice(0, 1) })
+    expect(typed[0]!.commands.some((c) => c.label === "WEB-142")).toBe(true)
+    expect(typed.some((x) => x.title === "Lenses")).toBe(true)
+    const wide = s.search({ text: "", chips: [] })
+    expect(wide.at(-1)!.title).toBe("Acme")
+    expect(wide.at(-1)!.commands.map((c) => c.label)).toContain("Borealis")
+  })
+})
+
+describe("Shell", () => {
+  test("renders the wired app shell and navigates from the sidebar", async () => {
+    const m = mount(() => {
+      const s = createShell(options("/projects/atlas/build/issues"))
+      return <Shell shell={s} />
+    })
+    cleanup.push(m.dispose)
+    await tick()
+    expect(one("[data-part=shell]")).toBeTruthy()
+    expect(one("[data-part=app-shell]")).toBeTruthy()
+    expect(one("[data-part=scope-path] [data-last]").textContent).toContain("Atlas web")
+    expect(one("[data-part=scope-box]").getAttribute("data-mode")).toBe("lenses")
+    expect(one("[data-test=details]")).toBeTruthy()
+    const view = one("[data-test=view]")
+    const agents = all("[data-part=nav-item]").find((b) => b.textContent?.includes("Agents"))!
+    click(agents)
+    await tick()
+    expect(one("[data-test=where]").textContent).toBe("/projects/atlas/build/agents")
+    expect(view.isConnected).toBe(false)
+    // A record keeps the place's view mounted and swaps its data.
+    click(all("[data-part=nav-item]").find((b) => b.textContent?.includes("Issues"))!)
+    await tick()
+    const issues = one("[data-test=view]")
+    const s = issues.querySelector("[data-test=where]")!
+    expect(s.textContent).toBe("/projects/atlas/build/issues")
+  })
+
+  test("`covers` hides the panel and its rail button while the view shows it", async () => {
+    let shell!: ShellRegistry
+    const m = mount(() => {
+      shell = createShell(options("/hosts/build-01/operate/logs"))
+      return <Shell shell={shell} />
+    })
+    cleanup.push(m.dispose)
+    await tick()
+    shell.showPanel("terminal")
+    flush()
+    expect(one("[data-part=shell-panel][data-panel=terminal]").hidden).toBe(false)
+    expect(all("[data-part=panel-rail] [data-panel=terminal]").length).toBe(1)
+    shell.toPlace(undefined, "sessions")
+    flush()
+    await tick()
+    expect(one("[data-part=shell-panel][data-panel=terminal]").hidden).toBe(true)
+    expect(all("[data-part=panel-rail] [data-panel=terminal]").length).toBe(0)
+    shell.toPlace(undefined, "logs")
+    flush()
+    await tick()
+    expect(one("[data-part=shell-panel][data-panel=terminal]").hidden).toBe(false)
+  })
+
+  test("the record view's header has the trail and the stepper", async () => {
+    const m = mount(() => <Shell shell={createShell(options("/projects/atlas/build/issues/WEB-141"))} />)
+    cleanup.push(m.dispose)
+    await tick()
+    expect(one("[data-part=view-step-count]").textContent).toBe("2 / 3")
+    expect(all("[data-part=trail] li").length).toBe(2)
+    click(one("[data-part=view-step-next]"))
+    await tick()
+    expect(one("[data-test=where]").textContent).toBe("/projects/atlas/build/issues/WEB-139")
+  })
+
+  test("a key goes to the shell it was pressed in, and from the page to the one used last", async () => {
+    let a!: ShellRegistry
+    let b!: ShellRegistry
+    const m = mount(() => {
+      a = createShell(options("/projects/atlas/build/issues", { id: "a" }))
+      b = createShell(options("/projects/atlas/build/issues", { id: "b" }))
+      return (
+        <>
+          <div data-test="a">
+            <Shell shell={a} main />
+          </div>
+          <div data-test="b">
+            <Shell shell={b} />
+          </div>
+        </>
+      )
+    })
+    cleanup.push(m.dispose)
+    await tick()
+    // From the page with neither used: the main one.
+    document.body.dispatchEvent(key("1", { metaKey: true }))
+    flush()
+    await tick(3)
+    expect(a.loc().lens?.id).toBe("explore")
+    expect(b.loc().lens?.id).toBe("build")
+    // Pressed inside B: B alone.
+    const inB = one("[data-test=b] [data-part=shell-view]")
+    inB.dispatchEvent(key("2", { metaKey: true }))
+    flush()
+    await tick(3)
+    expect(b.loc().lens?.id).toBe("product")
+    expect(a.loc().lens?.id).toBe("explore")
+    // B was used last: a key from the page goes to it.
+    inB.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true }))
+    document.body.dispatchEvent(key("3", { metaKey: true }))
+    flush()
+    await tick(3)
+    expect(b.loc().lens?.id).toBe("build")
+    expect(a.loc().lens?.id).toBe("explore")
+  })
+
+  test("⌘B folds the sidebar and ⌘K opens the palette, once per press", async () => {
+    let s!: ShellRegistry
+    const m = mount(() => {
+      s = createShell(options("/projects/atlas/build/issues"))
+      return <Shell shell={s} foldBelow={0} />
+    })
+    cleanup.push(m.dispose)
+    await tick()
+    document.body.dispatchEvent(key("b", { metaKey: true }))
+    flush()
+    expect(one("[data-part=app-shell]").hasAttribute("data-folded")).toBe(true)
+    document.body.dispatchEvent(key("k", { metaKey: true }))
+    flush()
+    expect(s.paletteOpen()).toBe(true)
+  })
+})

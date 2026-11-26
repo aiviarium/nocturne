@@ -46,6 +46,27 @@ export interface TrailProps {
 }
 
 const keyOf = (c: TrailCrumb) => c.id ?? c.label
+
+/**
+ * The free width in the trail's row: a trail sized to its content (a header's) is only as wide as what it shows, so
+ * its own width is not the room it could take. An empty sibling that grows (a header's middle) counts as free.
+ */
+const empty = (c: HTMLElement) =>
+  getComputedStyle(c).flexGrow !== "0" && !c.childElementCount && !c.textContent?.trim()
+
+function slack(el: HTMLElement): number {
+  const row = el.parentElement
+  if (!row) return 0
+  const cs = getComputedStyle(row)
+  const kids = [...row.children].filter((c): c is HTMLElement => c instanceof HTMLElement && !c.hidden)
+  const gap = Number.parseFloat(cs.columnGap) || 0
+  const used =
+    kids.reduce((s, c) => s + (c !== el && empty(c) ? 0 : c.offsetWidth), 0) +
+    gap * Math.max(0, kids.length - 1) +
+    (Number.parseFloat(cs.paddingLeft) || 0) +
+    (Number.parseFloat(cs.paddingRight) || 0)
+  return Math.max(0, row.clientWidth - used)
+}
 /** Room the "…" button and its separator take, in px: a 24px button and a 16px slash. */
 const FOLD_W = 40
 
@@ -76,7 +97,7 @@ export function Trail(props: TrailProps): JSX.Element {
         if (auto() !== 0) setAuto(0)
         return
       }
-      const room = nav.clientWidth
+      const room = nav.clientWidth + slack(nav)
       if (!room) return
       const total = (from: number) =>
         list.slice(from).reduce((s, c) => s + (widths.get(keyOf(c)) ?? 0), 0) + (from > 0 ? FOLD_W : 0)

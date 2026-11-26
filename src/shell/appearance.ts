@@ -67,6 +67,14 @@ export function createAppearance(options: AppearanceOptions = {}): Appearance {
     version()
     return fn()
   }
+  // The lens's hue changes with every lens switch, from an effect: it has its own version, so what reads only the
+  // person's choices (the tint line, the theme) is not written again a flush after the switch.
+  const [hueVersion, setHueVersion] = createSignal(0, { ownedWrite: true })
+  const readHue = <T>(fn: () => T): T => {
+    version()
+    hueVersion()
+    return fn()
+  }
   const root = () =>
     typeof options.root === "function"
       ? options.root()
@@ -108,15 +116,18 @@ export function createAppearance(options: AppearanceOptions = {}): Appearance {
     setFollowLens: (on) => update({ follow: on }, true),
     tintLine: () => read(() => state.tint !== false),
     setTintLine: (on) => update({ tint: on }, true),
-    lensHue: () => read(() => state.hue),
+    lensHue: () => readHue(() => state.hue),
     setLensHue: (hue) => {
-      if (hue !== state.hue) update({ hue }, false)
+      if (hue === state.hue) return
+      state.hue = hue
+      apply()
+      setHueVersion((v) => v + 1)
     },
     follow: (hue) => {
       createEffect(hue, (h) => appearance.setLensHue(h))
       onCleanup(() => appearance.setLensHue(undefined))
     },
-    accent: () => read(accentNow),
+    accent: () => readHue(accentNow),
     apply: () => {
       apply()
       setVersion((v) => v + 1)
