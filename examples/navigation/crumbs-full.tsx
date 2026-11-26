@@ -14,7 +14,7 @@ export default function CrumbsFull() {
   return (
     <div class="ex-view">
       <ViewHeader
-        crumbs={[
+        trail={[
           { label: "Workspace", onClick: go },
           { label: "Projects", onClick: go },
           { label: "Atlas web", onClick: go },

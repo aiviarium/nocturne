@@ -1,27 +1,26 @@
-import { AppShell, Frame, Nav, State } from "@aiviarium/nocturne"
+import { AppShell, EmptyState, Nav, SidebarHeader, ViewHeader } from "@aiviarium/nocturne"
 import type { ExampleMeta } from "../_kit/types"
 
 export const meta: ExampleMeta = {
-  title: "Sidebar and two frames",
-  note: "The status bar holds only what is out of the ordinary: here, a dropped connection.",
+  title: "Sidebar and view",
+  note: "The smallest shell: a sidebar with its header and places, and the raised view surface beside it. Drag the sidebar's edge below 140px or press its minimise button to fold it to the icon rail.",
   surface: "none",
 }
 
 export default function Shell() {
   return (
-    <div class="ex-shell-demo">
+    <div class="ex-shell-demo" style={{ height: "320px" }}>
       <AppShell
-        sidebarWidth={200}
-        statusbar={<State status="warn">Reconnecting…</State>}
+        foldBelow={0}
+        sidebarHeader={<SidebarHeader />}
         sidebar={
           <Nav
             label="Workspace"
             groups={[
               {
-                label: "Workspace",
                 items: [
                   { label: "Home", icon: "home", href: "#app-shell" },
-                  { label: "Inbox", icon: "inbox", href: "#app-shell", current: true },
+                  { label: "Inbox", icon: "inbox", href: "#app-shell", current: true, count: 3 },
                   { label: "Agents", icon: "agent", href: "#app-shell" },
                 ],
               },
@@ -29,14 +28,8 @@ export default function Shell() {
           />
         }
       >
-        <Frame>
-          <h3 class="heading ex-h">Inbox</h3>
-          <span class="nc-muted">Primary frame.</span>
-        </Frame>
-        <Frame>
-          <h3 class="heading ex-h">Details</h3>
-          <span class="nc-muted">Second frame; it wraps under the first when narrow.</span>
-        </Frame>
+        <ViewHeader title="Inbox" />
+        <EmptyState title="Nothing new" description="Mentions and reviews land here." />
       </AppShell>
     </div>
   )

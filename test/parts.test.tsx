@@ -81,19 +81,11 @@ describe("ListRow", () => {
     const { root } = track(
       mount(() => (
         <RowList label="Rows">
-          <ListRow
-            title="A"
-            density="comfortable"
-            lines={3}
-            detail={<MetaLine items={["x"]} />}
-            unread
-            muted
-          />
+          <ListRow title="A" lines={3} detail={<MetaLine items={["x"]} />} unread muted />
         </RowList>
       )),
     )
     const row = one("[data-part=list-row]", root)
-    expect(row.getAttribute("data-density")).toBe("comfortable")
     expect(row.getAttribute("data-lines")).toBe("3")
     expect(row.hasAttribute("data-unread")).toBe(true)
     expect(row.hasAttribute("data-muted")).toBe(true)

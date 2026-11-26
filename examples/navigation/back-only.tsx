@@ -4,8 +4,8 @@ import { SESSIONS } from "../_kit/data"
 import type { ExampleMeta } from "../_kit/types"
 
 export const meta: ExampleMeta = {
-  title: "A chat opened from the session list: a back control, no crumbs",
-  note: "Open a session. The chat is reached from one list, and a path to it would only repeat that list, so the header shows a back control named after it.",
+  title: "A chat opened from the session list: a two-crumb trail",
+  note: "Open a session. The chat is reached from one list, so its trail is that list and the chat: the first crumb goes back up, and so does Escape.",
   surface: "none",
 }
 
@@ -21,7 +21,7 @@ export default function BackOnly() {
             id="nav-back-sessions"
             header={
               <ViewHeader
-                crumbs={[{ label: "Atlas web", onClick: () => {} }, { label: "Agent sessions" }]}
+                title="Agent sessions"
                 actions={[{ id: "new", label: "New session", icon: "plus", onClick: () => {} }]}
               />
             }
@@ -49,7 +49,7 @@ export default function BackOnly() {
             reading
             header={
               <ViewHeader
-                back={{ label: "Agent sessions", onClick: () => setOpen(null) }}
+                trail={[{ label: "Agent sessions", onClick: () => setOpen(null) }, { label: s().title }]}
                 context={<State status={s().state}>{s().word}</State>}
                 actions={[{ id: "stop", label: "Stop the session", overflow: true, onClick: () => {} }]}
               />

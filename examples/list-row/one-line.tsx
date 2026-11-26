@@ -1,7 +1,6 @@
 import { IconButton, ListRow, RowList, State } from "@aiviarium/nocturne"
 import { createSignal, For } from "solid-js"
 import { SESSIONS } from "../_kit/data"
-import { useDensity } from "../_kit/settings"
 import type { ExampleMeta } from "../_kit/types"
 
 export const meta: ExampleMeta = {
@@ -11,13 +10,11 @@ export const meta: ExampleMeta = {
 
 export default function OneLineRows() {
   const [selected, setSelected] = createSignal("s1")
-  const density = useDensity()
   return (
     <RowList label="Sessions">
       <For each={SESSIONS}>
         {(s) => (
           <ListRow
-            density={density()}
             icon="sparkle"
             title={s.title}
             secondary={s.where}

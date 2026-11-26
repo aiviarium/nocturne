@@ -451,16 +451,17 @@ form.ex-form {
   max-width: 28rem;
 }
 
-/* The navigation examples: a view inside a frame of the app shell takes the whole frame. */
-.ex-app-frame {
+/* A view with a panel docked at its right, outside the app shell. */
+.ex-with-panel {
   display: flex;
   flex: 1;
-  flex-direction: column;
+  height: 100%;
+  min-width: 0;
   min-height: 0;
 }
-.ex-app-frame > [data-part="view-layout"] {
+.ex-with-panel > [data-part="view-layout"] {
   flex: 1;
-  min-height: 0;
+  min-width: 0;
 }
 /* A frame of the width the column states example picks. */
 .ex-columns {
@@ -548,4 +549,30 @@ form.ex-form {
   height: 96px;
   padding: var(--space-3) var(--space-4);
   background: var(--bg-1);
+}
+
+/* The app shell's example: a whole window. On a gallery page it is a framed box; in a /frame it fills the viewport. */
+.ex-app-window {
+  height: 720px;
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+.ex-term {
+  flex: 1;
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  overflow: auto;
+  color: var(--text-2);
+  font-family: var(--font-mono);
+  font-size: var(--nc-type-label);
+  line-height: var(--nc-type-body-line);
+  white-space: pre;
+}
+.ex-record {
+  max-width: 720px;
+  padding: var(--space-6) var(--space-8);
+}
+.ex-record .heading {
+  margin: 0 0 var(--space-3);
 }

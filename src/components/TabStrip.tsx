@@ -27,6 +27,20 @@ export interface TabStripItem {
   dirty?: boolean
   /** Loading: a spinner in place of the icon. */
   loading?: boolean
+  /**
+   * The state of what the tab runs, such as a terminal session's, as a dot before the title: `running`, `input`
+   * (waiting for the person), `exited` or `failed`.
+   */
+  status?: TabStatus
+}
+
+export type TabStatus = "running" | "input" | "exited" | "failed"
+
+const STATUS_LABEL: Record<TabStatus, string> = {
+  running: "Running",
+  input: "Needs input",
+  exited: "Exited",
+  failed: "Failed",
 }
 
 export interface TabStripDrop {
@@ -260,6 +274,7 @@ export function TabStrip(props: TabStripProps): JSX.Element {
               data-pinned={item().pinned ? "" : undefined}
               data-dirty={item().dirty ? "" : undefined}
               data-loading={item().loading ? "" : undefined}
+              data-status={item().status}
               data-drop-before={dropAt() === index() ? "" : undefined}
               class="nc-tabstrip__tab"
               draggable={props.dragGroup && !touch() ? "true" : undefined}
@@ -348,6 +363,16 @@ export function TabStrip(props: TabStripProps): JSX.Element {
                       }
                     >
                       <span class="nc-spinner" role="status" aria-label="Loading" />
+                    </Show>
+                    <Show when={item().status}>
+                      {(st) => (
+                        <span
+                          class="nc-tabstrip__status"
+                          data-status={st()}
+                          role="img"
+                          aria-label={STATUS_LABEL[st()]}
+                        />
+                      )}
                     </Show>
                     <Show when={!item().pinned}>
                       <span class="nc-tabstrip__title">{item().label}</span>

@@ -100,8 +100,6 @@ export interface DataTableProps<T> {
    * another (the caller orders them); a row with no group (`null`) is under no heading.
    */
   groupOf?: (row: T) => { key: string; label: JSX.Element } | null
-  /** 30px rows (`compact`, default) or 36px (`comfortable`). */
-  density?: "compact" | "comfortable"
   /**
    * Rows can be selected, as on a desktop: Cmd or Ctrl and a click toggles a row, Shift and a click selects the
    * range from the last row clicked, Shift and an arrow extends it, Cmd or Ctrl+A selects all, Escape clears. A
@@ -119,7 +117,7 @@ export interface DataTableProps<T> {
   onSortChange?: (sort: SortState | null) => void
   /** Do not sort rows here; the data source already did. */
   manualSort?: boolean
-  /** Shown above the table when nothing is selected: search, filters, density. */
+  /** Shown above the table when nothing is selected: search, filters. */
   toolbar?: JSX.Element
   /** Actions in the bulk bar, given the selected rows. */
   bulkActions?: (rows: T[]) => JSX.Element
@@ -413,7 +411,6 @@ export function DataTable<T>(props: DataTableProps<T>): JSX.Element {
     <div
       ref={rootEl}
       data-part="data-table"
-      data-density={props.density ?? "compact"}
       data-selecting={props.selectable && selected().length > 0 ? "" : undefined}
       data-touch={phone() || touchScreen() ? "" : undefined}
       class={cx(
@@ -460,7 +457,7 @@ export function DataTable<T>(props: DataTableProps<T>): JSX.Element {
       </Show>
       <div class="nc-datatable__scroll" ref={scrollEl}>
         <table
-          class={cx("nc-table", props.density === "comfortable" && "nc-table--comfortable")}
+          class="nc-table"
           aria-label={props.label}
           aria-rowcount={sorted().length + 1}
           aria-busy={props.loading ? "true" : undefined}

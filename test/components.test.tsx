@@ -2,7 +2,6 @@ import { afterEach, describe, expect, test } from "bun:test"
 import { render } from "@solidjs/web"
 import { createSignal, flush } from "solid-js"
 import {
-  AppShell,
   Button,
   Checkbox,
   type DataColumn,
@@ -965,7 +964,7 @@ describe("TabStrip behaviours", () => {
   })
 })
 
-describe("Dialog placements, AppShell and Frame", () => {
+describe("Dialog placements and Frame", () => {
   test("a bare dialog has no header and is named by its label; a sheet sits at the bottom", async () => {
     track(
       mount(() => (
@@ -994,55 +993,6 @@ describe("Dialog placements, AppShell and Frame", () => {
     await tick()
     expect(one("[data-part=dialog-backdrop]").classList.contains("nc-scrim--bottom")).toBe(true)
     expect(one("[role=dialog]").classList.contains("nc-dialog--sheet")).toBe(true)
-  })
-
-  test("AppShell shows the scrim and drawer state only when asked, and the scrim closes the drawer", () => {
-    let closed = 0
-    const [open, setOpen] = createSignal(false)
-    const { root } = track(
-      mount(() => (
-        <AppShell
-          fill
-          sidebar="nav"
-          sidebarLabel="Navigation"
-          topbar="top"
-          statusbar="status"
-          drawerOpen={open()}
-          onDrawerClose={() => closed++}
-        >
-          body
-        </AppShell>
-      )),
-    )
-    expect(one("[data-part=sidebar]", root).getAttribute("aria-label")).toBe("Navigation")
-    expect(root.querySelector("[data-part=topbar]")?.textContent).toBe("top")
-    expect(root.querySelector("[data-part=statusbar]")?.textContent).toBe("status")
-    expect(one("[data-part=app-shell]", root).hasAttribute("data-drawer")).toBe(false)
-    setOpen(true)
-    flush()
-    expect(one("[data-part=app-shell]", root).getAttribute("data-drawer")).toBe("open")
-    click(one("[data-part=scrim]", root))
-    expect(closed).toBe(1)
-  })
-
-  test("AppShell's sidebar resizes by its edge only when the app keeps the width", () => {
-    const plain = track(mount(() => <AppShell sidebar="nav">body</AppShell>))
-    expect(plain.root.querySelector("[data-part=sidebar-edge]")).toBeNull()
-    const [width, setWidth] = createSignal(232)
-    const { root } = track(
-      mount(() => (
-        <AppShell sidebar="nav" sidebarWidth={width()} onSidebarResize={setWidth}>
-          body
-        </AppShell>
-      )),
-    )
-    const edge = one("[data-part=sidebar-edge]", root)
-    expect(edge.getAttribute("role")).toBe("separator")
-    press(edge, "ArrowRight")
-    expect(width()).toBe(248)
-    expect(one("[data-part=app-shell]", root).style.getPropertyValue("--nc-sidebar-width")).toBe("248px")
-    for (let i = 0; i < 30; i++) press(edge, "ArrowRight")
-    expect(width()).toBe(420)
   })
 
   test("Frame with a header puts the content in a scrolling body, and focused is a data attribute", () => {

@@ -12,7 +12,6 @@ import {
 } from "@aiviarium/nocturne"
 import { createMemo, createSignal, For, Show } from "solid-js"
 import { ISSUE_STATE, ISSUES } from "../_kit/issues"
-import { useDensity } from "../_kit/settings"
 import type { ExampleMeta } from "../_kit/types"
 
 export const meta: ExampleMeta = {
@@ -21,7 +20,6 @@ export const meta: ExampleMeta = {
 }
 
 export default function IssueList() {
-  const density = useDensity()
   const [query, setQuery] = createSignal("")
   const [scope, setScope] = createSignal("open")
   const [who, setWho] = createSignal("anyone")
@@ -83,7 +81,6 @@ export default function IssueList() {
               const st = ISSUE_STATE[i.state]
               return (
                 <ListRow
-                  density={density()}
                   leading={i.assignee ? <Avatar name={i.assignee} size="sm" /> : undefined}
                   icon={i.assignee ? undefined : "list"}
                   title={i.title}

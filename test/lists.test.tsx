@@ -116,17 +116,15 @@ describe("RowList keyboard", () => {
     expect(mains().map((m) => m.getAttribute("tabindex"))).toEqual(["-1", "0", "-1"])
   })
 
-  test("density and variant are the list's", () => {
+  test("variant is the list's", () => {
     const { root } = track(
       mount(() => (
-        <RowList label="Rows" density="comfortable" variant="inset">
+        <RowList label="Rows" variant="inset">
           <ListRow title="A" />
-          <ListRow title="B" density="compact" />
+          <ListRow title="B" />
         </RowList>
       )),
     )
-    const rows = all("[data-part=list-row]")
-    expect(rows.map((r) => r.getAttribute("data-density"))).toEqual(["comfortable", "compact"])
     expect(one("[data-part=row-list]", root).classList.contains("nc-rows--inset")).toBe(true)
     expect(one("[data-part=row-list]", root).getAttribute("data-variant")).toBe("inset")
   })

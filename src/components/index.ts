@@ -40,13 +40,6 @@ export * from "./SchemaForm"
 export * from "./Select"
 export * from "./SettingRow"
 export * from "./Sheet"
-export {
-  type ShellSidebarValue,
-  SidebarToggle,
-  type SidebarToggleProps,
-  useShellSidebar,
-} from "./ShellSidebar"
-export * from "./SidebarHeader"
 export * from "./Skeleton"
 export * from "./Slider"
 export * from "./Split"

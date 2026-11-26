@@ -2,6 +2,7 @@ import type { JSX } from "@solidjs/web"
 import { Show } from "solid-js"
 import { cx } from "../lib/cx"
 import type { Placement } from "../lib/placement"
+import { useShellSidebar } from "../shell/context"
 import { Avatar } from "./Avatar"
 import { Icon } from "./Icon"
 import { DropdownMenu, type MenuEntry } from "./Menu"
@@ -23,11 +24,13 @@ export interface AccountMenuProps {
   onSelect?: (id: string) => void
   /** The theme setting, as one compact row of three icons. Left out, the menu has no theme row. */
   theme?: { value: ThemePreference; onChange: (value: ThemePreference) => void }
+  /** Opens the appearance settings: an "Appearance…" item after the app's items. */
+  onAppearance?: () => void
   /** Signs out. It is the last item. */
   onSignOut?: () => void
   /**
-   * `row` (default): the avatar and the name, filling the width, for the foot of a sidebar. `avatar`: the avatar
-   * alone, for the end of a top bar.
+   * `row`: the avatar and the name, filling the width, for the foot of a sidebar. `avatar`: the avatar alone, for
+   * the sidebar's icon rail or the end of a bar. Default `row`, or `avatar` while the `AppShell`'s sidebar is folded.
    */
   trigger?: "row" | "avatar"
   /** Default `top-start` for a row, `bottom-end` for an avatar. */
@@ -36,6 +39,7 @@ export interface AccountMenuProps {
 }
 
 const SIGN_OUT = "nc-account-sign-out"
+const APPEARANCE = "nc-account-appearance"
 
 /**
  * The signed-in person's menu: a trigger with their avatar, and a menu that says who they are, holds the app's
@@ -67,6 +71,10 @@ export function AccountMenu(props: AccountMenuProps): JSX.Element {
       },
     ]
     if (props.items?.length) out.push({ type: "separator" }, ...props.items)
+    if (props.onAppearance) {
+      if (!props.items?.length) out.push({ type: "separator" })
+      out.push({ id: APPEARANCE, label: "Appearance…", icon: "monitor" })
+    }
     if (props.theme) {
       const theme = props.theme
       out.push(
@@ -89,7 +97,8 @@ export function AccountMenu(props: AccountMenuProps): JSX.Element {
     if (props.onSignOut) out.push({ type: "separator" }, { id: SIGN_OUT, label: "Sign out", icon: "log-out" })
     return out
   }
-  const row = () => (props.trigger ?? "row") === "row"
+  const sidebar = useShellSidebar()
+  const row = () => (props.trigger ?? (sidebar?.folded() ? "avatar" : "row")) === "row"
   return (
     <DropdownMenu
       label="Account"
@@ -98,7 +107,13 @@ export function AccountMenu(props: AccountMenuProps): JSX.Element {
       matchWidth={false}
       minWidth="240px"
       class="nc-account__menu"
-      onSelect={(id) => (id === SIGN_OUT ? props.onSignOut?.() : props.onSelect?.(id))}
+      onSelect={(id) =>
+        id === SIGN_OUT
+          ? props.onSignOut?.()
+          : id === APPEARANCE
+            ? props.onAppearance?.()
+            : props.onSelect?.(id)
+      }
       trigger={(t) => (
         <button
           {...t}

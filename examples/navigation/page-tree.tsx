@@ -45,7 +45,7 @@ export default function PageTree() {
         }
         header={
           <ViewHeader
-            crumbs={[
+            trail={[
               { label: "Docs", onClick: () => setPage("intro") },
               ...path().map((p) => ({ label: p.title, onClick: () => setPage(p.id) })),
             ]}

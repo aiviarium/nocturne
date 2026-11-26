@@ -26,7 +26,7 @@ export const PAGES: GalleryPage[] = [
     id: "list-row",
     title: "List row",
     group: "Shared parts",
-    lead: "One row of a list: leading icon or avatar in a fixed box, title, secondary text, then status, metadata and actions. The rows of a RowList share their columns, so icons, titles, states and times line up. The whole row is the link; selection is the inset fill. Compact 30px, comfortable 36px; 44 and 58px on a phone, where contextual actions go to a swipe and a long press.",
+    lead: "One row of a list: leading icon or avatar in a fixed box, title, secondary text, then status, metadata and actions. The rows of a RowList share their columns, so icons, titles, states and times line up. The whole row is the link; selection is the inset fill. 30px rows; 44 and 58px on a phone, where contextual actions go to a swipe and a long press.",
     sections: [
       "list-row/one-line",
       "list-row/avatars",
@@ -385,15 +385,15 @@ export const PAGES: GalleryPage[] = [
     id: "panel",
     title: "Panel and Frame",
     group: "Layout",
-    lead: "A bg-1 card with a 38px header holding the title, the state and the actions. Footers only for pagination or totals.",
+    lead: "A bg-1 card with a 44px header holding the title, the state and the actions. Footers only for pagination or totals.",
     sections: ["panel/variants"],
   },
   {
     id: "app-shell",
     title: "AppShell",
     group: "Layout",
-    lead: "The app shell pattern: a sidebar on bg-0, content in one or more bg-1 frames with radius 8 and an 8px gap. Frames wrap and stack at phone width.",
-    sections: ["app-shell/two-frames"],
+    lead: "The app shell: the title bar, then the sidebar, the square raised view surface, the docked bottom and right panels and the panel rail at the window's edge. The sidebar folds to a 48px rail below 140px. On a phone the sidebar is a drawer.",
+    sections: ["app-shell/workbench", "app-shell/two-frames"],
   },
   {
     id: "navigation",

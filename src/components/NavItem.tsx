@@ -2,10 +2,14 @@ import type { JSX } from "@solidjs/web"
 import { For, omit, Show } from "solid-js"
 import { cx } from "../lib/cx"
 import { callClick, useLinkClick } from "../lib/link"
+import { useShellSidebar } from "../shell/context"
 import { Icon, type IconName, type LucideNode } from "./Icon"
 import { IconButton } from "./IconButton"
+import { Tooltip } from "./Tooltip"
 
 export interface NavItemProps extends Omit<JSX.AnchorHTMLAttributes<HTMLAnchorElement>, "children"> {
+  /** Stable id: what `Nav`'s `collapsed` names. Default the label. */
+  id?: string
   /** Row label. */
   label: string
   /** A named icon. */
@@ -14,46 +18,93 @@ export interface NavItemProps extends Omit<JSX.AnchorHTMLAttributes<HTMLAnchorEl
   iconNode?: LucideNode
   /** Content in the icon's place, such as a letter mark for an entry that has no icon. */
   leading?: JSX.Element
-  /** Right-aligned meta: a `Count`, a total in text-3, or a short status such as "1 needs you". */
+  /** Right-aligned meta: a total in text-3, or a short status such as "1 needs you". */
   meta?: JSX.Element
+  /** A count at the row's end (shown when it is not 0 and there is no `meta`). Folded, it is a dot on the icon. */
+  count?: number
+  /** A dot on the folded rail's icon without a count. */
+  dot?: boolean
   /** The current page. Sets `aria-current="page"`. */
   current?: boolean
   /** Where the row goes: rendered as a link. */
   href?: string
   /** The row opens a level of the sidebar, such as a project's or a host's places: a chevron ends it. */
   drill?: boolean
+  /** Child views, drawn under the row with their labels where the row's label starts. */
+  items?: NavItemProps[]
+  /** Part of the label to mark as a filter's match. `Nav` sets it from its `filter`. */
+  match?: string
+}
+
+const OWN = [
+  "id",
+  "label",
+  "icon",
+  "iconNode",
+  "leading",
+  "meta",
+  "count",
+  "dot",
+  "current",
+  "class",
+  "href",
+  "onClick",
+  "drill",
+  "items",
+  "match",
+] as const
+
+/** A label with the first match of `q` marked. */
+export function MatchText(props: { text: string; q?: string }): JSX.Element {
+  const q = () => props.q?.trim() ?? ""
+  const at = () => (q() ? props.text.toLowerCase().indexOf(q().toLowerCase()) : -1)
+  return (
+    <Show when={at() >= 0} fallback={props.text}>
+      {props.text.slice(0, at())}
+      <mark class="nc-match" data-part="nav-match">
+        {props.text.slice(at(), at() + q().length)}
+      </mark>
+      {props.text.slice(at() + q().length)}
+    </Show>
+  )
 }
 
 /** A sidebar row. Renders a link when it has an `href`, a button otherwise. */
-export function NavItem(props: NavItemProps): JSX.Element {
-  const rest = omit(
-    props,
-    "label",
-    "icon",
-    "iconNode",
-    "leading",
-    "meta",
-    "current",
-    "class",
-    "href",
-    "onClick",
-    "drill",
-  )
+export function NavItem(
+  props: NavItemProps & { disclose?: JSX.Element; within?: boolean; child?: boolean },
+): JSX.Element {
+  const rest = omit(props, ...OWN, "disclose", "within", "child")
   const linkClick = useLinkClick()
   const body = (
     <>
       <Show
-        when={props.leading}
+        when={props.disclose}
         fallback={
-          <Show when={props.icon || props.iconNode}>
-            <Icon name={props.icon} node={props.iconNode} />
+          <Show
+            when={props.leading}
+            fallback={
+              <Show when={props.icon || props.iconNode}>
+                <Icon name={props.icon} node={props.iconNode} />
+              </Show>
+            }
+          >
+            {props.leading}
           </Show>
         }
       >
-        {props.leading}
+        {props.disclose}
       </Show>
-      <span class="nc-nav-item__label">{props.label}</span>
-      <Show when={props.meta}>
+      <span class="nc-nav-item__label">
+        <MatchText text={props.label} q={props.match} />
+      </span>
+      <Show
+        when={props.meta}
+        fallback={
+          <Show when={props.count}>
+            <span class="nc-nav-item__meta nc-nav-item__count">{props.count}</span>
+          </Show>
+        }
+      >
         <span class="nc-nav-item__meta">{props.meta}</span>
       </Show>
       <Show when={props.drill}>
@@ -61,6 +112,7 @@ export function NavItem(props: NavItemProps): JSX.Element {
       </Show>
     </>
   )
+  const cls = () => cx("nc-nav-item", props.child && "nc-nav-item--child", props.class)
   return (
     <Show
       when={props.href}
@@ -68,8 +120,9 @@ export function NavItem(props: NavItemProps): JSX.Element {
         <button
           data-part="nav-item"
           type="button"
-          class={cx("nc-nav-item", props.class)}
+          class={cls()}
           aria-current={props.current ? "page" : undefined}
+          data-within={props.within ? "" : undefined}
           onClick={(e) => callClick(props.onClick, e)}
           {...(rest as JSX.ButtonHTMLAttributes<HTMLButtonElement>)}
         >
@@ -80,8 +133,9 @@ export function NavItem(props: NavItemProps): JSX.Element {
       <a
         data-part="nav-item"
         href={props.href}
-        class={cx("nc-nav-item", props.class)}
+        class={cls()}
         aria-current={props.current ? "page" : undefined}
+        data-within={props.within ? "" : undefined}
         onClick={(e) => {
           callClick(props.onClick, e)
           linkClick(e, props.href)
@@ -108,10 +162,39 @@ export interface NavProps {
   label: string
   /** Groups of items, each with an optional sentence-case heading and one action beside it. */
   groups?: NavGroup[]
-  /** Free-form content instead of `groups`. */
+  /**
+   * Filters the tree in place: items whose label holds the text stay, with their parents, and the match is
+   * marked. A parent that matches keeps all its children. Collapsed parents open while it is set.
+   */
+  filter?: string
+  /** Ids of the parents whose children are hidden. With `onCollapsedChange`, a parent's icon toggles it. */
+  collapsed?: readonly string[]
+  onCollapsedChange?: (collapsed: string[]) => void
+  /**
+   * The icon rail: top-level items as icons with their names in tooltips, a neutral dot where an item or its
+   * children have a count, groups divided by a short rule. Default: the `AppShell`'s sidebar fold.
+   */
+  folded?: boolean
+  /** Free-form content after the groups. Not shown folded. */
   children?: JSX.Element
   class?: string
 }
+
+const keyOf = (item: NavItemProps) => item.id ?? item.label
+const has = (q: string, label: string) => label.toLowerCase().includes(q.toLowerCase())
+
+/** The item as the filter leaves it: itself when it matches, else with only its matching children, else nothing. */
+function filtered(item: NavItemProps, q: string): NavItemProps | undefined {
+  if (!q) return item
+  if (has(q, item.label)) return item
+  const kids = (item.items ?? []).map((c) => filtered(c, q)).filter((c): c is NavItemProps => !!c)
+  return kids.length ? { ...item, items: kids } : undefined
+}
+
+const countIn = (item: NavItemProps): number =>
+  (item.count ?? 0) + (item.items ?? []).reduce((s, c) => s + countIn(c), 0)
+const dotIn = (item: NavItemProps): boolean => countIn(item) > 0 || !!item.dot || !!item.items?.some(dotIn)
+const currentIn = (item: NavItemProps): boolean => !!item.items?.some((c) => c.current || currentIn(c))
 
 /**
  * A sidebar navigation landmark that lays out NavItem groups. Groups and items are kept by position, so a router
@@ -119,34 +202,161 @@ export interface NavProps {
  * rebuilt, and the sidebar keeps its scroll position and focus.
  */
 export function Nav(props: NavProps): JSX.Element {
+  const sidebar = useShellSidebar()
+  const folded = () => props.folded ?? sidebar?.folded() ?? false
+  const q = () => props.filter?.trim() ?? ""
+  const groups = () =>
+    (props.groups ?? [])
+      .map((g) => ({
+        ...g,
+        items: g.items.map((i) => filtered(i, q())).filter((i): i is NavItemProps => !!i),
+      }))
+      .filter((g) => !q() || g.items.length > 0)
+  const isClosed = (item: NavItemProps) =>
+    !q() && !!props.collapsed?.includes(keyOf(item)) && !currentIn(item)
+  const toggle = (item: NavItemProps) => {
+    const id = keyOf(item)
+    const now = props.collapsed ?? []
+    props.onCollapsedChange?.(now.includes(id) ? now.filter((x) => x !== id) : [...now, id])
+  }
+
+  const Tree = (p: { items: NavItemProps[]; child?: boolean }): JSX.Element => (
+    <For keyed={false} each={p.items}>
+      {(item) => (
+        <>
+          <NavItem
+            {...item()}
+            child={p.child}
+            match={q()}
+            within={currentIn(item())}
+            disclose={
+              item().items?.length && props.onCollapsedChange && !p.child ? (
+                <span
+                  class="nc-nav-item__disclose"
+                  role="button"
+                  tabindex="-1"
+                  data-part="nav-disclose"
+                  aria-label={isClosed(item()) ? `Expand ${item().label}` : `Collapse ${item().label}`}
+                  aria-expanded={isClosed(item()) ? "false" : "true"}
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    toggle(item())
+                  }}
+                >
+                  <Show
+                    when={item().leading}
+                    fallback={<Icon name={item().icon ?? "folder"} node={item().iconNode} />}
+                  >
+                    {item().leading}
+                  </Show>
+                  <Icon
+                    name={isClosed(item()) ? "chevron-right" : "chevron-down"}
+                    size="sm"
+                    class="nc-nav-item__chevron"
+                  />
+                </span>
+              ) : undefined
+            }
+          />
+          <Show when={item().items?.length && !isClosed(item())}>
+            <div class="nc-nav__children" role="group" aria-label={item().label}>
+              <Tree items={item().items ?? []} child />
+            </div>
+          </Show>
+        </>
+      )}
+    </For>
+  )
+
   return (
-    <nav data-part="nav" aria-label={props.label} class={cx("nc-nav", props.class)}>
-      <For keyed={false} each={props.groups ?? []}>
-        {(group) => (
-          <>
-            <Show when={group().label}>
-              <Show when={group().action} fallback={<span class="nc-nav__label">{group().label}</span>}>
-                {(action) => (
-                  <div class="nc-nav__head" data-empty={group().items.length === 0 ? "" : undefined}>
-                    <span class="nc-nav__label">{group().label}</span>
-                    <IconButton
-                      size="sm"
-                      class="nc-nav__action"
-                      icon={action().icon}
-                      label={action().label}
-                      onClick={() => action().onClick()}
-                    />
-                  </div>
-                )}
+    <nav
+      data-part="nav"
+      data-folded={folded() ? "" : undefined}
+      aria-label={props.label}
+      class={cx("nc-nav", props.class)}
+    >
+      <Show
+        when={!folded()}
+        fallback={
+          <For keyed={false} each={props.groups ?? []}>
+            {(group, gi) => (
+              <>
+                <Show when={gi > 0}>
+                  <span class="nc-nav__rule" role="separator" aria-label={group().label} />
+                </Show>
+                <For keyed={false} each={group().items}>
+                  {(item) => <RailItem item={item()} />}
+                </For>
+              </>
+            )}
+          </For>
+        }
+      >
+        <For keyed={false} each={groups()}>
+          {(group) => (
+            <>
+              <Show when={group().label}>
+                <Show when={group().action} fallback={<span class="nc-nav__label">{group().label}</span>}>
+                  {(action) => (
+                    <div class="nc-nav__head" data-empty={group().items.length === 0 ? "" : undefined}>
+                      <span class="nc-nav__label">{group().label}</span>
+                      <IconButton
+                        size="sm"
+                        class="nc-nav__action"
+                        icon={action().icon}
+                        label={action().label}
+                        onClick={() => action().onClick()}
+                      />
+                    </div>
+                  )}
+                </Show>
               </Show>
-            </Show>
-            <For keyed={false} each={group().items}>
-              {(item) => <NavItem {...item()} />}
-            </For>
-          </>
-        )}
-      </For>
-      {props.children}
+              <Tree items={group().items} />
+            </>
+          )}
+        </For>
+        {props.children}
+      </Show>
     </nav>
+  )
+}
+
+/** One top-level item on the folded rail: its icon, its name in a tooltip, a dot where it or its children count. */
+function RailItem(props: { item: NavItemProps }): JSX.Element {
+  const linkClick = useLinkClick()
+  const current = () => !!props.item.current || currentIn(props.item)
+  const glyph = () => (
+    <Show
+      when={props.item.leading}
+      fallback={<Icon name={props.item.icon ?? "folder"} node={props.item.iconNode} />}
+    >
+      {props.item.leading}
+    </Show>
+  )
+  return (
+    <Tooltip content={props.item.label} placement="right" type="label">
+      {(t) => (
+        <a
+          {...t}
+          href={props.item.href ?? "#"}
+          class="nc-nav-rail-item"
+          data-part="nav-item"
+          data-folded=""
+          aria-label={props.item.label}
+          aria-current={current() ? "page" : undefined}
+          onClick={(e) => {
+            callClick(props.item.onClick, e)
+            if (props.item.href) linkClick(e, props.item.href)
+            else e.preventDefault()
+          }}
+        >
+          {glyph()}
+          <Show when={dotIn(props.item)}>
+            <i class="nc-nav-rail-item__dot" data-part="nav-dot" aria-hidden="true" />
+          </Show>
+        </a>
+      )}
+    </Tooltip>
   )
 }

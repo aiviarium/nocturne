@@ -2,11 +2,10 @@
 // an element, with Nocturne's theme and accent on its root, and returns a function that removes it again.
 import "@aiviarium/nocturne/styles/index.css"
 import "./examples.css"
-import { accentValue, PhoneOverride, type RowDensity, ToastRegion } from "@aiviarium/nocturne"
+import { accentValue, PhoneOverride, ToastRegion } from "@aiviarium/nocturne"
 import { render } from "@solidjs/web"
 import { createSignal, onSettled, Show } from "solid-js"
 import { ExampleScreen, needsScreen } from "./_kit/screen"
-import { ExampleSettingsContext } from "./_kit/settings"
 import { EXAMPLES } from "./registry"
 
 export { ACCENTS } from "@aiviarium/nocturne"
@@ -16,8 +15,6 @@ export interface MountOptions {
   theme?: "dark" | "light"
   /** An accent preset id (`ACCENTS`), or any colour. */
   accent?: string
-  /** The row density of lists and tables that follow the page's setting. */
-  density?: RowDensity
   /**
    * Shown on a phone (the site's device frames): the root is a phone screen, and an example that does not draw a
    * whole screen of its own (`meta.screen`) is shown as the content of one, under a navigation bar titled with the
@@ -26,7 +23,7 @@ export interface MountOptions {
   phone?: boolean
 }
 
-/** Removes the example. `update` changes its theme, accent or density in place, keeping its state. */
+/** Removes the example. `update` changes its theme or accent in place, keeping its state. */
 export interface Dispose {
   (): void
   update: (options: MountOptions) => void
@@ -50,7 +47,6 @@ export function mount(id: string, element: Element | ShadowRoot, options: MountO
   const example = EXAMPLES[id]
   const [theme, setTheme] = createSignal(options.theme ?? "dark")
   const [accent, setAccent] = createSignal(options.accent)
-  const [density, setDensity] = createSignal(options.density)
   const remove = render(() => {
     if (!example) return <p class="nc-meta">No example {id}.</p>
     const Example = example.default
@@ -80,9 +76,7 @@ export function mount(id: string, element: Element | ShadowRoot, options: MountO
         data-phone={phone ? "" : undefined}
         style={{ "--accent": accentFor(accent(), theme()) }}
       >
-        <PhoneOverride value={phone ? true : null}>
-          <ExampleSettingsContext value={{ density }}>{body()}</ExampleSettingsContext>
-        </PhoneOverride>
+        <PhoneOverride value={phone ? true : null}>{body()}</PhoneOverride>
         <Show when={example.meta.toasts && root()}>{(anchor) => <ToastRegion anchor={anchor()} />}</Show>
       </div>
     )
@@ -91,7 +85,6 @@ export function mount(id: string, element: Element | ShadowRoot, options: MountO
   dispose.update = (next) => {
     if (next.theme) setTheme(next.theme)
     if ("accent" in next) setAccent(next.accent)
-    if ("density" in next) setDensity(next.density)
   }
   return dispose
 }

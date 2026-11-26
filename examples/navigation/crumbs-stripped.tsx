@@ -2,9 +2,9 @@ import { ViewHeader } from "@aiviarium/nocturne"
 import type { ExampleMeta } from "../_kit/types"
 
 export const meta: ExampleMeta = {
-  title: "A stripped path, or a back control",
+  title: "A short trail",
   verdict: "do",
-  note: "The start of the path folds into the first crumb, and the project and the issue stay. A chat reached from one list shows only a back control.",
+  note: "The title bar's path already names the workspace and the project, so the view's trail starts at its place: the list, then the issue. A chat reached from one list has the list and the chat.",
   surface: "well",
 }
 
@@ -15,12 +15,7 @@ export default function CrumbsStripped() {
     <div class="ex-col">
       <div class="ex-view">
         <ViewHeader
-          fold={1}
-          crumbs={[
-            { label: "Projects", onClick: go },
-            { label: "Atlas web", onClick: go },
-            { label: "WEB-142" },
-          ]}
+          trail={[{ label: "Issues", onClick: go }, { label: "WEB-142" }]}
           actions={[{ id: "copy", label: "Copy link", icon: "link", onClick: go }]}
         />
         <div class="ex-view__body">
@@ -29,7 +24,7 @@ export default function CrumbsStripped() {
       </div>
       <div class="ex-view">
         <ViewHeader
-          back={{ label: "Agent sessions", onClick: go }}
+          trail={[{ label: "Agent sessions", onClick: go }, { label: "Fix the sign-in loop" }]}
           actions={[{ id: "stop", label: "Stop the session", overflow: true, onClick: go }]}
         />
         <div class="ex-view__body">

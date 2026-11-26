@@ -40,8 +40,6 @@ import { entriesFromButtons, removalToast, SelectionBar } from "./rows"
 import { Checkbox } from "./Switch"
 import { titleOf } from "./Truncate"
 
-export type RowDensity = "compact" | "comfortable"
-
 /**
  * Where a `RowList` sits. `plain`: on its own in a view or a sidebar, inset 6px so selection is an inset fill.
  * `inset`: inside a padded container (a `Card`, a `Panel`, an inspector's section), wherever it is in it: the rows
@@ -87,7 +85,6 @@ export interface RowMenuContext<T> {
 
 /** What a `RowList` tells its rows. */
 interface RowListContext {
-  density: () => RowDensity | undefined
   tree: () => boolean
   addBranch: () => () => void
   editing: () => boolean
@@ -174,11 +171,6 @@ export interface ListRowProps
   menuLabel?: string
   /** An entry of `menu` was chosen. */
   onMenuSelect?: (id: string) => void
-  /**
-   * `compact` 30px (default), `comfortable` 36px, from the row tokens. Multi-line rows grow with their lines.
-   * Set it on the `RowList` for the whole list; a row's own value wins.
-   */
-  density?: RowDensity
   /** 1 (default), 2 or 3 lines. More than one puts the secondary text and the detail on their own lines. */
   lines?: 1 | 2 | 3
   /**
@@ -255,7 +247,6 @@ export function ListRow(props: ListRowProps): JSX.Element {
     "menu",
     "menuLabel",
     "onMenuSelect",
-    "density",
     "lines",
     "selected",
     "unread",
@@ -617,7 +608,6 @@ export function ListRow(props: ListRowProps): JSX.Element {
       role={inListbox ? undefined : "listitem"}
       aria-level={branch() && !inListbox ? depth() + 1 : undefined}
       class={cx("nc-lrow", props.class)}
-      data-density={props.density ?? list?.density() ?? "compact"}
       data-lines={lines()}
       data-index={index()}
       data-depth={branch() ? depth() : undefined}
@@ -828,14 +818,12 @@ export interface RowListProps<T> extends Omit<JSX.HTMLAttributes<HTMLDivElement>
   items?: readonly T[]
   /** Stable key of an item: selection is kept by key. Default the index. */
   getKey?: (item: T, index: number) => RowKey
-  /** Height of one row in px, for the virtualised list. Default: the density's row height. */
+  /** Height of one row in px, for the virtualised list. Default 30 (44 on a phone, 28 inline). */
   itemHeight?: number
   /** Rows above which the list is virtualised (it then needs a height from its parent). Default 150. */
   virtualizeAt?: number
   /** Hairlines between rows, for multi-line rows. The inset fill stays the selection. */
   divided?: boolean
-  /** Row height of every row: `compact` 30px (default) or `comfortable` 36px. */
-  density?: RowDensity
   /** Where the list sits: see `RowListVariant`. Default `plain`. */
   variant?: RowListVariant
   /** Flush to the container's edge instead of inset by 6px. Prefer `variant="inset"`, which also fits nested lists. */
@@ -952,7 +940,6 @@ export function RowList<T = unknown>(props: RowListProps<T>): JSX.Element {
     "itemHeight",
     "virtualizeAt",
     "divided",
-    "density",
     "variant",
     "flush",
     "onReorder",
@@ -984,9 +971,7 @@ export function RowList<T = unknown>(props: RowListProps<T>): JSX.Element {
       </RowItem>
     ) : null
   const variant = () => props.variant ?? (props.flush ? "inset" : "plain")
-  const height = () =>
-    props.itemHeight ??
-    (phone() ? 44 : variant() === "inline" ? 28 : props.density === "comfortable" ? 36 : 30)
+  const height = () => props.itemHeight ?? (phone() ? 44 : variant() === "inline" ? 28 : 30)
   let root!: HTMLDivElement
   const [said, setSaid] = createSignal("")
   const announce = (text: string) => {
@@ -1255,7 +1240,6 @@ export function RowList<T = unknown>(props: RowListProps<T>): JSX.Element {
   }
 
   const ctx: RowListContext = {
-    density: () => props.density,
     tree: () => Boolean(props.tree) || branches() > 0,
     addBranch: () => {
       setBranches((n) => n + 1)
@@ -1397,7 +1381,6 @@ export function RowList<T = unknown>(props: RowListProps<T>): JSX.Element {
           type="button"
           class="nc-lrow nc-lrow--add"
           data-part="row-add"
-          data-density={props.density ?? "compact"}
           data-interactive=""
           onClick={() => props.onAdd?.()}
         >

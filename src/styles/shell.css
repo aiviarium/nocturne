@@ -276,3 +276,134 @@ button.nc-title-bar__app:hover, button.nc-title-bar__app[aria-expanded="true"] {
 .nc-palette__foot { display: flex; align-items: center; gap: 16px; flex: none; height: 36px; padding: 0 16px; border-top: 1px solid var(--line-soft); color: var(--text-3); font-size: var(--nc-type-label); }
 .nc-palette__foot > span { display: inline-flex; align-items: center; gap: var(--space-1); }
 .nc-palette__widen { margin-left: auto; }
+
+/* ── App shell ────────────────────────────────────────────────────────────────────────────────────────────
+   A column: the title bar, then a row of the sidebar on the canvas, the raised view surface (square, to the window's
+   bottom edge) with its docked panels, and the panel rail at the right edge. Nothing here animates: the fold and the
+   panels settle in the frame they change in. */
+.nc-app-shell { display: flex; flex-direction: column; box-sizing: border-box; height: 100%; min-height: 0; overflow: hidden; background: var(--bg-0); color: var(--text-1); font-size: var(--nc-type-body); line-height: var(--nc-type-body-line); }
+.nc-app-shell > .nc-title-bar { flex: none; }
+.nc-app-shell__row { position: relative; display: flex; flex: 1; min-height: 0; }
+.nc-app-shell__sidebar { position: relative; z-index: 2; display: flex; flex-direction: column; flex: none; box-sizing: border-box; width: var(--nc-sidebar-w, var(--sidebar)); min-width: 0; min-height: 0; background: var(--bg-0); }
+.nc-app-shell__sidebar > .nc-resize-handle[data-at="right"] { right: 0; }
+.nc-app-shell__sidebar-body { flex: 1; min-height: 0; overflow: auto; padding: var(--space-1) var(--space-2) var(--space-3); scrollbar-width: thin; }
+.nc-app-shell__sidebar-foot { display: flex; align-items: center; gap: var(--space-1); flex: none; padding: var(--space-1) var(--space-2) var(--space-2); }
+.nc-app-shell__sidebar-foot:empty { display: none; }
+.nc-app-shell__sidebar-foot > .nc-account--row { flex: 1; min-width: 0; }
+.nc-app-shell__sidebar-foot .nc-account__trigger-name { font-size: var(--nc-type-drill); }
+.nc-app-shell__sidebar[data-folded] .nc-app-shell__sidebar-body { scrollbar-width: none; }
+.nc-app-shell__sidebar[data-folded] .nc-app-shell__sidebar-foot { justify-content: center; padding: var(--space-1) 0 var(--space-2); }
+.nc-app-shell__surface { position: relative; display: flex; flex: 1; min-width: 0; min-height: 0; border-radius: 0; background: var(--bg-1); box-shadow: var(--shadow-raised); overflow: hidden; }
+.nc-app-shell__main { display: flex; flex-direction: column; flex: 1; min-width: 0; min-height: 0; }
+.nc-app-shell__view { position: relative; display: flex; flex-direction: column; flex: 1; min-width: 0; min-height: 0; overflow: hidden; }
+.nc-app-shell__view > .nc-view-layout { flex: 1; }
+.nc-app-shell__scrim { display: none; }
+:root[data-nc-resizing="x"] { cursor: col-resize; user-select: none; }
+:root[data-nc-resizing="y"] { cursor: row-resize; user-select: none; }
+
+/* On a phone the sidebar is a drawer over the view, the rail goes and a panel opens over the whole view. */
+.nc-app-shell[data-phone] .nc-app-shell__sidebar { position: fixed; inset: 0 auto 0 0; z-index: 75; width: min(280px, 85vw); border-right: 1px solid var(--line-soft); background: var(--bg-1); box-shadow: var(--shadow-overlay); transform: translateX(-100%); visibility: hidden; transition: transform 160ms var(--ease), visibility 0s linear 160ms; }
+.nc-app-shell[data-phone][data-drawer="open"] .nc-app-shell__sidebar { transform: none; visibility: visible; transition: transform 160ms var(--ease); }
+.nc-app-shell[data-phone] .nc-app-shell__scrim:not([hidden]) { display: block; position: fixed; inset: 0; z-index: 74; padding: 0; border: 0; background: color-mix(in srgb, var(--bg-0) 60%, transparent); }
+.nc-app-shell[data-phone] .nc-panel-rail { display: none; }
+.nc-app-shell[data-phone] .nc-app-shell__sidebar .nc-nav-item, .nc-app-shell[data-phone] .nc-sidebar-filter { min-height: 44px; }
+.nc-app-shell[data-phone] .nc-app-shell__sidebar .nc-icon-btn { min-width: 44px; min-height: 44px; }
+.nc-app-shell[data-phone] .nc-shell-panel[data-at="right"] { left: 0; max-width: none; border-left: 0; }
+.nc-app-shell[data-phone] .nc-shell-panel__head .nc-icon-btn { min-width: 44px; min-height: 44px; }
+@media (prefers-reduced-motion: reduce) { .nc-app-shell[data-phone] .nc-app-shell__sidebar { transition: none; } }
+
+/* ── Sidebar header ───────────────────────────────────────────────────────────────────────────────────────
+   44px: [↑] [Filter… filling the width] [collapse all] [minimise]. The filter is quiet at rest (a faint fill and a
+   --text-4 placeholder), a field on hover and focus. Folded, one unfold button where ↑ was. */
+.nc-sidebar-header { display: flex; align-items: center; gap: 2px; flex: none; box-sizing: border-box; height: var(--header); padding: 0 var(--space-2); }
+.nc-sidebar-header[data-folded] { justify-content: center; padding: 0; }
+.nc-sidebar-header > .nc-icon-btn, .nc-sidebar-header .nc-tooltip-anchor { flex: none; }
+.nc-sidebar-filter { display: flex; align-items: center; gap: var(--space-2); flex: 1; min-width: 0; box-sizing: border-box; height: var(--control-md); margin: 0 2px; padding: 0 var(--space-1) 0 var(--space-2); border-radius: var(--radius-sm); background: color-mix(in srgb, var(--bg-2) 45%, transparent); color: var(--text-4); cursor: text; transition: background-color var(--dur-hover) var(--ease), box-shadow var(--dur-hover) var(--ease); }
+[data-part="sidebar-up"] + .nc-sidebar-filter, .nc-tooltip-anchor:has([data-part="sidebar-up"]) + .nc-sidebar-filter { margin-left: 0; }
+.nc-sidebar-filter:hover { background: var(--bg-2); }
+.nc-sidebar-filter:focus-within, .nc-sidebar-filter[data-active] { background: var(--bg-2); box-shadow: inset 0 0 0 1px var(--line-soft); color: var(--text-3); }
+.nc-sidebar-filter:focus-within { box-shadow: inset 0 0 0 1px var(--line); }
+.nc-sidebar-filter > .nc-icon { flex: none; }
+.nc-sidebar-filter input { flex: 1; min-width: 0; height: 100%; padding: 0; border: 0; outline: none; background: none; color: var(--text-1); font: inherit; font-size: var(--nc-type-drill); box-shadow: none; }
+.nc-sidebar-filter input::placeholder { color: var(--text-4); }
+.nc-sidebar-filter__clear { display: inline-grid; place-items: center; flex: none; width: 20px; height: 20px; padding: 0; border: 0; border-radius: var(--radius-sm); background: none; color: var(--text-3); cursor: pointer; }
+.nc-sidebar-filter__clear:hover { background: var(--hover); color: var(--text-1); }
+.nc-sidebar-filter__clear:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+
+/* ── Nav: children, the filter's match, the folded rail ───────────────────────────────────────────────────
+   Child views start where their parent's label does: the row's padding, the 15px icon and the 8px gap. */
+.nc-nav__children { display: flex; flex-direction: column; gap: 1px; }
+.nc-nav-item--child { padding-left: calc(var(--space-2) + 15px + var(--space-2)); color: var(--text-3); }
+.nc-nav-item--child[aria-current="page"] { color: var(--text-1); }
+.nc-nav-item[data-within], .nc-nav-item[data-within] > .nc-icon { color: var(--text-1); }
+.nc-nav-item__count { font-size: var(--nc-type-section); }
+.nc-nav-item__disclose { position: relative; display: inline-grid; place-items: center; flex: none; width: 15px; height: 15px; cursor: pointer; }
+.nc-nav-item__disclose > * { grid-area: 1 / 1; }
+.nc-nav-item__disclose > .nc-icon { width: 15px; height: 15px; color: var(--text-3); }
+.nc-nav-item__disclose > .nc-nav-item__chevron { opacity: 0; color: var(--text-2); }
+.nc-nav-item:hover .nc-nav-item__disclose > .nc-nav-item__chevron { opacity: 1; }
+.nc-nav-item:hover .nc-nav-item__disclose > :not(.nc-nav-item__chevron) { opacity: 0; }
+.nc-nav-item[aria-current="page"] .nc-nav-item__disclose > .nc-icon:not(.nc-nav-item__chevron) { color: var(--text-1); }
+.nc-nav-item .nc-match { color: var(--text-1); text-decoration-thickness: 1.5px; }
+.nc-nav[data-folded] { align-items: center; gap: 2px; }
+.nc-nav__rule { width: 16px; height: 1px; margin: var(--space-2) 0; background: var(--line); }
+.nc-nav-rail-item { position: relative; display: grid; place-items: center; width: 32px; height: 32px; border-radius: var(--radius-sm); color: var(--text-3); text-decoration: none; transition: background-color var(--dur-hover) var(--ease), color var(--dur-hover) var(--ease); }
+.nc-nav-rail-item > .nc-icon { width: 15px; height: 15px; }
+.nc-nav-rail-item:hover { background: var(--hover); color: var(--text-1); }
+.nc-nav-rail-item[aria-current="page"] { background: var(--active); color: var(--text-1); }
+.nc-nav-rail-item:focus-visible { outline: none; box-shadow: var(--focus-ring-inset); }
+/* A place, or a child of it, has a count: a dot at the icon's corner, neutral like the counts it stands for. */
+.nc-nav-rail-item__dot { position: absolute; top: 6px; right: 6px; width: 6px; height: 6px; border-radius: var(--radius-full); background: var(--text-2); box-shadow: 0 0 0 2px var(--bg-0); }
+
+/* ── Panel rail ───────────────────────────────────────────────────────────────────────────────────────────
+   44px on the canvas at the window's right edge. Its first button sits on the view header's line, its last on the
+   surface's bottom edge. */
+.nc-panel-rail { display: flex; flex-direction: column; align-items: center; flex: none; box-sizing: border-box; width: var(--panel-rail); min-height: 0; padding: 6px 0 var(--space-2); background: var(--bg-0); overflow-y: auto; scrollbar-width: none; }
+.nc-panel-rail__group { display: flex; flex-direction: column; gap: var(--space-1); }
+.nc-panel-rail__grow { flex: 1; }
+.nc-panel-rail__btn { position: relative; display: inline-grid; place-items: center; width: 32px; height: 32px; padding: 0; border: 0; border-radius: var(--radius-md); background: none; color: var(--text-3); cursor: pointer; transition: background-color var(--dur-hover) var(--ease), color var(--dur-hover) var(--ease); }
+.nc-panel-rail__btn:hover { background: var(--hover); color: var(--text-1); }
+.nc-panel-rail__btn[aria-pressed="true"] { background: var(--active); color: var(--text-1); }
+.nc-panel-rail__btn:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+
+/* ── Shell panel ──────────────────────────────────────────────────────────────────────────────────────────
+   Docked inside the raised surface: a hairline, no step in colour. The header is the view header's line. */
+.nc-shell-panel { position: relative; display: flex; flex-direction: column; flex: none; box-sizing: border-box; min-width: 0; min-height: 0; background: var(--bg-1); }
+.nc-shell-panel[hidden] { display: none; }
+.nc-shell-panel[data-at="right"] { width: var(--nc-panel-size, 340px); max-width: calc(100% - var(--rail)); border-left: 1px solid var(--line-soft); }
+.nc-shell-panel[data-at="bottom"] { height: var(--nc-panel-size, 280px); max-height: calc(100% - 160px); border-top: 1px solid var(--line-soft); }
+.nc-shell-panel[data-overlay] { position: absolute; z-index: 6; top: 0; right: 0; bottom: var(--nc-shell-bottom, 0px); border-left-color: var(--line-soft); background: var(--bg-2); box-shadow: var(--shadow-overlay); }
+[data-theme="light"] .nc-shell-panel[data-overlay] { background: var(--bg-1); }
+/* A floating right panel stops at the bottom panel's top edge, so the bottom panel's header keeps its buttons. */
+[data-bottom] > .nc-shell-panel[data-overlay] { border-bottom: 1px solid var(--line-soft); border-bottom-left-radius: var(--radius-md); }
+.nc-shell-panel__head { display: flex; align-items: center; gap: var(--space-2); flex: none; box-sizing: border-box; height: var(--header); padding: 0 var(--space-2) 0 var(--space-4); border-bottom: 1px solid var(--line-soft); }
+.nc-shell-panel[data-at="bottom"] .nc-shell-panel__head { gap: var(--space-1); padding-left: 14px; }
+.nc-shell-panel__title { margin: 0; color: var(--text-1); font-size: var(--nc-type-drill); line-height: var(--nc-type-drill-line); font-weight: var(--nc-type-drill-weight); letter-spacing: var(--nc-type-drill-track); white-space: nowrap; }
+.nc-shell-panel__trail { flex: 0 1 auto; }
+.nc-shell-panel__sep { flex: none; width: 1px; height: 16px; margin: 0 var(--space-2); background: var(--line); }
+.nc-shell-panel__tabs { display: flex; flex: 1; min-width: 0; }
+.nc-shell-panel__tabs > .nc-tabstrip { min-height: 0; padding: 0; }
+.nc-shell-panel__tabs .nc-tabstrip__tab { height: var(--control-sm); }
+.nc-shell-panel__actions { display: flex; align-items: center; gap: 2px; flex: none; margin-left: auto; }
+.nc-shell-panel__body { display: flex; flex-direction: column; flex: 1; min-height: 0; overflow: auto; }
+.nc-shell-panel__rename { padding: var(--space-1); }
+.nc-shell-panel__rename .nc-input { width: 200px; }
+.nc-tabstrip__status { flex: none; width: 6px; height: 6px; border-radius: var(--radius-full); background: var(--text-4); }
+.nc-tabstrip__status[data-status="running"] { background: var(--success); }
+.nc-tabstrip__status[data-status="input"] { background: var(--warning); }
+.nc-tabstrip__status[data-status="failed"] { background: var(--danger); }
+
+/* ── View header ──────────────────────────────────────────────────────────────────────────────────────────
+   44px: the title or the trail at the drill size on one 20px line, so "Issues" keeps its size and place when the view
+   drills to "Issues / WEB-142"; then the stepper and the actions. No fill. */
+.nc-view-header { display: flex; flex: none; align-items: center; gap: var(--space-3); box-sizing: border-box; height: var(--header); padding: 0 var(--space-2) 0 var(--space-5); border-bottom: 1px solid var(--line-soft); background: none; }
+.nc-view-header__title { display: flex; align-items: center; height: var(--control-sm); margin: 0; overflow: hidden; color: var(--text-1); font-size: var(--nc-type-drill); line-height: var(--nc-type-drill-line); font-weight: var(--nc-type-drill-weight); letter-spacing: var(--nc-type-drill-track); text-overflow: ellipsis; white-space: nowrap; }
+.nc-view-header__trail { flex: 0 1 auto; }
+.nc-view-header__context { display: inline-flex; align-items: center; gap: var(--space-2); min-width: 0; }
+.nc-view-header__middle { display: flex; flex: 1; align-items: center; gap: var(--space-2); min-width: 0; }
+.nc-view-header__actions { display: flex; flex: none; align-items: center; gap: 2px; }
+.nc-view-header__actions > .nc-btn { margin-left: var(--space-1); }
+.nc-view-header__stepper { display: inline-flex; align-items: center; }
+.nc-view-header__step-count { margin-right: var(--space-1); color: var(--text-3); font-size: var(--nc-type-drill); font-weight: 400; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.nc-view-header__rule { flex: none; width: 1px; height: 16px; margin: 0 6px; background: var(--line-soft); }
+@media (max-width: 720px) { .nc-view-header { padding-left: var(--space-3); } }

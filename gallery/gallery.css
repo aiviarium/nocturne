@@ -186,6 +186,17 @@ html.g-frame body {
     padding: var(--space-3);
   }
 }
+/* A whole app window fills the frame edge to edge. */
+.g-frame .ex-root:has(> .ex-app-window) {
+  height: 100vh;
+  padding: 0;
+  overflow: hidden;
+}
+.g-frame .ex-app-window {
+  height: 100%;
+  border: 0;
+  border-radius: 0;
+}
 .g-frame .ex-root[data-surface="card"] {
   background: var(--bg-1);
 }

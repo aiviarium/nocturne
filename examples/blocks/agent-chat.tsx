@@ -80,7 +80,7 @@ export default function AgentChat() {
         }
         header={
           <ViewHeader
-            crumbs={[{ label: "Atlas web", href: "#b" }, { label: "Fix the sign-in redirect loop" }]}
+            title="Fix the sign-in redirect loop"
             context={<span class="nc-meta">Coding agent · local</span>}
             actions={[
               { id: "files", label: "Changed files", icon: "file", onClick: () => {} },
