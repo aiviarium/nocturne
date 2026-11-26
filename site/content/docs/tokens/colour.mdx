@@ -10,7 +10,8 @@ Tints show as they look on a card.
 
 Neutral greys with no tint.
 `bg-0` is the canvas, `bg-1` the frames and cards, and `bg-2` fields and nested cards.
-`bg-3` is hover and the button fill, and `bg-4` is selection.
+`bg-3` is the button fill.
+The state fills come from `text-1`: `hover` behind an icon-only button, `active` for selection and the current item, `press` while pressed.
 
 <ColourTable prefix={['bg']} />
 
@@ -76,7 +77,7 @@ Hue goes in the foreground, such as an icon, the dot and word of a `State`, or t
 - Coloured fills are for icon tiles and buttons: an accent or danger button, the tile behind an icon.
 - No hue fill has a hue edge, and a danger button has no red edge.
 - A hue edge is never the only mark of a state on a card. Approval cards have a hairline edge, and show their state with a dot and a word.
-- Selection and hover are neutral fills, `bg-4` and `bg-3`.
+- Selection is the neutral `active` fill with a step up in text colour, and never changes the weight. Hover on rows, sidebar items and text buttons only lightens the text.
   So are the selected rows of a table and its bulk bar, a running tool step and the composer while the assistant works.
   A running step has the hue in its text.
 

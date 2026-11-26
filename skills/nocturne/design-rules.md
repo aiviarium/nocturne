@@ -55,7 +55,7 @@ Rookery's shell to Crow and each plugin. Where a part's page and a rule differ, 
 ## Lists
 
 - Deleting a row is in its menu, with a confirmation or an undo.
-- Selected rows take the neutral fill. The accent marks primary buttons, links, focus rings and unread rows.
+- Selected rows take the faint neutral fill (`--active`) and a step up in text colour, at the same weight. The accent marks focus rings, checked switches and boxes, and the one primary action; unread dots, counts and matches are neutral.
 - A dropdown hangs from its trigger, at least as wide as a select-like trigger.
 
 ## Phone

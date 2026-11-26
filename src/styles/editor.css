@@ -145,7 +145,7 @@ li[data-checked="true"] > .nc-editor-task__box { border-color: var(--accent); ba
 .nc-editor__content > .ProseMirror-selectednode:not(.nc-editor-image):not(hr):not(.nc-editor-plugin-block) { border-radius: var(--radius-sm); background: var(--accent-tint); box-shadow: inset 0 0 0 1px var(--accent-line); }
 .nc-editor__content .nc-editor-empty::before { content: attr(data-placeholder); position: absolute; color: var(--text-3); pointer-events: none; }
 .nc-editor__content h1.nc-editor-empty::before, .nc-editor__content h2.nc-editor-empty::before { color: var(--text-4); }
-.nc-editor-dropcursor { background: var(--accent-strong); }
+.nc-editor-dropcursor { background: var(--text-3); }
 
 /* Remote cursors and selections. */
 .nc-editor-cursor { position: relative; margin-left: -1px; margin-right: -1px; border-left: 2px solid var(--cursor); word-break: normal; pointer-events: none; }
@@ -169,7 +169,7 @@ li[data-checked="true"] > .nc-editor-task__box { border-color: var(--accent); ba
 /* Dragging a block: it dims in place, a 2px line shows where it lands (indented to the level it lands at) and a
    small chip with its kind and first words follows the pointer. */
 .nc-editor .nc-editor-drag-source { opacity: 0.35; }
-.nc-editor-drop-line { position: absolute; z-index: 3; height: 2px; border-radius: var(--radius-full); background: var(--accent-strong); pointer-events: none; }
+.nc-editor-drop-line { position: absolute; z-index: 3; height: 2px; border-radius: var(--radius-full); background: var(--text-3); pointer-events: none; }
 .nc-editor-drag-chip { position: fixed; z-index: 60; display: flex; align-items: baseline; gap: var(--space-2); max-width: 260px; padding: 2px var(--space-2); border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--bg-3); box-shadow: var(--shadow-overlay); pointer-events: none; white-space: nowrap; }
 .nc-editor-drag-chip__kind { flex-shrink: 0; color: var(--text-3); }
 .nc-editor-drag-chip__text { min-width: 0; overflow: hidden; text-overflow: ellipsis; color: var(--text-1); }

@@ -188,17 +188,17 @@ a.nc-ccard, button.nc-ccard { text-decoration: none; cursor: pointer; font: inhe
 .nc-rows--virtual .nc-list__row:hover, .nc-rows--virtual .nc-list__row[data-active] { background: transparent; }
 .nc-rows--virtual .nc-list__row > .nc-lrow { flex: 1; }
 .nc-rows--divided .nc-rows__list .nc-lrow + .nc-lrow::before { content: ""; position: absolute; top: -1px; left: var(--nc-inset); right: var(--nc-inset); height: 1px; background: var(--line-subtle); pointer-events: none; }
-.nc-rows--divided .nc-rows__list .nc-lrow:is(:hover, [data-selected])::before,
-.nc-rows--divided .nc-rows__list .nc-lrow:is(:hover, [data-selected]) + .nc-lrow::before { opacity: 0; }
+.nc-rows--divided .nc-rows__list .nc-lrow[data-selected]::before,
+.nc-rows--divided .nc-rows__list .nc-lrow[data-selected] + .nc-lrow::before { opacity: 0; }
 
 .nc-lrow { position: relative; display: grid; grid-template-columns: var(--nc-lrow-cols); align-items: center; box-sizing: border-box; min-width: 0; min-height: var(--row-compact); padding: 0 var(--nc-inset); border-radius: var(--radius-sm); color: var(--text-1); font-size: var(--nc-type-body); line-height: var(--nc-type-body-line); }
 .nc-lrow[data-density="comfortable"] { min-height: var(--row-default); }
 .nc-lrow[data-lines="2"], .nc-lrow[data-lines="3"] { align-items: start; padding-top: var(--nc-inset); padding-bottom: var(--nc-inset); }
-.nc-lrow[data-interactive]:hover { background: var(--bg-2); }
-/* A finger has no hover: a tapped row is filled only while it is pressed, not after. */
-.nc-lrow[data-touch][data-interactive]:hover:not([data-selected]) { background: transparent; }
-.nc-lrow[data-touch][data-interactive]:active:not([data-selected]) { background: var(--bg-3); }
-.nc-lrow[data-selected] { background: var(--bg-4); }
+/* Hover lightens the row's quiet text, with no fill; selection is the faint fill. A finger has no hover: a tapped
+   row is filled only while it is pressed, not after. */
+.nc-lrow[data-interactive]:hover :is(.nc-lrow__secondary, .nc-lrow__detail, .nc-lrow__meta, .nc-lrow__status, .nc-lrow__lead) { color: var(--text-2); }
+.nc-lrow[data-touch][data-interactive]:active:not([data-selected]) { background: var(--press); }
+.nc-lrow[data-selected] { background: var(--active); }
 .nc-lrow:has(> .nc-lrow__main:focus-visible) { box-shadow: var(--focus-ring); }
 .nc-lrow__main { grid-column: main; display: flex; align-items: center; min-width: 0; padding: 0; border: 0; background: transparent; color: inherit; font: inherit; text-align: left; text-decoration: none; }
 .nc button.nc-lrow__main { justify-content: flex-start; white-space: normal; line-height: inherit; }
@@ -207,7 +207,8 @@ a.nc-ccard, button.nc-ccard { text-decoration: none; cursor: pointer; font: inhe
    actions (and interactive leading content, such as a checkbox) above it. */
 .nc-lrow[data-interactive] .nc-lrow__main { cursor: pointer; }
 .nc-lrow[data-interactive] .nc-lrow__main::after { content: ""; position: absolute; inset: 0; border-radius: inherit; }
-.nc-lrow__lead { grid-column: lead; display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box; min-width: var(--nc-lrow-lead); height: var(--nc-lrow-lead); margin-right: var(--nc-lrow-gap); color: var(--text-2); }
+.nc-lrow__lead { grid-column: lead; display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box; min-width: var(--nc-lrow-lead); height: var(--nc-lrow-lead); margin-right: var(--nc-lrow-gap); color: var(--text-3); transition: color var(--dur-hover) var(--ease); }
+.nc-lrow[data-selected] .nc-lrow__lead { color: var(--text-2); }
 .nc-lrow__lead:has(input, button, a, [tabindex]) { position: relative; z-index: 1; }
 .nc-lrow__text { display: flex; align-items: baseline; gap: var(--space-2); flex: 1; min-width: 0; }
 .nc-lrow[data-lines="2"] .nc-lrow__text, .nc-lrow[data-lines="3"] .nc-lrow__text { flex-direction: column; align-items: stretch; gap: 0; }
@@ -216,7 +217,7 @@ a.nc-ccard, button.nc-ccard { text-decoration: none; cursor: pointer; font: inhe
    the single visible line instead of leaving a sliver. */
 .nc-lrow[data-lines="1"] .nc-lrow__text { flex-wrap: wrap; max-height: var(--nc-type-body-line); overflow: hidden; }
 .nc-lrow[data-lines="1"] .nc-lrow__text > .nc-lrow__secondary { flex: 1 1 4em; max-width: max-content; }
-.nc-lrow__secondary, .nc-lrow__detail { flex: 0 100 auto; min-width: 0; overflow: hidden; color: var(--text-3); font-size: var(--nc-type-label); line-height: var(--nc-type-label-line); text-overflow: ellipsis; white-space: nowrap; }
+.nc-lrow__secondary, .nc-lrow__detail { flex: 0 100 auto; min-width: 0; overflow: hidden; color: var(--text-3); transition: color var(--dur-hover) var(--ease); font-size: var(--nc-type-label); line-height: var(--nc-type-label-line); text-overflow: ellipsis; white-space: nowrap; }
 .nc-lrow__detail { display: flex; margin-top: 2px; }
 /* On a row of two or three lines the text spans the status and meta columns: the time ends the first line and
    the state the second, both at the trailing edge of the times of one-line rows. */
@@ -225,7 +226,7 @@ a.nc-ccard, button.nc-ccard { text-decoration: none; cursor: pointer; font: inhe
 .nc-lrow__line > :is(.nc-lrow__title, .nc-lrow__secondary) { flex: 0 1 auto; margin-right: auto; }
 .nc-lrow__line > :is(.nc-lrow__status, .nc-lrow__meta) { flex: none; max-width: 60%; }
 .nc-lrow[data-unread] .nc-lrow__title { font-weight: 600; }
-/* On the selected fill (bg-4) text-3 is under 4.5:1: the row's secondary text and meta take text-2 there. */
+/* Selection steps the row's quiet text up a level, text-3 to text-2. */
 .nc-lrow[data-selected] :is(.nc-lrow__secondary, .nc-lrow__detail, .nc-lrow__meta, .nc-lrow__status, .nc-metaline, .nc-state) { color: var(--text-2); }
 .nc-lrow[data-muted] .nc-lrow__title { color: var(--text-2); }
 .nc-lrow__status, .nc-lrow__meta { min-width: 0; max-width: 100%; overflow: hidden; color: var(--text-3); font-size: var(--nc-type-label); line-height: var(--nc-type-label-line); text-overflow: ellipsis; white-space: nowrap; }
@@ -244,7 +245,7 @@ a.nc-ccard, button.nc-ccard { text-decoration: none; cursor: pointer; font: inhe
 /* The unread dot is the first column, inside the row's fill on its leading edge. A row that tracks unread
    (`unread` true or false) keeps the column, so marking it read moves nothing. */
 .nc-lrow__unread { grid-column: unread; width: 6px; height: 6px; margin-right: 6px; border-radius: var(--radius-full); }
-.nc-lrow__unread[data-on] { background: var(--accent-strong); }
+.nc-lrow__unread[data-on] { background: var(--text-2); }
 .nc-lrow[data-lines="2"] .nc-lrow__unread, .nc-lrow[data-lines="3"] .nc-lrow__unread { margin-top: 7px; }
 /* Swipe actions (touch): the cells slide over the tray at the row's edge. */
 .nc-lrow[data-swipe] { overflow: clip; }
@@ -301,7 +302,7 @@ button.nc-lrow__toggle:hover { color: var(--text-1); }
 .nc-lrow[data-lifted], .nc-list__row[data-lifted] { z-index: 3; pointer-events: none; }
 .nc-lrow[data-lifted], .nc-list__row[data-lifted] > .nc-lrow { background: var(--bg-3); box-shadow: var(--shadow-overlay); }
 .nc-lrow[data-grabbed] { background: var(--bg-3); }
-.nc-rows__drop { position: absolute; z-index: 2; left: var(--nc-inset); right: var(--nc-inset); height: 2px; margin-top: -1px; border-radius: var(--radius-full); background: var(--accent); pointer-events: none; }
+.nc-rows__drop { position: absolute; z-index: 2; left: var(--nc-inset); right: var(--nc-inset); height: 2px; margin-top: -1px; border-radius: var(--radius-full); background: var(--text-3); pointer-events: none; }
 .nc-rows--flush .nc-rows__drop, .nc-rows--inset .nc-rows__drop, .nc-rows--inline .nc-rows__drop { left: 0; right: 0; }
 .nc-lrow__check { position: relative; z-index: 1; grid-column: check; display: inline-flex; align-items: center; margin-right: var(--nc-lrow-gap); }
 /* Renaming: the title is an InlineField, over nothing (the row's stretched click area is off). */
@@ -334,7 +335,7 @@ button.nc-lrow__toggle:hover { color: var(--text-1); }
 .nc-datalist__row { position: relative; align-items: center; column-gap: var(--space-1); min-height: var(--row-compact); padding: 0 var(--space-1) 0 var(--nc-inset); outline: none; }
 .nc-datalist--inline .nc-datalist__row { min-height: var(--control-md); }
 .nc-datalist--table[data-density="comfortable"] .nc-datalist__row:not(.nc-datalist__row--add) { min-height: var(--row-default); }
-.nc-datalist__row[data-selected] { background: var(--bg-4); }
+.nc-datalist__row[data-selected] { background: var(--active); }
 .nc-datalist__row:focus-visible { box-shadow: inset 0 0 0 1px var(--accent-strong); }
 .nc-datalist--movable .nc-datalist__row:not(.nc-datalist__row--add) { -webkit-user-select: none; user-select: none; }
 .nc-datalist--movable .nc-datalist__row :is(input, textarea) { -webkit-user-select: text; user-select: text; }
@@ -361,7 +362,7 @@ button.nc-lrow__toggle:hover { color: var(--text-1); }
 .nc-datalist__row[data-dragging] > :not(.nc-datalist__tray) { transition: none; }
 .nc-datalist__row[data-lifted] { z-index: 3; background: var(--bg-3); box-shadow: var(--shadow-overlay); pointer-events: none; }
 .nc-datalist__row[data-grabbed] { background: var(--bg-3); }
-.nc-datalist__drop { position: absolute; z-index: 2; left: 0; right: 0; height: 2px; margin-top: -1px; border-radius: var(--radius-full); background: var(--accent); pointer-events: none; }
+.nc-datalist__drop { position: absolute; z-index: 2; left: 0; right: 0; height: 2px; margin-top: -1px; border-radius: var(--radius-full); background: var(--text-3); pointer-events: none; }
 .nc-datalist__error { grid-column: fields / end; grid-row: 2; padding: 0 0 var(--space-1) var(--space-1); color: var(--danger-ink, var(--danger)); font-size: var(--nc-type-label); line-height: var(--nc-type-label-line); }
 .nc-datalist__row[data-invalid] .nc-inline-field { color: var(--text-1); }
 .nc button.nc-datalist__add { grid-column: fields / -1; justify-content: flex-start; gap: var(--space-2); width: 100%; min-height: var(--control-md); padding: 0 var(--space-1); border: 0; border-radius: var(--radius-xs); background: transparent; color: var(--text-3); font: inherit; font-size: var(--nc-type-body); }
@@ -390,7 +391,7 @@ button.nc-lrow__toggle:hover { color: var(--text-1); }
 .nc-table tbody tr[data-lifted] { position: relative; z-index: 3; box-shadow: var(--shadow-overlay); pointer-events: none; }
 .nc-table tbody tr[data-lifted] td, .nc-table tbody tr[data-grabbed] td { background: var(--bg-3); }
 .nc-datatable--reordering, .nc-datatable--reordering * { cursor: grabbing; -webkit-user-select: none; user-select: none; }
-.nc-datatable__drop { position: absolute; z-index: 2; left: 0; right: 0; height: 2px; margin-top: -1px; border-radius: var(--radius-full); background: var(--accent); pointer-events: none; }
+.nc-datatable__drop { position: absolute; z-index: 2; left: 0; right: 0; height: 2px; margin-top: -1px; border-radius: var(--radius-full); background: var(--text-3); pointer-events: none; }
 
 /* ---------- Inline-edit fields ---------- */
 .nc-inline-field { box-sizing: border-box; width: 100%; min-width: 0; margin: 0 calc(var(--nc-inset) * -1); padding: 0 calc(var(--nc-inset) - 1px); border: 1px solid transparent; border-radius: var(--radius-sm); background: transparent; color: var(--text-1); font-family: inherit; font-size: var(--nc-type-body); line-height: var(--nc-type-body-line); outline: none; text-overflow: ellipsis; resize: none; }
@@ -544,7 +545,7 @@ button.nc-lrow__toggle:hover { color: var(--text-1); }
    are for icon tiles and buttons; never a hue outline around a hue fill, nor a hue edge as the only mark of a
    state on a card. */
 .nc-approval { border-color: var(--line-soft); }
-.nc-table tr[aria-selected="true"] td, .nc-table tbody tr[aria-selected="true"]:hover td { background: var(--bg-4); }
+.nc-table tr[aria-selected="true"] td, .nc-table tbody tr[aria-selected="true"]:hover td { background: var(--active); }
 .nc-bulkbar { border-bottom-color: var(--line-soft); background: var(--bg-2); color: var(--text-1); }
 .nc-step--running, .nc-step--button.nc-step--running { background: transparent; color: var(--accent-text); }
 .nc-composer--running, .nc-composer[data-dictation="recording"] { border-color: var(--line-strong); box-shadow: none; }
@@ -619,10 +620,9 @@ button.nc-lrow__toggle:hover { color: var(--text-1); }
 :root[data-phone] .nc-composer__thumb-remove::after { content: ""; position: absolute; inset: calc(50% - var(--phone-hit) / 2); }
 
 /* SettingRow: a setting's text at the left and its control at the right, rows a hairline apart. A modified
-   row carries an accent edge, so the changes at a scope show at a glance. */
+   row shows its reset chip; no edge bar. */
 .nc-setting { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) minmax(180px, 280px); align-items: center; column-gap: var(--space-4); row-gap: var(--space-2); padding: var(--space-3) var(--nc-pad, var(--space-3)); }
 .nc-setting + .nc-setting { border-top: 1px solid var(--line-soft); }
-.nc-setting[data-modified]::before { content: ""; position: absolute; inset-block: var(--space-2); inset-inline-start: 0; width: 2px; border-radius: var(--radius-sm); background: var(--accent); }
 .nc-setting__text { display: flex; flex-direction: column; gap: var(--space-1); min-width: 0; }
 .nc-setting__head { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); min-width: 0; }
 .nc-setting__head > .nc-infotip { margin-inline-start: calc(-1 * var(--space-1)); }
@@ -633,9 +633,9 @@ button.nc-lrow__toggle:hover { color: var(--text-1); }
 .nc-setting__name { color: var(--text-3); font-family: var(--font-mono); font-size: var(--nc-type-label); line-height: var(--nc-type-label-line); overflow-wrap: anywhere; }
 .nc-setting__inherited { color: var(--text-3); font-size: var(--nc-type-label); line-height: var(--nc-type-label-line); }
 .nc-setting__chip { display: inline-flex; align-items: center; gap: var(--space-1); height: 18px; padding: 0 var(--space-2); border: 1px solid var(--line); border-radius: var(--radius-full); background: none; color: var(--text-2); font: inherit; font-size: var(--nc-type-label); line-height: 1; }
-.nc-setting__chip--reset { border-color: var(--accent-line); color: var(--accent-strong); cursor: pointer; }
-.nc-setting__chip--reset:hover { background: var(--accent-tint); }
-.nc-setting__chip--reset:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.nc-setting__chip--reset { color: var(--text-2); cursor: pointer; transition: color var(--dur-hover) var(--ease); }
+.nc-setting__chip--reset:hover { color: var(--text-1); }
+.nc-setting__chip--reset:focus-visible { outline: none; box-shadow: var(--focus-ring); }
 .nc-setting__control { display: flex; justify-content: flex-end; min-width: 0; }
 .nc-setting__control > :is(.nc-field, [data-part="text-field"], [data-part="select"], [data-part="number-field"]) { flex: 1; min-width: 0; }
 :root[data-phone] .nc-setting { grid-template-columns: minmax(0, 1fr); }

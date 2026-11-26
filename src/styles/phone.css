@@ -145,7 +145,6 @@
 .nc-tabbar__label { max-width: 100%; overflow: hidden; font-size: var(--phone-tab-label-size); line-height: 12px; font-weight: 500; text-overflow: ellipsis; white-space: nowrap; }
 .nc-tabbar__item[aria-current="page"] { color: var(--text-1); }
 .nc-tabbar__item[aria-current="page"] .nc-tabbar__icon { background: var(--bg-3); }
-.nc-tabbar__item[aria-current="page"] .nc-tabbar__label { font-weight: 600; }
 .nc-tabbar__badge { position: absolute; top: -3px; left: 27px; box-sizing: border-box; min-width: 16px; height: 16px; padding: 0 4px; border: 2px solid var(--bg-0); border-radius: var(--radius-full); background: var(--danger); color: var(--on-primary, var(--bg-0)); font-size: var(--phone-tab-label-size); line-height: 12px; font-weight: 600; text-align: center; font-variant-numeric: tabular-nums; }
 @media (max-height: 500px) {
   :root[data-phone] .nc-tabbar__item { flex-direction: row; gap: var(--space-3); }

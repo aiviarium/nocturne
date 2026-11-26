@@ -36,7 +36,8 @@
 .nc-board-card { position: relative; display: flex; flex: none; flex-direction: column; gap: 6px; min-height: var(--nc-board-card-min); box-sizing: border-box; padding: 10px 12px; border: 1px solid var(--bg-4); border-radius: var(--radius-md); background: var(--bg-2); color: var(--text-2); overflow: hidden; cursor: pointer; touch-action: none; transition: transform 120ms ease; }
 .nc-board-card--placed { position: absolute; top: 0; left: 0; right: 0; }
 .nc-board-card:hover { border-color: var(--line); }
-.nc-board-card[data-selected] { border-color: var(--line-strong); background: var(--bg-4); }
+/* Selected: a line-strong ring, no fill. */
+.nc-board-card[data-selected] { border-color: var(--line-strong); box-shadow: 0 0 0 1px var(--line-strong); }
 .nc-board-card[data-active] { box-shadow: var(--focus-ring); }
 .nc-board-card:focus-visible { outline: none; box-shadow: var(--focus-ring); }
 .nc-board-card--ghost { position: fixed; top: 0; left: 0; z-index: 90; pointer-events: none; box-shadow: var(--shadow-overlay); transition: none; }
@@ -73,7 +74,7 @@
   .nc-board-card + .nc-board-card { border-top: 1px solid var(--line-subtle); }
   .nc-board-card:first-child { border-top-left-radius: var(--radius-lg); border-top-right-radius: var(--radius-lg); }
   .nc-board-card:last-child { border-bottom-left-radius: var(--radius-lg); border-bottom-right-radius: var(--radius-lg); }
-  .nc-board-card[data-selected] { background: var(--bg-4); }
+  .nc-board-card[data-selected] { background: var(--active); box-shadow: none; }
   .nc-board-card[data-active] { box-shadow: inset 0 0 0 1px var(--accent-strong); }
   .nc-board-card__title { grid-area: title; }
   .nc-board-card__top { grid-area: top; }

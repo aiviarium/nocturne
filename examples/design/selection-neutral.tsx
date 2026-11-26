@@ -6,7 +6,7 @@ import type { ExampleMeta } from "../_kit/types"
 export const meta: ExampleMeta = {
   title: "Selection is neutral",
   verdict: "do",
-  note: "Selected rows take the neutral fill and their checkboxes a neutral mark; the bar over the table is neutral too. The accent is left for what acts and what is new: buttons, links, the focus ring, unread dots.",
+  note: "Selected rows take the faint neutral fill and their checkboxes a neutral mark; the bar over the table is neutral too. The accent is left for the focus ring, checked switches and the one primary action.",
   surface: "none",
 }
 
