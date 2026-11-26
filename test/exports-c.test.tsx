@@ -632,6 +632,49 @@ describe("Tooltip", () => {
     await tick()
     expect(one("[data-part=tooltip]").hasAttribute("data-open")).toBe(false)
   })
+
+  test("a press closes it, even past the button's own onClick, and keeps it shut until the pointer leaves", async () => {
+    let clicks = 0
+    const { root } = track(
+      mount(() => (
+        <Tooltip content="Run" delay={0}>
+          {(t) => (
+            <button {...t} type="button" onClick={() => clicks++}>
+              R
+            </button>
+          )}
+        </Tooltip>
+      )),
+    )
+    const button = one<HTMLButtonElement>("button", root)
+    const tip = () => one("[data-part=tooltip]")
+    press(document.body, "Tab")
+    button.focus()
+    flush()
+    await tick()
+    expect(tip().hasAttribute("data-open")).toBe(true)
+    button.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true }))
+    click(button)
+    flush()
+    await tick()
+    expect(clicks).toBe(1)
+    expect(tip().hasAttribute("data-open")).toBe(false)
+    // Focus coming back to it while the pointer is still on it opens nothing.
+    button.blur()
+    press(document.body, "Tab")
+    button.focus()
+    flush()
+    await tick()
+    expect(tip().hasAttribute("data-open")).toBe(false)
+    // Once the pointer has left, it shows again.
+    button.dispatchEvent(new PointerEvent("pointerleave"))
+    button.blur()
+    press(document.body, "Tab")
+    button.focus()
+    flush()
+    await tick()
+    expect(tip().hasAttribute("data-open")).toBe(true)
+  })
 })
 
 describe("ViewHeader", () => {

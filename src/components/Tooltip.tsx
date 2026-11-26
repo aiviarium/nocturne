@@ -1,6 +1,6 @@
 import type { JSX } from "@solidjs/web"
 import { TooltipContent, Tooltip as TooltipRoot, TooltipTrigger } from "@ui-sdk/solid/tooltip"
-import { Show } from "solid-js"
+import { Show, untrack } from "solid-js"
 import { type Placement, placementSide } from "../lib/placement"
 import { Kbd } from "./Kbd"
 
@@ -28,10 +28,36 @@ export interface TooltipProps {
   children: JSX.Element | ((trigger: TooltipTriggerProps) => JSX.Element)
 }
 
-/** An inverted label that appears on hover and keyboard focus. */
+/** A small dark label that appears on hover and keyboard focus: the raised surface in dark, ink in light. */
 export function Tooltip(props: TooltipProps): JSX.Element {
   const side = () => placementSide(props.placement ?? "top")
-  const render = (trigger: TooltipTriggerProps): JSX.Element => {
+  // A press on the trigger means the person already knows what it does: no tooltip until the pointer leaves it.
+  // ui-sdk closes an open tooltip on press; this also stops one that was still waiting out its delay, and one
+  // that focus coming back to the trigger (after a menu or a panel it opened) would show.
+  let pressed = false
+  const watch = (el: HTMLElement, press: unknown) => {
+    el.addEventListener("pointerdown", () => {
+      pressed = true
+    })
+    // ui-sdk closes the tooltip from the trigger's onClick, which a button that spreads the trigger's props and
+    // sets its own onClick replaces. Calling it from a listener of our own keeps the close; a second close is a
+    // no-op when the button kept ui-sdk's handler.
+    if (typeof press === "function") el.addEventListener("click", (e) => press(e))
+    el.addEventListener("pointerleave", () => {
+      pressed = false
+    })
+  }
+  const render = (given: TooltipTriggerProps): JSX.Element => {
+    const ref = given.ref
+    const trigger: TooltipTriggerProps = {
+      ...given,
+      ref: (el: HTMLElement) =>
+        untrack(() => {
+          if (typeof ref === "function") ref(el)
+          else if (Array.isArray(ref)) for (const r of ref) if (typeof r === "function") r(el)
+          watch(el, given.onClick)
+        }),
+    }
     const children = props.children
     if (typeof children === "function") return children(trigger)
     return (
@@ -41,7 +67,13 @@ export function Tooltip(props: TooltipProps): JSX.Element {
     )
   }
   return (
-    <TooltipRoot delay={props.delay ?? 400} type={props.type}>
+    <TooltipRoot
+      delay={props.delay ?? 400}
+      type={props.type}
+      onOpenChange={(next, details) => {
+        if (next && pressed) details.cancel()
+      }}
+    >
       <TooltipTrigger render={render} />
       <TooltipContent
         side={side().side}
