@@ -208,6 +208,15 @@ export interface NavGroup {
   collapsible?: boolean
   /** Stable id for `collapsed`. Default the label. */
   id?: string
+  /**
+   * The heading is also a place: clicking it opens the place, so the place needs no row of its own above its
+   * entries. Needs a `label`.
+   */
+  onClick?: () => void
+  /** The heading's place is the current page. */
+  current?: boolean
+  /** A count after the heading, shown above 0. */
+  count?: number
   /** One small icon action at the heading's end, such as adding an item to the group. Needs a `label`. */
   action?: { label: string; icon: IconName; onClick: () => void }
   items: NavItemProps[]
@@ -361,18 +370,38 @@ export function Nav(props: NavProps): JSX.Element {
             <>
               <Show when={group().label}>
                 <Show
-                  when={group().action || group().icon || foldable(group())}
+                  when={group().action || group().icon || group().onClick || foldable(group())}
                   fallback={<span class="nc-nav__label">{group().label}</span>}
                 >
                   <div
                     class="nc-nav__head"
                     data-empty={group().items.length === 0 ? "" : undefined}
                     data-icon={group().icon ? "" : undefined}
+                    data-current={group().current ? "" : undefined}
                   >
-                    <span class="nc-nav__label">
-                      <Show when={group().icon}>{(icon) => <Icon name={icon()} size="sm" />}</Show>
-                      {group().label}
-                    </span>
+                    <Show
+                      when={group().onClick}
+                      fallback={
+                        <span class="nc-nav__label">
+                          <Show when={group().icon}>{(icon) => <Icon name={icon()} size="sm" />}</Show>
+                          {group().label}
+                        </span>
+                      }
+                    >
+                      <button
+                        type="button"
+                        class="nc-nav__label nc-nav__label--link"
+                        data-part="nav-group-link"
+                        aria-current={group().current ? "page" : undefined}
+                        onClick={() => group().onClick?.()}
+                      >
+                        <Show when={group().icon}>{(icon) => <Icon name={icon()} size="sm" />}</Show>
+                        <span class="nc-nav__label-text">{group().label}</span>
+                        <Show when={group().count}>
+                          <span class="nc-nav__count">{group().count}</span>
+                        </Show>
+                      </button>
+                    </Show>
                     <Show when={group().action}>
                       {(action) => (
                         <IconButton

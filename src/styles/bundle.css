@@ -150,6 +150,14 @@
 .nc-nav__head { display: flex; align-items: center; justify-content: space-between; padding-right: 2px; }
 .nc-nav__head .nc-nav__label { display: flex; align-items: center; gap: 6px; flex: 1; min-width: 0; }
 .nc-nav__head .nc-nav__label > .nc-icon { flex: none; width: 13px; height: 13px; color: var(--text-3); }
+/* A heading that is also its place: the whole label opens it. Hover lightens it, and its page marks it as a row. */
+.nc-nav__label--link { margin: 0; border: 0; border-radius: var(--radius-sm); background: none; font-family: inherit; text-align: left; cursor: pointer; transition: color var(--dur-hover) var(--ease); }
+.nc-nav__label--link:hover, .nc-nav__label--link:hover > .nc-icon { color: var(--text-2); }
+.nc-nav__label--link:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+.nc-nav__label--link[aria-current="page"] { background: var(--active); color: var(--text-1); }
+.nc-nav__label--link[aria-current="page"] > .nc-icon { color: var(--text-1); }
+.nc-nav__label-text { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nc-nav__count { margin-left: auto; padding-left: var(--space-2); font-variant-numeric: tabular-nums; }
 .nc-nav__action { opacity: 0; }
 .nc-nav__head:hover .nc-nav__action, .nc-nav__head[data-empty] .nc-nav__action, .nc-nav__action:focus-visible, .nc-nav:focus-within .nc-nav__action { opacity: 1; }
 @media (hover: none) { .nc-nav__action { opacity: 1; } }

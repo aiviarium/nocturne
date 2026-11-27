@@ -116,3 +116,29 @@ describe("Nav group headings", () => {
     expect(root.querySelectorAll("[data-part=nav-item]").length).toBe(2)
   })
 })
+
+test("a heading that is its place opens it, shows its count and is marked on its page", () => {
+  const opened: string[] = []
+  const { root } = track(
+    mount(() => (
+      <Nav
+        label="Host"
+        groups={[
+          {
+            label: "Sessions",
+            icon: "terminal",
+            count: 3,
+            current: true,
+            onClick: () => opened.push("sessions"),
+            items: [{ id: "s1", label: "build", onClick: () => {} }],
+          },
+        ]}
+      />
+    )),
+  )
+  const link = one("[data-part=nav-group-link]", root)
+  expect(link.getAttribute("aria-current")).toBe("page")
+  expect(link.querySelector(".nc-nav__count")?.textContent).toBe("3")
+  click(link)
+  expect(opened).toEqual(["sessions"])
+})
