@@ -70,6 +70,12 @@
 .nc-btn--danger { background: var(--danger-tint); border-color: var(--danger-line); color: var(--danger); }
 .nc-btn--sm { height: var(--control-sm); padding: 0 8px; font-size: 12px; border-radius: 5px; }
 .nc-btn--lg { height: var(--control-lg); padding: 0 14px; }
+/* A flush button hangs its padding and border outside its box and takes the type around it, so its label starts
+   where the text above and below it does. Hover shows the box. */
+.nc-btn--flush { margin-inline: -13px; font: inherit; color: inherit; }
+.nc-btn--flush.nc-btn--sm { margin-inline: -9px; }
+.nc-btn--flush.nc-btn--lg { margin-inline: -15px; }
+.nc-btn--flush:not([disabled]):hover { background: var(--hover); }
 .nc-btn[disabled] { background: var(--bg-2); border-color: var(--line-soft); color: var(--text-4); cursor: not-allowed; }
 /* An icon-only button keeps a faint fill on hover, so its hit area shows. */
 .nc-icon-btn { display: inline-flex; align-items: center; justify-content: center; width: var(--control-md); height: var(--control-md); padding: 0; border: 0; border-radius: var(--radius-sm); background: transparent; color: var(--text-3); cursor: pointer; transition: background-color var(--dur-hover) var(--ease), color var(--dur-hover) var(--ease); }
@@ -295,12 +301,11 @@
 .nc-composer__bar { display: flex; align-items: center; gap: 4px; padding: 6px 8px 8px; }
 .nc-composer--running { border-color: var(--accent-line); box-shadow: 0 0 0 3px var(--accent-tint); }
 .nc-send { display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; padding: 0; border: 0; border-radius: var(--radius-full); background: var(--primary); color: var(--on-primary); cursor: pointer; }
-.nc-effort { display: inline-flex; align-items: center; gap: 7px; height: 26px; padding: 0 8px; border-radius: 7px; background: var(--bg-3); color: var(--text-2); font-size: 12px; }
 .nc-effort__bars { display: inline-flex; align-items: flex-end; gap: 2px; }
-.nc-effort__bars > i { width: 3px; border-radius: 1px; background: var(--line-strong); }
-.nc-effort__bars > i:nth-child(1) { height: 6px; } .nc-effort__bars > i:nth-child(2) { height: 9px; }
-.nc-effort__bars > i:nth-child(3) { height: 12px; } .nc-effort__bars > i:nth-child(4) { height: 15px; }
-.nc-effort__bars > i.on { background: var(--text-1); }
+.nc-effort__bars > i { width: 2px; border-radius: 1px; background: var(--line-strong); }
+.nc-effort__bars > i:nth-child(1) { height: 4px; } .nc-effort__bars > i:nth-child(2) { height: 6px; }
+.nc-effort__bars > i:nth-child(3) { height: 8px; } .nc-effort__bars > i:nth-child(4) { height: 10px; }
+.nc-effort__bars > i.on { background: currentColor; }
 .nc-token { display: inline-flex; align-items: center; gap: 4px; box-sizing: border-box; height: 22px; padding: 0 6px; border-radius: 5px; vertical-align: middle; font-size: 12.5px; line-height: 16px; white-space: nowrap; }
 .nc-token--cmd { background: var(--accent-tint); color: var(--accent-text); font-family: var(--font-mono); }
 .nc-token--ref { background: var(--info-tint); color: var(--info); }

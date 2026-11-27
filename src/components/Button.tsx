@@ -26,6 +26,11 @@ export interface ButtonProps extends Omit<JSX.ButtonHTMLAttributes<HTMLButtonEle
   kbd?: string
   /** Shows a busy state and ignores clicks. */
   loading?: boolean
+  /**
+   * A ghost button set among text, such as a picker in a table cell beside plain values: its padding hangs outside
+   * its box and it takes the surrounding type, so its label lines up with the text above and below it.
+   */
+  flush?: boolean
   /** Make it a link (`<a>`) styled as a button. */
   href?: string
   children?: JSX.Element
@@ -42,6 +47,7 @@ export function Button(props: ButtonProps): JSX.Element {
     "iconEnd",
     "kbd",
     "loading",
+    "flush",
     "href",
     "class",
     "children",
@@ -56,6 +62,7 @@ export function Button(props: ButtonProps): JSX.Element {
       `nc-btn--${props.variant ?? "secondary"}`,
       props.size === "sm" && "nc-btn--sm",
       props.size === "lg" && "nc-btn--lg",
+      props.flush && "nc-btn--flush",
       props.class,
     )
   const content = (

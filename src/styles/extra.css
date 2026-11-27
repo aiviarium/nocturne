@@ -358,9 +358,8 @@ button.nc-menu__item, div.nc-menu__item { box-sizing: border-box; width: 100%; b
 .nc-send--stop { background: var(--bg-4); color: var(--text-1); }
 .nc-send--accent { background: var(--accent); color: var(--on-accent); }
 /* The effort control is one of the composer's three quiet selectors: no fill until hovered, their height. */
-button.nc-effort { height: var(--control-sm); border: 0; background: transparent; cursor: pointer; }
-button.nc-effort:hover { background: var(--bg-3); color: var(--text-1); }
-button.nc-effort:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+/* The effort picker is a ghost button like the model picker beside it, its bars where an icon would be. */
+.nc-effort { gap: 6px; }
 .nc-dictation { display: flex; align-items: center; gap: 10px; min-height: 32px; padding: 10px 12px 2px; }
 .nc-dictation--blocked { color: var(--danger); }
 .nc-dictation__time { color: var(--text-1); }
@@ -520,6 +519,11 @@ button.nc-effort:focus-visible { outline: none; box-shadow: var(--focus-ring); }
 .nc-wcontrols .nc-icon-btn:first-child { margin-left: auto; }
 .nc-wcontrols .nc-icon-btn:last-child { margin-right: auto; }
 .nc-wcontrols .nc-wcontrols__primary { background: var(--w-hue); color: var(--bg-0); box-shadow: 0 0 14px var(--w-line); }
+/* Hover and press keep the widget's hue: a step stronger, never the neutral press fill that turns them dark. */
+.nc-wcontrols .nc-icon-btn:not([disabled]):hover { background: color-mix(in srgb, var(--w-hue) 26%, transparent); color: var(--w-text); }
+.nc-wcontrols .nc-icon-btn:not([disabled]):active { background: color-mix(in srgb, var(--w-hue) 34%, transparent); }
+.nc-wcontrols .nc-wcontrols__primary:not([disabled]):hover { background: color-mix(in srgb, var(--w-hue) 88%, var(--text-1)); color: var(--bg-0); }
+.nc-wcontrols .nc-wcontrols__primary:not([disabled]):active { background: color-mix(in srgb, var(--w-hue) 84%, var(--bg-0)); }
 
 /* ---------- Layout ---------- */
 .nc-panel { display: flex; flex-direction: column; min-height: 0; overflow: hidden; }

@@ -25,6 +25,10 @@ Every size has `--radius-sm`.
 - The starting action of an empty state is a secondary `Button`.
 - Labels say what happens.
 
+A ghost `Button` set among text, such as a picker in a table cell above plain values, is `flush`.
+Its padding hangs outside its box and it takes the type around it, so its label starts where the text above and below it does.
+The roles on <DemoLink to="settings/members">Members</DemoLink> are flush pickers under the owner's plain role.
+
 An action that adds an item is never a `Button`.
 It is a ghost plus `IconButton` among the view header's actions: `icon: "plus"` with `primary` left out.
 On a phone it is among the trailing actions of the navigation bar.

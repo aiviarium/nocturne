@@ -788,15 +788,16 @@ export function Composer(props: ComposerProps): JSX.Element {
                   }))}
                   onSelect={(id) => props.onEffortChange?.(id as EffortLevel)}
                   trigger={(tp) => (
-                    <button
-                      type="button"
-                      class="nc-effort"
+                    <Button
+                      variant="ghost"
+                      size="sm"
                       aria-label={`Effort: ${EFFORTS[effortIndex()]?.label}`}
                       {...tp}
+                      class="nc-effort"
                     >
                       <Bars level={effortIndex()} />
                       {EFFORTS[effortIndex()]?.label}
-                    </button>
+                    </Button>
                   )}
                 />
               </Show>
