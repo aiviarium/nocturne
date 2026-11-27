@@ -474,6 +474,24 @@ describe("NavItem menu", () => {
     expect(menuItems()).toEqual(["Open", "Rename"])
   })
 
+  test("choosing an entry doesn't also click the row, such as opening a record the entry deleted", () => {
+    const ran: string[] = []
+    const { root } = track(
+      mount(() => (
+        <NavItem
+          label="zsh"
+          icon="terminal"
+          onClick={() => ran.push("open")}
+          menu={() => [{ id: "delete", label: "Delete", onSelect: () => ran.push("delete") }]}
+        />
+      )),
+    )
+    rightClick(one("[data-part=nav-item]", root))
+    click(all("[role=menuitem]")[0]!)
+    flush()
+    expect(ran).toEqual(["delete"])
+  })
+
   test("without a menu a right click is the browser's", () => {
     const { root } = track(mount(() => <NavItem label="Inbox" icon="inbox" />))
     expect(rightClick(one("[data-part=nav-item]", root)).defaultPrevented).toBe(false)

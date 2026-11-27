@@ -88,14 +88,18 @@ export function NavItem(
   // The row the menu opened on: its theme for the menu, and where focus goes back after it closes.
   let menuRow: HTMLElement | undefined
   const entries = () => (menuAt() ? (props.menu?.() ?? []) : [])
+  // The menu is drawn in a portal, but Solid hands its events up the component tree to this row: a click on one of
+  // its entries would also open the row, such as a record that entry just deleted. The row answers only events from
+  // inside its own element.
+  const own = (e: Event) => (e.currentTarget as Node).contains(e.target as Node)
   const onContextMenu = (e: MouseEvent) => {
-    if (!props.menu) return
+    if (!props.menu || !own(e)) return
     e.preventDefault()
     menuRow = e.currentTarget as HTMLElement
     setMenuAt({ x: e.clientX, y: e.clientY })
   }
   const onMenuKey = (e: KeyboardEvent) => {
-    if (!props.menu || !isMenuKey(e)) return
+    if (!props.menu || !own(e) || !isMenuKey(e)) return
     e.preventDefault()
     menuRow = e.currentTarget as HTMLElement
     const r = menuRow.getBoundingClientRect()
@@ -165,7 +169,9 @@ export function NavItem(
           class={cls()}
           aria-current={props.current ? "page" : undefined}
           data-within={props.within ? "" : undefined}
-          onClick={(e) => callClick(props.onClick, e)}
+          onClick={(e) => {
+            if (own(e)) callClick(props.onClick, e)
+          }}
           onContextMenu={onContextMenu}
           onKeyDown={onMenuKey}
           {...(rest as JSX.ButtonHTMLAttributes<HTMLButtonElement>)}
@@ -182,6 +188,7 @@ export function NavItem(
         aria-current={props.current ? "page" : undefined}
         data-within={props.within ? "" : undefined}
         onClick={(e) => {
+          if (!own(e)) return
           callClick(props.onClick, e)
           linkClick(e, props.href)
         }}
