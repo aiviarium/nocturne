@@ -14,9 +14,9 @@ export default function SelectionAccent() {
   return (
     <div class="ex-selection-accent">
       <style>{`
-        .ex-selection-accent .nc-table tr[aria-selected="true"] td { background: var(--accent-tint); }
+        .ex-selection-accent .nc-table tr[aria-selected="true"] td { background: var(--accent-tint); } /* lint-tokens-ignore: the example shows what not to do */
         .ex-selection-accent .nc-table__check > .nc-check[aria-checked="true"] { border-color: var(--accent-strong); background: var(--accent-strong); }
-        .ex-selection-accent .nc-bulkbar { border-bottom-color: var(--accent-line); background: var(--accent-tint); color: var(--accent-text); }
+        .ex-selection-accent .nc-bulkbar { border-bottom-color: var(--accent-line); background: var(--accent-tint); color: var(--accent-text); } /* lint-tokens-ignore */
       `}</style>
       <DataTable
         label="Sessions"

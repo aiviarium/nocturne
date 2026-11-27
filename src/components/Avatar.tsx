@@ -11,8 +11,8 @@ export interface AvatarProps extends JSX.HTMLAttributes<HTMLSpanElement> {
   kind?: AvatarKind
   /** Used for the initials and the accessible name. */
   name?: string
-  /** 20, 24 (default) or 32px. */
-  size?: "sm" | "md" | "lg"
+  /** 16 (for a sidebar entry), 20, 24 (default) or 32px. */
+  size?: "xs" | "sm" | "md" | "lg"
   /** Colour family. Default is derived from the name for people and agents, the accent for the assistant. */
   hue?: LabelHue
 }
@@ -50,6 +50,7 @@ export function Avatar(props: AvatarProps): JSX.Element {
       aria-label={props.name ?? (kind() === "ai" ? "Assistant" : undefined)}
       class={cx(
         "nc-avatar",
+        props.size === "xs" && "nc-avatar--xs",
         props.size === "sm" && "nc-avatar--sm",
         props.size === "lg" && "nc-avatar--lg",
         kind() === "agent" && "nc-avatar--agent",

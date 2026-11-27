@@ -247,7 +247,7 @@ button.nc-title-bar__app:hover, button.nc-title-bar__app[aria-expanded="true"] {
 .nc-palette { position: fixed; inset: auto; top: 6px; left: 50%; box-sizing: border-box; max-width: none; margin: 0; padding: 0; border: 0; background: none; color: var(--text-1); overflow: visible; outline: none; }
 .nc-palette:not([data-placed]) { transform: translateX(-50%); }
 .nc-palette__command { display: flex; flex-direction: column; }
-.nc-palette__field { display: flex; align-items: center; box-sizing: border-box; height: var(--control-lg); padding: 0 6px 0 10px; border-radius: var(--radius-md); background: var(--bg-2); box-shadow: inset 0 0 0 1px var(--line-soft), 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent); font-size: var(--nc-type-drill); font-weight: var(--nc-type-drill-weight); line-height: var(--nc-type-drill-line); letter-spacing: var(--nc-type-drill-track); white-space: nowrap; animation: nc-shell-fade var(--dur-fade) var(--ease); }
+.nc-palette__field { display: flex; align-items: center; box-sizing: border-box; height: var(--control-lg); padding: 0 6px 0 10px; border-radius: var(--radius-md); background: var(--bg-2); box-shadow: inset 0 0 0 1px var(--line-strong), var(--shadow-overlay); font-size: var(--nc-type-drill); font-weight: var(--nc-type-drill-weight); line-height: var(--nc-type-drill-line); letter-spacing: var(--nc-type-drill-track); white-space: nowrap; animation: nc-shell-fade var(--dur-fade) var(--ease); }
 [data-theme="light"] .nc-palette__field, [data-theme="light"] .nc-palette__pop { background: var(--bg-1); }
 .nc-palette__glyph { flex: none; margin-right: var(--space-2); color: var(--text-3); }
 .nc-palette__sep { flex: none; width: 16px; color: var(--text-4); text-align: center; opacity: 0.7; font-weight: 400; }
@@ -317,7 +317,7 @@ button.nc-title-bar__app:hover, button.nc-title-bar__app[aria-expanded="true"] {
 /* ── Sidebar header ───────────────────────────────────────────────────────────────────────────────────────
    44px: [↑] [Filter… filling the width] [collapse all] [minimise]. The filter is quiet at rest (a faint fill and a
    --text-4 placeholder), a field on hover and focus. Folded, one unfold button where ↑ was. */
-.nc-sidebar-header { display: flex; align-items: center; gap: 2px; flex: none; box-sizing: border-box; height: var(--header); padding: 0 var(--space-2); }
+.nc-sidebar-header { display: flex; align-items: center; gap: 2px; flex: none; box-sizing: border-box; height: var(--header-view); padding: 0 var(--space-2); }
 .nc-sidebar-header[data-folded] { justify-content: center; padding: 0; }
 .nc-sidebar-header > .nc-icon-btn, .nc-sidebar-header .nc-tooltip-anchor { flex: none; }
 .nc-sidebar-filter { display: flex; align-items: center; gap: var(--space-2); flex: 1; min-width: 0; box-sizing: border-box; height: var(--control-md); margin: 0 2px; padding: 0 var(--space-1) 0 var(--space-2); border-radius: var(--radius-sm); background: color-mix(in srgb, var(--bg-2) 45%, transparent); color: var(--text-4); cursor: text; transition: background-color var(--dur-hover) var(--ease), box-shadow var(--dur-hover) var(--ease); }
@@ -344,6 +344,10 @@ button.nc-title-bar__app:hover, button.nc-title-bar__app[aria-expanded="true"] {
 .nc-nav-item__glyph { position: relative; display: inline-flex; flex: none; align-items: center; justify-content: center; }
 .nc-nav-item__glyph > :first-child { mask: radial-gradient(circle 4.5px at calc(100% - 2px) calc(100% - 2px), transparent 98%, currentColor 100%); }
 .nc-nav-item__glyph > .nc-dot { position: absolute; right: -1px; bottom: -1px; width: 6px; height: 6px; }
+/* A badge: a state as a small icon, cut out of the icon's lower right corner. */
+.nc-nav-item__glyph--badge > :first-child { mask: radial-gradient(circle 8px at calc(100% + 1px) calc(100% + 1px), transparent 98%, currentColor 100%); }
+.nc-nav-item__badge { position: absolute; right: -5px; bottom: -5px; display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box; width: 13px; height: 13px; border-radius: var(--radius-full); background: var(--bg-4); }
+.nc-nav-item__badge .nc-icon, .nc-nav-item__badge svg { width: 9px; height: 9px; stroke-width: 2.5; }
 /* A place's entries, in its section: a step quieter than places, so the content reads apart from the organising. */
 .nc-nav-item.nc-nav-item--entry { color: var(--text-3); }
 .nc-nav-item.nc-nav-item--entry:is(:hover, [aria-current="page"]) { color: var(--text-2); }
@@ -374,6 +378,7 @@ button.nc-title-bar__app:hover, button.nc-title-bar__app[aria-expanded="true"] {
 .nc-nav__rule { width: 16px; height: 1px; margin: var(--space-2) 0; background: var(--line); }
 .nc-nav-rail-item { position: relative; display: grid; place-items: center; width: 32px; height: 32px; border-radius: var(--radius-sm); color: var(--text-3); text-decoration: none; transition: background-color var(--dur-hover) var(--ease), color var(--dur-hover) var(--ease); }
 .nc-nav-rail-item > .nc-icon { width: 15px; height: 15px; }
+.nc-nav-rail-item > .nc-nav-item__glyph > .nc-icon { width: 15px; height: 15px; }
 .nc-nav-rail-item:hover { background: var(--hover); color: var(--text-1); }
 .nc-nav-rail-item[aria-current="page"] { background: var(--active); color: var(--text-1); }
 .nc-nav-rail-item:focus-visible { outline: none; box-shadow: var(--focus-ring-inset); }
@@ -416,7 +421,7 @@ button.nc-nav-rail-item { margin: 0; padding: 0; border: 0; background: none; cu
 [data-theme="light"] .nc-shell-panel[data-overlay] { background: var(--bg-1); }
 /* A floating right panel stops at the bottom panel's top edge, so the bottom panel's header keeps its buttons. */
 [data-bottom] > .nc-shell-panel[data-overlay] { border-bottom: 1px solid var(--line-soft); border-bottom-left-radius: var(--radius-md); }
-.nc-shell-panel__head { display: flex; align-items: center; gap: var(--space-2); flex: none; box-sizing: border-box; height: var(--header); padding: 0 var(--space-2) 0 var(--space-4); border-bottom: 1px solid var(--line-soft); }
+.nc-shell-panel__head { display: flex; align-items: center; gap: var(--space-2); flex: none; box-sizing: border-box; height: var(--header-view); padding: 0 var(--space-2) 0 var(--space-4); border-bottom: 1px solid var(--line-soft); }
 .nc-shell-panel[data-at="bottom"] .nc-shell-panel__head { gap: var(--space-1); padding-left: 14px; }
 .nc-shell-panel__title { margin: 0; color: var(--text-1); font-size: var(--nc-type-drill); line-height: var(--nc-type-drill-line); font-weight: var(--nc-type-drill-weight); letter-spacing: var(--nc-type-drill-track); white-space: nowrap; }
 .nc-shell-panel__trail { flex: 0 1 auto; }
@@ -436,7 +441,7 @@ button.nc-nav-rail-item { margin: 0; padding: 0; border: 0; background: none; cu
 /* ── View header ──────────────────────────────────────────────────────────────────────────────────────────
    44px: the title or the trail at the drill size on one 20px line, so "Issues" keeps its size and place when the view
    drills to "Issues / WEB-142"; then the stepper and the actions. No fill. */
-.nc-view-header { display: flex; flex: none; align-items: center; gap: var(--space-3); box-sizing: border-box; height: var(--header); padding: 0 var(--space-2) 0 var(--space-5); border-bottom: 1px solid var(--line-soft); background: none; }
+.nc-view-header { display: flex; flex: none; align-items: center; gap: var(--space-3); box-sizing: border-box; height: var(--header-view); padding: 0 var(--space-2) 0 var(--space-5); border-bottom: 1px solid var(--line-soft); background: none; }
 .nc-view-header__title { display: flex; align-items: center; height: var(--control-sm); margin: 0; overflow: hidden; color: var(--text-1); font-size: var(--nc-type-drill); line-height: var(--nc-type-drill-line); font-weight: var(--nc-type-drill-weight); letter-spacing: var(--nc-type-drill-track); text-overflow: ellipsis; white-space: nowrap; }
 .nc-view-header__back { display: inline-flex; flex: none; align-items: center; gap: var(--space-1); max-width: 40%; height: var(--control-sm); margin-left: calc(var(--space-2) * -1); padding: 0 var(--space-2) 0 var(--space-1); border: 0; border-radius: var(--radius-sm); background: none; color: var(--text-3); font: inherit; font-size: var(--nc-type-drill); line-height: var(--nc-type-drill-line); font-weight: var(--nc-type-drill-weight); cursor: pointer; }
 .nc-view-header__back:hover { color: var(--text-1); }

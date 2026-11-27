@@ -1,4 +1,4 @@
-// Build › Cycles: the current cycle's progress and its issues, then every cycle in a table.
+// Product › Cycles: the current cycle's progress and its issues, then every cycle in a table.
 import {
   type DataColumn,
   DataTable,

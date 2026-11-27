@@ -1,18 +1,19 @@
 /* The agent's layout: the transcript scrolls across the whole view with its column centred, and the composer sits
-   at the column's foot. Beside the column, where both sides have room, the context and the output rate sit at the
-   top of the side columns, against the column; with less room they are one row each above the composer. */
+   at the column's foot. The widget board's zones sit around them: a bar over the transcript, a column at either
+   edge of the view, and a bar over and under the composer. Which zones show at a width is the board's
+   `fit` (widget-zones.ts), so the CSS only places them. */
 .dm-agent-chat {
   container-type: inline-size;
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 760px) minmax(0, 1fr);
-  grid-template-rows: minmax(0, 1fr) auto;
+  grid-template-rows: auto minmax(0, 1fr) auto;
   column-gap: var(--space-6);
   height: 100%;
   min-height: 0;
 }
 .dm-agent-log {
   grid-column: 1 / -1;
-  grid-row: 1;
+  grid-row: 2;
   min-height: 0;
   overflow: auto;
   scrollbar-gutter: stable both-edges;
@@ -28,45 +29,98 @@
 }
 .dm-agent-foot {
   grid-column: 1 / -1;
-  grid-row: 2;
+  grid-row: 3;
+  /* It spans the view under the side columns' feet: only its own column takes the pointer. */
+  pointer-events: none;
   padding: 0 var(--space-6) var(--space-4);
 }
+/* The side columns run the view's full height, so their bottom zones keep to its foot beside the composer. */
 .dm-agent-side {
-  grid-row: 1;
-  align-self: start;
-  display: none;
+  grid-row: 1 / -1;
+  display: flex;
   flex-direction: column;
   gap: var(--space-3);
   width: 100%;
-  max-width: 280px;
+  max-width: 296px;
   min-width: 0;
-  padding-top: var(--space-6);
+  min-height: 0;
+  padding: var(--space-6) 0 var(--space-4);
+  box-sizing: border-box;
 }
+/* A column's bottom zone keeps to its foot, such as a host's screen. */
+.dm-agent-side__foot {
+  margin-top: auto;
+}
+/* The side columns keep to the view's edges, leaving the transcript's column room either side. */
 .dm-agent-side--start {
   grid-column: 1;
-  justify-self: end;
+  justify-self: start;
+  padding-left: var(--space-4);
 }
 .dm-agent-side--end {
   grid-column: 3;
-  justify-self: start;
+  justify-self: end;
+  padding-right: var(--space-4);
 }
-.dm-agent-strip {
-  display: none;
+/* A bar of three zones: its start, centre and end. It takes no room until a widget is in it, or while editing. */
+.dm-agent-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   gap: var(--space-2);
+  min-width: 0;
 }
-.dm-agent-strip > * {
+.dm-agent-bar:not(:has(.nc-witem)) {
+  display: none;
+}
+.nc-wboard[data-editing] .dm-agent-bar {
+  display: flex;
+}
+.dm-agent-bar > .nc-wzone {
   flex: 1 1 0;
   min-width: 0;
 }
-@container (min-width: 1240px) {
-  .dm-agent-side {
-    display: flex;
-  }
+/* The rows take a line of their own over the zones. */
+.dm-agent-bar__rows {
+  flex: 1 1 100%;
 }
-@container (min-width: 560px) and (max-width: 1239.98px) {
-  .dm-agent-strip {
-    display: flex;
-  }
+.dm-agent-bar__center {
+  justify-content: center;
+}
+.dm-agent-bar__end {
+  justify-content: flex-end;
+}
+/* The bar over the composer is a tab on its top edge: the same surface, joined to it, inset from its corners. */
+.dm-agent-bar--above:has(.nc-witem) {
+  box-sizing: border-box;
+  /* Over the column's gap: it sits on the composer's top border, which is the line between the two. */
+  margin: 0 var(--space-3) calc(-1 * var(--space-2));
+  padding: 3px var(--space-1);
+  border: 1px solid var(--line);
+  border-bottom: 0;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  /* A step under the composer's surface, so the two read as separate parts of one control. */
+  background: var(--bg-1);
+  row-gap: 2px;
+}
+.nc-wboard[data-editing] .dm-agent-bar--above {
+  margin: 0 0 var(--space-2);
+  padding: 0;
+  border: 0;
+  background: none;
+}
+.dm-agent-bar--above .dm-w-chip {
+  background: none;
+  box-shadow: none;
+}
+.dm-agent-bar--top {
+  grid-column: 2;
+  grid-row: 1;
+  padding: var(--space-3) var(--space-6) 0;
+}
+/* With an approval widget that keeps the decision to itself, the transcript doesn't ask again. */
+.dm-agent-chat[data-approval-inline] [data-part="approval-card"][data-decision="pending"] {
+  display: none;
 }
 :root[data-phone] .dm-agent-log {
   padding: var(--space-4) var(--space-3);
@@ -76,6 +130,7 @@
 }
 
 /* Runs: the list fills the view; a row lays out its dot, id, task, agent and time. */
+.dm-agent-runs-host,
 .dm-agent-runs {
   height: 100%;
 }
@@ -139,4 +194,5 @@
 }
 .dm-agent-foot .dm-agent-column {
   gap: var(--space-2);
+  pointer-events: auto;
 }

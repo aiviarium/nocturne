@@ -281,7 +281,7 @@ test("folded, a section's icon runs its open, not the heading's click, and is ma
   expect(icon.getAttribute("aria-current")).toBe("page")
 })
 
-test("a section heading puts its chevron before the title, keeps the icon for the rail, and its title opens", () => {
+test("a section heading puts its chevron before the title, then its small icon, and its title opens", () => {
   const ran: string[] = []
   const [collapsed, setCollapsed] = createSignal<string[]>([])
   const { root } = track(
@@ -307,7 +307,8 @@ test("a section heading puts its chevron before the title, keeps the icon for th
   )
   const head = one(".nc-nav__head", root)
   expect(head.hasAttribute("data-section")).toBe(true)
-  expect(head.querySelector(".nc-nav__label .nc-icon")).toBeNull()
+  // The icon sits in the title, after the fold chevron, which the CSS orders first.
+  expect(head.querySelector(".nc-nav__label .nc-icon")).not.toBeNull()
   click(one("[data-part=nav-group-link]", root))
   click(one("[aria-label='New session']", root))
   expect(ran).toEqual(["open", "new"])

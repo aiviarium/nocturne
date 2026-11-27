@@ -93,7 +93,7 @@ describe("the demo", () => {
   })
 
   test("shows the parts the shell draws", async () => {
-    const { shell } = start("/projects/atlas/build/issues/WEB-142", { "demo/runsIn": "desktop" })
+    const { shell } = start("/projects/atlas/explore/issues/WEB-142", { "demo/runsIn": "desktop" })
     await tick()
     for (const part of [
       "app-shell",

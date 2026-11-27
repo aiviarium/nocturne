@@ -273,10 +273,30 @@ export const ICON_NODES = {
     ["path", { d: "m12 14 4-4" }],
     ["path", { d: "M3.34 19a10 10 0 1 1 17.32 0" }],
   ],
+  "git-merge": [
+    ["circle", { cx: "18", cy: "18", r: "3" }],
+    ["circle", { cx: "6", cy: "6", r: "3" }],
+    ["path", { d: "M6 21V9a9 9 0 0 0 9 9" }],
+  ],
   "git-pull-request": [
     ["circle", { cx: "18", cy: "18", r: "3" }],
     ["circle", { cx: "6", cy: "6", r: "3" }],
     ["path", { d: "M13 6h3a2 2 0 0 1 2 2v7" }],
+    ["line", { x1: "6", x2: "6", y1: "9", y2: "21" }],
+  ],
+  "git-pull-request-closed": [
+    ["path", { d: "m15.5 3.5 5 5" }],
+    ["path", { d: "m15.5 8.5 5-5" }],
+    ["path", { d: "M18 11.62V15" }],
+    ["path", { d: "M6 9v12" }],
+    ["circle", { cx: "18", cy: "18", r: "3" }],
+    ["circle", { cx: "6", cy: "6", r: "3" }],
+  ],
+  "git-pull-request-draft": [
+    ["circle", { cx: "18", cy: "18", r: "3" }],
+    ["circle", { cx: "6", cy: "6", r: "3" }],
+    ["path", { d: "M18 6V5" }],
+    ["path", { d: "M18 11v-1" }],
     ["line", { x1: "6", x2: "6", y1: "9", y2: "21" }],
   ],
   github: [
@@ -324,6 +344,12 @@ export const ICON_NODES = {
     ],
     ["path", { d: "M21.946 12.013H2.054" }],
     ["path", { d: "M6 16h.01" }],
+  ],
+  hash: [
+    ["line", { x1: "4", x2: "20", y1: "9", y2: "9" }],
+    ["line", { x1: "4", x2: "20", y1: "15", y2: "15" }],
+    ["line", { x1: "10", x2: "8", y1: "3", y2: "21" }],
+    ["line", { x1: "16", x2: "14", y1: "3", y2: "21" }],
   ],
   "heading-1": [
     ["path", { d: "M4 12h8" }],
@@ -500,6 +526,14 @@ export const ICON_NODES = {
     ["circle", { cx: "12", cy: "12", r: "1" }],
     ["circle", { cx: "19", cy: "12", r: "1" }],
     ["circle", { cx: "5", cy: "12", r: "1" }],
+  ],
+  move: [
+    ["path", { d: "M12 2v20" }],
+    ["path", { d: "m15 19-3 3-3-3" }],
+    ["path", { d: "m19 9 3 3-3 3" }],
+    ["path", { d: "M2 12h20" }],
+    ["path", { d: "m5 9-3 3 3 3" }],
+    ["path", { d: "m9 5 3-3 3 3" }],
   ],
   package: [
     [

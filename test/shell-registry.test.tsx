@@ -202,20 +202,52 @@ describe("createShell", () => {
     expect(items.map((i) => i.label)).toEqual(["Issues", "Agents"])
     expect(items[0]!.current).toBe(true)
     expect(items[0]!.count).toBe(3)
-    expect(items[0]!.items?.map((i) => i.label)).toEqual(["Backlog"])
+    // Saved views are filters, in the view header's tabs: never rows of the tree.
+    expect(items[0]!.items ?? []).toEqual([])
     expect(s.header().title).toBe("Issues")
     expect(s.title()).toBe("Issues · Build · Atlas web · Projects · Acme")
   })
 
-  test("the workspace's sidebar lists the modules and their items", () => {
+  test("the workspace's sidebar makes a section of each module that lists items, with them as its entries", () => {
     const s = make("/projects")
     flush()
     const groups = s.sidebar().groups
-    expect(groups[0]!.items.map((i) => i.label)).toEqual(["Projects", "Hosts"])
-    expect(groups[1]!.items.map((i) => i.label)).toEqual(["Atlas web", "Borealis"])
+    // No row of their own: each module is a section headed by its name, which opens it.
+    expect(groups.map((g) => [g.label, g.section])).toEqual([
+      ["Projects", true],
+      ["Hosts", true],
+    ])
+    expect(groups[0]!.items.map((i) => i.label)).toEqual(["Atlas web", "Borealis"])
+    expect(groups[0]!.items.every((i) => i.drill)).toBe(true)
+    // The open module's Open button is marked; inside a project, its entry is.
+    expect(groups[0]!.actions?.at(-1)?.current).toBe(true)
     // Nowhere up: the button stays, disabled.
     expect(s.sidebar().up).toEqual({ label: "Up" })
     expect(s.lensBox().lenses).toEqual([])
+  })
+
+  test("a module with places drills into them, and ↑ goes back to the workspace's tree", () => {
+    const settings: ShellScope = {
+      id: "settings",
+      label: "Settings",
+      icon: "settings",
+      places: [
+        { id: "general", label: "General", view: View },
+        { id: "keys", label: "Keys", view: View },
+      ],
+    }
+    const s = make("/settings/general", { scopes: [{ id: "inbox", label: "Inbox", view: View }, settings] })
+    flush()
+    expect(s.sidebar().key).not.toBe("workspace")
+    expect(s.sidebar().groups[0]!.items.map((i) => i.label)).toEqual(["General", "Keys"])
+    const up = s.sidebar().up
+    expect(up.onClick).toBeDefined()
+    up.onClick!()
+    flush()
+    expect(s.loc().module.id).toBe("inbox")
+    expect(s.sidebar().key).toBe("workspace")
+    // The home module is the workspace's tree already: nowhere up.
+    expect(s.sidebar().up.onClick).toBeUndefined()
   })
 
   test("from a record, ↑ goes to its list", () => {
@@ -744,7 +776,8 @@ describe("the shell in an app", () => {
         scopes: [{ id: "hosts", label: "Hosts", icon: "server", view: View, child: dyn }],
       })
       flush()
-      const listed = () => s.sidebar().groups[1]?.items.map((i) => i.label)
+      // The module is a section: its items are the first group's entries.
+      const listed = () => s.sidebar().groups[0]?.items.map((i) => i.label)
       expect(listed()).toEqual(["build-01"])
       setExtra([{ id: "new-02", name: "new-02" }])
       flush()

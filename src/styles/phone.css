@@ -28,6 +28,8 @@
   --phone-tab-label-size: 10px;
   --phone-input-size: 16px;
 }
+/* On a phone the headers keep the 44px hit area of their buttons. */
+:root[data-phone] { --header-view: 44px; }
 /* ---------- Safe areas ----------
    The one place the device's insets come from: the notch or Dynamic Island and the status bar at the top, the home
    indicator at the bottom, the sides in landscape. Every phone piece reads these variables, never env() itself,
@@ -292,3 +294,4 @@ a.nc-inset-row__main:active, button.nc-inset-row__main:active { background: var(
 @media (prefers-reduced-motion: reduce) {
   .nc-navstack__screen, .nc-sheet, .nc-sheet-scrim, .nc-inset-row__face, .nc-screen__search, .nc-navbar__title { transition: none; }
 }
+:root[data-phone] .nc-hover-card { display: none; }

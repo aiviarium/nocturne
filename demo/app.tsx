@@ -16,7 +16,7 @@ import {
   toast,
 } from "@aiviarium/nocturne"
 import { createSignal, onCleanup, Show, untrack } from "solid-js"
-import { agentModule, assistantPanel } from "./agent"
+import { assistantPanel, startChat } from "./agent"
 import { type Demo, DemoContext, type RunsIn } from "./context"
 import { dashboardModule } from "./dashboard"
 import { ME } from "./data"
@@ -49,7 +49,6 @@ export function demoOptions(router: HistoryRouter, storage: ShellStorage, demo: 
       dashboardModule,
       projectsModule,
       hostsModule,
-      agentModule,
       { ...settingsModule, places: [...(settingsModule.places ?? []), mobilePlace] },
     ],
     panels: [
@@ -65,6 +64,7 @@ export function demoOptions(router: HistoryRouter, storage: ShellStorage, demo: 
       terminalPanel,
     ],
     commands: [
+      { id: "new-chat", label: "New chat with the agent", icon: "plus", run: (shell) => startChat(shell) },
       { id: "theme", label: "Switch theme", icon: "moon", run: () => demo.appearance.toggleTheme() },
       {
         id: "desktop",

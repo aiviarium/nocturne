@@ -438,17 +438,6 @@ function DesktopViewHeader(props: ViewHeaderProps): JSX.Element {
               onClick={() => chrome!.togglePin()}
             />
           </Show>
-          <Show when={overflow().length}>
-            <DropdownMenu
-              label="More actions"
-              items={menu()}
-              placement="bottom-end"
-              onSelect={pick}
-              trigger={(t) => (
-                <IconButton {...t} label="More actions" icon="more" data-part="view-overflow" />
-              )}
-            />
-          </Show>
           <For each={primary()} keyed={(a) => a.id}>
             {(a) => (
               <Button
@@ -463,6 +452,18 @@ function DesktopViewHeader(props: ViewHeaderProps): JSX.Element {
               </Button>
             )}
           </For>
+          {/* More actions is always the last control in the header. */}
+          <Show when={overflow().length}>
+            <DropdownMenu
+              label="More actions"
+              items={menu()}
+              placement="bottom-end"
+              onSelect={pick}
+              trigger={(t) => (
+                <IconButton {...t} label="More actions" icon="more" data-part="view-overflow" />
+              )}
+            />
+          </Show>
         </span>
       </header>
     </Show>

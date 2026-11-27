@@ -1,21 +1,18 @@
-// Dashboard › Fleet: one panel per host with its live meters and its month of uptime. A host that is degraded says
+// The Hosts page laid out as panels: one per host with its live meters and its month of uptime. A host that is degraded says
 // so with a warning glyph whose tooltip names the trouble; healthy hosts show no state.
 import {
   Icon,
   IconButton,
   Panel,
-  SectionHeading,
-  ShellViewHeader,
-  type ShellViewProps,
+  type ShellRegistry,
   Tooltip,
-  ViewLayout,
   Widget,
   WidgetMeters,
   WidgetUptime,
 } from "@aiviarium/nocturne"
 import { createSignal, For, onSettled, Show } from "solid-js"
-import { drift, FLEET, type FleetHost } from "./data"
-import { liveMeter } from "./overview"
+import { drift, FLEET, type FleetHost } from "../dashboard/data"
+import { liveMeter } from "../dashboard/overview"
 
 function HostPanel(props: { host: FleetHost; onOpen: () => void }) {
   const [cpu, setCpu] = createSignal(props.host.cpu)
@@ -73,17 +70,15 @@ function HostPanel(props: { host: FleetHost; onOpen: () => void }) {
   )
 }
 
-export function FleetView(props: ShellViewProps) {
+/** Every host as a panel. */
+export function HostPanels(props: { shell: ShellRegistry }) {
   return (
-    <ViewLayout id="demo.dashboard.fleet" header={<ShellViewHeader />}>
-      <div class="dm-dash-page">
-        <SectionHeading title="Hosts" count={FLEET.length} />
-        <div class="dm-dash-fleet">
-          <For each={FLEET}>
-            {(h) => <HostPanel host={h} onOpen={() => props.shell.go(`/hosts/${h.id}`)} />}
-          </For>
-        </div>
+    <div class="dm-dash-page">
+      <div class="dm-dash-fleet">
+        <For each={FLEET}>
+          {(h) => <HostPanel host={h} onOpen={() => props.shell.go(`/hosts/${h.id}`)} />}
+        </For>
       </div>
-    </ViewLayout>
+    </div>
   )
 }

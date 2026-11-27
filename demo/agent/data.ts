@@ -32,6 +32,8 @@ export interface Turn {
 
 export interface Conversation {
   id: string
+  /** The project it works on. */
+  project: string
   title: string
   updated: string
   turns: Turn[]
@@ -54,6 +56,7 @@ const LOG = `17:42:14 warn  health  healthcheck pending after 2s, retrying
 const SEED: Conversation[] = [
   {
     id: "c-arm64",
+    project: "atlas",
     title: "Why does the arm64 deploy time out?",
     updated: "12m",
     used: 48_200,
@@ -147,6 +150,7 @@ const SEED: Conversation[] = [
   },
   {
     id: "c-feed",
+    project: "atlas",
     title: "Draft the empty state for the activity feed",
     updated: "1h",
     used: 21_400,
@@ -187,6 +191,7 @@ const SEED: Conversation[] = [
   },
   {
     id: "c-csv",
+    project: "atlas",
     title: "Export the issue list as CSV",
     updated: "1d",
     used: 9_800,
@@ -220,6 +225,8 @@ const [conversations, setConversations] = createSignal<Conversation[]>(SEED, { o
 export { conversations }
 
 export const conversationById = (id?: string) => conversations().find((c) => c.id === id)
+/** A project's conversations. */
+export const conversationsOf = (project: string) => conversations().filter((c) => c.project === project)
 
 const patch = (id: string, fn: (c: Conversation) => Conversation) =>
   setConversations((list) => list.map((c) => (c.id === id ? fn(c) : c)))
@@ -228,11 +235,11 @@ const patchTurn = (cid: string, tid: string, fn: (t: Turn) => Turn) =>
 
 let made = 0
 /** A new, empty conversation, first in the list. */
-export function newConversation(): string {
+export function newConversation(project: string): string {
   made += 1
   const id = `c-new-${made}`
   setConversations((list) => [
-    { id, title: "New chat", updated: "now", turns: [], used: 3_100, rates: Array(12).fill(0) },
+    { id, project, title: "New chat", updated: "now", turns: [], used: 3_100, rates: Array(12).fill(0) },
     ...list,
   ])
   return id
@@ -450,6 +457,7 @@ export interface Run {
   took: string
   started: string
   conversation?: string
+  project: string
 }
 
 const TASKS = [
@@ -479,5 +487,9 @@ export const RUNS: Run[] = Array.from({ length: 480 }, (_, i) => {
           ? `${Math.floor(minutes / 60)}h`
           : `${Math.floor(minutes / 1440)}d`,
     conversation: i === 0 ? "c-arm64" : i === 4 ? "c-feed" : undefined,
+    // Most runs are Atlas web's; every third is the Fleet agent's.
+    project: i % 3 === 2 ? "fleet-agent" : "atlas",
   }
 })
+/** A project's runs. */
+export const runsOf = (project: string) => RUNS.filter((r) => r.project === project)

@@ -1,6 +1,6 @@
 // The dashboard's figures: Acme's week in numbers and the live readings its widgets follow. Everything is made up
 // here and moves on timers in the views; nothing is fetched.
-import type { GridItem } from "@aiviarium/nocturne"
+import type { IconName, WidgetPlacement } from "@aiviarium/nocturne"
 
 export type Range = "24h" | "7d" | "30d"
 
@@ -165,36 +165,36 @@ export type TileKind =
   | "cycle"
   | "issues"
 
-export type Tile = GridItem & { kind: TileKind }
-
 /** What each kind is called in the add menu, and the size it starts at. */
-export const KINDS: Record<TileKind, { label: string; w: number; h: number; minW?: number; minH?: number }> =
-  {
-    alerts: { label: "Alerts", w: 12, h: 2 },
-    deploy: { label: "Deploy", w: 4, h: 2, minW: 3 },
-    build: { label: "Build timer", w: 4, h: 2, minW: 3 },
-    requests: { label: "Requests", w: 8, h: 4, minW: 4, minH: 3 },
-    tokens: { label: "Agent output", w: 4, h: 2, minW: 3 },
-    machine: { label: "build-01", w: 4, h: 3, minW: 3, minH: 2 },
-    queue: { label: "Runner queue", w: 4, h: 3, minW: 3, minH: 2 },
-    disk: { label: "Artifact storage", w: 4, h: 2, minW: 3 },
-    uptime: { label: "API uptime", w: 4, h: 2, minW: 3 },
-    budget: { label: "Error budget", w: 4, h: 1, minW: 3, minH: 1 },
-    cycle: { label: "Cycle 24", w: 4, h: 2, minW: 3 },
-    issues: { label: "Open issues", w: 4, h: 3, minW: 3, minH: 2 },
-  }
+export const KINDS: Record<
+  TileKind,
+  { label: string; icon: IconName; w: number; h: number; minW?: number; minH?: number }
+> = {
+  alerts: { label: "Alerts", icon: "triangle-alert", w: 12, h: 2 },
+  deploy: { label: "Deploy", icon: "package", w: 4, h: 2, minW: 3 },
+  build: { label: "Build timer", icon: "clock", w: 4, h: 2, minW: 3 },
+  requests: { label: "Requests", icon: "activity", w: 8, h: 4, minW: 4, minH: 3 },
+  tokens: { label: "Agent output", icon: "bolt", w: 4, h: 2, minW: 3 },
+  machine: { label: "build-01", icon: "cpu", w: 4, h: 3, minW: 3, minH: 2 },
+  queue: { label: "Runner queue", icon: "gauge", w: 4, h: 3, minW: 3, minH: 2 },
+  disk: { label: "Artifact storage", icon: "hard-drive", w: 4, h: 2, minW: 3 },
+  uptime: { label: "API uptime", icon: "server", w: 4, h: 2, minW: 3 },
+  budget: { label: "Error budget", icon: "shield", w: 4, h: 1, minW: 3, minH: 1 },
+  cycle: { label: "Cycle 24", icon: "refresh-cw", w: 4, h: 2, minW: 3 },
+  issues: { label: "Open issues", icon: "circle-dot", w: 4, h: 3, minW: 3, minH: 2 },
+}
 
-export const DEFAULT_LAYOUT: Tile[] = [
-  { id: "alerts", kind: "alerts", x: 0, y: 0, w: 12, h: 2 },
-  { id: "requests", kind: "requests", x: 0, y: 2, w: 8, h: 4, minW: 4, minH: 3 },
-  { id: "deploy", kind: "deploy", x: 8, y: 2, w: 4, h: 2, minW: 3 },
-  { id: "build", kind: "build", x: 8, y: 4, w: 4, h: 2, minW: 3 },
-  { id: "machine", kind: "machine", x: 0, y: 6, w: 4, h: 3, minW: 3, minH: 2 },
-  { id: "queue", kind: "queue", x: 4, y: 6, w: 4, h: 3, minW: 3, minH: 2 },
-  { id: "issues", kind: "issues", x: 8, y: 6, w: 4, h: 3, minW: 3, minH: 2 },
-  { id: "tokens", kind: "tokens", x: 0, y: 9, w: 4, h: 2, minW: 3 },
-  { id: "disk", kind: "disk", x: 4, y: 9, w: 4, h: 2, minW: 3 },
-  { id: "uptime", kind: "uptime", x: 8, y: 9, w: 4, h: 2, minW: 3 },
-  { id: "budget", kind: "budget", x: 0, y: 11, w: 4, h: 1, minW: 3, minH: 1 },
-  { id: "cycle", kind: "cycle", x: 4, y: 11, w: 4, h: 2, minW: 3 },
+export const DEFAULT_LAYOUT: Omit<WidgetPlacement, "zone">[] = [
+  { id: "alerts", x: 0, y: 0, w: 12, h: 2 },
+  { id: "requests", x: 0, y: 2, w: 8, h: 4, minW: 4, minH: 3 },
+  { id: "deploy", x: 8, y: 2, w: 4, h: 2, minW: 3 },
+  { id: "build", x: 8, y: 4, w: 4, h: 2, minW: 3 },
+  { id: "machine", x: 0, y: 6, w: 4, h: 3, minW: 3, minH: 2 },
+  { id: "queue", x: 4, y: 6, w: 4, h: 3, minW: 3, minH: 2 },
+  { id: "issues", x: 8, y: 6, w: 4, h: 3, minW: 3, minH: 2 },
+  { id: "tokens", x: 0, y: 9, w: 4, h: 2, minW: 3 },
+  { id: "disk", x: 4, y: 9, w: 4, h: 2, minW: 3 },
+  { id: "uptime", x: 8, y: 9, w: 4, h: 2, minW: 3 },
+  { id: "budget", x: 0, y: 11, w: 4, h: 1, minW: 3, minH: 1 },
+  { id: "cycle", x: 4, y: 11, w: 4, h: 2, minW: 3 },
 ]

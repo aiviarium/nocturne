@@ -1,13 +1,13 @@
 ---
 title: Widgets
-description: Widget, its live parts and sizes, ContextWidget and RateWidget, WidgetGrid.
+description: Widget, its live parts and sizes, ContextWidget and RateWidget, the widget board and WidgetGrid.
 ---
 
 Use a widget for one live value in a small space, such as a dashboard cell or the Details panel beside an agent's chat.
 A `Stat` reports a number once, and a widget follows a value as it changes.
 Most of it is the live part. The words are a title, a value and a unit.
 
-In the shell a page of widgets is a view of its own, on a `WidgetGrid`.
+Widgets the person arranges are on a widget board, whether on a page of their own or around a chat.
 One widget on its own goes in a panel or a card of a view, at the size that fits there.
 
 ## Widget
@@ -26,7 +26,7 @@ One widget on its own goes in a panel or a card of a view, at the size that fits
 <Example id="widget/progress" />
 <Example id="widget/charts" />
 
-Every live part is on the demo's <DemoLink to="dashboard/overview">Dashboard</DemoLink>, and <DemoLink to="dashboard/fleet">Fleet</DemoLink> has meters and uptime per host.
+Every live part is on the demo's <DemoLink to="dashboard">Dashboard</DemoLink>, and <DemoLink to="hosts">Hosts</DemoLink> laid out as panels has meters and uptime per host.
 
 ## Live parts
 
@@ -74,8 +74,43 @@ At `sm` a part leaves out its names. They stay in its accessible name.
 <Example id="widget/sizes" />
 <Example id="widget/agent" />
 
-Open the Details panel on <DemoLink to="agent/chats/c-arm64">a chat</DemoLink> to see both.
+Open the Details panel on <DemoLink to="projects/atlas/build/chats/c-arm64">a chat</DemoLink> to see both.
 <DoDont do="design/icon-tile" dont="design/coloured-card" />
+
+## Widget board
+
+A widget board is the one system behind every place where the person arranges widgets.
+The dashboard's grid and the bars and columns around a chat use the same one. A widget behaves the same anywhere.
+
+- `createWidgetBoard` keeps the layout in the app's `storage`, under `key`. It takes the widget types, the view's zones, the first layout and the `context` every widget reads, such as the chat shown.
+- `WidgetBoard` hosts the board around the view's content. It draws the widget being dragged.
+- `WidgetZone` draws the widgets of one zone where the view puts it.
+
+A zone runs its widgets across (`row`), down (`column`) or on a `grid`, and names the forms its widgets take.
+The forms are `card`, `line`, `chip`, `tile` and `row`.
+The first form is the zone's own, and the person may pick another of them in the widget's settings.
+A widget type draws each form it supports from `render`.
+A chip or a tile opens its card in a popover.
+
+A widget that has something to act on, such as an approval, grows to a full row in a zone with `grow`.
+`WidgetRows` draws those rows over their zones, and the zones keep their places.
+
+While editing, a widget's handle resizes it in steps, never to a size of its own.
+In a column, the steps are its line, its card, then the taller card heights its type lists in `heights`.
+Across a bar, the steps are its chip and its line.
+A widget with one size has no handle.
+
+`board.actions()` is the view header's Edit widgets action.
+While editing, the actions are Add widget, Reset and Done, and More actions stays last.
+Pressing a widget drags it to another zone, and clicking it opens its settings with its place and form. Its menu has the same moves.
+A widget with nothing to say leaves its zone outside editing when the board has `hideEmpty`.
+
+`fit` shows a zone's widgets in another zone at the measured width, such as a side column folded into a bar on a narrow window, and the layout itself stays as it was.
+
+<Example id="widget/board" />
+
+On <DemoLink to="projects/atlas/build/chats/c-arm64">a chat</DemoLink>, Edit widgets arranges the zones around the transcript.
+The <DemoLink to="dashboard">Dashboard</DemoLink> is one `grid` zone on the same board.
 
 ## WidgetGrid
 
@@ -93,7 +128,7 @@ Cards on a `WidgetGrid` take the widget frame, with 18 or 20px padding and radiu
 
 <Example id="patterns/widgets" />
 
-On the <DemoLink to="dashboard/overview">Dashboard</DemoLink>, "Arrange widgets" lets the person drag and resize them.
+A board's `grid` zone draws a `WidgetGrid`. On the <DemoLink to="dashboard">Dashboard</DemoLink>, Edit widgets lets the person drag and resize them.
 <DoDont do="design/grid-compacted" dont="design/grid-hidden-hole" />
 
 <GalleryLink page="widget" />

@@ -1,4 +1,4 @@
-// The Build lens's data: the issues the shared scenario holds plus the ones made and removed here, the cycles
+// A project's issue data: the issues the shared scenario holds plus the ones made and removed here, the cycles
 // and the pull requests with their patches.
 import { createSignal } from "solid-js"
 import {
@@ -17,7 +17,7 @@ import { removeFrom } from "../../lists"
 const [made, setMade] = createSignal<Issue[]>([], { ownedWrite: true })
 const [gone, setGone] = createSignal<string[]>([], { ownedWrite: true })
 
-/** Every issue the Build lens shows: the scenario's, the new ones, less the removed ones. */
+/** Every issue the project's places show: the scenario's, the new ones, less the removed ones. */
 export const allIssues = () => [...issues(), ...made()].filter((i) => !gone().includes(i.id))
 export const issueById = (id?: string) => allIssues().find((i) => i.id === id)
 export const issueByKey = (key?: string) => allIssues().find((i) => i.key === key)

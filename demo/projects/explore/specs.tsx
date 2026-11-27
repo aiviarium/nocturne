@@ -95,7 +95,7 @@ function services(shell: ShellRegistry): EditorServices {
       const [kind, id] = uri.split("://") as [string, string]
       if (kind === "issue") {
         const i = issueByKey(id)
-        if (i) shell.go(`/projects/${i.project}/build/issues/${i.key}`)
+        if (i) shell.go(`/projects/${i.project}/explore/issues/${i.key}`)
       } else if (kind === "spec") goSpec(id)
       else if (kind === "user")
         toast({ title: person(id)?.name ?? id, description: "Profiles aren't in the demo." })

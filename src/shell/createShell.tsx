@@ -15,7 +15,7 @@ import { createMemo, createSignal, untrack } from "solid-js"
 import type { LabelHue } from "../components/Badge"
 import type { IconName } from "../components/Icon"
 import { Mark } from "../components/Mark"
-import type { NavGroup, NavItemProps } from "../components/NavItem"
+import type { NavGroup, NavItemHover, NavItemProps } from "../components/NavItem"
 import type { DotStatus } from "../components/StatusDot"
 import type { ViewStepper } from "../components/ViewHeader"
 import { cx } from "../lib/cx"
@@ -80,6 +80,15 @@ export interface ShellRecord {
   meta?: string
   /** A second line on its sidebar entry, for details of its own: "9c1e4fa · 48s". */
   detail?: string
+  /**
+   * What its sidebar entry shows in the icon's place, when it says more than the place's icon would: the author of a
+   * pull request, a chat's identicon, a webhook's provider. Its place's own icon is never repeated on its records.
+   */
+  leading?: () => JSX.Element
+  /** A state as a small icon on the entry's icon, such as a pull request's review on its author. See `NavItem`. */
+  badge?: () => JSX.Element
+  /** Details that appear while the pointer rests on the entry's icon. See `NavItem`'s `hover`. */
+  hover?: () => NavItemHover
 }
 
 /** A place in a scope's sidebar tree. */
@@ -945,167 +954,8 @@ export function createShell(options: ShellOptions) {
   const sidebar = createMemo((): ShellSidebar => {
     const l = loc()
     const f = sidebarFrame(l)
-    if (!f) {
-      const groups: NavGroup[] = [
-        {
-          items: scopes.map((m) => ({
-            id: `m:${m.id}`,
-            label: labelOf({ scope: m }),
-            icon: m.icon,
-            count: m.count?.() || undefined,
-            current: l.module === m && l.frames.length === 1,
-            onClick: () => navigate([m.id]),
-          })),
-        },
-      ]
-      for (const m of scopes) {
-        const child = m.child
-        if (!child?.items) continue
-        const mf = frame(m, undefined, undefined, [m.id])
-        groups.push({
-          label: labelOf({ scope: m }),
-          items: child.items().map((it) => {
-            const mark = child.mark?.(it)
-            return {
-              id: `${m.id}/${idOf(child, it)}`,
-              label: labelOf({ scope: child, item: it }),
-              leading: mark ? (
-                <Mark name={mark.name} hue={mark.hue} icon={mark.icon} size="sm" decorative />
-              ) : undefined,
-              icon: mark ? undefined : child.icon,
-              drill: true,
-              menu: child.menu ? () => child.menu!(it) : undefined,
-              onClick: () => returnTo(frame(child, it, mf, [m.id, idOf(child, it)])),
-            }
-          }),
-        })
-      }
-      return { key: "workspace", label: ws.name, groups, parents: [], up: { label: "Up" } }
-    }
-    const here = f.key === l.frame.key
-    const lens = f.lens
-    const tree = lens ? lens.places : (f.scope.places ?? [])
     const parents: string[] = []
     const sections: NavGroup[] = []
-    const items = (places: ShellPlace[], top = false): NavItemProps[] =>
-      places.flatMap((p): NavItemProps[] => {
-        const views = (p.views ?? []).slice(1)
-        const kids = [
-          ...views.map((v) => ({
-            id: `${p.id}/${v.id}`,
-            label: v.label,
-            current: here && l.place === p && l.view === v,
-            onClick: () => toPlace(f, p.id, v.id),
-          })),
-          ...items(p.children ?? []),
-        ]
-        const shown = entriesOf(f, p)
-        const inside = here && l.place === p
-        // Current at its records too: the place stays marked while the person is inside one, unless the record is
-        // one of its entries, which is marked instead.
-        const current = inside && (!keepView(l) || !views.length) && !shown.some((e) => e.current)
-        if (top && p.entries) {
-          // A section: the place's name heads its views, child places and entries, and opens the place.
-          const opts: ShellEntries = p.entries === true ? {} : p.entries
-          const create = opts.create
-          const id = `section:${p.id}`
-          parents.push(id)
-          sections.push({
-            id,
-            label: p.label,
-            icon: p.icon ?? "folder",
-            section: true,
-            collapsible: true,
-            onClick: () => toPlace(f, p.id),
-            actions: [
-              ...(create
-                ? [
-                    {
-                      label: `New ${p.noun ?? "item"}`,
-                      icon: "plus" as const,
-                      onClick: () => {
-                        const made = create(f.item)
-                        if (made) toPlace(f, p.id, undefined, made)
-                      },
-                    },
-                  ]
-                : []),
-              {
-                label: `Open ${p.label}`,
-                icon: "arrow-up-right" as const,
-                onClick: () => toPlace(f, p.id),
-                current,
-              },
-            ],
-            items: [...kids, ...shown.map((e) => ({ ...e, class: cx(e.class, "nc-nav-item--entry") }))],
-          })
-          return []
-        }
-        kids.push(...shown)
-        if (kids.length) parents.push(p.id)
-        return [
-          {
-            id: p.id,
-            label: p.label,
-            icon: p.icon ?? (kids.length ? "folder" : "file"),
-            count: p.count?.(f.item) || undefined,
-            current,
-            onClick: () => toPlace(f, p.id),
-            items: kids.length ? kids : undefined,
-          },
-        ]
-      })
-    /** A place's `entries`: its records, or the scopes it enters. */
-    function entriesOf(f: ShellFrame, p: ShellPlace): NavItemProps[] {
-      if (!p.entries) return []
-      const opts: ShellEntries = p.entries === true ? {} : p.entries
-      const cap = opts.limit ?? 8
-      const fold = `${f.key}|${p.id}`
-      const open = expanded.get().includes(fold)
-      return capped(p, fold, open, cap, allEntries(f, p, opts))
-    }
-    /** Every entry of a place, before the limit, each with whether it is the one open. */
-    function allEntries(f: ShellFrame, p: ShellPlace, opts: ShellEntries): NavItemProps[] {
-      if (p.enters) {
-        const scope = p.enters
-        const open = l.frames.find((x) => x.parent === f && x.scope === scope)
-        return (scope.items?.(f.item) ?? []).map((it) => {
-          const id = idOf(scope, it)
-          const mark = scope.mark?.(it)
-          const current = here ? false : open?.item !== undefined && idOf(scope, open.item) === id
-          return {
-            id: `${p.id}>${id}`,
-            label: labelOf({ scope, item: it }),
-            leading: mark ? (
-              <Mark name={mark.name} hue={mark.hue} icon={mark.icon} size="sm" decorative />
-            ) : undefined,
-            icon: mark ? undefined : scope.icon,
-            drill: true,
-            current,
-            menu: scope.menu ? () => scope.menu!(it) : undefined,
-            onClick: () =>
-              returnTo(frame(scope, it, f, [...(segsOf(f, p.id).filter(Boolean) as string[]), id])),
-          } satisfies NavItemProps
-        })
-      }
-      return (p.records?.(f.item, undefined) ?? []).map((r) => {
-        const current = here && l.place === p && l.record === r.id
-        return {
-          id: `${p.id}/${r.id}`,
-          label: opts.label?.(r) ?? r.label,
-          leading: r.mark ? (
-            <Mark name={r.mark.name} hue={r.mark.hue} icon={r.mark.icon} size="sm" decorative />
-          ) : undefined,
-          icon: r.mark ? undefined : r.icon,
-          status: r.status,
-          meta: r.meta,
-          detail: r.detail,
-          current,
-          menu: p.menu ? () => p.menu!(r.id, f.item) : undefined,
-          onClick: () => toPlace(f, p.id, undefined, r.id),
-        } satisfies NavItemProps
-      })
-    }
     /**
      * The entries past the limit fold into one row, "Show 3 more", which expands the list in place; an expanded list
      * ends in "Show fewer". The open entry shows even when folded.
@@ -1141,6 +991,203 @@ export function createShell(options: ShellOptions) {
         },
       ]
     }
+    /** The rows of a frame's places; `here` when that frame is the one the view is in. */
+    const treeOf = (f: ShellFrame, here: boolean) => {
+      const items = (places: ShellPlace[], top = false): NavItemProps[] =>
+        places.flatMap((p): NavItemProps[] => {
+          // Saved views are filters, in the view header's tabs: the tree lists child places only.
+          const kids = items(p.children ?? [])
+          const shown = entriesOf(f, p)
+          const inside = here && l.place === p
+          // Current at its records too: the place stays marked while the person is inside one, unless the record is
+          // one of its entries, which is marked instead.
+          const current = inside && !shown.some((e) => e.current)
+          if (top && p.entries) {
+            // A section: the place's name heads its child places and entries, and opens the place.
+            const opts: ShellEntries = p.entries === true ? {} : p.entries
+            const create = opts.create
+            const id = `section:${p.id}`
+            parents.push(id)
+            sections.push({
+              id,
+              label: p.label,
+              icon: p.icon ?? "folder",
+              section: true,
+              collapsible: true,
+              onClick: () => toPlace(f, p.id),
+              actions: [
+                ...(create
+                  ? [
+                      {
+                        label: `New ${p.noun ?? "item"}`,
+                        icon: "plus" as const,
+                        onClick: () => {
+                          const made = create(f.item)
+                          if (made) toPlace(f, p.id, undefined, made)
+                        },
+                      },
+                    ]
+                  : []),
+                {
+                  label: `Open ${p.label}`,
+                  icon: "arrow-up-right" as const,
+                  onClick: () => toPlace(f, p.id),
+                  current,
+                },
+              ],
+              items: [...kids, ...shown.map((e) => ({ ...e, class: cx(e.class, "nc-nav-item--entry") }))],
+            })
+            return []
+          }
+          kids.push(...shown)
+          if (kids.length) parents.push(p.id)
+          return [
+            {
+              id: p.id,
+              label: p.label,
+              icon: p.icon ?? (kids.length ? "folder" : "file"),
+              count: p.count?.(f.item) || undefined,
+              current,
+              onClick: () => toPlace(f, p.id),
+              items: kids.length ? kids : undefined,
+            },
+          ]
+        })
+      /** A place's `entries`: its records, or the scopes it enters. */
+      function entriesOf(f: ShellFrame, p: ShellPlace): NavItemProps[] {
+        if (!p.entries) return []
+        const opts: ShellEntries = p.entries === true ? {} : p.entries
+        const cap = opts.limit ?? 8
+        const fold = `${f.key}|${p.id}`
+        const open = expanded.get().includes(fold)
+        return capped(p, fold, open, cap, allEntries(f, p, opts))
+      }
+      /** Every entry of a place, before the limit, each with whether it is the one open. */
+      function allEntries(f: ShellFrame, p: ShellPlace, opts: ShellEntries): NavItemProps[] {
+        if (p.enters) {
+          const scope = p.enters
+          const open = l.frames.find((x) => x.parent === f && x.scope === scope)
+          return (scope.items?.(f.item) ?? []).map((it) => {
+            const id = idOf(scope, it)
+            const mark = scope.mark?.(it)
+            const current = here ? false : open?.item !== undefined && idOf(scope, open.item) === id
+            return {
+              id: `${p.id}>${id}`,
+              label: labelOf({ scope, item: it }),
+              lead: mark
+                ? () => <Mark name={mark.name} hue={mark.hue} icon={mark.icon} size="sm" decorative />
+                : undefined,
+              icon: mark ? undefined : scope.icon,
+              drill: true,
+              current,
+              menu: scope.menu ? () => scope.menu!(it) : undefined,
+              onClick: () =>
+                returnTo(frame(scope, it, f, [...(segsOf(f, p.id).filter(Boolean) as string[]), id])),
+            } satisfies NavItemProps
+          })
+        }
+        return (p.records?.(f.item, undefined) ?? []).map((r) => {
+          const current = here && l.place === p && l.record === r.id
+          return {
+            id: `${p.id}/${r.id}`,
+            label: opts.label?.(r) ?? r.label,
+            // Functions, so the sidebar, the folded rail and its flyout each draw their own.
+            lead:
+              r.leading ??
+              (r.mark
+                ? () => (
+                    <Mark name={r.mark!.name} hue={r.mark!.hue} icon={r.mark!.icon} size="sm" decorative />
+                  )
+                : undefined),
+            icon: r.mark || r.leading ? undefined : r.icon,
+            status: r.status,
+            badge: r.badge,
+            hover: r.hover,
+            meta: r.meta,
+            detail: r.detail,
+            current,
+            menu: p.menu ? () => p.menu!(r.id, f.item) : undefined,
+            onClick: () => toPlace(f, p.id, undefined, r.id),
+          } satisfies NavItemProps
+        })
+      }
+      return items
+    }
+    if (!f) {
+      // The workspace's tree follows the same rules as a scope's: a module that lists items to drill into (Projects,
+      // Hosts) is a section headed by its name, with the items as its entries and no row of its own; any other module
+      // is one row, and one with places drills into them.
+      const rows: NavItemProps[] = []
+      for (const m of scopes) {
+        const inside = l.module === m && l.frames.length === 1
+        const child = m.child
+        if (child?.items) {
+          const mf = frame(m, undefined, undefined, [m.id])
+          const open = l.frames[1]
+          const id = `section:${m.id}`
+          parents.push(id)
+          const all = child.items().map((it): NavItemProps => {
+            const key = idOf(child, it)
+            const mark = child.mark?.(it)
+            return {
+              id: `${m.id}/${key}`,
+              label: labelOf({ scope: child, item: it }),
+              lead: mark
+                ? () => <Mark name={mark.name} hue={mark.hue} icon={mark.icon} size="sm" decorative />
+                : undefined,
+              icon: mark ? undefined : child.icon,
+              drill: true,
+              current:
+                l.module === m &&
+                open?.scope === child &&
+                open.item !== undefined &&
+                idOf(child, open.item) === key,
+              menu: child.menu ? () => child.menu!(it) : undefined,
+              onClick: () => returnTo(frame(child, it, mf, [m.id, key])),
+            }
+          })
+          const fold = `workspace|${m.id}`
+          sections.push({
+            id,
+            label: labelOf({ scope: m }),
+            icon: m.icon ?? "folder",
+            section: true,
+            collapsible: true,
+            count: m.count?.() || undefined,
+            onClick: () => navigate([m.id]),
+            actions: [
+              {
+                label: `Open ${labelOf({ scope: m })}`,
+                icon: "arrow-up-right" as const,
+                onClick: () => navigate([m.id]),
+                current: inside,
+              },
+            ],
+            items: capped({ id: m.id } as ShellPlace, fold, expanded.get().includes(fold), 8, all).map(
+              (e) => ({
+                ...e,
+                class: cx(e.class, "nc-nav-item--entry"),
+              }),
+            ),
+          })
+          continue
+        }
+        rows.push({
+          id: `m:${m.id}`,
+          label: labelOf({ scope: m }),
+          icon: m.icon,
+          count: m.count?.() || undefined,
+          current: inside,
+          onClick: () => navigate([m.id]),
+        })
+      }
+      const groups: NavGroup[] = [...(rows.length ? [{ items: rows }] : []), ...sections]
+      return { key: "workspace", label: ws.name, groups, parents, up: { label: "Up" } }
+    }
+    const here = f.key === l.frame.key
+    const lens = f.lens
+    const tree = lens ? lens.places : (f.scope.places ?? [])
+    const items = treeOf(f, here)
     const groups: NavGroup[] = [{ items: items(tree, true) }, ...sections]
     const i = l.frames.indexOf(f)
     const parent = i > 0 ? l.frames[i - 1] : undefined
@@ -1157,7 +1204,10 @@ export function createShell(options: ShellOptions) {
             }
           : parent
             ? { label: labelOf(parent), onClick: () => returnTo(parent) }
-            : { label: "Up" },
+            : // A module drilled into its places goes up to the workspace's tree, as the path's workspace does.
+              l.module !== scopes[0]
+              ? { label: ws.name, onClick: () => navigate([scopes[0]!.id]) }
+              : { label: "Up" },
     }
   })
   const filter = () => filters.get()[sidebar().key] ?? ""

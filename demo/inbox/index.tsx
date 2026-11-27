@@ -143,7 +143,7 @@ function InboxView(props: ShellViewProps) {
   const [pushed, setPushed] = createSignal(false)
   const notice = createMemo(() => NOTICES.find((n) => n.id === picked()))
   const issue = () => issueById(notice()?.issue)
-  const openIssue = (i: Issue) => s.go(`/projects/${i.project}/build/issues/${i.key}`)
+  const openIssue = (i: Issue) => s.go(`/projects/${i.project}/explore/issues/${i.key}`)
   const pick = (n: Notice) => {
     setPicked(n.id)
     markRead([n.id])

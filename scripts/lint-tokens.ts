@@ -1,4 +1,5 @@
-// Fails when a .css, .tsx (or .jsx, .ts) file contains a hard-coded colour, radius or font size.
+// Fails when a .css, .tsx (or .jsx, .ts) file contains a hard-coded colour, radius or font size, or a tinted
+// background: a surface filled with the accent's tint, or a grey token that isn't neutral (red = green = blue).
 //
 //   bun scripts/lint-tokens.ts [path ...] [--exclude name,name]
 //
@@ -12,7 +13,7 @@ export interface Finding {
   file: string
   line: number
   column: number
-  rule: "colour" | "radius" | "font-size"
+  rule: "colour" | "radius" | "font-size" | "tint"
   message: string
   snippet: string
 }
@@ -144,16 +145,72 @@ export function lintSource(file: string, text: string): Finding[] {
   return findings
 }
 
-function collect(path: string, excludes: Set<string>, out: string[]): void {
+/** A background filled from the accent: the tint, the line or the glow. Surfaces stay neutral grey. */
+const TINTED_FILL = /var\(--accent-(tint|line|glow|subtle)\)/
+const FILL_PROP = /(^|;|\{|\s)(background(-color|-image)?|--w-tint)\s*:\s*([^;}\n]+)/g
+
+/** Tinted fills anywhere, the design system's own files included. A line can opt out with `lint-tokens-ignore`. */
+export function lintTint(file: string, text: string): Finding[] {
+  const clean = stripComments(text, extname(file) === ".css")
+  const original = text.split("\n")
+  const out: Finding[] = []
+  clean.split("\n").forEach((line, index) => {
+    if (/lint-tokens-ignore(?!-next-line)/.test(original[index] ?? "")) return
+    if (/lint-tokens-ignore-next-line/.test(original[index - 1] ?? "")) return
+    for (const m of line.matchAll(FILL_PROP)) {
+      if (!TINTED_FILL.test(m[4] ?? "")) continue
+      out.push({
+        file,
+        line: index + 1,
+        column: (m.index ?? 0) + 1,
+        rule: "tint",
+        message: `${m[2]} filled with the accent; backgrounds stay neutral grey (var(--bg-4), var(--active)), the accent goes on text, borders and rings`,
+        snippet: (original[index] ?? "").trim().slice(0, 140),
+      })
+    }
+  })
+  return out
+}
+
+/** The greys of tokens.css: every surface, line and text token is neutral, red = green = blue. */
+const GREY_TOKEN =
+  /^\s*(--(?:bg-\d|text-\d|line(?:-[a-z]+)?|hover|active|selection|primary|on-primary))\s*:\s*([^;]+);/
+export function lintGreys(file: string, text: string): Finding[] {
+  const out: Finding[] = []
+  text.split("\n").forEach((line, index) => {
+    const m = line.match(GREY_TOKEN)
+    if (!m) return
+    const value = m[2]!.trim()
+    let rgb: number[] | undefined
+    const hex = value.match(/^#([0-9a-fA-F]{6})$/)
+    if (hex) rgb = [0, 2, 4].map((i) => Number.parseInt(hex[1]!.slice(i, i + 2), 16))
+    const fn = value.match(/^rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/)
+    if (fn) rgb = [fn[1], fn[2], fn[3]].map(Number)
+    if (!rgb || (rgb[0] === rgb[1] && rgb[1] === rgb[2])) return
+    out.push({
+      file,
+      line: index + 1,
+      column: 1,
+      rule: "tint",
+      message: `${m[1]} is ${value}, a tinted grey; the greys are neutral (red = green = blue)`,
+      snippet: line.trim().slice(0, 140),
+    })
+  })
+  return out
+}
+
+function collect(path: string, excludes: Set<string>, out: string[], all: string[] = []): void {
   const stat = statSync(path)
   if (stat.isDirectory()) {
     for (const entry of readdirSync(path)) {
       if (SKIP_DIRS.has(entry)) continue
-      collect(join(path, entry), excludes, out)
+      collect(join(path, entry), excludes, out, all)
     }
     return
   }
   const name = basename(path)
+  if (EXTENSIONS.has(extname(path)) && !name.endsWith(".d.ts") && !/\.(test|spec)\.[tj]sx?$/.test(name))
+    all.push(path)
   if (
     !EXTENSIONS.has(extname(path)) ||
     excludes.has(name) ||
@@ -166,8 +223,17 @@ function collect(path: string, excludes: Set<string>, out: string[]): void {
 
 export function lintPaths(paths: string[], exclude: string[] = DEFAULT_EXCLUDES): Finding[] {
   const files: string[] = []
-  for (const p of paths) collect(resolve(p), new Set(exclude), files)
-  return files.sort().flatMap((file) => lintSource(file, readFileSync(file, "utf8")))
+  const all: string[] = []
+  for (const p of paths) collect(resolve(p), new Set(exclude), files, all)
+  const checked = new Set(files)
+  return all.sort().flatMap((file) => {
+    const text = readFileSync(file, "utf8")
+    return [
+      ...(checked.has(file) ? lintSource(file, text) : []),
+      ...lintTint(file, text),
+      ...(basename(file) === "tokens.css" ? lintGreys(file, text) : []),
+    ]
+  })
 }
 
 if (import.meta.main) {

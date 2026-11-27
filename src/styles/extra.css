@@ -105,7 +105,7 @@ button.nc-nav-item { display: flex; width: 100%; gap: 8px; justify-content: flex
 /* In the sidebar a count is a plain number, like the meta. */
 .nc-nav-item .nc-count { min-width: 0; height: auto; margin-left: auto; padding: 0; background: none; color: var(--text-3); font-size: var(--nc-type-section); font-weight: 400; }
 
-.nc-tabstrip { position: relative; display: flex; align-items: center; flex: 1; min-width: 0; min-height: var(--header); padding: 0 var(--space-1) 0 6px; }
+.nc-tabstrip { position: relative; display: flex; align-items: center; flex: 1; min-width: 0; min-height: var(--header-view); padding: 0 var(--space-1) 0 6px; }
 .nc-tabstrip__tabs { display: flex; align-items: center; gap: 2px; flex: 0 1 auto; min-width: 0; overflow-x: auto; scrollbar-width: none; overscroll-behavior-x: contain; }
 .nc-tabstrip__tabs::-webkit-scrollbar { display: none; }
 .nc-tabstrip__actions { display: flex; align-items: center; gap: var(--space-1); margin-left: auto; padding-left: var(--space-2); flex: none; }
@@ -166,8 +166,8 @@ button.nc-nav-item { display: flex; width: 100%; gap: 8px; justify-content: flex
 .nc-view-header.nc-view-header--slot { min-height: 0; padding: 0; border-bottom: 0; background: none; }
 .nc-dropframe { position: relative; display: flex; flex-direction: column; flex: 1; min-width: 0; min-height: 0; }
 .nc-dropframe > .nc-frame { flex: 1; }
-.nc-dropframe__zones { position: absolute; inset: var(--header) 0 0 0; z-index: 5; }
-.nc-dropframe__target { position: absolute; border: 1px solid var(--accent-line); border-radius: var(--radius-sm); background: var(--accent-tint); pointer-events: none; transition: all 80ms ease; }
+.nc-dropframe__zones { position: absolute; inset: var(--header-view) 0 0 0; z-index: 5; }
+.nc-dropframe__target { position: absolute; border: 1px solid var(--accent-line); border-radius: var(--radius-sm); background: var(--active); pointer-events: none; transition: all 80ms ease; }
 .nc-dropframe__target[data-edge="left"] { inset: 0 50% 0 0; }
 .nc-dropframe__target[data-edge="right"] { inset: 0 0 0 50%; }
 .nc-dropframe__target[data-edge="top"] { inset: 0 0 50% 0; }
@@ -223,7 +223,7 @@ button.nc-menu__item, div.nc-menu__item { box-sizing: border-box; width: 100%; b
 .nc-menu__tab { height: var(--control-sm); padding: 0 var(--space-2); border: 0; border-radius: var(--radius-xs); background: transparent; color: var(--text-2); cursor: pointer; }
 .nc-menu__tab[aria-pressed="true"] { background: var(--line); color: var(--text-1); }
 .nc-trigger-mark { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: var(--radius-sm); background: var(--info-tint); color: var(--info); flex-shrink: 0; }
-.nc-trigger-mark[data-trigger="/"] { background: var(--accent-tint); color: var(--accent-text); }
+.nc-trigger-mark[data-trigger="/"] { background: var(--bg-4); color: var(--accent-text); }
 .nc-trigger-mark[data-trigger="$"] { background: var(--success-tint); color: var(--success); }
 .nc-trigger-mark[data-kind="person"] { background: var(--bg-4); color: var(--text-1); }
 .nc-trigger-mark[data-kind="doc"] { background: color-mix(in srgb, var(--label-orchid) 16%, transparent); color: var(--label-orchid); }
@@ -393,7 +393,7 @@ button.nc-menu__item, div.nc-menu__item { box-sizing: border-box; width: 100%; b
 /* ---------- Live ---------- */
 .nc-stream--warn { border-color: var(--warning-line); color: var(--warning); }
 .nc-stream--error { border-color: var(--danger-line); color: var(--danger); }
-.nc-widget { --w-hue: var(--accent-strong); --w-glow: var(--glow-ai); --w-tint: var(--accent-tint); --w-text: var(--accent-text); --w-line: var(--accent-line); }
+.nc-widget { --w-hue: var(--accent-strong); --w-glow: var(--glow-ai); --w-tint: var(--bg-4); --w-text: var(--accent-text); --w-line: var(--accent-line); }
 .nc-widget[data-hue="success"] { --w-hue: var(--success); --w-glow: var(--glow-live); --w-tint: var(--success-tint); --w-text: var(--success); --w-line: var(--success-line); }
 .nc-widget[data-hue="warning"] { --w-hue: var(--warning); --w-glow: 0 0 10px var(--warning-line); --w-tint: var(--warning-tint); --w-text: var(--warning); --w-line: var(--warning-line); }
 .nc-widget[data-hue="danger"] { --w-hue: var(--danger); --w-glow: 0 0 10px var(--danger-line); --w-tint: var(--danger-tint); --w-text: var(--danger); --w-line: var(--danger-line); }
@@ -540,7 +540,7 @@ button.nc-menu__item, div.nc-menu__item { box-sizing: border-box; width: 100%; b
 /* A body holding one filling part (a drop frame, a log) passes the height on. */
 .nc-frame__body:has(> .nc-dropframe, > .nc-log--fill) { display: flex; flex-direction: column; }
 .nc-frame[data-focused] { border-color: var(--line); }
-.nc-frame__header { display: flex; align-items: center; min-height: var(--header); border-bottom: 1px solid var(--line-soft); }
+.nc-frame__header { display: flex; align-items: center; min-height: var(--header-view); border-bottom: 1px solid var(--line-soft); }
 .nc-frame__body { flex: 1; min-height: 0; overflow: auto; }
 .nc-frame__body--padded { padding: var(--space-4); }
 @media (max-width: 720px) {
@@ -682,7 +682,7 @@ button.nc-menu__item, div.nc-menu__item { box-sizing: border-box; width: 100%; b
 .nc-reading { box-sizing: border-box; width: 100%; max-width: var(--nc-view-reading, 720px); margin-inline: auto; }
 /* Behind a sidebar opened over the main column: a scrim that closes it. The sidebar has a close control on top. */
 .nc-view-layout__scrim { position: absolute; inset: 0; z-index: 29; background: color-mix(in srgb, var(--bg-0) 50%, transparent); }
-.nc-view-layout__over-head { display: flex; flex: none; align-items: center; justify-content: flex-end; height: var(--header); padding: 0 var(--space-2); }
+.nc-view-layout__over-head { display: flex; flex: none; align-items: center; justify-content: flex-end; height: var(--header-view); padding: 0 var(--space-2); }
 .nc-view-layout__sidebar > .nc-view-layout__over-head { overflow: visible; }
 
 @media (max-width: 720px) {
@@ -733,3 +733,98 @@ button.nc-menu__item, div.nc-menu__item { box-sizing: border-box; width: 100%; b
 .nc-account__name-text, .nc-account__detail { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .nc-account__badge { flex: none; padding: 0 var(--space-1); border-radius: var(--radius-xs); background: var(--bg-4); color: var(--text-2); font-size: var(--nc-type-section); line-height: var(--nc-type-label-line); font-weight: 500; }
 .nc-account__detail { color: var(--text-3); font-size: var(--nc-type-label); }
+
+/* ---------- Hover card ----------
+   Details that appear on hover: a title, a quiet meta line, label and value rows, anything after. */
+.nc-hover-card-anchor { display: inline-flex; }
+/* The card may draw inside its trigger, such as a sidebar row: it resets what it would inherit from there, so long
+   titles wrap inside it. */
+.nc-hover-card { position: fixed; left: 0; top: 0; z-index: 86; box-sizing: border-box; display: flex; flex-direction: column; gap: var(--space-2); width: 280px; max-width: calc(100vw - 16px); margin: 0; padding: var(--space-3); border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--bg-3); color: var(--text-1); box-shadow: var(--shadow-overlay); font-size: var(--nc-type-label); line-height: var(--nc-type-label-line); text-align: left; white-space: normal; overflow-wrap: anywhere; font-weight: 400; letter-spacing: normal; cursor: default; animation: nc-popover-in var(--dur-fade) var(--ease); }
+.nc-hover-card__title { color: var(--text-1); font-size: var(--nc-type-body); font-weight: 500; line-height: var(--nc-type-body-line); }
+.nc-hover-card__meta { margin-top: -6px; color: var(--text-3); }
+.nc-hover-card__rows { display: grid; grid-template-columns: auto 1fr; gap: 4px var(--space-3); margin: 0; }
+.nc-hover-card__rows > dt { color: var(--text-3); }
+.nc-hover-card__rows > dd { display: flex; align-items: center; gap: 6px; min-width: 0; margin: 0; color: var(--text-2); }
+@media (prefers-reduced-motion: reduce) { .nc-hover-card { animation: none; } }
+
+/* ---------- Identicon ---------- */
+.nc-identicon { flex: none; width: 16px; height: 16px; border-radius: var(--radius-xs); background: color-mix(in srgb, var(--nc-identicon-hue) 16%, var(--bg-3)); fill: var(--nc-identicon-hue); shape-rendering: crispEdges; }
+.nc-identicon--md { width: 24px; height: 24px; }
+
+/* ---------- Widget board ----------
+   Zones hold widgets in a run (`row` across, `column` down) or on a grid; the view places each zone. Outside editing
+   a widget is content: no frame. While editing every widget is outlined and drags as a whole, an empty zone is a
+   dashed well with its name, and the zone under a dragged widget lights up. */
+.nc-wboard { display: contents; }
+.nc-wzone { display: flex; flex-direction: column; gap: var(--space-2); min-width: 0; border-radius: var(--radius-md); transition: box-shadow var(--dur-hover) var(--ease), background-color var(--dur-hover) var(--ease); }
+.nc-wzone[data-layout="row"] { flex-direction: row; flex-wrap: wrap; align-items: center; }
+.nc-wzone[data-empty] { display: none; }
+.nc-wboard[data-editing] .nc-wzone { box-sizing: border-box; min-width: 96px; min-height: 32px; padding: 3px; border: 1px dashed var(--line-strong); }
+.nc-wboard[data-editing] .nc-wzone[data-layout="column"] { min-height: 96px; }
+.nc-wboard[data-editing] .nc-wzone[data-empty] { display: grid; place-items: center; padding: 0 var(--space-3); text-align: center; }
+.nc-wboard[data-editing] .nc-wzone[data-empty]::after { content: attr(data-label); color: var(--text-4); font-size: var(--nc-type-section); white-space: nowrap; }
+.nc-wboard[data-editing] .nc-wzone[data-target] { border-style: solid; border-color: var(--text-4); background: var(--hover); }
+.nc-wboard[data-dragging], .nc-wboard[data-dragging] * { cursor: grabbing !important; }
+.nc-wboard[data-dragging] { user-select: none; }
+
+.nc-witem { position: relative; display: flex; min-width: 0; border-radius: var(--radius-md); }
+.nc-witem__body { flex: 1; min-width: 0; }
+.nc-witem__press { display: flex; align-items: center; margin: 0; padding: 0; border: 0; border-radius: inherit; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.nc-witem__press > :not(.nc-witem__mark) { flex: 1; min-width: 0; }
+.nc-witem__press:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+.nc-witem:is([data-form="chip"], [data-form="tile"]) .nc-witem__press > :not(.nc-witem__mark) { flex: none; }
+.nc-witem[data-form="row"] { flex: 1 1 100%; }
+.nc-witem__mark { position: absolute; top: 3px; right: 3px; }
+.nc-witem__fold { position: absolute; top: 2px; right: 26px; z-index: 1; opacity: 0; transition: opacity var(--dur-hover) var(--ease); }
+.nc-witem:is(:hover, :focus-within) > .nc-witem__fold { opacity: 1; }
+.nc-witem__pop { position: relative; width: 264px; }
+.nc-wboard[data-dragging] .nc-witem__press { pointer-events: none; }
+.nc-witem[data-lifted] { opacity: 0.3; }
+
+/* While editing: outlined, the whole widget the handle, its controls inert, its menu at its corner. */
+.nc-wboard[data-editing] .nc-witem { cursor: grab; box-shadow: 0 0 0 1px var(--line); }
+.nc-wboard[data-editing] .nc-witem:hover { box-shadow: 0 0 0 1px var(--line-strong); }
+.nc-wboard[data-editing] .nc-witem[data-selected] { box-shadow: 0 0 0 1px var(--text-3); }
+.nc-wboard[data-editing] .nc-witem__body { pointer-events: none; }
+.nc-wboard[data-editing] .nc-witem[data-form="chip"] { border-radius: var(--radius-full); }
+/* The menu sits on the widget's top right corner as a small raised disc, clear of its figures. */
+.nc-wboard__more { position: absolute; top: -9px; right: -9px; z-index: 1; border-radius: var(--radius-full); background: var(--bg-4); box-shadow: var(--shadow-raised); }
+.nc-witem:is([data-form="chip"], [data-form="row"]) > .nc-wboard__more { position: static; align-self: center; margin-left: -2px; }
+.nc-witem[data-form="tile"] > .nc-wboard__more { display: none; }
+/* In a grid cell the item fills it. */
+.nc-wgrid__item > .nc-witem { height: 100%; }
+.nc-wgrid__item > .nc-witem > .nc-witem__body { display: flex; flex-direction: column; }
+
+/* The gap where a dragged widget lands, its size and form, and the ghost: the widget itself, lifted. */
+.nc-wzone__gap { flex: none; box-sizing: border-box; border-radius: var(--radius-md); background: var(--hover); box-shadow: inset 0 0 0 1px var(--line); animation: nc-wgap-in 140ms var(--ease); }
+.nc-wzone__gap[data-form="chip"] { border-radius: var(--radius-full); }
+.nc-wzone[data-layout="column"] > .nc-wzone__gap { width: 100%; }
+@keyframes nc-wgap-in { from { opacity: 0; transform: scale(0.94); } }
+.nc-wboard__ghost { position: fixed; z-index: 1000; box-sizing: border-box; border-radius: var(--radius-md); background: var(--bg-3); box-shadow: var(--shadow-overlay); pointer-events: none; transform: scale(1.02); transform-origin: top left; }
+.nc-wboard__ghost[data-form="chip"] { border-radius: var(--radius-full); }
+@media (prefers-reduced-motion: reduce) { .nc-wzone__gap { animation: none; } }
+
+/* A widget's settings, in a popover while editing. */
+.nc-wsettings { display: flex; flex-direction: column; gap: 2px; width: 320px; box-sizing: border-box; }
+.nc-wsettings__head { display: flex; align-items: center; gap: var(--space-2); height: 28px; margin-bottom: var(--space-1); }
+.nc-wsettings__icon { color: var(--text-3); }
+.nc-wsettings__title { flex: 1; min-width: 0; overflow: hidden; color: var(--text-1); font-size: var(--nc-type-label); font-weight: 500; text-overflow: ellipsis; white-space: nowrap; }
+.nc-wsettings__row { display: grid; grid-template-columns: minmax(0, 1fr) 176px; align-items: center; gap: var(--space-2); min-height: 32px; color: var(--text-3); font-size: var(--nc-type-label); }
+.nc-wsettings__row > :last-child { justify-self: stretch; min-width: 0; }
+.nc-wsettings__row > :is([data-part="switch"], .nc-switch) { justify-self: end; }
+/* Over a grid cell's drag veil, so the menu stays pressable while the cell drags. */
+.nc-wgrid__item .nc-wboard__more { z-index: 2; }
+.nc-wboard[data-editing] .nc-wgrid__item > .nc-witem { box-shadow: none; }
+/* Resizing a widget while editing: a corner handle in a column (down grows a line into a card, then taller), a bar
+   at the right edge in a row (across grows a chip into a line). */
+.nc-witem__resize { position: absolute; right: 2px; bottom: 2px; z-index: 2; width: 14px; height: 14px; border-radius: var(--radius-xs); color: var(--text-3); cursor: ns-resize; background: linear-gradient(135deg, transparent 0 55%, currentColor 55% 62%, transparent 62% 72%, currentColor 72% 79%, transparent 79%); }
+.nc-witem__resize:hover, .nc-witem[data-resizing] > .nc-witem__resize { color: var(--text-1); }
+.nc-wzone[data-layout="row"] .nc-witem__resize { top: 50%; right: -3px; bottom: auto; width: 4px; height: 14px; border-radius: var(--radius-full); background: var(--line-strong); cursor: ew-resize; transform: translateY(-50%); }
+.nc-wzone[data-layout="row"] .nc-witem__resize:hover, .nc-wzone[data-layout="row"] .nc-witem[data-resizing] > .nc-witem__resize { background: var(--text-3); }
+.nc-witem[data-sized] { overflow: hidden; }
+.nc-witem[data-sized] > .nc-witem__body { display: flex; flex-direction: column; min-height: 0; }
+.nc-witem[data-sized] > .nc-witem__body > * { flex: 1 1 auto; min-height: 0; }
+/* Rows: widgets grown to a full row, apart from the zones so these keep their places. */
+.nc-wrows { display: flex; flex-direction: column; gap: var(--space-2); }
+.nc-wrows > .nc-witem { width: 100%; }
+.nc-wboard[data-editing] .nc-wrows > .nc-witem { box-shadow: 0 0 0 1px var(--line); }

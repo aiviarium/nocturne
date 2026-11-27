@@ -13,7 +13,7 @@ In the demo, <DemoLink to="hosts/build-01/operate/overview">a host</DemoLink> dr
 
 ## The header
 
-`SidebarHeader` is a 44px row, from left to right:
+`SidebarHeader` is a 36px row, from left to right:
 
 1. ↑, which goes up one level. At a record it goes to the record's list, "Up to Issues". Elsewhere it goes to the scope above, "Up to Projects". With nowhere up it is disabled, and the filter field beside it keeps its position.
 2. The filter field, which fills the free width.
@@ -26,7 +26,7 @@ The field is quiet at rest and 28px tall, with 12px text.
 Typing filters the tree in place.
 Matches and their parents stay, with the match underlined in `text-3`.
 Escape clears it.
-Type in the filter on <DemoLink to="projects/atlas/build/issues">Issues</DemoLink> to try it.
+Type in the filter on <DemoLink to="projects/atlas/explore/issues">Issues</DemoLink> to try it.
 
 ## The tree
 
@@ -50,11 +50,20 @@ The parent's icon stays.
 A place with `enters` lists scopes: opening one of its rows nests that scope in the path, and the tree drills into it.
 Entering a scope opens it as the person left it, with the lens worn last and the place that lens remembers.
 
+## The workspace
+
+The workspace's tree follows the same rules as a scope's.
+
+- A module with a `child`, such as Projects or Hosts, is a section headed by its name, with its items as the entries. Each drills into its item.
+- Any other module, such as <DemoLink to="inbox">Inbox</DemoLink>, is one row.
+
+A module with `places`, such as <DemoLink to="settings/general">Settings</DemoLink>, drills into them. Its ↑ goes back to the workspace's tree, as the workspace in the path does.
+
 ## Entries
 
 A place with few entries lists them with `entries`. The person opens one without going through the list.
 A top-level place becomes a section after the places, headed by its name, and the place has no row of its own.
-Its saved views and child places lead the section, then its entries.
+Its child places lead the section, then its entries.
 A nested place lists its entries under its row.
 Records open in place, and the scopes a place `enters` drill in, with a chevron.
 The open entry is marked.
@@ -77,7 +86,7 @@ The root's groups of projects and hosts open their scope's menu too.
 ### Section headings
 
 A section's title sits low in its row, near its entries and away from the block above.
-The chevron that folds it takes the entries' icon column. The title starts where their labels do.
+The chevron that folds it takes the entries' icon column. The place's icon follows it at 11px in `text-4`, then the title.
 Clicking the title opens the place's list.
 The heading ends in "New …" when the place's `entries` has a `create`, then ↗, which opens the list and is marked while it's in the view.
 Both always show.
@@ -130,7 +139,7 @@ Drill into a scope when the target is a domain of its own, with its own lists, p
 Projects drill to a project, and the fleet to a host.
 
 Nest in place when the data is a part of one view.
-Saved views are child rows under their place, and a page tree stays a tree.
+Saved views are filters, so they are the view header's tabs and never rows of the tree. A page tree stays a tree.
 Choosing an item in place changes the view and keeps the tree.
 
 <Example id="navigation/page-tree" />

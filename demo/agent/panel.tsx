@@ -14,16 +14,18 @@ import {
   useShell,
 } from "@aiviarium/nocturne"
 import { createEffect, createSignal, Show } from "solid-js"
+import { demoShell } from "../menus"
 import { ChatComposer, Transcript } from "./chat"
 import { conversationById, newConversation, type Segment, send } from "./data"
 import { transcriber } from "./transcriber"
+import { projectHere } from "./views"
 
-/** The panel's conversation, made on first use; it also shows in Agent › Chats. */
+/** The panel's conversation, made on first use in the project in view; it also shows in that project's Build › Chats. */
 const [panelChat, setPanelChat] = createSignal<string | undefined>(undefined, { ownedWrite: true })
 const chatId = () => {
   const id = panelChat()
   if (id && conversationById(id)) return id
-  const made = newConversation()
+  const made = newConversation(projectHere(demoShell()))
   setPanelChat(made)
   return made
 }
