@@ -4,7 +4,8 @@ description: How a person moves through an app, the bars of the window, a view's
 ---
 
 Every app moves through the [app shell](../shell/index.mdx).
-This page shows how its parts work together, and where a view adds navigation of its own.
+A view doesn't add navigation of its own, except a page tree or a list of chats in its own sidebar.
+This page shows where each way of moving lives, and how to choose between drilling and nesting.
 
 ## Where things go
 
@@ -38,6 +39,8 @@ No surface has a back button of its own.
 | To a sibling scope or record | The switcher on its path segment or crumb |
 | Back to where the person was | ⌘[, Alt+←, the mouse's back button, the desktop arrow or the browser's |
 
+Try each one from <DemoLink to="projects/atlas/build/issues/WEB-142">WEB-142</DemoLink>.
+
 ## Scope by drilling
 
 Going into a domain, such as a space, a host or a project, drills the sidebar into that domain's places.
@@ -47,6 +50,8 @@ The core and the plugins contribute places and lenses through `createShell`, and
 See [Sidebar](../shell/sidebar.mdx).
 
 <Example id="navigation/drilldown" />
+
+In the demo, <DemoLink to="projects">Projects</DemoLink> lists the projects, and opening one drills the sidebar into <DemoLink to="projects/atlas/build/issues">its places</DemoLink>.
 
 ## Drill down or nest
 
@@ -103,5 +108,7 @@ A view built from `ViewLayout` and `ViewHeader` gets this with no extra code.
 See [Phones](../phones.mdx#navigation).
 
 <Example id="navigation/phone-drilldown" />
+
+The demo takes the phone layout below 720px wide, and <DemoLink to="settings/mobile">Mobile app</DemoLink> shows a phone stack in a frame.
 
 <GalleryLink page="sidebar">The navigation examples in the gallery</GalleryLink>

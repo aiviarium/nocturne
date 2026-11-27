@@ -1,11 +1,16 @@
 ---
 title: Forms
-description: InlineField, the form fields, NumberField, Slider, PropertyList and SettingRow.
+description: InlineField, the form fields, NumberField, sliders, InfoTip, PropertyList and SettingRow.
 ---
+
+Forms appear in three places in the shell.
+A record's page edits its values in place, with `InlineField` and `PropertyList`.
+In a dialog, the form fields collect what a new item needs, and a primary button submits them.
+Settings pages apply each change at once, with one `SettingRow` per setting and no save button.
 
 ## InlineField
 
-`InlineField` is text edited where it is shown.
+Use `InlineField` for a value the person edits where it is shown, such as a record's title or a property.
 
 | Variant | Use |
 | --- | --- |
@@ -20,12 +25,15 @@ Do not use a raw `<input>` styled flat.
 
 <Example id="inline-field/variants" />
 
+Edit the title and the properties of <DemoLink to="projects/atlas/build/issues/WEB-142">WEB-142</DemoLink>.
+
 ## Form fields
 
-`TextField`, `TextArea`, `Select`, `Switch` and `SchemaForm` are 30px fields, with the label above in 12px `text-2`.
+Use the form fields in a dialog, a form or a setting.
+`TextField`, `TextArea`, `Select` and the fields of `SchemaForm` are 30px high, with the label above in 12px `text-2`.
 
-- A `Switch` applies at once.
-- A `Checkbox` is part of a form, with a mixed state for select-all.
+- A `Switch` applies at once. Checked, it takes the accent.
+- A `Checkbox` is part of a form, with a mixed state for select-all. Checked, it takes the accent.
 - A `RadioGroup` picks one of a few visible options.
 - A `Select` is for long or changing sets, such as hosts or scopes. It is a button with `aria-haspopup` and a menu of radio items.
 - `info` on a `TextField`, `TextArea` or `Select` puts its explanation behind an `InfoTip` beside the label.
@@ -34,6 +42,10 @@ Do not use a raw `<input>` styled flat.
 <Example id="text-field/states" />
 <Example id="select/default" minHeight={240} />
 <Example id="switch/default" />
+<Example id="checkbox/default" />
+<Example id="radio-group/default" />
+
+The controls are on the demo's <DemoLink to="settings/general">General</DemoLink> settings, and a form in a dialog is behind the plus on <DemoLink to="settings/keys">API keys</DemoLink>.
 
 `SchemaForm` builds a form from a JSON Schema.
 See [Fields](../fields.mdx).
@@ -58,9 +70,9 @@ The arithmetic is `evaluateExpression` in `src/lib/expression.ts`, a parser with
 <Example id="number-field/inline" />
 <DoDont do="design/number-inline" dont="design/number-boxed" />
 
-## Slider
+## Slider and RangeSlider
 
-`Slider` and `RangeSlider` set a bounded value roughly.
+Use `Slider` and `RangeSlider` to set a bounded value roughly, such as a volume or a range of hours.
 
 - A 28px row, a 4px track and a 14px thumb, with the value at the right of the label.
 - `ticks` and `marks` name the steps.
@@ -74,9 +86,19 @@ They are not for exact numbers over a large range.
 <Example id="slider/field" />
 <DoDont do="design/slider-readout" dont="design/slider-exact" />
 
+## InfoTip
+
+Use an `InfoTip` for an explanation, in place of text that is always there.
+It is a small info button beside a label, such as a field's, a setting's or a section's.
+It opens the words in a popover, or a sheet on a phone, and closes on Escape, a press outside or its close control.
+A tap works where hovering doesn't.
+
+Fields take it through `info`, and `SettingRow` through its description.
+The <DemoLink to="dashboard/overview">Dashboard</DemoLink> has one beside the title of its error budget.
+
 ## PropertyList
 
-`PropertyList` shows label and value pairs.
+Use `PropertyList` for the facts of one record, as label and value pairs, on its page or in the Details panel.
 
 - The label column is 120px, or `labelWidth="auto"`, in 12px `text-3`.
 - Values are `text-1`.
@@ -85,9 +107,11 @@ They are not for exact numbers over a large range.
 
 <Example id="property-list/variants" />
 
+See the properties of <DemoLink to="projects/atlas/build/issues/WEB-142">WEB-142</DemoLink>, and of <DemoLink to="projects/atlas/build/pulls/418">pull request 418</DemoLink>.
+
 ## SettingRow
 
-`SettingRow` is one setting of a settings page.
+Use `SettingRow` for one setting of a settings page.
 Its title and key are at the left, and its control is at the right.
 Its description is behind an `InfoTip` beside the title, never text on the row.
 
@@ -100,5 +124,7 @@ Its description is behind an `InfoTip` beside the title, never text on the row.
 - Show only the settings the person can change at the scope shown. A row that cannot change is not drawn.
 
 <Example id="setting-row/default" />
+
+The demo's <DemoLink to="settings/general">General</DemoLink> and <DemoLink to="settings/appearance">Appearance</DemoLink> are setting rows.
 
 <GalleryLink page="text-field" />

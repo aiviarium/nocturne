@@ -1,11 +1,16 @@
 ---
 title: Records
-description: Board, DataTable and DataList.
+description: Board, DataTable and DataList, for records the person sorts, compares or edits in place.
 ---
+
+These parts show many records at once.
+In the shell each one fills the view, and the Details panel shows the selected record.
+Opening a record goes to it, and its trail and stepper follow the order the person sees.
 
 ## Board
 
-Use `Board`, `BoardLane` and `BoardCard` for records in lanes.
+Use `Board`, `BoardLane` and `BoardCard` for records in lanes, such as issues by state.
+The person moves a record to another lane by dragging its card.
 
 - Lanes are 272px wide and never squeezed, and the board scrolls sideways when they do not fit.
 - The head of a lane is 30px high. It has a dot or icon, the name, a count and an add control, and it highlights when a card is dragged over it.
@@ -20,11 +25,14 @@ Use `Board`, `BoardLane` and `BoardCard` for records in lanes.
 <Example id="board/card" />
 <Example id="board/phone" />
 
+Drag cards between lanes on the demo's <DemoLink to="projects/atlas/build/board">Board</DemoLink>.
+
 <GalleryLink page="board" />
 
 ## DataTable
 
-Use `DataTable` for a table of records.
+Use `DataTable` for records the person compares by column, such as members, hosts or cycles.
+Use a `RowList` for a list of things with one title each.
 Rows are 30px, and columns can sort.
 
 - `selectable` works as in a list. A click opens a row, and a click with Cmd, Ctrl or Shift selects. Checkboxes show on hover, on focus, and while something is selected. There is a select-all box. Selection is a neutral fill. The toolbar becomes the bulk bar only while something is selected.
@@ -33,7 +41,8 @@ Rows are 30px, and columns can sort.
 - `rowMenu` is the row menu, as a `RowList` has.
 
 The table is one tab stop, and the arrow keys move between rows.
-Use a `RowList` for a list of things with one title each.
+
+The demo's <DemoLink to="settings/members">Members</DemoLink>, <DemoLink to="hosts">Hosts</DemoLink> and <DemoLink to="projects/atlas/build/cycles">Cycles</DemoLink> are tables.
 
 <Example id="data-table/interactive" />
 <Example id="data-table/managed" />
@@ -45,7 +54,7 @@ Use a `RowList` for a list of things with one title each.
 
 ## DataList
 
-Use `DataList` for records edited in place.
+Use `DataList` for short records the person edits where they are, with no page of their own.
 
 - Tags and URLs, with one field.
 - Environment variables, with `fields` for a name and a value.
@@ -61,6 +70,9 @@ Escape goes to the row.
 On a phone it is an iOS form group.
 `SchemaForm` uses it for arrays of strings and of small records.
 Records that open are a `RowList` with `onAdd`, not a `DataList`.
+`DataListInput` is one field of a row, for a row of your own.
+
+The demo's <DemoLink to="settings/keys">API keys</DemoLink> and the headers of <DemoLink to="settings/webhooks/deploys-slack">a webhook</DemoLink> are data lists.
 
 <Example id="data-list/records" />
 <Example id="data-list/form" />

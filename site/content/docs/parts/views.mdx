@@ -1,31 +1,32 @@
 ---
 title: Views
-description: The frame of a view, cards, panels, section headings and the layout parts.
+description: ViewLayout, tabs, cards, panels, section headings and the parts that lay out a view.
 ---
 
-## The frame of a view
+A view is what the shell shows at a place.
+The shell draws the window around it, and the view draws its header and its content from the parts on this page.
 
-A view is `ViewLayout` with a `ShellViewHeader` inside the [app shell](../shell/index.mdx).
-The header is 44px, like every header in the window.
-Its title or trail is at the drill size, 12px/500, the size of the title bar's path, so nothing changes size as the person drills.
-The view area is raised, square, and runs to the window's bottom edge.
+## ViewLayout
 
-Header actions come in one order:
+Use `ViewLayout` for every view, with a `ShellViewHeader` as its header.
+The view area is raised on the canvas, square, and runs to the window's bottom edge.
+The header is the view's one bar, 44px like every header in the window.
 
-1. icon actions
-2. pin
-3. overflow
-4. the primary action
+```tsx
+<ViewLayout id="issues" header={<ShellViewHeader actions={actions}>{viewSwitch}</ShellViewHeader>}>
+  …
+</ViewLayout>
+```
 
-The header's last crumb, or its title, names the view's tab through `setTitle` on the app's `ViewChrome`.
-A view switch or search goes in the header's middle, not in a toolbar under it.
+- At a place the header shows the place's title. At a record it shows the trail, `Issues / WEB-142 ⌄`, with the record crumb as a switcher and the stepper at the right. See [View header and trail](../shell/view-header.mdx).
+- The title and the crumbs are at the drill size, the size of the title bar's path, so nothing changes size as the person drills.
+- Header actions start with the icon actions, then the overflow menu, and end with the primary action.
+- A view switch or search goes in the header's middle, as its children. There is no toolbar row under the header.
+- The window's title comes from the header's title or last crumb.
 
 <DoDont do="design/compact-header" dont="design/inflated-header" />
 
-At a place the header shows the place's name.
-At a record it shows the trail, `Issues / WEB-142 ⌄`, with the record crumb as a switcher and the stepper at the right.
-There is no back chevron.
-[View header and trail](../shell/view-header.mdx) has the rules.
+The <DemoLink to="inbox">Inbox</DemoLink> has its view switch in the header's middle, and <DemoLink to="projects/atlas/explore/ideas">Ideas</DemoLink> its add action at the right.
 
 ### Width
 
@@ -38,59 +39,102 @@ A form lays out its fields in columns inside its sections instead of narrowing t
 It centres the column at a reading width.
 Don't use it for forms or settings: one centred page among full-width pages reads as a different app.
 
+## Tabs
+
+Use segmented `Tabs` to switch between views of one place, in the view header's middle.
+Use `variant="underline"` tabs to move between the sections of one record, with a `TabPanel` for each as children.
+
+- Segmented tabs work like a radio group, with two to five short labels.
+- Underline tabs show a count after the label when it's above zero.
+- The selected tab takes the neutral `active` fill and `text-1`, in both variants. It has no underline or bar, and its weight stays.
+- The arrow keys, Home and End move and select.
+
+<Example id="tabs/segmented" />
+<Example id="tabs/underline" />
+
+The <DemoLink to="inbox">Inbox</DemoLink> switches its list with segmented tabs, and <DemoLink to="settings/webhooks/deploys-slack">a webhook</DemoLink> has underline tabs for its sections.
+
 ## Card
 
-A `Card` is a box of content.
-It has 12px padding (`--nc-pad`), radius 8, a `line-soft` edge and a `bg-1` fill.
+Use a `Card` for a box of content in a view, such as an idea, a figure or a group of settings.
+It has 12px padding (`--nc-pad`), `--radius-md`, a `line-soft` edge and a `bg-1` fill.
 A `nested` card is `bg-2`.
 
-- A card is as tall as its content.
-- `fill` makes it use a box that a grid gives it, and the body takes the height. A `RowList` scrolls inside it and an `EmptyState` centres in it. A card with one `Stat` keeps its label and figure at the top. The figure is 32px in a tall box, and its chart takes the rest.
+- A card is as tall as its content, and cards in a row of a grid share its height.
+- `fill` makes it use a box that a grid gives it, and the body takes the height. A `RowList` scrolls inside it and an `EmptyState` centres in it. A card with one `Stat` keeps its label and figure at the top.
 - `title`, `count` and `action` put a `SectionHeading` inside.
-- `padding="none"` is for media or tables that reach the edges.
+- `padding="none"` is for media, tables and setting rows that reach the edges.
 - `href` or `onClick` make the whole card one link.
-- A card inside a card, or a list in a card, does not add a second padding.
+- A selected card takes a `line-strong` ring.
+- A card inside a card, or a list in a card, doesn't add a second padding.
 
 <Example id="card/sized" />
 <Example id="card/fill" />
 <DoDont do="design/list-in-card" dont="design/list-double-inset" />
 
+The cards of <DemoLink to="projects/atlas/explore/ideas">Ideas</DemoLink> share each row's height.
+
 ## Panel
 
-A `Panel` is a tool region with a header.
-The header is 44px, with the title, a `state` and `actions`.
-The body has 12px padding.
+Use a `Panel` for a tool region with a header inside a view, such as a host's meters on a dashboard.
+The shell's docked panels are `ShellPanel`, see [Panels](../shell/panels.mdx).
 
+- The header is 44px, with the title, a `state` and `actions`.
+- The body has 12px padding.
 - `footer` is only for totals or pagination.
 - `fill` works as for `Card`.
 - `flush` is for a table or a terminal.
 
 <Example id="panel/variants" />
 
-## Section heading
+The demo's <DemoLink to="dashboard/fleet">Fleet</DemoLink> has a panel for each host.
 
-`SectionHeading` is the one treatment for a section inside a view or card.
-It is 13px semibold `text-1`, in a 24px row.
+## SectionHeading
+
+Use `SectionHeading` for every section inside a view or a card.
+It is 13px semibold `text-1`, at the height of a small control.
 
 - `count` is a total in `text-3`.
 - One `action` goes at the right. It is a ghost `Button size="sm"`, an `IconButton size="sm"`, a link or a `State`.
-- It is never 16, 20 or 26px.
-- Group labels in a sidebar or menu are the nav label, 11px in `text-3`. They are not section headings.
+- Group labels in a sidebar or a menu are small labels, 11px in `text-3`. They aren't section headings.
 
 <Example id="section-heading/variants" />
 <DoDont do="design/one-heading" dont="design/mixed-headings" />
 
-## Layout parts
+## Split and SplitGroup
 
-- `AppShell` lays out the window, with the title bar, the sidebar, the view area and its docked panels, and the panel rail. `Shell` fills it from a `createShell` registry. See [The app shell](../shell/index.mdx).
-- `Frame` has a `TabStrip` header.
-- `Split` and `SplitGroup` have dividers you can drag. A divider is a focusable separator. The arrow keys, Home and End move it. A double click resets it.
-- `Dock` tiles frames, each with a `TabStrip`: columns side by side, frames stacked in a column. It is a view's content, never a part of the shell, and the shell's panels have no tiling. Dragging a tab onto another frame's strip moves it there. Dropping it on a side of a frame splits that frame. The layout is data. `dockLayout`, `dockAdd`, `dockSplit`, `dockRemove` and `dockSync` change it, and the app keeps it.
-- `Dialog` is centred, bare, near the top, or a bottom sheet.
-- `LinkProvider` sends `NavItem` and `Button` links through your router.
+Use `Split` for two columns in a view with a divider between them, such as a list and the reader of its selected item.
+Use `SplitGroup` for more than two.
+
+- The divider is a focusable separator. The arrow keys, Home and End move it, and a double click resets it.
+- The selection's details go in the shell's Details panel, not in a column of the view. A split is for a reader the view itself is about.
 
 <Example id="split/horizontal" />
+
+<DemoLink to="projects/atlas/explore/triage">Triage</DemoLink> reads the selected report beside its list.
+
+## Dock, Frame and TabStrip
+
+Use `Dock` when a view's content is several tiled frames with tabs, such as a host's terminals side by side.
+It is a view's content, never a part of the shell, and the shell's panels have no tiling.
+
+- `Frame` is one tile, with a `TabStrip` as its header.
+- `TabStrip` is a row of document tabs with icons, titles and close buttons. Tabs shrink, then the strip scrolls, and "All tabs" lists them with a filter.
+- Dragging a tab onto another frame's strip moves it there. Dropping it on a side of a frame, inside a `TabDropFrame`, splits that frame.
+- The layout is data. `dockLayout`, `dockAdd`, `dockSplit`, `dockRemove` and `dockSync` change it, and the app keeps it.
+
 <Example id="dock/tiles" />
+<Example id="tab-strip/frames" />
+
+Try it on <DemoLink to="hosts/build-01/operate/sessions/s_7f2a">a session</DemoLink>.
+
+## LinkProvider
+
+`LinkProvider` sends the links of `NavItem` and `Button` through the app's router.
+Put it around the parts whose links stay inside the app.
+The demo's <DemoLink to="projects/atlas/product/roadmap">Roadmap</DemoLink> uses it.
+
+## Where things belong
 
 The project is the hub.
 Issues, docs, agent sessions and environments sit inside it, and each module adds its part there.

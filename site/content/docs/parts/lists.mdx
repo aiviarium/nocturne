@@ -1,12 +1,18 @@
 ---
 title: Lists
-description: RowList and ListRow, for a list of things with one title each.
+description: RowList and ListRow for a list of things, RowSection for its groups, and List for long plain lists.
 ---
 
-Use `RowList` with `ListRow` for a list of things.
-A table of columns is a `DataTable`, see [Records](./records.mdx#datatable).
+Use `RowList` with `ListRow` for a list of things with one title each, such as issues, messages or files.
+Use a `DataTable` when the person compares columns, see [Records](./records.mdx#datatable).
+
+In the shell a list fills the view, under the view header.
+Selecting a row shows it in the Details panel and leaves the trail as it is.
+Opening a row goes to the record, and the header shows its trail and the stepper over this list, in its order and filter.
 
 <Example id="list-row/one-line" />
+
+The <DemoLink to="inbox">Inbox</DemoLink> and <DemoLink to="projects/atlas/build/issues">Issues</DemoLink> are lists.
 
 ## Sizes
 
@@ -73,13 +79,15 @@ You drag the row itself, and Delete is in its menu and on the Delete key.
 <DoDont do="design/drag-the-row" dont="design/grip-and-delete" />
 <DoDont do="design/selection-neutral" dont="design/selection-accent" />
 
-## Sections
+## RowSection
 
 `RowSection` groups rows under a heading inside a `RowList`, such as issues by state.
 The heading shows the group's name at the body size, with its count, an optional icon or `leading` glyph, and buttons that show on hover and focus.
 Its chevron folds the group to its heading, and `expanded` or `defaultExpanded` set whether the rows show.
 The rows keep the list's shared columns and its keyboard model, so they line up across groups, and the arrow keys move from one group to the next.
 Group heads have no fill, and groups are set apart by space.
+
+<DemoLink to="projects/atlas/build/issues">Issues</DemoLink> groups by state, and <DemoLink to="projects/atlas/product/roadmap">Roadmap</DemoLink> by quarter.
 
 ## Links and long lists
 
@@ -132,4 +140,18 @@ A row's `children` nest under it as a tree.
 <Example id="list-row/touch-actions" />
 <Example id="list-row/phone-edit" />
 
+Try selection, the bulk actions and the row menu on <DemoLink to="projects/atlas/build/issues">Issues</DemoLink>.
+
 <GalleryLink page="list-row" />
+
+## List
+
+`List` is a long list of one-line rows of one fixed height, rendered only where visible.
+Use it for a run log or a picker with thousands of entries.
+It is a listbox, where the arrow keys, Home, End, Page Up and Page Down move, and Enter picks.
+`multiselectable` with `isSelected` lets more than one row be selected.
+Use a `RowList` when rows have a title, facts and actions.
+
+<Example id="list/virtual" />
+
+<DemoLink to="agent/runs">Runs</DemoLink> and <DemoLink to="agent/chats">Chats</DemoLink> are lists of this kind.

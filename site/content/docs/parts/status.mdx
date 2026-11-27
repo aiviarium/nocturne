@@ -1,11 +1,18 @@
 ---
 title: Status
-description: State, badges, the metadata line, empty states and cut text.
+description: States, badges, identifiers, the metadata line, empty states, callouts, skeletons, cut text, avatars and marks.
 ---
 
-## State
+These parts mark facts about an item.
+Indicators mark the unusual.
+A state shows while something is wrong or running, and a count while it is above zero.
+Each fact appears once on a screen.
+In the shell these rules apply to the sidebar, the title bar's status items and every panel too.
 
-`State` is a dot and a word, everywhere.
+## State and StatusDot
+
+Use `State` for the state of an item: a dot and a word, everywhere.
+`StatusDot` is the dot alone, for a place where the word is already beside it, such as a list of runs.
 
 - The word has a colour only for warn and error.
 - Only `live` and `ai` glow.
@@ -16,20 +23,32 @@ description: State, badges, the metadata line, empty states and cut text.
 <DoDont do="design/exceptional-status" dont="design/permanent-status" />
 <DoDont do="design/state-foreground" dont="design/tinted-rows" />
 
+In <DemoLink to="hosts">Hosts</DemoLink>, only the hosts that aren't online show a state.
+
 ## Badge, LabelChip and Count
 
 - A `Badge` is for a kind, such as "Draft" or "Admin", or a category. It never shows a state that a `State` shows.
 - A label on a card, row or table, such as "Bug", is a toned `Badge`. It is more compact than a chip and fits the record.
   Give it a status tone only when the label means one, such as `danger` for a bug. Other labels stay `neutral`.
 - A `LabelChip` is a tag outside a record, such as a project or area in a picker, in one of the label colours.
-- `Count` is an attention count on a neutral fill. In the sidebar, counts and totals are plain numbers in `text-3`.
+- `Count` is an attention count on a neutral fill, never the accent. In the sidebar, counts and totals are plain numbers in `text-3`.
 
 One list never has two treatments for the same fact.
 
 <Example id="badge/status" />
 <Example id="badge/labels" />
+<Example id="badge/counts" />
 <DoDont do="design/fact-once" dont="design/fact-repeated" />
 <DoDont do="design/chip-tint" dont="design/solid-chip" />
+
+<DemoLink to="projects/atlas/build/issues">Issues</DemoLink> have label chips, and the <DemoLink to="inbox">Inbox</DemoLink> counts the new events of an unread notice.
+
+## IdBadge and CodeBadge
+
+`IdBadge` is an identifier such as `WEB-142`, always mono.
+`CodeBadge` is an error code from a call, such as `409`, which leads a callout or a cell when the call was refused.
+
+A failing delivery of <DemoLink to="settings/webhooks/deploys-slack">a webhook</DemoLink> shows its code.
 
 ## MetaLine
 
@@ -40,14 +59,39 @@ It has no state, and nothing that is always true, such as "Created today".
 
 <Example id="meta-line/default" />
 
+Each row of <DemoLink to="projects/atlas/build/pulls">Pull requests</DemoLink> has one.
+
 ## EmptyState
 
 `EmptyState` is `md` for a whole view or main column, and `sm` in a card, panel or section.
 Only a whole view, or a list the person filtered, gets one.
-An empty part of a view is not drawn.
+An empty part of a view isn't drawn.
+It has a short title, the action that starts it, and one short line at most.
 
 <Example id="empty-state/default" />
 <DoDont do="design/empty-nothing" dont="design/empty-boxes" />
+
+The Details panel on <DemoLink to="projects/atlas/build/issues">Issues</DemoLink> shows one while nothing is selected.
+
+## Callout
+
+`Callout` is an inline message in a neutral grey box, with its hue in the icon only.
+It has one or two sentences, which say what happened and what to do next.
+Use it for a problem with what the view shows, such as a failing webhook, not for help text.
+
+<Example id="callout/tones" />
+<DoDont do="design/neutral-callout" dont="design/tinted-callout" />
+
+See it on <DemoLink to="settings/webhooks/deploys-slack">a failing webhook</DemoLink>.
+
+## Skeleton
+
+`Skeleton` holds the place of content while it loads.
+It fades in after 400ms, so a load that finishes sooner shows nothing in between.
+`immediate` shows it at once, where the wait is known to be long.
+Show it only while there is nothing to show, never on a refresh of data already on screen.
+
+<Example id="skeleton/default" />
 
 ## Truncate
 
@@ -56,16 +100,20 @@ Every part on these pages that cuts text already does this, such as row titles, 
 
 <Example id="truncate/default" />
 
-## Other display parts
+The idea cards on <DemoLink to="projects/atlas/explore/ideas">Ideas</DemoLink> cut their text with it.
+
+## Avatar and Mark
 
 - `Avatar` is initials in a circle for people, a rounded square for agents, and the sparkle mark for the assistant.
-- `Mark` is the mark of a place, such as a workspace, a space, a project or the product. It is a rounded square with the first letter, an icon or a logo. Use `sm` (16px) in rows and crumbs, `md` (20px) in the sidebar header and `lg` (32px) on a page. `solid` fills it, for the product's own mark.
-- `Callout` is an inline message in a neutral grey box. The hue is in its icon. It has one or two sentences: what happened and what to do next.
-- `Toast` shows short notices in a live region at the bottom right. Danger toasts are announced assertively, and hover pauses the timer.
-- `Skeleton` holds the place of content while it loads. It fades in after 400ms, so a load that finishes sooner shows nothing in between. `immediate` shows it at once, where the wait is known to be long.
+- `AvatarStack` overlaps a few avatars, such as the voters of an idea.
+- `Mark` is the mark of a place, such as a workspace, a space, a project or the product. It is a rounded square with the first letter, an icon or a logo. Use `sm` (16px) in the path, switchers and crumbs, `md` (20px), the default, in rows and cards, and `lg` (32px) on a page. `solid` fills it, for the product's own mark.
+
+These keep their hues, because the colour tells people and places apart.
 
 <Example id="avatar/kinds" />
+<Example id="avatar/stack" />
 <Example id="mark/sizes" />
-<Example id="callout/tones" />
+
+The demo's <DemoLink to="projects">Projects</DemoLink> show marks and avatar stacks.
 
 <GalleryLink page="status-meta" />

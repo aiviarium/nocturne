@@ -1,7 +1,11 @@
 ---
 title: Figures
-description: Stat and StatCard.
+description: Stat, StatCard and Delta, for a number reported once.
 ---
+
+A figure reports a number once, such as the issues closed in a cycle or the deploys this week.
+It goes in a card on an overview or a dashboard, not in a view header or a row.
+A value that changes while the person watches is a widget, see [Widgets](./widgets.mdx).
 
 ## Stat and StatCard
 
@@ -17,4 +21,12 @@ Cards in a row share edges and baselines.
 <Example id="card/stat" />
 <DoDont do="design/fits-content" dont="design/padded-card" />
 
-A live value, such as progress, a rate or a context window, is a widget. See [Widgets](./widgets.mdx).
+The demo's <DemoLink to="projects/atlas/build/cycles">Cycles</DemoLink> and <DemoLink to="dashboard/overview">Dashboard</DemoLink> open with figures.
+
+## Delta
+
+`Delta` is a change since last time: an arrow and tabular numbers.
+Up is good and down is bad by default, in the success and danger colours.
+Set `sentiment` when lower is better, such as for open issues or an error rate.
+Put it in the `signal` of a `Stat`, at the right of the label.
+The open issues on the <DemoLink to="dashboard/overview">Dashboard</DemoLink> go down, which is good.

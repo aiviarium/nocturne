@@ -1,20 +1,30 @@
 ---
-title: Conversation and code
-description: ChatMessage, ChatMedia, Composer, CodeBlock and DiffView.
+title: Conversation, code and logs
+description: ChatMessage and its steps, ChatMedia, Composer and dictation, StreamState, CodeBlock, DiffView and LogViewer.
 ---
+
+A conversation with the assistant is a view of its own, such as a chat at a record of the Chats place, or the Assistant panel beside any view.
+The messages fill the column and the `Composer` sits at its foot.
+Code, diffs and logs go in a view, a panel or a message, at the full width of their column.
 
 ## ChatMessage
 
+Use `ChatMessage` for each message of a conversation.
 The person writes in a bubble, and the assistant writes on the page.
 Messages aren't indented.
 The avatar and the thought head the reply on a line of their own, and the reply under them takes the full width of the column.
-Tool steps are rows that expand.
-The running step glows, and finished steps do not.
-Decisions are approval cards.
+- `ToolSteps` holds the assistant's tool steps, and each `ToolStep` is a row that expands into its output.
+- The running step glows, with its hue in its text, and finished steps don't.
+- A decision is an `ApprovalCard`. It has a warning dot and a one-line summary, then the affected items, with the choices at the bottom right. Its edge is a hairline, and its state shows in its dot and word.
+- A `Token` is an inline chip for a picked command, reference, skill or person, in a message and in the composer.
 
 <Example id="chat-message/conversation" />
 <Example id="tool-steps/states" />
 <Example id="approval-card/decisions" />
+<Example id="token/inline" />
+<DoDont do="design/approval-hairline" dont="design/approval-edge" />
+
+Read <DemoLink to="agent/chats/c-arm64">a chat</DemoLink> in the demo, with its steps, an approval and media.
 
 ## Media
 
@@ -47,7 +57,8 @@ On a phone a sideways swipe steps between images, and pinch zoom works as in the
 
 ## Composer
 
-`Composer` is the AI input, a `contenteditable` field.
+Use `Composer` for the input to the assistant, at the foot of a chat or the Assistant panel.
+It is a `contenteditable` field, and its send button is the one primary action there.
 
 - `/` at the start of a line picks a command.
 - `@` adds context.
@@ -58,6 +69,8 @@ The value is a list of text and chip segments, `ComposerValue`.
 The component only exposes callbacks.
 It doesn't talk to the network or the microphone.
 Dictation comes in through `TranscriberProvider`.
+A transcriber whose microphone is blocked rejects with `DictationBlockedError`, and the composer shows the blocked notice.
+`DictationBar` draws the same recording state for an input of your own.
 While recording, the bottom row shows the red dot, the time and the wave, up to Cancel and Finish.
 The wave fills that space, with the newest level at the end.
 The text heard so far sits where the typed text goes.
@@ -74,14 +87,29 @@ A file pasted or dropped into the composer, such as a screenshot, goes to `onAtt
 <Example id="composer/dictation-states" />
 <Example id="composer/blocked" />
 
+Write, mention and dictate in the composer of <DemoLink to="agent/chats/c-arm64">a chat</DemoLink>.
+
 <GalleryLink page="composer" />
+
+## StreamState
+
+`StreamState` is the connection state of a stream, such as a log tail or a running reply.
+Its states run from connecting and live to paused, dropped, ended and error.
+Put it in the header of the panel or frame, next to the title.
+
+<Example id="stream-state/states" />
+
+A host's <DemoLink to="hosts/build-01/operate/logs">Logs</DemoLink> show the state of their tail.
 
 ## CodeBlock
 
 `CodeBlock` shows code with line numbers and the colours of the `syn` tokens.
 The bar shows the file name, with Copy and an optional Apply.
+Use it for a file or a snippet, in a view or a message.
 
 <Example id="code-block/typescript" />
+
+Open a file under a host's <DemoLink to="hosts/build-01/operate/files">Files</DemoLink>.
 
 ## DiffView
 
@@ -89,3 +117,17 @@ The bar shows the file name, with Copy and an optional Apply.
 It takes two strings or a unified patch.
 
 <Example id="diff-view/strings" />
+
+See unified and split diffs on <DemoLink to="projects/atlas/build/pulls/418">pull request 418</DemoLink> and <DemoLink to="hosts/build-01/operate/deploys/412">a deploy</DemoLink>.
+
+## LogViewer
+
+`LogViewer` is a scrolling mono log for live and finished streams of a job or a service.
+
+- It sticks to the bottom while new lines come in.
+- Scrolling up pauses that, and a button jumps back to the latest line.
+- Filters over its lines go in a `FilterBar` above it, with a `QueryBuilder` for rules.
+
+<Example id="log-viewer/live" />
+
+A host's <DemoLink to="hosts/build-01/operate/logs">Logs</DemoLink> and its <DemoLink to="hosts/build-01/operate/overview">Overview</DemoLink> show live logs.
