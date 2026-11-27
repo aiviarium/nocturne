@@ -27,6 +27,8 @@ jobs:
         run: bun run lint:tokens
       - name: Gallery build
         run: bun run gallery:build
+      - name: Demo build
+        run: bun run demo:build
 
   site:
     runs-on: ubuntu-latest

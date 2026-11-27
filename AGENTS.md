@@ -17,6 +17,8 @@ Nocturne is a design system and its SolidJS component library, published as one 
   `bun run gen:icons` writes `src/components/icon-data.ts` and `icons/` from it and the `lucide` package. Lucide is
   the only family, so never draw an icon by hand.
 - `examples/`: one file per example. `gallery/` shows them (`bun run gallery`).
+- `demo/`: the workspace of Acme, a whole app on `createShell` and `<Shell>` with in-memory data (`bun run demo`). The
+  site embeds it on its Demo page, and `<DemoLink to="…">` links a page to a place in it.
 - `test/`: `bun test` with happy-dom (`test/setup.ts` is preloaded by `bunfig.toml`).
 - `scripts/`: `lint-tokens.ts`, `gen-icons.ts` and the Playwright screenshot scripts.
 - `skills/nocturne/`: the skill apps and agents follow to build views with Nocturne.
@@ -56,6 +58,7 @@ bun run typecheck     # tsc --noEmit
 bun test
 bun run lint:tokens
 bun run gallery:build
+bun run demo:build
 cd site && bun run check   # typecheck, lint, links, Vale on all Markdown and MDX, build
 ```
 
@@ -69,6 +72,8 @@ The site check needs `bun install` in `site/` and the `vale` binary.
 - When tokens, examples or icons change, the site picks them up at build time. When a rule or a size changes,
   update the matching page in `site/content/docs/`. `docs/phone.md` and the Phones page of the site say the same.
 - Use tokens for colours, radii and font sizes. `lint:tokens` fails on literals.
+- Every new exported part appears in the demo in a real context, where it can be tried. `test/demo-coverage.test.ts`
+  fails for an export the demo doesn't import. It exempts the parts the shell draws and exports that aren't parts.
 - Each exported component has a stable `data-part` on its root and at least one test that renders it, checks
   the `data-part` and exercises its main interaction.
 - The library has no network code. Anything that talks to a backend comes in through a provider or a prop
