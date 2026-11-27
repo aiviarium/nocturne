@@ -210,3 +210,21 @@ test("a group's footer shows under its items, and stays when the group is folded
   expect(root.querySelectorAll("[data-part=nav-item]").length).toBe(0)
   expect(one("[data-part=nav-group-foot]", root).textContent).toBe("New session")
 })
+
+test("a heading's action can be marked current, such as a section's list open in the view", () => {
+  const { root } = track(
+    mount(() => (
+      <Nav
+        label="Host"
+        groups={[
+          {
+            label: "Sessions",
+            action: { label: "Open Sessions", icon: "arrow-up-right", onClick: () => {}, current: true },
+            items: [{ id: "s1", label: "build", onClick: () => {} }],
+          },
+        ]}
+      />
+    )),
+  )
+  expect(one("[aria-label='Open Sessions']", root).getAttribute("aria-current")).toBe("page")
+})

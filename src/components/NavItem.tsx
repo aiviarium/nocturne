@@ -224,7 +224,13 @@ export interface NavGroup {
    */
   footer?: JSX.Element
   /** One small icon action at the heading's end, such as adding an item to the group. Needs a `label`. */
-  action?: { label: string; icon: IconName; onClick: () => void }
+  action?: {
+    label: string
+    icon: IconName
+    onClick: () => void
+    /** The action's target is the current page, such as a section's list open in the view: the button is marked. */
+    current?: boolean
+  }
   items: NavItemProps[]
 }
 
@@ -432,6 +438,7 @@ export function Nav(props: NavProps): JSX.Element {
                           class="nc-nav__action"
                           icon={action().icon}
                           label={action().label}
+                          aria-current={action().current ? "page" : undefined}
                           onClick={() => action().onClick()}
                         />
                       )}

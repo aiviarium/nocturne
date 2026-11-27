@@ -160,6 +160,7 @@
 .nc-nav__foot { display: flex; align-items: center; min-height: 24px; }
 .nc-nav__count { margin-left: auto; padding-left: var(--space-2); font-variant-numeric: tabular-nums; }
 .nc-nav__action { opacity: 0; }
+.nc-nav__action[aria-current="page"] { opacity: 1; background: var(--active); color: var(--text-1); }
 .nc-nav__head:hover .nc-nav__action, .nc-nav__head[data-empty] .nc-nav__action, .nc-nav__action:focus-visible, .nc-nav:focus-within .nc-nav__action { opacity: 1; }
 @media (hover: none) { .nc-nav__action { opacity: 1; } }
 
