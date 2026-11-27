@@ -1019,8 +1019,8 @@ export function RowList<T = unknown>(props: RowListProps<T>): JSX.Element {
   const keys = createMemo(() => (props.items ?? []).map(keyOf))
   const render = (item: T, index: () => number) =>
     typeof props.children === "function" ? (
-      <RowItem value={{ index, key: keyOf(item, untrack(index)) }}>
-        {(props.children as (i: T, n: number) => JSX.Element)(item, untrack(index))}
+      <RowItem value={{ index, key: untrack(() => keyOf(item, index())) }}>
+        {untrack(() => (props.children as (i: T, n: number) => JSX.Element)(item, index()))}
       </RowItem>
     ) : null
   const variant = () => props.variant ?? (props.flush ? "inset" : "plain")
