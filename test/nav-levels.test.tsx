@@ -254,3 +254,29 @@ test("a heading's actions show in its header, and in the folded rail's flyout", 
   click(one("[data-part=nav-flyout] [aria-label='Open Sessions']"))
   expect(made).toEqual(["new", "open"])
 })
+
+test("folded, a section's icon runs its open, not the heading's click, and is marked while open", () => {
+  const ran: string[] = []
+  const { root } = track(
+    mount(() => (
+      <Nav
+        label="Host"
+        folded
+        groups={[
+          {
+            label: "Sessions",
+            icon: "terminal",
+            onClick: () => ran.push("fold"),
+            open: () => ran.push("open"),
+            actions: [{ label: "Open Sessions", icon: "arrow-up-right", onClick: () => {}, current: true }],
+            items: [{ id: "s1", label: "build", onClick: () => {} }],
+          },
+        ]}
+      />
+    )),
+  )
+  const icon = one("[data-part=nav-rail-group] [data-part=nav-item]", root)
+  click(icon)
+  expect(ran).toEqual(["open"])
+  expect(icon.getAttribute("aria-current")).toBe("page")
+})

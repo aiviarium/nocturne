@@ -228,6 +228,11 @@ export interface NavGroup {
   onClick?: () => void
   /** The heading's place is the current page. */
   current?: boolean
+  /**
+   * Opens the place the group stands for, where the heading's click does something else, such as folding. The folded
+   * rail's icon runs it. Default `onClick`.
+   */
+  open?: () => void
   /** A count after the heading, shown above 0. */
   count?: number
   /**
@@ -508,7 +513,9 @@ function RailGroup(props: {
   onCleanup(() => clearTimeout(timer))
   const label = () => props.group.label ?? ""
   const entries = () => props.group.items.filter((i) => !isMoreRow(i))
-  const current = () => !!props.group.current || props.group.items.some((i) => !!i.current || currentIn(i))
+  // The place is open: the heading's own mark, or an action that opens it marked current.
+  const here = () => !!props.group.current || actionsOf(props.group).some((a) => a.current)
+  const current = () => here() || props.group.items.some((i) => !!i.current || currentIn(i))
   const dot = () => (props.group.count ?? 0) > 0 || props.group.items.some(dotIn)
   return (
     <div class="nc-nav-rail-group" data-part="nav-rail-group">
@@ -519,12 +526,12 @@ function RailGroup(props: {
         data-part="nav-item"
         data-folded=""
         aria-label={label()}
-        aria-current={props.group.current ? "page" : undefined}
+        aria-current={here() ? "page" : undefined}
         aria-expanded={shown() ? "true" : "false"}
-        data-within={!props.group.current && current() ? "" : undefined}
+        data-within={!here() && current() ? "" : undefined}
         onClick={() => {
           setShown(false)
-          props.group.onClick?.()
+          ;(props.group.open ?? props.group.onClick)?.()
         }}
         onMouseEnter={() => show(true, 120)}
         onMouseLeave={() => show(false, 200)}
