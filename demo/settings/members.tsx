@@ -131,8 +131,6 @@ export function MembersView(_: ShellViewProps) {
                 </>
               }
               placement="bottom-start"
-              // PopoverButton's own panel classes have no styles yet: the menu surface stands in (see the report).
-              class="nc-menu dm-settings-pop"
             >
               <FieldFilter
                 spec={ROLE_FIELD}

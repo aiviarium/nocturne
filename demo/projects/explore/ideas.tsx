@@ -51,27 +51,24 @@ function Votes(props: { idea: Idea }) {
         </>
       }
       placement="top-end"
+      title="Votes"
     >
-      {/* PopoverButton's surface and title have no styles of their own yet: the menu surface stands in. */}
-      <div class="nc-menu dm-col dm-explore-votes">
-        <span class="nc-menu__label">Votes</span>
-        <For each={props.idea.voters}>
-          {(id) => (
-            <div class="dm-row">
-              <Avatar name={voterOf(id).name} hue={voterOf(id).hue} size="sm" />
-              <span>{voterOf(id).name}</span>
-            </div>
-          )}
-        </For>
-        <Button
-          size="sm"
-          variant={mine() ? "secondary" : "primary"}
-          icon={mine() ? "minus" : "arrow-up"}
-          onClick={() => toggleVote(props.idea.id, ME.id)}
-        >
-          {mine() ? "Take back my vote" : "Vote"}
-        </Button>
-      </div>
+      <For each={props.idea.voters}>
+        {(id) => (
+          <div class="dm-row">
+            <Avatar name={voterOf(id).name} hue={voterOf(id).hue} size="sm" />
+            <span>{voterOf(id).name}</span>
+          </div>
+        )}
+      </For>
+      <Button
+        size="sm"
+        variant={mine() ? "secondary" : "primary"}
+        icon={mine() ? "minus" : "arrow-up"}
+        onClick={() => toggleVote(props.idea.id, ME.id)}
+      >
+        {mine() ? "Take back my vote" : "Vote"}
+      </Button>
     </PopoverButton>
   )
 }

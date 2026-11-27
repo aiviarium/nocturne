@@ -398,6 +398,11 @@ button.nc-title-bar__app:hover, button.nc-title-bar__app[aria-expanded="true"] {
    drills to "Issues / WEB-142"; then the stepper and the actions. No fill. */
 .nc-view-header { display: flex; flex: none; align-items: center; gap: var(--space-3); box-sizing: border-box; height: var(--header); padding: 0 var(--space-2) 0 var(--space-5); border-bottom: 1px solid var(--line-soft); background: none; }
 .nc-view-header__title { display: flex; align-items: center; height: var(--control-sm); margin: 0; overflow: hidden; color: var(--text-1); font-size: var(--nc-type-drill); line-height: var(--nc-type-drill-line); font-weight: var(--nc-type-drill-weight); letter-spacing: var(--nc-type-drill-track); text-overflow: ellipsis; white-space: nowrap; }
+.nc-view-header__back { display: inline-flex; flex: none; align-items: center; gap: var(--space-1); max-width: 40%; height: var(--control-sm); margin-left: calc(var(--space-2) * -1); padding: 0 var(--space-2) 0 var(--space-1); border: 0; border-radius: var(--radius-sm); background: none; color: var(--text-3); font: inherit; font-size: var(--nc-type-drill); line-height: var(--nc-type-drill-line); font-weight: var(--nc-type-drill-weight); cursor: pointer; }
+.nc-view-header__back:hover { color: var(--text-1); }
+.nc-view-header__back-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+:root[data-phone] .nc-view-header__back { position: relative; }
+:root[data-phone] .nc-view-header__back::after { content: ""; position: absolute; inset: min(0px, calc(50% - var(--phone-hit) / 2)) 0; }
 .nc-view-header__trail { flex: 0 1 auto; }
 .nc-view-header__context { display: inline-flex; align-items: center; gap: var(--space-2); min-width: 0; }
 .nc-view-header__middle { display: flex; flex: 1; align-items: center; gap: var(--space-2); min-width: 0; }

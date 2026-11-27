@@ -6,6 +6,7 @@ import {
   LogViewer,
   MetaLine,
   NumberField,
+  PhoneOverride,
   Select,
   SettingRow,
   Slider,
@@ -14,6 +15,7 @@ import {
   type Transcriber,
   TranscriberProvider,
   useDictation,
+  ViewHeader,
   WidgetMeters,
   WidgetStats,
 } from "../src"
@@ -189,5 +191,92 @@ describe("controls named by a setting row", () => {
   test("TextField's mono puts the input in the mono face", () => {
     const { root } = track(mount(() => <TextField label="Prefix" mono value="ak_live" />))
     expect(one("input", root).classList.contains("nc-mono")).toBe(true)
+  })
+})
+
+describe("view header", () => {
+  test("a ViewAction with a menu opens it from its button and reports the item", async () => {
+    const picked: string[] = []
+    const { root } = track(
+      mount(() => (
+        <ViewHeader
+          title="Overview"
+          actions={[
+            {
+              id: "add",
+              label: "Add widget",
+              icon: "plus",
+              menu: [
+                { id: "cpu", label: "CPU" },
+                { id: "disk", label: "Disk" },
+              ],
+              onSelect: (id) => picked.push(id),
+            },
+          ]}
+        />
+      )),
+    )
+    const trigger = one("[data-action=add]", root)
+    expect(trigger.getAttribute("aria-label")).toBe("Add widget")
+    click(trigger)
+    flush()
+    await tick()
+    const item = all("[role=menuitem]").find((m) => m.textContent?.includes("Disk"))
+    expect(item).toBeTruthy()
+    click(item!)
+    flush()
+    await tick()
+    expect(picked).toEqual(["disk"])
+  })
+
+  test("an overflow action's menu items are in the More menu under its label", async () => {
+    const picked: string[] = []
+    const { root } = track(
+      mount(() => (
+        <ViewHeader
+          title="Overview"
+          actions={[
+            {
+              id: "sort",
+              label: "Sort by",
+              overflow: true,
+              menu: [{ id: "name", label: "Name" }],
+              onSelect: (id) => picked.push(id),
+            },
+          ]}
+        />
+      )),
+    )
+    click(one("[data-part=view-overflow]", root))
+    flush()
+    await tick()
+    click(all("[role=menuitem]").find((m) => m.textContent?.includes("Name"))!)
+    flush()
+    await tick()
+    expect(picked).toEqual(["name"])
+  })
+
+  test("in a phone-sized window the trail's parent is the back control and the stepper goes", () => {
+    const up: string[] = []
+    const { root } = track(
+      mount(() => (
+        <PhoneOverride value={true}>
+          <ViewHeader
+            trail={[
+              { id: "issues", label: "Issues", onClick: () => up.push("issues") },
+              { id: "rec", label: "WEB-142" },
+            ]}
+            stepper={{ index: 0, total: 3, prev: () => {}, next: () => {} }}
+          />
+        </PhoneOverride>
+      )),
+    )
+    expect(root.querySelector("[data-part=trail]")).toBeNull()
+    expect(root.querySelector("[data-part=view-stepper]")).toBeNull()
+    const back = one("[data-part=view-back]", root)
+    expect(back.getAttribute("aria-label")).toBe("Back to Issues")
+    expect(one("[data-part=view-title]", root).textContent).toBe("WEB-142")
+    click(back)
+    expect(up).toEqual(["issues"])
   })
 })

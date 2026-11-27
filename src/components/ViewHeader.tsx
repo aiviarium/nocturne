@@ -3,11 +3,12 @@ import { Portal } from "@solidjs/web"
 import { createContext, createEffect, For, onCleanup, Show, useContext } from "solid-js"
 import { aria } from "../lib/aria"
 import { cx } from "../lib/cx"
+import { usePhone } from "../lib/phone"
 import { Trail, type TrailCrumb } from "../shell/Trail"
 import { Button } from "./Button"
-import type { IconName } from "./Icon"
+import { Icon, type IconName } from "./Icon"
 import { IconButton } from "./IconButton"
-import { DropdownMenu, type MenuEntry } from "./Menu"
+import { DropdownMenu, type MenuEntry, type MenuItemEntry } from "./Menu"
 import { type BarAction, useScreen } from "./NavigationBar"
 
 // The standard header of a view, 44px: its title, or its trail when it drilled inside itself ("Issues / WEB-142",
@@ -23,7 +24,15 @@ export interface ViewAction {
   id: string
   label: string
   icon?: IconName
-  onClick: () => void
+  /** Runs the action. Left out for an action that opens a `menu`. */
+  onClick?: () => void
+  /**
+   * A menu the action opens, hung from its button: Add widget listing the widgets that are not there yet. On a
+   * phone its items go into the bar's menu under the action's label.
+   */
+  menu?: MenuEntry[]
+  /** Called with the id of the item chosen from `menu`. */
+  onSelect?: (id: string) => void
   /** An action that completes a flow: a text button at the end. Adding (New issue) is a `plus` icon action, never this. */
   primary?: boolean
   /** Only in the overflow menu. */
@@ -96,6 +105,10 @@ export interface ViewHeaderProps {
   class?: string
 }
 
+/** The plain items of a menu, for the phone's bar menu. */
+const menuItems = (entries: MenuEntry[]) =>
+  entries.filter((e): e is MenuItemEntry => e.type === undefined || e.type === "item")
+
 const present = (x: unknown) =>
   x !== undefined && x !== null && x !== false && !(Array.isArray(x) && !x.length)
 
@@ -112,20 +125,36 @@ function PhoneViewHeader(props: ViewHeaderProps): JSX.Element {
   const screen = useScreen()!
   const chrome = useContext(ViewChrome)
   const actions = (): BarAction[] => {
-    const out: BarAction[] = (props.actions ?? []).map((a) => ({
-      id: a.id,
-      label: a.label,
-      icon: a.icon,
-      onClick: a.onClick,
-      primary: a.primary,
-      overflow: a.overflow,
-      checked: a.checked,
-      section: a.section,
-      pressed: a.pressed,
-      disabled: a.disabled,
-      danger: a.danger,
-      count: a.count,
-    }))
+    const out: BarAction[] = (props.actions ?? []).flatMap((a): BarAction[] =>
+      a.menu
+        ? menuItems(a.menu).map((m) => ({
+            id: `${a.id}:${m.id}`,
+            label: m.label,
+            icon: m.icon,
+            onClick: () => a.onSelect?.(m.id),
+            overflow: true,
+            checked: m.checked,
+            section: a.label,
+            disabled: a.disabled || m.disabled,
+            danger: m.danger,
+          }))
+        : [
+            {
+              id: a.id,
+              label: a.label,
+              icon: a.icon,
+              onClick: () => a.onClick?.(),
+              primary: a.primary,
+              overflow: a.overflow,
+              checked: a.checked,
+              section: a.section,
+              pressed: a.pressed,
+              disabled: a.disabled,
+              danger: a.danger,
+              count: a.count,
+            },
+          ],
+    )
     if (!props.noPin && chrome?.pinnable())
       out.push({
         id: "pin",
@@ -190,6 +219,9 @@ export function ViewHeader(props: ViewHeaderProps): JSX.Element {
 
 function DesktopViewHeader(props: ViewHeaderProps): JSX.Element {
   const chrome = useContext(ViewChrome)
+  // A phone-sized window without a navigation stack (the shell's view): the trail's parent crumb is the back
+  // control and the stepper goes, as on a phone screen.
+  const phone = usePhone()
   const actions = () => props.actions ?? []
   const icons = () => actions().filter((a) => !a.primary && !a.overflow)
   const overflow = () => actions().filter((a) => a.overflow)
@@ -204,14 +236,33 @@ function DesktopViewHeader(props: ViewHeaderProps): JSX.Element {
   // The pin alone is not something to say: without other content the header stays away, and the tab's menu pins.
   const pin = () => content() && !props.noPin && chrome?.pinnable()
   const menu = (): MenuEntry[] =>
-    overflow().map((a) => ({
-      id: a.id,
-      label: a.label,
-      icon: a.icon,
-      disabled: a.disabled,
-      danger: a.danger,
-      shortcut: a.shortcut,
-    }))
+    overflow().flatMap((a): MenuEntry[] =>
+      a.menu
+        ? [
+            { type: "label", label: a.label },
+            ...menuItems(a.menu).map((m) => ({
+              ...m,
+              id: `${a.id}:${m.id}`,
+              disabled: a.disabled || m.disabled,
+            })),
+          ]
+        : [
+            {
+              id: a.id,
+              label: a.label,
+              icon: a.icon,
+              disabled: a.disabled,
+              danger: a.danger,
+              shortcut: a.shortcut,
+            },
+          ],
+    )
+  const pick = (id: string) => {
+    const a = overflow().find((x) => x.id === id || (x.menu && id.startsWith(`${x.id}:`)))
+    if (!a) return
+    if (a.menu) a.onSelect?.(id.slice(a.id.length + 1))
+    else a.onClick?.()
+  }
   const noun = () => props.stepper?.noun ?? "item"
   return (
     <Show when={content()}>
@@ -226,19 +277,42 @@ function DesktopViewHeader(props: ViewHeaderProps): JSX.Element {
             </Show>
           }
         >
-          <Trail
-            crumbs={props.trail ?? []}
-            label="Where this view is"
-            upShortcut="Esc"
-            class="nc-view-header__trail"
-          />
+          <Show
+            when={phone()}
+            fallback={
+              <Trail
+                crumbs={props.trail ?? []}
+                label="Where this view is"
+                upShortcut="Esc"
+                class="nc-view-header__trail"
+              />
+            }
+          >
+            <Show when={props.trail?.at(-2)}>
+              {(parent) => (
+                <button
+                  type="button"
+                  class="nc-view-header__back"
+                  data-part="view-back"
+                  aria-label={`Back to ${parent().label}`}
+                  onClick={() => parent().onClick?.()}
+                >
+                  <Icon name="chevron-left" size="sm" />
+                  <span class="nc-view-header__back-label">{parent().label}</span>
+                </button>
+              )}
+            </Show>
+            <h1 class="nc-view-header__title" data-part="view-title">
+              {props.trail?.at(-1)?.label}
+            </h1>
+          </Show>
         </Show>
         <Show when={props.context}>
           <span class="nc-view-header__context">{props.context}</span>
         </Show>
         <span class="nc-view-header__middle">{props.children}</span>
         <span class="nc-view-header__actions" data-part="view-actions">
-          <Show when={props.stepper}>
+          <Show when={!phone() && props.stepper}>
             {(st) => (
               <span class="nc-view-header__stepper" data-part="view-stepper">
                 <span class="nc-view-header__step-count" data-part="view-step-count">
@@ -269,48 +343,89 @@ function DesktopViewHeader(props: ViewHeaderProps): JSX.Element {
           <For each={icons()} keyed={(a) => a.id}>
             {(a) => (
               <Show
-                when={!a().count || !a().icon}
+                when={a().menu}
                 fallback={
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    icon={a().icon}
-                    aria-label={a().label}
-                    aria-pressed={aria(a().pressed)}
-                    title={a().label}
-                    disabled={a().disabled}
-                    data-action={a().id}
-                    class="nc-view-header__count"
-                    onClick={() => a().onClick?.()}
+                  <Show
+                    when={!a().count || !a().icon}
+                    fallback={
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        icon={a().icon}
+                        aria-label={a().label}
+                        aria-pressed={aria(a().pressed)}
+                        title={a().label}
+                        disabled={a().disabled}
+                        data-action={a().id}
+                        class="nc-view-header__count"
+                        onClick={() => a().onClick?.()}
+                      >
+                        {a().count}
+                      </Button>
+                    }
                   >
-                    {a().count}
-                  </Button>
+                    <Show
+                      when={a().icon}
+                      fallback={
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          disabled={a().disabled}
+                          data-action={a().id}
+                          onClick={() => a().onClick?.()}
+                        >
+                          {a().label}
+                        </Button>
+                      }
+                    >
+                      <IconButton
+                        label={a().label}
+                        icon={a().icon}
+                        pressed={a().pressed}
+                        disabled={a().disabled}
+                        shortcut={a().shortcut}
+                        data-action={a().id}
+                        onClick={() => a().onClick?.()}
+                      />
+                    </Show>
+                  </Show>
                 }
               >
-                <Show
-                  when={a().icon}
-                  fallback={
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      disabled={a().disabled}
-                      data-action={a().id}
-                      onClick={() => a().onClick?.()}
-                    >
-                      {a().label}
-                    </Button>
-                  }
-                >
-                  <IconButton
+                {(entries) => (
+                  <DropdownMenu
                     label={a().label}
-                    icon={a().icon}
-                    pressed={a().pressed}
-                    disabled={a().disabled}
-                    shortcut={a().shortcut}
-                    data-action={a().id}
-                    onClick={() => a().onClick?.()}
+                    items={entries()}
+                    placement="bottom-end"
+                    matchWidth={false}
+                    onSelect={(id) => a().onSelect?.(id)}
+                    trigger={(t) => (
+                      <Show
+                        when={a().icon}
+                        fallback={
+                          <Button
+                            {...t}
+                            size="sm"
+                            variant="ghost"
+                            disabled={a().disabled}
+                            data-action={a().id}
+                          >
+                            {a().label}
+                            <Icon name="chevron-down" size="sm" />
+                          </Button>
+                        }
+                      >
+                        <IconButton
+                          {...t}
+                          label={a().label}
+                          icon={a().icon}
+                          disabled={a().disabled}
+                          shortcut={a().shortcut}
+                          data-action={a().id}
+                        />
+                      </Show>
+                    )}
                   />
-                </Show>
+                )}
               </Show>
             )}
           </For>
@@ -328,11 +443,7 @@ function DesktopViewHeader(props: ViewHeaderProps): JSX.Element {
               label="More actions"
               items={menu()}
               placement="bottom-end"
-              onSelect={(id) =>
-                overflow()
-                  .find((a) => a.id === id)
-                  ?.onClick()
-              }
+              onSelect={pick}
               trigger={(t) => (
                 <IconButton {...t} label="More actions" icon="more" data-part="view-overflow" />
               )}

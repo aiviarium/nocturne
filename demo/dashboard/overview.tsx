@@ -6,7 +6,6 @@ import {
   IconButton,
   InfoTip,
   ListRow,
-  Menu,
   placeInGrid,
   RowList,
   readJson,
@@ -321,9 +320,7 @@ export function OverviewView(_props: ShellViewProps) {
   const [items, setItemsRaw] = createSignal<Tile[]>(
     readJson<Tile[]>(demo.storage, LAYOUT_KEY) ?? DEFAULT_LAYOUT,
   )
-  const [adding, setAdding] = createSignal<HTMLElement>()
   const live = createLive()
-  let root: HTMLDivElement | undefined
 
   onSettled(() => {
     if (loaded) return
@@ -363,12 +360,8 @@ export function OverviewView(_props: ShellViewProps) {
               label: "Add widget",
               icon: "plus",
               disabled: !missing().length,
-              onClick: () =>
-                setAdding(
-                  root
-                    ?.closest("[data-part=view-layout]")
-                    ?.querySelector<HTMLElement>("[data-part=view-header] [data-action=add]") ?? undefined,
-                ),
+              menu: missing().map((k) => ({ id: k, label: KINDS[k].label })),
+              onSelect: (id) => add(id as TileKind),
             },
           ]}
         >
@@ -385,12 +378,7 @@ export function OverviewView(_props: ShellViewProps) {
         </ShellViewHeader>
       }
     >
-      <div
-        class="dm-dash-root"
-        ref={(el) => {
-          root = el
-        }}
-      >
+      <div class="dm-dash-root">
         <Show when={ready()} fallback={<Loading />}>
           <div class="dm-dash-page">
             <div class="dm-dash-stats">
@@ -445,15 +433,6 @@ export function OverviewView(_props: ShellViewProps) {
           </div>
         </Show>
       </div>
-      <Menu
-        open={!!adding()}
-        anchor={adding()}
-        label="Add widget"
-        placement="bottom-end"
-        onClose={() => setAdding(undefined)}
-        items={missing().map((k) => ({ id: k, label: KINDS[k].label }))}
-        onSelect={(id) => add(id as TileKind)}
-      />
     </ViewLayout>
   )
 }

@@ -28,6 +28,11 @@ export interface PopoverProps extends Omit<JSX.HTMLAttributes<HTMLDivElement>, "
   floatRef?: (el: HTMLDivElement) => void
   /** Where focus goes on open: `auto` (the first focusable element), `content` or `none`. Default `none`. */
   initialFocus?: "auto" | "content" | "none"
+  /**
+   * Draws the floating surface: its background, hairline, radius, shadow and padding. Default on when no `class`
+   * is given; a part that draws its own surface passes its class and leaves this out.
+   */
+  surface?: boolean
 }
 
 /**
@@ -47,6 +52,7 @@ export function Popover(props: PopoverProps): JSX.Element {
     "matchWidth",
     "floatRef",
     "initialFocus",
+    "surface",
     "class",
     "children",
     "style",
@@ -75,7 +81,7 @@ export function Popover(props: PopoverProps): JSX.Element {
         collisionPadding={8}
         initialFocus={props.initialFocus ?? "none"}
         data-part="popover"
-        class={cx("nc-popover", props.class)}
+        class={cx("nc-popover", (props.surface ?? !props.class) && "nc-popover--surface", props.class)}
         style={{
           ...(typeof props.style === "object" ? props.style : {}),
           ...(props.matchWidth ? { "min-width": "var(--anchor-width)" } : {}),
@@ -133,7 +139,7 @@ export function PopoverButton(props: PopoverButtonProps): JSX.Element {
         sideOffset={props.offset ?? 4}
         collisionPadding={8}
         data-part="popover"
-        class={cx("nc-popover nc-popover--panel", props.class)}
+        class={cx("nc-popover nc-popover--surface nc-popover--panel", props.class)}
       >
         <OpenLayer />
         {props.title === undefined ? null : (

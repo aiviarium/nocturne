@@ -50,10 +50,6 @@
   min-width: 0;
   white-space: nowrap;
 }
-.dm-settings-pop {
-  min-width: 200px;
-  padding: var(--space-1);
-}
 /* A key on a phone: its name and access; the prefix and date step aside. */
 :root[data-phone] .dm-settings-key {
   grid-template-columns: minmax(0, 1fr) auto;

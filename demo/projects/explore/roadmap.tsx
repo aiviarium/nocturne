@@ -93,7 +93,7 @@ export function RoadmapView(props: ShellViewProps) {
         >
           <Show when={peek()} keyed>
             {(p) => (
-              <div class="nc-menu dm-col dm-explore-peek">
+              <div class="dm-col dm-explore-peek">
                 <div class="dm-row">
                   <Mark name={project().name} hue={project().hue} size="sm" decorative />
                   <span class="label">{p.m.title}</span>

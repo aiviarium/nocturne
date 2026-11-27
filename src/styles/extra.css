@@ -40,6 +40,12 @@ a.nc-btn { text-decoration: none; }
    on top of it; one opened outside closes on the click that opens a dialog. */
 .nc-tooltip--floating { position: fixed; left: 0; top: 0; z-index: 86; pointer-events: none; }
 .nc-popover { position: fixed; left: 0; top: 0; z-index: 85; }
+/* The floating surface of a Popover and a PopoverButton's panel: one padding, a column of what it holds. */
+.nc-popover--surface { box-sizing: border-box; display: flex; flex-direction: column; gap: var(--space-2); min-width: 200px; max-width: min(360px, calc(100vw - 16px)); margin: 0; padding: var(--space-3); border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--bg-3); color: var(--text-1); box-shadow: var(--shadow-overlay); animation: nc-popover-in var(--dur-fade) var(--ease); }
+.nc-popover__title { margin: 0; color: var(--text-1); font-size: var(--nc-type-label); font-weight: 500; line-height: 20px; }
+.nc-popover__description { margin: 0; color: var(--text-3); font-size: var(--nc-type-label); line-height: 16px; }
+@keyframes nc-popover-in { from { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .nc-popover--surface { animation: none; } }
 
 /* ---------- Inputs ---------- */
 .nc-input { width: 100%; }
