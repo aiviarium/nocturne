@@ -159,7 +159,7 @@ export function LogViewer(props: LogViewerProps): JSX.Element {
       data-following={following() ? "" : undefined}
       data-wrap={wrap() ? "" : undefined}
       data-fill={props.fill ? "" : undefined}
-      class={cx("nc-log", !props.bare && "nc-card", props.fill && "nc-log--fill", props.class)}
+      class={cx("nc-log", props.bare ? "nc-log--bare" : "nc-card", props.fill && "nc-log--fill", props.class)}
       {...rest}
     >
       <Show when={!props.bare}>

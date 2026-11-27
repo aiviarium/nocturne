@@ -143,7 +143,8 @@ button.nc-title-bar__app:hover, button.nc-title-bar__app[aria-expanded="true"] {
 .nc-title-bar__end { display: flex; align-items: center; gap: 2px; flex: none; height: 100%; margin-left: auto; }
 .nc-title-bar__end > .nc-window[data-style="mac"] { margin-left: var(--space-2); }
 .nc-title-bar__item { display: inline-flex; align-items: center; gap: 6px; flex: none; height: var(--control-md); padding: 0 6px; border: 0; border-radius: var(--radius-sm); background: none; color: var(--text-3); font: inherit; letter-spacing: inherit; cursor: pointer; transition: background-color var(--dur-hover) var(--ease), color var(--dur-hover) var(--ease); }
-.nc-title-bar__item:hover, .nc-title-bar__item[aria-current="page"] { background: var(--hover); color: var(--text-1); }
+.nc-title-bar__item:hover { background: var(--hover); color: var(--text-1); }
+.nc-title-bar__item[aria-current="page"] { background: var(--active); color: var(--text-1); }
 .nc-title-bar__item[data-tone="warning"], .nc-title-bar__item[data-tone="warning"]:hover { color: var(--warning); }
 .nc-title-bar__item[data-tone="danger"], .nc-title-bar__item[data-tone="danger"]:hover { color: var(--danger); }
 .nc-title-bar__item[data-tone="success"], .nc-title-bar__item[data-tone="success"]:hover { color: var(--success); }

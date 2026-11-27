@@ -84,7 +84,22 @@ textarea.nc-textarea { width: 100%; height: auto; min-height: calc(var(--control
 .nc-tab:focus-visible, .nc-nav-item:focus-visible { outline: none; box-shadow: var(--focus-ring-inset); }
 .nc-tab { border-radius: var(--radius-sm); }
 .nc-seg__item:is([disabled], [data-disabled]), .nc-tab:is([disabled], [data-disabled]) { color: var(--text-4); cursor: not-allowed; }
-.nc-seg__item:not([aria-selected="true"], [data-checked]):hover { color: var(--text-1); }
+.nc-seg__item:not([aria-selected="true"], [data-checked], [disabled], [data-disabled]):hover { background: var(--hover); color: var(--text-1); }
+/* Selection outlasts hover: a selected, current, pressed or checked part keeps the selection fill while it is hovered
+   or has its menu open, whatever order the hover and open-menu rules (--hover) come in. */
+:is(
+  .nc-nav-item[aria-current="page"],
+  .nc-nav-rail-item[aria-current="page"],
+  .nc-title-bar__item[aria-current="page"],
+  .nc-icon-btn[aria-pressed="true"],
+  .nc-panel-rail__btn[aria-pressed="true"],
+  .nc-tabstrip__tab[data-active],
+  .nc-seg__item:is([aria-selected="true"], [data-checked]),
+  .nc-tab[aria-selected="true"],
+  .nc-lrow[data-selected],
+  .nc-datalist__row[data-selected],
+  .nc-calendar__day[data-selected]
+):is(:hover, [aria-expanded="true"]) { background: var(--active); }
 .nc-tab:not([aria-selected="true"]):hover { color: var(--text-1); }
 button.nc-nav-item { display: flex; width: 100%; gap: 8px; justify-content: flex-start; border: 0; background: transparent; font-family: inherit; text-align: left; cursor: pointer; }
 /* In the sidebar a count is a plain number, like the meta. */
@@ -515,6 +530,9 @@ button.nc-effort:focus-visible { outline: none; box-shadow: var(--focus-ring); }
 .nc-frame { box-sizing: border-box; min-width: 0; padding: var(--space-4); border: 1px solid var(--line-soft); border-radius: var(--radius-md); background: var(--bg-1); overflow: hidden; }
 .nc-frame--flush { padding: 0; }
 .nc-frame--stacked { display: flex; flex-direction: column; min-height: 0; }
+.nc-frame--bare { border: 0; border-radius: 0; background: transparent; }
+/* A body holding one filling part (a drop frame, a log) passes the height on. */
+.nc-frame__body:has(> .nc-dropframe, > .nc-log--fill) { display: flex; flex-direction: column; }
 .nc-frame[data-focused] { border-color: var(--line); }
 .nc-frame__header { display: flex; align-items: center; min-height: var(--header); border-bottom: 1px solid var(--line-soft); }
 .nc-frame__body { flex: 1; min-height: 0; overflow: auto; }
@@ -670,6 +688,8 @@ button.nc-effort:focus-visible { outline: none; box-shadow: var(--focus-ring); }
 /* Log viewer: scrollable monospace stream surface with optional timestamps and level accents. */
 .nc-log { display: flex; flex-direction: column; min-width: 0; overflow: hidden; }
 .nc-log--fill { flex: 1; min-height: 0; height: 100%; }
+/* Bare, the log is part of the view: no card and no well of its own, the lines on the view's surface. */
+.nc-log--bare > .nc-log__stage > .nc-log__body { background: transparent; }
 .nc-log__header { flex: none; }
 .nc-log__stage { position: relative; display: flex; flex-direction: column; flex: 1; min-height: 0; }
 .nc-log__body { flex: 1; min-height: 0; overflow: auto; }

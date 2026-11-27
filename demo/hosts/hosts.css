@@ -34,11 +34,19 @@
 .dm-hosts-logs {
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
   height: 100%;
   min-height: 0;
   box-sizing: border-box;
+}
+.dm-hosts-logs > :first-child {
   padding: var(--space-2);
+}
+/* Side by side, the frames sit inset in the view with their edges; alone, the log is flush under a hairline. */
+.dm-hosts-frames[data-part="split-group"] {
+  padding: 0 var(--space-2) var(--space-2);
+}
+.dm-hosts-frames > .nc-frame--bare {
+  border-top: 1px solid var(--line-soft);
 }
 .dm-hosts-frames {
   display: flex;

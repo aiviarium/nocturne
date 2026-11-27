@@ -152,6 +152,8 @@ export function LogsView(props: ShellViewProps) {
     return (
       <Frame
         flush
+        // Alone, the log runs to the view's edges; beside another, each keeps its frame.
+        bare={!beside()}
         class="dm-hosts-frame"
         header={
           <TabStrip

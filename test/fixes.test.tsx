@@ -5,6 +5,7 @@ import {
   type Dictation,
   Dock,
   dockLayout,
+  Frame,
   ListRow,
   LogViewer,
   MetaLine,
@@ -386,5 +387,43 @@ describe("phone layouts", () => {
     const viewport = one("[data-part=sheet]").parentElement!
     expect(viewport.style.inset).toBe("auto")
     expect(viewport.style.width).toBe(`${frame.getBoundingClientRect().width}px`)
+  })
+})
+
+describe("selection outlasts hover", () => {
+  test("every selected, current, pressed or checked fill is in the guard that keeps it under hover", async () => {
+    const css = await Bun.file(new URL("../src/styles/extra.css", import.meta.url)).text()
+    const guard = css.slice(
+      css.indexOf("/* Selection outlasts hover"),
+      css.indexOf("{ background: var(--active); }", css.indexOf("/* Selection outlasts hover")),
+    )
+    for (const sel of [
+      '.nc-nav-item[aria-current="page"]',
+      '.nc-icon-btn[aria-pressed="true"]',
+      '.nc-panel-rail__btn[aria-pressed="true"]',
+      ".nc-tabstrip__tab[data-active]",
+      '.nc-tab[aria-selected="true"]',
+      ".nc-lrow[data-selected]",
+      ".nc-datalist__row[data-selected]",
+    ])
+      expect(guard).toContain(sel)
+    expect(guard).toContain(':is(:hover, [aria-expanded="true"])')
+  })
+})
+
+describe("flush logs", () => {
+  test("a bare Frame and a bare LogViewer draw no edge or card of their own", () => {
+    const { root } = track(
+      mount(() => (
+        <Frame bare flush header={<span>Logs</span>}>
+          <LogViewer bare fill label="Logs" entries={[{ id: 1, text: "started" }]} />
+        </Frame>
+      )),
+    )
+    const frame = one("[data-part=frame]", root)
+    expect(frame.classList.contains("nc-frame--bare")).toBe(true)
+    const log = one(".nc-log", root)
+    expect(log.classList.contains("nc-log--bare")).toBe(true)
+    expect(log.classList.contains("nc-card")).toBe(false)
   })
 })
