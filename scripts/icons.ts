@@ -121,6 +121,12 @@ export const NAMES: Record<string, string> = {
   "chevron-up": "ChevronUp",
   "chevrons-down-up": "ChevronsDownUp",
   "panel-left-open": "PanelLeftOpen",
+  smartphone: "Smartphone",
+  lightbulb: "Lightbulb",
+  gauge: "Gauge",
+  commit: "GitCommitHorizontal",
+  "file-diff": "FileDiff",
+  database: "Database",
 }
 
 /**
