@@ -218,6 +218,11 @@ export interface NavGroup {
   current?: boolean
   /** A count after the heading, shown above 0. */
   count?: number
+  /**
+   * A row under the group's items for its own controls, such as adding an item or showing the rest. It shows when the
+   * group is folded too, and not on the folded rail.
+   */
+  footer?: JSX.Element
   /** One small icon action at the heading's end, such as adding an item to the group. Needs a `label`. */
   action?: { label: string; icon: IconName; onClick: () => void }
   items: NavItemProps[]
@@ -447,6 +452,11 @@ export function Nav(props: NavProps): JSX.Element {
               </Show>
               <Show when={!groupClosed(group())}>
                 <Tree items={group().items} />
+              </Show>
+              <Show when={group().footer}>
+                <div class="nc-nav__foot" data-part="nav-group-foot">
+                  {group().footer}
+                </div>
               </Show>
             </>
           )}

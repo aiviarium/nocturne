@@ -183,3 +183,30 @@ test("folded, a section that is its place is one icon: hover shows its entries i
   flush()
   expect(group.querySelectorAll("[data-part=nav-item]").length).toBe(3)
 })
+
+test("a group's footer shows under its items, and stays when the group is folded", () => {
+  const [collapsed, setCollapsed] = createSignal<string[]>([])
+  const { root } = track(
+    mount(() => (
+      <Nav
+        label="Host"
+        collapsed={collapsed()}
+        onCollapsedChange={setCollapsed}
+        groups={[
+          {
+            id: "sessions",
+            label: "Sessions",
+            collapsible: true,
+            footer: <button type="button">New session</button>,
+            items: [{ id: "s1", label: "build", onClick: () => {} }],
+          },
+        ]}
+      />
+    )),
+  )
+  expect(one("[data-part=nav-group-foot]", root).textContent).toBe("New session")
+  click(one("[data-part=nav-group-fold]", root))
+  flush()
+  expect(root.querySelectorAll("[data-part=nav-item]").length).toBe(0)
+  expect(one("[data-part=nav-group-foot]", root).textContent).toBe("New session")
+})
