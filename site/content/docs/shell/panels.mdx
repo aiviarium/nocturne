@@ -44,7 +44,7 @@ The right panel floats over the view when docking it would leave the view narrow
 ## Real tabs
 
 A panel's tabs are its own content, such as a terminal's sessions.
-They come from the panel's `tabs` and use `TabStrip` with full tab management:
+They come from the panel's `tabs`, which is called with `{ shell }` like `render`, and use `TabStrip` with full tab management:
 
 - drag to reorder, double-click or Rename to rename
 - × or a middle click to close, and Close others and Close to the right in a tab's menu

@@ -45,8 +45,12 @@ has the back control, the title and at most two actions. List and root screens h
 built from `ViewLayout` and `ViewHeader` gets this with no extra code.
 
 A drill-down on a desktop is a stack on a phone. In the app shell the sidebar is a drawer and the right panel
-covers the view. The panel rail is hidden. The trail's parent crumb becomes the screen's back control, named
-after the parent. `ViewHeader` doesn't show the trail or the stepper there, because the stack is the way back.
+covers the view. The panel rail is hidden, and a lens's panels don't open by themselves. `ViewHeader` shows a
+back button (`data-part="view-back"`) named after the trail's parent crumb, in place of the trail and the
+stepper. `Split` and `SplitGroup` stack their columns, and `Dock` has no split buttons.
+
+`PhoneFrame` shows a phone preview on a desktop page. The parts inside lay out as on a phone, and a `Sheet` or
+`ActionSheet` opened inside covers the frame, not the window.
 Time is the system's back gesture, and where the two differ, the gesture decides.
 
 ## Sheets and lists

@@ -76,8 +76,8 @@ Rookery's shell to Crow and each plugin. Where a part's page and a rule differ, 
   their colour means something.
 - A small chip or badge may have a slight tint with a stronger foreground of the same hue.
 - A state on a card shows in its foreground, with a neutral outline.
-- The accent is used for focus rings, the icon of the lens that is on, the tint line, the one primary action of a
-  view, composer or dialog, checked switches and boxes, text links and the palette's focus glow. Nothing else.
+- The accent is used for focus rings, the icon of the lens that is on, the tint line, checked switches and boxes,
+  text links and the palette's focus glow. Nothing else. A primary button is ink, filled with the text colour.
 - The accent follows the lens that is on, across the whole window and its overlays, unless the person turns it off
   in Appearance.
 - Text selection and the caret are neutral, never the accent or a lens's hue.
@@ -106,5 +106,5 @@ Rookery's shell to Crow and each plugin. Where a part's page and a rule differ, 
 ## Phone
 
 - Phones follow iOS conventions in Nocturne's look, such as push navigation with back and bottom sheets.
-- A trail's parent crumb becomes the screen's back control. Time is the system's back gesture.
+- A trail's parent crumb becomes the screen's back button. Time is the system's back gesture.
 - Hit areas are 44pt, and visible controls stay compact.

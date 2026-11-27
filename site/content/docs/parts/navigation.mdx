@@ -79,7 +79,8 @@ A view with navigation of its own, such as a page tree or a list of chats, uses 
 | Main column | What the view shows | At least `minMain`, 560px by default |
 
 The view sidebar resizes by its edge and collapses with its control.
-Widths and collapsed columns are kept per view on the device.
+Its width and fold are kept in the view layout's `storage`, or in the shell's store under `viewLayout/` and the layout's `id`.
+When it lacks room beside the shell's sidebar, the shell folds its own sidebar to the rail until the view has the room.
 
 - It collapses by itself when the main column would get narrower than `minMain`.
 - Opened by hand, it docks beside the main column while the main column keeps 360px.
@@ -101,7 +102,7 @@ Give each row an open action.
 On a phone the sidebar is a drawer and the right panel covers the view.
 The rail is hidden.
 Each drill level is a screen of a `NavigationStack`.
-The trail's parent crumb becomes the screen's back control, named after the parent, and the crumbs are not shown.
+The view header shows a back button named after the trail's parent crumb, and the crumbs and the stepper aren't shown.
 Time is the system's back gesture.
 List screens have a large title.
 A view built from `ViewLayout` and `ViewHeader` gets this with no extra code.

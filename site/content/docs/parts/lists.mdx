@@ -82,6 +82,9 @@ You drag the row itself, and Delete is in its menu and on the Delete key.
 ## RowSection
 
 `RowSection` groups rows under a heading inside a `RowList`, such as issues by state.
+With `items`, give the list `group`, the group of each item in group order, and `section` for each group's heading.
+The rows stay the list's own, so selection, the row menu, removal and the keys work across the groups.
+A grouped list isn't virtualised.
 The heading shows the group's name at the body size, with its count, an optional icon or `leading` glyph, and buttons that show on hover and focus.
 Its chevron folds the group to its heading, and `expanded` or `defaultExpanded` set whether the rows show.
 The rows keep the list's shared columns and its keyboard model, so they line up across groups, and the arrow keys move from one group to the next.

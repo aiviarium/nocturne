@@ -41,11 +41,10 @@ import { Button, DataTable, Composer } from "@aiviarium/nocturne"
 The order is `reset`, `tokens`, `components`, then `app` for your own CSS.
 Import each file yourself if you manage layers another way.
 
-Then put `class="nc"` and a `data-theme` on the root of the app.
-See [Theming](./theming.mdx).
-
 The app registers its scopes with `createShell` and draws its window with `<Shell>`.
+`Shell` puts the `nc` class on its root, and the appearance sets `data-theme` on `<html>`.
 See [The app shell](./shell/index.mdx).
+A page that uses parts without the shell puts `class="nc"` and a `data-theme` on its root, see [Theming](./theming.mdx).
 
 ## What is in it
 

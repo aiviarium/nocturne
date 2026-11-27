@@ -63,6 +63,9 @@ The view's actions sit at the header's right in one order:
 3. the primary action
 
 An add action is a ghost plus icon button, `icon: "plus"` with `primary` left out.
+An action with a `menu` opens it from its button and calls `onSelect` with the chosen item's id, such as Add widget listing the widgets that aren't there yet.
+It takes no `onClick`.
+On a phone its items go into the bar's menu under the action's label.
 A view switch or search goes in the header's middle, as its children.
 Never put a toolbar row under the header.
 
@@ -75,7 +78,8 @@ Opening a record goes to it and changes the trail.
 The trail is where the record sits, not the list the person came from.
 
 On a phone the header is the screen's navigation bar.
-The trail isn't shown there, and the parent crumb becomes the screen's back control, named after the parent.
+The trail and the stepper aren't shown there.
+The parent crumb becomes a back button (`data-part="view-back"`), named after the parent.
 See [Phones](../phones.mdx#navigation).
 
 <GalleryLink page="view-header">The view header in the gallery</GalleryLink>

@@ -36,6 +36,7 @@ Use the form fields in a dialog, a form or a setting.
 - A `Checkbox` is part of a form, with a mixed state for select-all. Checked, it takes the accent.
 - A `RadioGroup` picks one of a few visible options.
 - A `Select` is for long or changing sets, such as hosts or scopes. It is a button with `aria-haspopup` and a menu of radio items.
+  `inline` puts its label at its left on one line, so it keeps a control's height in a view header or a toolbar.
 - `info` on a `TextField`, `TextArea` or `Select` puts its explanation behind an `InfoTip` beside the label.
   Keep `help` for a format the person must type, and `error` for what went wrong.
 
@@ -119,7 +120,7 @@ Its description is behind an `InfoTip` beside the title, never text on the row.
 - `modified` shows a "Modified" chip. With `onReset`, the chip resets the value to the one the scope inherits.
 - `inherited` says where a value comes from when the scope shown does not set it, such as "From Server".
 - `locked` marks a value no scope can change.
-- The control is a `Switch`, `Select`, `NumberField` or `TextField` without a label. `control` can be a function that gets the id of the title, for `aria-labelledby`.
+- The control is a `Switch`, `Select`, `NumberField`, `Slider` or `TextField` without a label. `control` can be a function that gets the id of the title. Pass it to the control's `aria-labelledby`.
 - Put the rows of one plugin or area in a `Card` with `padding="none"`.
 - Show only the settings the person can change at the scope shown. A row that cannot change is not drawn.
 

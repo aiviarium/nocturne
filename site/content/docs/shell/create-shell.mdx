@@ -63,6 +63,7 @@ A lens extends `Lens` (`id`, `label`, `icon`, `hue`, `purpose`, `source`) with i
 | `count` | Shown in the sidebar above zero |
 | `records`, `recordLabel`, `noun` | The list the stepper steps over and the record switcher lists |
 | `trail: false` | Leaves out the trail and the stepper, for a view whose tabs show its record |
+| `path` | The record is a path, such as a file's. Every segment after the place is part of it, so `loc().record` reads `src/lib/x.ts` |
 | `children` | Places nested under this one |
 | `enters` | The place lists scopes. Opening one nests it in the path |
 | `covers` | Panels whose content the view already is. See [Panels](./panels.mdx#covers) |
@@ -71,6 +72,8 @@ A lens extends `Lens` (`id`, `label`, `icon`, `hue`, `purpose`, `source`) with i
 ## Panels and commands
 
 Panels take `id`, `label`, `icon`, `at` (`right` or `bottom`) and `render`, and optionally `key` (⌥ and the letter), `tabs` and `actions`.
+`render`, `tabs` and `actions` are each called with `{ shell }`.
+A lens's `open` panels open only where there is room beside the view, and not on a phone, where a panel covers the view.
 Commands take `id`, `label` and `run`, with an optional `shortcut` that the palette shows as key caps but doesn't bind.
 
 ## The address
@@ -104,6 +107,11 @@ Each move is a stop in the [history](./history.mdx).
 A place's view and a panel's `render` receive `{ shell }`.
 Inside a `Shell`, `useShell()` returns the same registry.
 A view reads `loc()` and the rest from it, and draws its header with `ShellViewHeader`.
+`Shell` tells the registry whether the window is a phone, with `setPhone`, so `PhoneOverride` counts too.
+
+`Shell` provides the host of every `ViewLayout` inside it.
+A layout keeps its widths and folds in the shell's `storage`, under `viewLayout/` and its `id`.
+A view whose own sidebar lacks room folds the shell's sidebar to its rail, and the sidebar comes back once the view has the room.
 
 ## Shell props
 
@@ -121,7 +129,7 @@ A view reads `loc()` and the rest from it, and draws its header with `ShellViewH
 
 ## Storage
 
-Lens prefs, the history, the sidebar's fold and the widths are kept in the `storage` the app passes. The library doesn't call `localStorage` itself.
+Lens prefs, the history, the sidebar's fold, the widths and each view layout's columns are kept in the `storage` the app passes. The library doesn't call `localStorage` itself.
 
 - `webStorage(localStorage)` wraps a Web Storage object, with every key under `nc:`. A store that throws reads as empty.
 - `memoryStorage()` lasts as long as the page, for tests and examples.

@@ -49,7 +49,9 @@ The parts:
 3. **Don't restyle a part for one view.** App CSS lays parts out with grid, gap and width. It leaves their look alone.
 4. **Icon-only controls have a label.** `IconButton` requires `label`, which is its name and its tooltip.
 5. **Phones come for free.** Parts switch to the phone scale under `:root[data-phone]`. A titled `Dialog` becomes a
-   `Sheet`, and menus and selects become sheets. Check a view at 390px wide instead of writing phone variants.
+   `Sheet`, menus and selects become sheets, splits stack, and the view header's trail becomes a back button.
+   Check a view at 390px wide instead of writing phone variants. Show a phone preview on a desktop page in a
+   `PhoneFrame`, whose sheets open over the frame.
 
 ## The app shell
 
@@ -144,9 +146,9 @@ These hold in every view and every part. Check them before you call a view done.
   and never a change of weight or size, so nothing reflows. A selected card takes a `--line-strong` ring.
 - **Hover lightens.** Rows, nav items, chips and text buttons only lighten their text and icons. Icon-only buttons
   keep a faint `--hover` fill so their hit area shows.
-- **The accent marks a few things only,** namely focus rings, the icon of the lens that is on, the tint line, the one
-  primary action of a view, composer or dialog, checked switches and boxes, text links, and the palette's focus
-  glow. Not for selection, counts, badges, unread dots, tags, progress, toggled buttons, menu checks, filter
+- **The accent marks a few things only,** namely focus rings, the icon of the lens that is on, the tint line,
+  checked switches and boxes, text links, and the palette's focus glow. A primary button is ink, filled with the
+  text colour. Not for selection, counts, badges, unread dots, tags, progress, toggled buttons, menu checks, filter
   matches or drop lines. The accent follows the lens that is on, set on `<html>`.
 - **One drill size.** The path, view titles and trails, panel names and trails, the box's labels, the bar's status
   items and the sidebar's labels are all 12px/500 on a 20px line. A title and the same label as a crumb share

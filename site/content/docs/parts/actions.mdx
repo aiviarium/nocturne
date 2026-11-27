@@ -19,7 +19,7 @@ Use a `Button` for an action with words, such as a dialog's submit or the start 
 
 Every size has `--radius-sm`.
 
-- `primary` is for the one action that completes a flow, such as the last button of a dialog or a form, a sign-in or the answer on a row. Use one for each region.
+- `primary` is for the one action that completes a flow, such as the last button of a dialog or a form, a sign-in or the answer on a row. It is ink, filled with the text colour, never the accent. Use one for each region.
 - `accent` starts AI work.
 - `danger` destroys. It has no red edge.
 - The starting action of an empty state is a secondary `Button`.
@@ -65,6 +65,8 @@ Use `RowMenu` for a row's menu, and `ContextMenu` for the right click of any oth
 - Arrow Up and Down move with wrapping, and Home, End and typing a letter move too. Escape closes the menu and returns focus.
 - A checked choice shows a check in the text colour, never the accent.
 - Rare actions go behind the overflow button, not in a row of their own.
+- A button keeps its current or pressed fill while its menu is open.
+- A view header action with `menu` opens that menu from its button, see [View header](../shell/view-header.mdx#actions).
 
 <Example id="menu/items" minHeight={260} />
 <Example id="dropdown-menu/placements" minHeight={260} />
