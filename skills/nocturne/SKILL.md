@@ -89,8 +89,8 @@ header's middle. Read `loc()`, `selection()` and the rest from the registry, or 
   place. Call them lenses in code, docs and UI copy.
 - **Command palette.** ⌘K or the magnifier turns the box into `CommandPalette` in place. `:` lists lenses and `>`
   actions (`commands` on the scope or the workspace, plus the panels).
-- **Sidebar header, 44px.** `[↑] [Filter… filling the width] [collapse all] [minimise]`. ↑ goes from a record to
-  its list, else to the scope above, and stays in place, disabled, at the top.
+- **Sidebar header, 44px.** `[↑] [Filter… filling the width] [collapse all] [minimise]`. From a record ↑ goes to
+  its list, elsewhere to the scope above. At the top it is disabled but keeps its place.
   The title bar's path shows the scope. The header has no scope name, switcher or back. ⌘F or / focuses the
   filter, which filters the tree in place, and Esc clears it.
 - **Sidebar tree.** `Nav` at the drill size: 30px rows, 12px/500 labels, 15px icons, 8px gap, 11px counts. Child

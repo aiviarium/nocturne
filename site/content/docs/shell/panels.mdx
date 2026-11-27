@@ -44,7 +44,7 @@ The right panel floats over the view when docking it would leave the view narrow
 ## Real tabs
 
 A panel's tabs are its own content, such as a terminal's sessions.
-They come from the panel's `tabs`, which is called with `{ shell }` like `render`, and use `TabStrip` with full tab management:
+They come from the panel's `tabs`, called with `{ shell }` like `render`. `TabStrip` draws them, with full tab management:
 
 - drag to reorder, double-click or Rename to rename
 - × or a middle click to close, and Close others and Close to the right in a tab's menu
@@ -59,7 +59,7 @@ On a host's Sessions view, which is the terminal, the rail hides the Terminal pa
 A panel open at the time is hidden while the view shows, and comes back when the person leaves it.
 No surface shows what another already shows.
 A function in place of the list gets the record shown, for a place whose record page shows what its list needs a panel for.
-A <DemoLink to="agent/chats/c-arm64">conversation</DemoLink> shows its context and output rate beside the transcript, so its Details panel steps aside there and comes back on the list.
+A <DemoLink to="agent/chats/c-arm64">conversation</DemoLink> shows its context and output rate beside the transcript. Its Details panel steps aside there and comes back on the list.
 Open the Terminal panel on <DemoLink to="hosts/build-01/operate/logs">a host's logs</DemoLink>, then go to <DemoLink to="hosts/build-01/operate/sessions">its sessions</DemoLink>.
 
 ## A panel's drill

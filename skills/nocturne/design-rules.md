@@ -77,7 +77,7 @@ Rookery's shell to Crow and each plugin. Where a part's page and a rule differ, 
 - A small chip or badge may have a slight tint with a stronger foreground of the same hue.
 - A state on a card shows in its foreground, with a neutral outline.
 - A divider line only separates things that share one border, such as rows in a list or columns in one frame. Cards
-  with a gap between them never have a line between them, and a card never sits inside another card's border.
+  with a gap between them have no line between them. A card is never placed inside another card's border.
 - The accent is used for focus rings, the icon of the lens that is on, the tint line, checked switches and boxes,
   text links and the palette's focus glow. Nothing else. A primary button is ink, filled with the text colour.
 - The accent follows the lens that is on, across the whole window and its overlays, unless the person turns it off

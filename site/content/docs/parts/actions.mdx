@@ -26,7 +26,7 @@ Every size has `--radius-sm`.
 - Labels say what happens.
 
 A ghost `Button` set among text, such as a picker in a table cell above plain values, is `flush`.
-Its padding hangs outside its box and it takes the type around it, so its label starts where the text above and below it does.
+Its padding hangs outside its box and it takes the type around it. Its label starts where the text above and below it does.
 The roles on <DemoLink to="settings/members">Members</DemoLink> are flush pickers under the owner's plain role.
 
 An action that adds an item is never a `Button`.
@@ -69,7 +69,7 @@ Use `RowMenu` for a row's menu, and `ContextMenu` for the right click of any oth
 - Arrow Up and Down move with wrapping, and Home, End and typing a letter move too. Escape closes the menu and returns focus.
 - A checked choice shows a check in the text colour, never the accent.
 - Rare actions go behind the overflow button, not in a row of their own.
-- A button keeps its current or pressed fill while its menu is open.
+- A current or pressed button has the same fill while its menu is open.
 - A view header action with `menu` opens that menu from its button, see [View header](../shell/view-header.mdx#actions).
 
 <Example id="menu/items" minHeight={260} />

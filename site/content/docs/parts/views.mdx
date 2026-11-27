@@ -111,7 +111,7 @@ Use `Split` for two columns in a view with a divider between them, such as a lis
 Use `SplitGroup` for more than two.
 
 - The divider is a focusable separator. The arrow keys, Home and End move it, and a double click resets it.
-- The divider draws a line only where the columns share an edge. Between framed columns, cards with a gap between them, the gap is the handle: it has no line and lights only while hovered or dragged, as on <DemoLink to="hosts/build-01/operate/overview">a host's overview</DemoLink>.
+- The divider shows a line only where the columns share an edge. Between framed columns, cards with a gap between them, the gap is the handle: it has no line and lights only while hovered or dragged, as on <DemoLink to="hosts/build-01/operate/overview">a host's overview</DemoLink>.
 - A card that fills a flush `Frame`, such as a `LogViewer`, drops its own border, so the frame's is the only one.
 - On a phone the columns stack.
 - The selection's details go in the shell's Details panel, not in a column of the view. A split is for a reader the view itself is about.
@@ -125,7 +125,7 @@ Use `SplitGroup` for more than two.
 Use `Dock` when a view's content is several tiled frames with tabs, such as a host's terminals side by side.
 It is a view's content, never a part of the shell, and the shell's panels have no tiling.
 
-- `Frame` is one tile, with a `TabStrip` as its header. A `bare` frame has no edge, radius or fill, for a lone log or terminal that runs to the view's edges.
+- `Frame` is one tile, with a `TabStrip` as its header. A `bare` frame has no edge, radius or fill, for a log or terminal on its own that runs to the view's edges.
 - On a phone a dock has no split buttons.
 - `TabStrip` is a row of document tabs with icons, titles and close buttons. Tabs shrink, then the strip scrolls, and "All tabs" lists them with a filter.
 - Dragging a tab onto another frame's strip moves it there. Dropping it on a side of a frame, inside a `TabDropFrame`, splits that frame.
