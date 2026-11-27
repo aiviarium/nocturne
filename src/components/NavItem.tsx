@@ -83,34 +83,37 @@ export function NavItem(
 ): JSX.Element {
   const rest = omit(props, ...OWN, "disclose", "within", "child")
   const linkClick = useLinkClick()
-  const [menuAt, setMenuAt] = createSignal<{ x: number; y: number; el: HTMLElement } | null>(null)
-  // The row the menu opened on, kept past the menu's close so focus can go back to it.
+  const [menuAt, setMenuAt] = createSignal<{ x: number; y: number } | null>(null)
+  // The row the menu opened on: its theme for the menu, and where focus goes back after it closes.
   let menuRow: HTMLElement | undefined
   const entries = () => (menuAt() ? (props.menu?.() ?? []) : [])
   const onContextMenu = (e: MouseEvent) => {
     if (!props.menu) return
     e.preventDefault()
-    setMenuAt({ x: e.clientX, y: e.clientY, el: e.currentTarget as HTMLElement })
+    menuRow = e.currentTarget as HTMLElement
+    setMenuAt({ x: e.clientX, y: e.clientY })
   }
   const onMenuKey = (e: KeyboardEvent) => {
     if (!props.menu || !isMenuKey(e)) return
     e.preventDefault()
-    const el = e.currentTarget as HTMLElement
-    const r = el.getBoundingClientRect()
-    setMenuAt({ x: r.left + 24, y: r.bottom, el })
+    menuRow = e.currentTarget as HTMLElement
+    const r = menuRow.getBoundingClientRect()
+    setMenuAt({ x: r.left + 24, y: r.bottom })
   }
   const menu = (
     <Show when={menuAt()}>
       {(at) => (
         <RowMenu
-          at={{ x: at().x, y: at().y }}
+          at={at()}
           label={props.label}
           items={entries()}
-          origin={(menuRow = at().el)}
+          origin={menuRow}
           returnFocus={() => menuRow}
           onClose={() => setMenuAt(null)}
           onSelect={(id) => {
-            const entry = entries().find((x) => "id" in x && x.id === id) as { onSelect?: () => void } | undefined
+            const entry = entries().find((x) => "id" in x && x.id === id) as
+              | { onSelect?: () => void }
+              | undefined
             setMenuAt(null)
             entry?.onSelect?.()
           }}
