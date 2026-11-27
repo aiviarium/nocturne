@@ -142,3 +142,44 @@ test("a heading that is its place opens it, shows its count and is marked on its
   click(link)
   expect(opened).toEqual(["sessions"])
 })
+
+test("folded, a section that is its place is one icon: hover shows its entries in a flyout, the chevron lists them", async () => {
+  const opened: string[] = []
+  const { root } = track(
+    mount(() => (
+      <Nav
+        label="Host"
+        folded
+        groups={[
+          { items: [{ id: "overview", label: "Overview", icon: "activity", onClick: () => {} }] },
+          {
+            label: "Sessions",
+            icon: "terminal",
+            count: 2,
+            onClick: () => opened.push("sessions"),
+            items: [
+              { id: "s1", label: "build", icon: "terminal", onClick: () => opened.push("s1") },
+              { id: "s2", label: "shell", icon: "terminal", onClick: () => {} },
+            ],
+          },
+        ]}
+      />
+    )),
+  )
+  const group = one("[data-part=nav-rail-group]", root)
+  const icon = group.querySelector("[data-part=nav-item]") as HTMLElement
+  // One icon for the section, none for its entries until asked.
+  expect(root.querySelectorAll("[data-part=nav-item]").length).toBe(2)
+  click(icon)
+  expect(opened).toEqual(["sessions"])
+  icon.dispatchEvent(new MouseEvent("mouseenter"))
+  await new Promise((r) => setTimeout(r, 200))
+  flush()
+  const flyout = one("[data-part=nav-flyout]")
+  expect(flyout.textContent).toContain("build")
+  click(flyout.querySelector("[data-part=nav-item]") as HTMLElement)
+  expect(opened).toEqual(["sessions", "s1"])
+  click(one("[data-part=nav-rail-expand]", root))
+  flush()
+  expect(group.querySelectorAll("[data-part=nav-item]").length).toBe(3)
+})

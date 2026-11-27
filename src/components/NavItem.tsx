@@ -1,5 +1,5 @@
 import type { JSX } from "@solidjs/web"
-import { createSignal, For, omit, Show } from "solid-js"
+import { createSignal, For, omit, onCleanup, Show } from "solid-js"
 import { cx } from "../lib/cx"
 import { callClick, useLinkClick } from "../lib/link"
 import { isMenuKey, type RowMenuEntry } from "../lib/rowmenu"
@@ -7,6 +7,7 @@ import { useShellSidebar } from "../shell/context"
 import { Icon, type IconName, type LucideNode } from "./Icon"
 import { IconButton } from "./IconButton"
 import { RowMenu } from "./InsetList"
+import { Popover } from "./Popover"
 import { Tooltip } from "./Tooltip"
 
 export interface NavItemProps extends Omit<JSX.AnchorHTMLAttributes<HTMLAnchorElement>, "children"> {
@@ -278,6 +279,8 @@ export function Nav(props: NavProps): JSX.Element {
       }))
       .filter((g) => !q() || g.items.length > 0)
   const groupKey = (g: NavGroup) => g.id ?? g.label ?? ""
+  // Sections whose entries the person listed flat on the folded rail.
+  const [railOpen, setRailOpen] = createSignal<string[]>([])
   const foldable = (g: NavGroup) => !!g.collapsible && !!g.label && !!props.onCollapsedChange
   // A group with the open item in it stays open, as a parent does.
   const groupClosed = (g: NavGroup) =>
@@ -354,12 +357,27 @@ export function Nav(props: NavProps): JSX.Element {
           <For keyed={false} each={props.groups ?? []}>
             {(group, gi) => (
               <>
-                <Show when={gi > 0}>
+                {/* A rule between groups, but not between one place's section and the next. */}
+                <Show when={gi > 0 && !(group().onClick && (props.groups ?? [])[gi - 1]?.onClick)}>
                   <span class="nc-nav__rule" role="separator" aria-label={group().label} />
                 </Show>
-                <For keyed={false} each={group().items}>
-                  {(item) => <RailItem item={item()} />}
-                </For>
+                <Show
+                  when={group().onClick}
+                  fallback={
+                    <For keyed={false} each={group().items}>
+                      {(item) => <RailItem item={item()} />}
+                    </For>
+                  }
+                >
+                  <RailGroup
+                    group={group()}
+                    open={railOpen().includes(groupKey(group()))}
+                    onOpenChange={(v) => {
+                      const id = groupKey(group())
+                      setRailOpen((now) => (v ? [...now, id] : now.filter((x) => x !== id)))
+                    }}
+                  />
+                </Show>
               </>
             )}
           </For>
@@ -436,6 +454,116 @@ export function Nav(props: NavProps): JSX.Element {
         {props.children}
       </Show>
     </nav>
+  )
+}
+
+/** The "Show 3 more" row the shell ends a long section with. */
+const isMoreRow = (i: NavItemProps) => /\bnc-nav-item--more\b/.test(String(i.class ?? ""))
+
+/**
+ * A section that is its place, on the folded rail: the place's icon alone, which opens it. Hovering or focusing it
+ * shows its entries in a flyout to its right; the small chevron under it lists them flat on the rail.
+ */
+function RailGroup(props: {
+  group: NavGroup
+  open: boolean
+  onOpenChange: (open: boolean) => void
+}): JSX.Element {
+  const [shown, setShown] = createSignal(false)
+  let anchor: HTMLButtonElement | undefined
+  let timer: ReturnType<typeof setTimeout> | undefined
+  // A short delay each way, so passing over the rail opens nothing and the pointer can cross the gap.
+  const show = (v: boolean, delay: number) => {
+    clearTimeout(timer)
+    timer = setTimeout(() => setShown(v), delay)
+  }
+  onCleanup(() => clearTimeout(timer))
+  const label = () => props.group.label ?? ""
+  const entries = () => props.group.items.filter((i) => !isMoreRow(i))
+  const current = () => !!props.group.current || props.group.items.some((i) => !!i.current || currentIn(i))
+  const dot = () => (props.group.count ?? 0) > 0 || props.group.items.some(dotIn)
+  return (
+    <div class="nc-nav-rail-group" data-part="nav-rail-group">
+      <button
+        ref={anchor}
+        type="button"
+        class="nc-nav-rail-item"
+        data-part="nav-item"
+        data-folded=""
+        aria-label={label()}
+        aria-current={props.group.current ? "page" : undefined}
+        aria-expanded={shown() ? "true" : "false"}
+        data-within={!props.group.current && current() ? "" : undefined}
+        onClick={() => {
+          setShown(false)
+          props.group.onClick?.()
+        }}
+        onMouseEnter={() => show(true, 120)}
+        onMouseLeave={() => show(false, 200)}
+        onFocus={(e) => {
+          if ((e.currentTarget as HTMLElement).matches(":focus-visible")) show(true, 0)
+        }}
+        onKeyDown={(e) => {
+          if (e.key === "Escape" && shown()) {
+            e.preventDefault()
+            setShown(false)
+          }
+        }}
+      >
+        <Icon name={props.group.icon ?? "folder"} />
+        <Show when={dot()}>
+          <i class="nc-nav-rail-item__dot" data-part="nav-dot" aria-hidden="true" />
+        </Show>
+      </button>
+      <button
+        type="button"
+        class="nc-nav-rail-group__expand"
+        data-part="nav-rail-expand"
+        aria-label={props.open ? `Hide ${label()} entries` : `Show ${label()} entries`}
+        aria-expanded={props.open ? "true" : "false"}
+        onClick={() => props.onOpenChange(!props.open)}
+      >
+        <Icon name={props.open ? "chevron-up" : "chevron-down"} size="sm" />
+      </button>
+      <Show when={props.open}>
+        <For keyed={false} each={entries()}>
+          {(item) => <RailItem item={item()} />}
+        </For>
+      </Show>
+      <Popover
+        open={shown()}
+        anchor={anchor}
+        placement="right-start"
+        offset={8}
+        surface
+        class="nc-nav-flyout"
+        data-part="nav-flyout"
+        onClose={() => setShown(false)}
+        onMouseEnter={() => show(true, 0)}
+        onMouseLeave={() => show(false, 200)}
+      >
+        <div class="nc-nav-flyout__head">
+          <span class="nc-nav-flyout__title">{label()}</span>
+          <Show when={props.group.count}>
+            <span class="nc-nav__count">{props.group.count}</span>
+          </Show>
+        </div>
+        <div class="nc-nav-flyout__rows" role="group" aria-label={label()}>
+          <For keyed={false} each={props.group.items}>
+            {(item) => (
+              <NavItem
+                {...item()}
+                onClick={(e) => {
+                  // Show N more expands here; any other row opens and closes the flyout.
+                  if (!isMoreRow(item())) setShown(false)
+                  callClick(item().onClick, e)
+                }}
+              />
+            )}
+          </For>
+        </div>
+      </Popover>
+    </div>
   )
 }
 

@@ -360,6 +360,19 @@ button.nc-title-bar__app:hover, button.nc-title-bar__app[aria-expanded="true"] {
 .nc-nav-rail-item[aria-current="page"] { background: var(--active); color: var(--text-1); }
 .nc-nav-rail-item:focus-visible { outline: none; box-shadow: var(--focus-ring-inset); }
 /* A place, or a child of it, has a count: a dot at the icon's corner, neutral like the counts it stands for. */
+/* A section that is its place, folded: its icon, a small chevron under it, and its entries on demand. */
+button.nc-nav-rail-item { margin: 0; padding: 0; border: 0; background: none; cursor: pointer; }
+.nc-nav-rail-group { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.nc-nav-rail-group__expand { display: grid; place-items: center; width: 32px; height: 12px; margin: -2px 0 0; padding: 0; border: 0; border-radius: var(--radius-xs); background: none; color: var(--text-4); cursor: pointer; }
+.nc-nav-rail-group__expand > .nc-icon { width: 12px; height: 12px; }
+.nc-nav-rail-group__expand:hover { color: var(--text-2); }
+.nc-nav-rail-group__expand:focus-visible { outline: none; box-shadow: var(--focus-ring-inset); }
+.nc-nav-rail-item[data-within] { color: var(--text-1); }
+/* The flyout: the section's name and count, then its rows as in the open sidebar. */
+.nc-nav-flyout { width: 248px; padding: var(--space-1); }
+.nc-nav-flyout__head { display: flex; align-items: center; padding: 6px 8px 4px; color: var(--text-3); font-size: var(--nc-type-section); font-weight: 500; }
+.nc-nav-flyout__title { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nc-nav-flyout__rows { display: flex; flex-direction: column; gap: 1px; }
 .nc-nav-rail-item__dot { position: absolute; top: 6px; right: 6px; width: 6px; height: 6px; border-radius: var(--radius-full); background: var(--text-2); box-shadow: 0 0 0 2px var(--bg-0); }
 
 /* ── Panel rail ───────────────────────────────────────────────────────────────────────────────────────────
