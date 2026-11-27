@@ -479,3 +479,29 @@ describe("NavItem menu", () => {
     expect(rightClick(one("[data-part=nav-item]", root)).defaultPrevented).toBe(false)
   })
 })
+
+describe("RowList keyed by getKey", () => {
+  test("an item replaced with the same key keeps its row, which shows the new item", () => {
+    const [items, setItems] = createSignal([
+      { id: "a", title: "First" },
+      { id: "b", title: "Second" },
+    ])
+    const { root } = track(
+      mount(() => (
+        <RowList label="Rows" items={items()} getKey={(x) => x.id}>
+          {(x) => <ListRow title={x.title} onClick={() => {}} />}
+        </RowList>
+      )),
+    )
+    const before = [...root.querySelectorAll<HTMLElement>("[data-part=list-row]")]
+    expect(before.map((r) => r.textContent)).toEqual(["First", "Second"])
+    setItems([{ id: "a", title: "First, renamed" }, items()[1]!])
+    flush()
+    const after = [...root.querySelectorAll<HTMLElement>("[data-part=list-row]")]
+    expect(after[0]).toBe(before[0])
+    expect(after.map((r) => r.textContent)).toEqual(["First, renamed", "Second"])
+    setItems([items()[1]!, items()[0]!])
+    flush()
+    expect([...root.querySelectorAll<HTMLElement>("[data-part=list-row]")][1]).toBe(before[0])
+  })
+})

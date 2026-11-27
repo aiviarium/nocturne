@@ -121,6 +121,8 @@ The list is one tab stop.
 
 With `items` and `getKey` a list can do more.
 
+Rows are kept by `getKey`. An item replaced with the same key keeps its row, which shows the new item. A new key adds a row.
+
 - `onReorder(from, to)` moves rows. Drag the row itself past 4px, or on touch move it after the long press that opened its menu. Alt and an arrow key move it too. A line shows where it drops, and the list scrolls at its edges. The indices are those of `items`, so this works on long lists.
 - `selectable` lets the person select rows. A click opens, Cmd or Ctrl and a click toggles, and Shift and a click selects a range. Shift and an arrow key extend it. Space, Cmd or Ctrl and A, and Escape work as usual. A bar at the foot shows only while something is selected, with `bulkActions`.
 - `onRemove` removes rows, by the Delete key, Delete in the menu, or a swipe. Return an undo for a toast.

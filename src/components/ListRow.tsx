@@ -1001,6 +1001,21 @@ export function RowList<T = unknown>(props: RowListProps<T>): JSX.Element {
     return out
   })
   const keyOf = (item: T, index: number): RowKey => props.getKey?.(item, index) ?? index
+  /** The item a keyed row is given: an object that reads the row's current item, so its fields follow updates. */
+  const liveItem = (item: () => T): T => {
+    const now = untrack(item)
+    // A string or a number is its own key: the same key is the same value.
+    if (typeof now !== "object" || now === null) return now
+    return new Proxy({} as object, {
+      get: (_, k) => (item() as Record<PropertyKey, unknown>)[k],
+      has: (_, k) => k in (item() as object),
+      ownKeys: () => Reflect.ownKeys(item() as object),
+      getOwnPropertyDescriptor: (_, k) => {
+        const d = Reflect.getOwnPropertyDescriptor(item() as object, k)
+        return d && { ...d, configurable: true }
+      },
+    }) as T
+  }
   const keys = createMemo(() => (props.items ?? []).map(keyOf))
   const render = (item: T, index: () => number) =>
     typeof props.children === "function" ? (
@@ -1474,7 +1489,17 @@ export function RowList<T = unknown>(props: RowListProps<T>): JSX.Element {
                 {(items) => (
                   <Show
                     when={props.group}
-                    fallback={<For each={items()}>{(item, i) => render(item, i)}</For>}
+                    fallback={
+                      <Show
+                        when={props.getKey}
+                        fallback={<For each={items()}>{(item, i) => render(item, i)}</For>}
+                      >
+                        {/* Keyed by `getKey`: a changed item with the same key keeps its row, which reads the new item. */}
+                        <For each={items()} keyed={(it) => keyOf(it, untrack(items).indexOf(it))}>
+                          {(item, i) => render(liveItem(item), i)}
+                        </For>
+                      </Show>
+                    }
                   >
                     <For each={runs()} keyed={(r) => r.id}>
                       {(run) => {
