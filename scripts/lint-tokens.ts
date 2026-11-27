@@ -33,6 +33,15 @@ const NUMBER_UNIT = /(?<![\w.-])(?:\d+\.?\d*|\.\d+)(px|rem|em|pt|vw|vh|ch|%)(?![
 const RADIUS_PROP = /^border(-(top|bottom)-(left|right)|-(start|end)-(start|end))?-radius$/
 const CSS_WIDE = /^(inherit|initial|unset|revert|revert-layer|none|transparent|currentcolor)$/i
 
+/**
+ * An issue or pull request number in prose ("PR #418", "#418 fixes it"), not a colour: digits only, after a word
+ * and a space, or before a space and a word.
+ */
+function issueNumber(line: string, at: number, hex: string): boolean {
+  if (!/^#\d{3,4}$/.test(hex)) return false
+  return /\w\s+$/.test(line.slice(0, at)) || /^\s+\w/.test(line.slice(at + hex.length))
+}
+
 function kebab(prop: string): string {
   return prop.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`)
 }
@@ -75,8 +84,10 @@ export function lintSource(file: string, text: string): Finding[] {
   }
 
   lines.forEach((line, index) => {
-    for (const m of line.matchAll(HEX))
+    for (const m of line.matchAll(HEX)) {
+      if (issueNumber(line, m.index ?? 0, m[0])) continue
       add(index, m.index ?? 0, "colour", `hard-coded colour ${m[0]}; use a colour token (var(--...))`)
+    }
     for (const m of line.matchAll(COLOUR_FN)) {
       const rest = line.slice((m.index ?? 0) + m[0].length)
       if (m[1] === "oklch" && /^\s*from\s+var\(/.test(rest)) continue
