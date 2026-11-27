@@ -275,6 +275,7 @@ export function SwipeButton(props: { action: SwipeAction; close: () => void }): 
   return (
     <button
       type="button"
+      data-part="swipe-button"
       class="nc-inset-row__action"
       data-tone={props.action.tone ?? "neutral"}
       data-swipe-action={props.action.id}

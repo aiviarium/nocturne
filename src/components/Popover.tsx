@@ -120,7 +120,11 @@ export function PopoverButton(props: PopoverButtonProps): JSX.Element {
   const side = () => placementSide(props.placement ?? "bottom-start")
   return (
     <PopoverRoot open={props.open} onOpenChange={(next) => props.onOpenChange?.(next)}>
-      <PopoverTrigger class={props.triggerClass ?? "nc-btn"} aria-label={props["aria-label"]}>
+      <PopoverTrigger
+        data-part="popover-button"
+        class={props.triggerClass ?? "nc-btn"}
+        aria-label={props["aria-label"]}
+      >
         {props.label}
       </PopoverTrigger>
       <PopoverContent
