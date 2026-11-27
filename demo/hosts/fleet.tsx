@@ -16,9 +16,11 @@ import {
   ViewLayout,
 } from "@aiviarium/nocturne"
 import { createSignal, Show } from "solid-js"
+import { useDemo } from "../context"
 import type { Host } from "../data"
 import { askName, copyLink, demoShell, named, renameEntry, undoable } from "../menus"
 import { addHost, factsOf, hosts, REGIONS, removeHosts, renameHost, sessionsOf, setHosts } from "./data"
+import { HostPanels } from "./panels"
 
 const STATE = {
   online: { dot: "ok", label: "Online" },
@@ -120,8 +122,16 @@ const gone = (props: ShellViewProps) => {
   return !!id && !id.startsWith("@") && !hosts().some((h) => h.id === id)
 }
 
-/** The Hosts module's view. */
+const LAYOUTS = [
+  { value: "table", label: "Table" },
+  { value: "panels", label: "Panels" },
+]
+const LAYOUT_KEY = "demo/hosts/layout"
+
+/** The Hosts module's view: the fleet as a table, or as a panel per host with its live meters. */
 export function FleetView(props: ShellViewProps) {
+  const demo = useDemo()
+  const [layout, setLayout] = createSignal(demo.storage.get(LAYOUT_KEY) === "panels" ? "panels" : "table")
   const [adding, setAdding] = createSignal(false)
   const [selected, setSelected] = createSignal<string[]>([])
   return (
@@ -131,31 +141,44 @@ export function FleetView(props: ShellViewProps) {
         <ShellViewHeader
           title="Hosts"
           actions={[{ id: "add", label: "Add host", icon: "plus", onClick: () => setAdding(true) }]}
-        />
+        >
+          <Select
+            label="Layout"
+            inline
+            options={LAYOUTS}
+            value={layout()}
+            onChange={(v) => {
+              setLayout(v)
+              demo.storage.set(LAYOUT_KEY, v)
+            }}
+          />
+        </ShellViewHeader>
       }
     >
       <Show when={!gone(props)} fallback={<EmptyState title="This host was removed" />}>
-        <DataTable
-          label="Hosts"
-          bare
-          rows={hosts()}
-          columns={COLUMNS}
-          getRowId={(h) => h.id}
-          rowLabel={(h) => h.name}
-          selectable
-          selected={selected()}
-          onSelectionChange={setSelected}
-          onRowClick={(h) => props.shell.go(`/hosts/${h.id}`)}
-          onReorder={(from, to) => setHosts(reorderItems(hosts(), from, to))}
-          onRemove={(ids) => removeHosts(ids)}
-          rowMenu={(t) => hostMenu(t.rows)}
-          bulkActions={(rows) => (
-            <Button size="sm" variant="ghost" icon="rotate-ccw" onClick={() => restart(rows)}>
-              Restart {rows.length}
-            </Button>
-          )}
-          empty={{ title: "No hosts" }}
-        />
+        <Show when={layout() === "table"} fallback={<HostPanels shell={props.shell} />}>
+          <DataTable
+            label="Hosts"
+            bare
+            rows={hosts()}
+            columns={COLUMNS}
+            getRowId={(h) => h.id}
+            rowLabel={(h) => h.name}
+            selectable
+            selected={selected()}
+            onSelectionChange={setSelected}
+            onRowClick={(h) => props.shell.go(`/hosts/${h.id}`)}
+            onReorder={(from, to) => setHosts(reorderItems(hosts(), from, to))}
+            onRemove={(ids) => removeHosts(ids)}
+            rowMenu={(t) => hostMenu(t.rows)}
+            bulkActions={(rows) => (
+              <Button size="sm" variant="ghost" icon="rotate-ccw" onClick={() => restart(rows)}>
+                Restart {rows.length}
+              </Button>
+            )}
+            empty={{ title: "No hosts" }}
+          />
+        </Show>
       </Show>
       <AddHost
         open={adding()}

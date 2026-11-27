@@ -21,7 +21,6 @@
   --accent-text: #BBC5F8;
   --accent-tint: rgba(104,114,229,0.16);
   --accent-line: rgba(104,114,229,0.50);
-  --accent-subtle: #1C1F30;
   --accent-glow: rgba(139,152,239,0.85);
   /* Text selection: neutral, never the accent, so a lens's or brand's hue never tints selected text. */
   --selection: rgba(242,242,242,0.22);
@@ -91,7 +90,6 @@
   --accent-text: #2D3371;
   --accent-tint: rgba(94,104,216,0.10);
   --accent-line: rgba(94,104,216,0.40);
-  --accent-subtle: #EDF0FD;
   --accent-glow: rgba(73,81,171,0.45);
   --selection: rgba(23,23,23,0.22);
   --hover: rgba(23,23,23,0.03);
@@ -160,6 +158,7 @@
   --row-compact: 30px;
   --row-default: 30px;
   --header: 44px;
+  --header-view: 36px;
   --rail: 48px;
   --sidebar: 240px;
   --panel-rail: 44px;

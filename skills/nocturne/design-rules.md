@@ -21,11 +21,15 @@ Rookery's shell to Crow and each plugin. Where a part's page and a rule differ, 
   an app registers.
 - The core and the plugins contribute scopes, lenses, places and panels to the registry. The shell derives the
   rest.
+- The sidebar navigates. Saved views such as Active, Backlog or Assigned to me are filters: they're the view
+  header's tabs and never rows of the tree.
+- One system draws every tree. Lists that grow (projects, hosts, chats, pull requests) are sections of entries under
+  their names, while fixed pages are rows.
 
 ## Space and proportion
 
 - Content gets the room. Chrome is small, and side columns are clearly narrower than the main one.
-- A view has one bar at its top, its header. Every header in the window is 44px.
+- A view has one bar at its top, its header. The title bar is 44px, and every header under it is 36px.
 - Rows are 30px. There is no comfortable density.
 - Viewport containers are square, such as the view area and the docked panels.
 - A card is as tall as its content, and cards in a row of a grid share its height, with their footers at the
@@ -67,6 +71,25 @@ Rookery's shell to Crow and each plugin. Where a part's page and a rule differ, 
 - A primary button completes a flow, such as a dialog's submit or a sign-in.
 - An empty state's starting action may be a secondary button with text.
 - A choice between a few values in a toolbar, such as a scope, is a `Select`. Segmented tabs switch a whole view.
+- Actions on an item are in its context menu: a right click, the Menu key or Shift+F10. A row doesn't reserve room
+  for buttons that only appear on hover.
+- More actions, the overflow menu, is always the last control of a header, after the primary action.
+- Widgets the person arranges use the widget board, wherever they are: a dashboard's grid, the bars and columns
+  around a chat. Each place declares its zones and the forms they allow. The widgets and their editing behave the same.
+
+## Icons and hover
+
+- Hover shows helpful information that is otherwise hidden, as in Linear. Hovering a pull request's icon shows its
+  title, state, checks and branch. Hovering an assignee shows who it is. Use a `HoverCard`, or a record's `hover`
+  for a sidebar entry. Everything in it is also reachable where the item leads, since touch and keyboard users may
+  never see it.
+- An item's icon says something about that item. It never repeats its category's icon: entries under Pull requests
+  don't all show the pull request icon. Show who made it (an `Avatar`), what it is or where it goes (a type or
+  provider icon, such as a channel for a Slack webhook), its name box (`Mark`), or, when it has nothing of its own,
+  an `Identicon` drawn from its id.
+- When a state has an icon of its own, it is a badge on the item's icon, on a disc in the corner: a pull request's
+  author, with its state as a small coloured pull request or merge icon. Running or failing have no icon, and get
+  a coloured dot.
 
 ## Colour
 
@@ -74,7 +97,9 @@ Rookery's shell to Crow and each plugin. Where a part's page and a rule differ, 
   dot or a word. Headers and list group heads have no fill.
 - Avatars, project and scope marks, status, priority and type glyphs, labels and charts keep their hues, because
   their colour means something.
-- A small chip or badge may have a slight tint with a stronger foreground of the same hue.
+- Backgrounds are never tinted. The greys have equal red, green and blue, and nothing is filled with the accent's
+  tint: an accent badge, a command token or a selected node is `bg-4` or `active` with the accent in its text.
+  `lint:tokens` fails on both. A small status chip may keep a slight tint of its status hue.
 - A state on a card shows in its foreground, with a neutral outline.
 - A divider line only separates things that share one border, such as rows in a list or columns in one frame. Cards
   with a gap between them have no line between them. A card is never placed inside another card's border.

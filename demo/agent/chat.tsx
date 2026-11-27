@@ -1,4 +1,4 @@
-// A conversation drawn from its turns, and the composer under it. Both the Agent place and the Assistant panel use
+// A conversation drawn from its turns, and the composer under it. Both the Chats place and the Assistant panel use
 // them: the person's turns in bubbles, the agent's on the page with its steps, media and approvals.
 import {
   ApprovalCard,

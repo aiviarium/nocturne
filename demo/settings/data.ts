@@ -1,5 +1,5 @@
 // The workspace's settings in memory: members, API keys, webhooks with their deliveries, and the issue fields.
-import type { FieldSpec, LabelHue } from "@aiviarium/nocturne"
+import type { FieldSpec, IconName, LabelHue } from "@aiviarium/nocturne"
 import { createSignal } from "solid-js"
 import { removeFrom } from "../lists"
 
@@ -193,3 +193,16 @@ export const ISSUE_FIELDS: Array<{ spec: FieldSpec; sample: unknown }> = [
     sample: undefined,
   },
 ]
+
+/** Where a webhook delivers, from its URL: the provider's type as its icon and name. */
+const PROVIDERS: { host: RegExp; name: string; icon: IconName }[] = [
+  { host: /slack\.com$/, name: "Slack", icon: "hash" },
+  { host: /zapier\.com$/, name: "Zapier", icon: "bolt" },
+]
+export const providerOf = (url: string) => {
+  let host = ""
+  try {
+    host = new URL(url).hostname
+  } catch {}
+  return PROVIDERS.find((p) => p.host.test(host)) ?? { name: host || "A URL", icon: "link" as IconName }
+}

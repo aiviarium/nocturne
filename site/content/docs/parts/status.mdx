@@ -41,7 +41,7 @@ One list never has two treatments for the same fact.
 <DoDont do="design/fact-once" dont="design/fact-repeated" />
 <DoDont do="design/chip-tint" dont="design/solid-chip" />
 
-<DemoLink to="projects/atlas/build/issues">Issues</DemoLink> have label chips, and the <DemoLink to="inbox">Inbox</DemoLink> counts the new events of an unread notice.
+<DemoLink to="projects/atlas/explore/issues">Issues</DemoLink> have label chips, and the <DemoLink to="inbox">Inbox</DemoLink> counts the new events of an unread notice.
 
 ## IdBadge and CodeBadge
 
@@ -74,7 +74,7 @@ It has a short title, the action that starts it, and one short line at most.
 <Example id="empty-state/default" />
 <DoDont do="design/empty-nothing" dont="design/empty-boxes" />
 
-The Details panel on <DemoLink to="projects/atlas/build/issues">Issues</DemoLink> shows one while nothing is selected.
+The Details panel on <DemoLink to="projects/atlas/explore/issues">Issues</DemoLink> shows one while nothing is selected.
 
 ## Callout
 
@@ -118,5 +118,26 @@ These keep their hues, because the colour tells people and places apart.
 <Example id="mark/sizes" />
 
 The demo's <DemoLink to="projects">Projects</DemoLink> show marks and avatar stacks.
+`xs` (16px) fits a sidebar entry's icon.
+
+## Identicon
+
+`Identicon` is a small image drawn from an id: a 5 by 5 grid, mirrored, in one of the label hues.
+The same id always draws the same image.
+Use it for an item with no picture or type of its own, such as a chat, so rows tell apart at a glance.
+
+<Example id="identicon/default" />
+
+## Icons and hover
+
+An item's icon says something about that item, and never repeats its category's icon.
+Entries under Pull requests show their author, not the pull request icon.
+Show who made it with an `Avatar`, what it is or where it goes with a type or provider icon, its name box with a `Mark`, or an `Identicon` when it has nothing of its own.
+
+A state that has an icon goes on the item's icon as a badge, a small icon on a disc in its corner, such as a pull request's state on its author.
+A `StatusDot` marks a state with no icon of its own, such as running or failing.
+Hovering the icon opens a `HoverCard` with what the row has no room for.
+
+In the demo, see the chats and pull requests in <DemoLink to="projects/atlas/build/chats">the sidebar of Build</DemoLink>, the webhooks in <DemoLink to="settings/webhooks">Settings</DemoLink> and the sessions of <DemoLink to="hosts/build-01/operate/sessions">a host</DemoLink>.
 
 <GalleryLink page="status-meta" />

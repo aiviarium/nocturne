@@ -45,6 +45,7 @@ export const NOT_A_PART: Record<string, string> = {
   ViewLayoutHost: "a context Shell provides so a view that lacks room folds the sidebar",
   PhoneOverride: "a context PhoneFrame provides; the gallery sets it to show phone pieces on a desktop page",
   ScreenContext: "a context NavigationScreen provides to the parts inside it",
+  WidgetGrid: "the grid a WidgetZone draws for a `grid` zone; the dashboard uses it through its widget board",
 }
 
 const sources = (dir: string): string[] =>

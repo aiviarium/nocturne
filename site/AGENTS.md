@@ -46,7 +46,7 @@ bun run build        # writes out/; DOCS_BASE_PATH=/nocturne for the site in a f
 - The site is a static export. Route handlers export `dynamic = 'force-static'`. Plain URLs to files in `public/` go through `asset()` so they get the base path.
 - Take token values from the generated data, never copy them into a page.
 - Show a component with `<Example id="part/example" />`, where the id is a file in `../examples/`. Do not port components to React.
-- Point at a part in context with `<DemoLink to="projects/atlas/build/issues/WEB-142">`. The test in `../test/demo.test.tsx` checks that each address leads to a place of the demo.
+- Point at a part in context with `<DemoLink to="projects/atlas/explore/issues/WEB-142">`. The test in `../test/demo.test.tsx` checks that each address leads to a place of the demo.
 - Follow `docs/design.md`. The project colour never fills a panel, card, button or callout. Only the value of a badge is filled with it.
 - Prose is short, plain sentences, with project names in title case. It has to pass Vale with no output.
 - Commits follow Conventional Commits with a short subject.

@@ -31,17 +31,6 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
-/* A tile fills its cell; while arranging, its remove button sits above the grid's drag veil. */
-.dm-dash-tile {
-  display: grid;
-  height: 100%;
-}
-.dm-dash-remove {
-  position: absolute;
-  top: calc(var(--space-3) * -1);
-  right: calc(var(--space-3) * -1);
-  z-index: 3;
-}
 .dm-dash-label {
   display: inline-flex;
   align-items: center;

@@ -158,7 +158,7 @@ A new workspace opens on an empty board today. People stop there: one in three n
 
 1. Pick a template: *Product launch*, *Bug tracker* or *Blank*.
 2. Name the project. The key is made from the name and can be changed later.
-3. Land in **Build › Issues** with three example issues.
+3. Land in **Explore › Issues** with three example issues.
 
 ## Open questions
 

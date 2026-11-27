@@ -3,7 +3,7 @@ title: View header and trail
 description: The view's one header, its title or trail, the record switcher and the stepper.
 ---
 
-Each view has one header, a 44px `ViewHeader`.
+Each view has one header, a 36px `ViewHeader`.
 Inside a `Shell` the view uses `ShellViewHeader`, which takes the title, the trail and the stepper from the registry.
 The view adds its actions and the content of the header's middle.
 
@@ -19,7 +19,7 @@ function IssuesView() {
 
 <Example id="trail/record" />
 
-Try the trail, the switcher and the stepper on <DemoLink to="projects/atlas/build/issues/WEB-142">an issue in the demo</DemoLink>.
+Try the trail, the switcher and the stepper on <DemoLink to="projects/atlas/explore/issues/WEB-142">an issue in the demo</DemoLink>.
 
 ## Title or trail
 
@@ -59,8 +59,8 @@ J and K do the same from the keyboard.
 The view's actions sit at the header's right in one order:
 
 1. icon actions
-2. overflow
-3. the primary action
+2. the primary action
+3. More actions, the overflow menu, which is always last when it's there
 
 An add action is a ghost plus icon button, `icon: "plus"` with `primary` left out.
 An action with a `menu` opens it from its button and calls `onSelect` with the chosen item's id, such as Add widget listing the widgets that aren't there yet.

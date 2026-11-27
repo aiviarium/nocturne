@@ -1,19 +1,23 @@
-// The Agent module's places: Chats (the conversations, each a record with its trail and stepper) and Runs (every
-// run of the workspace's agents, hundreds of rows in a list that renders only what is in view).
+// The agent's places in a project's Build lens: Chats (the project's conversations, each a record with its trail and
+// stepper) and Runs (every run of the project's agents, hundreds of rows in a list that renders only what is in view).
 import {
   Avatar,
   Button,
   type ChatMediaItem,
   ContextWidget,
   compactCount,
+  createWidgetBoard,
   EmptyState,
   Icon,
+  keyboardMenuPoint,
   List,
   ListRow,
   MediaViewer,
+  type MenuEntry,
   RateWidget,
   type RowKey,
   RowList,
+  RowMenu,
   type RowMenuEntry,
   SectionHeading,
   ShellViewHeader,
@@ -25,31 +29,47 @@ import {
   toast,
   useShell,
   ViewLayout,
+  WidgetBoard,
+  WidgetRows,
   type WidgetSegment,
+  WidgetZone,
 } from "@aiviarium/nocturne"
-import { createEffect, createSignal, Show, untrack } from "solid-js"
+import { createEffect, createSignal, For, Show, untrack } from "solid-js"
+import { useDemo } from "../context"
+import type { Project } from "../data"
 import { askName, copyLink, demoShell, inList, named, renameEntry, undoable } from "../menus"
 import { ChatComposer, Transcript } from "./chat"
 import {
   CONTEXT_TOTAL,
   type Conversation,
   conversationById,
-  conversations,
+  conversationsOf,
   isStreaming,
   newConversation,
-  RUNS,
   type Run,
   removeConversations,
   renameConversation,
+  runsOf,
   stop,
   waitsOnYou,
 } from "./data"
 import { micBlocked, setMicBlocked, transcriber } from "./transcriber"
+import { CHAT_LAYOUT, CHAT_ZONES, chatFit } from "./widget-zones"
+import { CHAT_WIDGETS } from "./widgets"
 
-/** Opens a new conversation. */
+/** The project the view is in; the panel's chat falls back to Atlas web outside a project. */
+export const projectHere = (shell: { loc: () => { frame?: { item?: unknown } } }) => {
+  const item = shell.loc().frame?.item as Partial<Project> | undefined
+  return item?.key && item.id ? item.id : "atlas"
+}
+/** A chat's address. */
+export const chatPath = (c: Conversation) => `/projects/${c.project}/build/chats/${c.id}`
+
+/** Opens a new conversation in the project the view is in. */
 export const startChat = (shell: {
+  loc: () => { frame?: { item?: unknown } }
   toPlace: (f: undefined, place: string, view?: string, record?: string) => void
-}) => shell.toPlace(undefined, "chats", undefined, newConversation())
+}) => shell.toPlace(undefined, "chats", undefined, newConversation(projectHere(shell)))
 
 function MicAction() {
   return {
@@ -98,7 +118,7 @@ export function chatMenu(list: Conversation[]): RowMenuEntry[] {
       id: "open",
       label: "Open",
       icon: "arrow-up-right",
-      onSelect: () => shell.go(`/agent/chats/${c.id}`),
+      onSelect: () => shell.go(chatPath(c)),
     },
     {
       id: "details",
@@ -113,7 +133,7 @@ export function chatMenu(list: Conversation[]): RowMenuEntry[] {
       id: "copy",
       label: "Copy link",
       icon: "link",
-      onSelect: () => copyLink(c.title, `/agent/chats/${c.id}`),
+      onSelect: () => copyLink(c.title, chatPath(c)),
     },
     renameEntry(() =>
       askName({
@@ -133,6 +153,7 @@ export function chatMenu(list: Conversation[]): RowMenuEntry[] {
 
 function ConversationList(props: ShellViewProps) {
   const [selected, setSelected] = createSignal<RowKey[]>([])
+  const conversations = () => conversationsOf(projectHere(props.shell))
   return (
     <ViewLayout
       id="demo.agent.chats"
@@ -212,45 +233,109 @@ function ConversationPage(props: ShellViewProps & { id: string }) {
     const id = untrack(() => props.id)
     return props.shell.pushEsc(() => stop(id))
   })
+  const demo = useDemo()
+  // The conversation's widgets: the same board as the dashboard's, with the zones around the transcript.
+  const board = createWidgetBoard<string>({
+    types: CHAT_WIDGETS,
+    zones: CHAT_ZONES,
+    initial: CHAT_LAYOUT,
+    storage: demo.storage,
+    key: "demo/agent/widgets",
+    context: () => props.id,
+    fit: chatFit,
+    hideEmpty: true,
+  })
+  /** An approval widget showing that keeps the decision out of the transcript. */
+  const approvalInline = () =>
+    board.layout().some((p) => {
+      const z = board.zone(chatFit(p.zone, board.width()))
+      return (
+        (p.type ?? p.id) === "approval" && board.configOf(p).transcript === false && !!z && board.visible(z)
+      )
+    })
+  /** A bar of three zones, its start, centre and end. */
+  const Bar = (b: { place: "top" | "above" | "below" }) => (
+    <div class={`dm-agent-bar dm-agent-bar--${b.place}`}>
+      {/* A widget grown to a row (an approval) draws over the three zones, which keep their places. */}
+      <WidgetRows
+        board={board}
+        zones={[`${b.place}-start`, `${b.place}-center`, `${b.place}-end`]}
+        placement={b.place === "top" ? "bottom-start" : "top-start"}
+        class="dm-agent-bar__rows"
+      />
+      <For each={["start", "center", "end"]}>
+        {(at) => (
+          <WidgetZone
+            board={board}
+            zone={`${b.place}-${at}`}
+            placement={b.place === "top" ? "bottom-start" : "top-start"}
+            class={`dm-agent-bar__${at}`}
+          />
+        )}
+      </For>
+    </div>
+  )
   return (
     <ViewLayout
       id="demo.agent.chat"
       scroll={false}
       header={
         <ShellViewHeader
+          // While arranging widgets the header holds only the board's actions.
           actions={[
-            { id: "new", label: "New chat", icon: "plus", onClick: () => startChat(props.shell) },
-            MicAction(),
+            ...(board.editing()
+              ? []
+              : [
+                  {
+                    id: "new",
+                    label: "New chat",
+                    icon: "plus" as const,
+                    onClick: () => startChat(props.shell),
+                  },
+                  MicAction(),
+                ]),
+            ...board.actions(),
           ]}
         />
       }
     >
-      {/* The column is centred. Beside it, where there is room, the context and the output rate sit in the side
-          columns; with less room they are one row each above the composer. */}
-      <div class="dm-agent-chat">
-        <Transcript cid={props.id} />
-        <aside class="dm-agent-side dm-agent-side--start" aria-label="Context">
-          <ChatContext id={props.id} />
-          <Images id={props.id} />
-        </aside>
-        <aside class="dm-agent-side dm-agent-side--end" aria-label="Output">
-          <ChatRate id={props.id} />
-        </aside>
-        <div class="dm-agent-foot">
-          <div class="dm-agent-column">
-            <div class="dm-agent-strip">
-              <ChatContext id={props.id} size="row" />
-              <ChatRate id={props.id} size="row" />
+      {/* The column is centred. Around it the widget board's zones: a bar over the transcript, a column either side
+          where there is room, and a bar over and under the composer. */}
+      <WidgetBoard board={board}>
+        <div
+          class="dm-agent-chat"
+          ref={board.measure}
+          data-approval-inline={approvalInline() ? "" : undefined}
+        >
+          <Transcript cid={props.id} />
+          <Bar place="top" />
+          <aside class="dm-agent-side dm-agent-side--start" aria-label="Left widgets">
+            <WidgetZone board={board} zone="left-top" />
+            <WidgetZone board={board} zone="left-bottom" class="dm-agent-side__foot" />
+          </aside>
+          <aside class="dm-agent-side dm-agent-side--end" aria-label="Right widgets">
+            <WidgetZone board={board} zone="right-top" placement="left-start" />
+            <WidgetZone
+              board={board}
+              zone="right-bottom"
+              placement="left-start"
+              class="dm-agent-side__foot"
+            />
+          </aside>
+          <div class="dm-agent-foot">
+            <div class="dm-agent-column">
+              <Bar place="above" />
+              <ChatComposer cid={props.id} />
+              <Bar place="below" />
             </div>
-            <ChatComposer cid={props.id} />
           </div>
         </div>
-      </div>
+      </WidgetBoard>
     </ViewLayout>
   )
 }
 
-/** Agent › Chats: the conversations, or the one the address names. */
+/** Build › Chats: the conversations, or the one the address names. */
 export function ChatsView(props: ShellViewProps) {
   const id = () => {
     const r = props.shell.loc().record
@@ -388,60 +473,111 @@ export function ChatDetails(props: { id: string }) {
 
 const DOT = { running: "ai", ok: "ok", failed: "error" } as const
 
-/** Agent › Runs: every run, newest first. A running one can be stopped from its row. */
+/**
+ * Build › Runs: every run of the project's agents, newest first. A running one can be stopped from its row. A right
+ * click, the context menu key or Shift F10 opens a run's menu.
+ */
 export function RunsView(props: ShellViewProps) {
   const [stopped, setStopped] = createSignal<string[]>([])
   const [active, setActive] = createSignal(0)
+  const runs = () => runsOf(projectHere(props.shell))
   const stateOf = (r: Run) => (r.state === "running" && stopped().includes(r.id) ? "failed" : r.state)
   const open = (r: Run) => {
     if (r.conversation) props.shell.toPlace(undefined, "chats", undefined, r.conversation)
     else toast({ title: `${r.id}: ${r.task}`, description: `${r.agent}, ${r.took || "running"}` })
   }
+  const stopRun = (r: Run) => {
+    setStopped((s) => [...s, r.id])
+    toast({
+      title: `Stopped ${r.id}`,
+      action: { label: "Undo", onClick: () => setStopped((s) => s.filter((x) => x !== r.id)) },
+    })
+  }
+  const [menu, setMenu] = createSignal<{ at: { x: number; y: number }; run: Run; el: HTMLElement }>()
+  const runMenu = (r: Run): MenuEntry[] => [
+    { id: "open", label: r.conversation ? "Open the chat" : "Show the run", icon: "arrow-up-right" },
+    ...(stateOf(r) === "running" ? [{ id: "stop", label: "Stop", icon: "square" } as const] : []),
+    { id: "copy", label: "Copy the run's ID", icon: "copy" },
+  ]
+  const runMenuSelect = (id: string, r: Run) => {
+    if (id === "open") open(r)
+    else if (id === "stop") stopRun(r)
+    else if (id === "copy") {
+      void navigator.clipboard?.writeText(r.id).catch(() => undefined)
+      toast({ title: `Copied ${r.id}` })
+    }
+  }
+  // The context menu key or Shift F10 opens the active run's menu at its row.
+  const onMenuKey = (e: KeyboardEvent) => {
+    if (e.key !== "ContextMenu" && !(e.shiftKey && e.key === "F10")) return
+    const r = runs()[active()]
+    const el = (e.currentTarget as HTMLElement).querySelector<HTMLElement>("[role=option][data-active]")
+    if (!r || !el) return
+    e.preventDefault()
+    setMenu({ at: keyboardMenuPoint(el), run: r, el })
+  }
   return (
     <ViewLayout id="demo.agent.runs" scroll={false} header={<ShellViewHeader />}>
-      <Show when={RUNS.length} fallback={<EmptyState title="No runs yet" />}>
-        <List
-          label="Runs"
-          class="dm-agent-runs"
-          items={RUNS}
-          getKey={(r) => r.id}
-          activeIndex={active()}
-          onActiveChange={setActive}
-          onSelect={open}
-        >
-          {(r) => (
-            <div class="dm-agent-run">
-              <StatusDot status={DOT[stateOf(r)]} />
-              <span class="dm-agent-run-id nc-mono nc-num">{r.id}</span>
-              <span class="dm-grow nc-truncate">{r.task}</span>
-              <span class="nc-meta dm-agent-run-agent">{r.agent}</span>
-              <Show
-                when={stateOf(r) === "running"}
-                fallback={<span class="nc-meta nc-num dm-agent-run-took">{r.took || "stopped"}</span>}
+      <Show when={runs().length} fallback={<EmptyState title="No runs yet" />}>
+        <div class="dm-agent-runs-host" onKeyDown={onMenuKey}>
+          <List
+            label="Runs"
+            class="dm-agent-runs"
+            items={runs()}
+            getKey={(r) => r.id}
+            activeIndex={active()}
+            onActiveChange={setActive}
+            onSelect={open}
+          >
+            {(r) => (
+              <div
+                class="dm-agent-run"
+                onContextMenu={(e: MouseEvent) => {
+                  e.preventDefault()
+                  setMenu({ at: { x: e.clientX, y: e.clientY }, run: r, el: e.currentTarget as HTMLElement })
+                }}
               >
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  aria-label={`Stop ${r.id}`}
-                  onClick={(e: MouseEvent) => {
-                    e.stopPropagation()
-                    setStopped((s) => [...s, r.id])
-                    toast({
-                      title: `Stopped ${r.id}`,
-                      action: {
-                        label: "Undo",
-                        onClick: () => setStopped((s) => s.filter((x) => x !== r.id)),
-                      },
-                    })
-                  }}
+                <StatusDot status={DOT[stateOf(r)]} />
+                <span class="dm-agent-run-id nc-mono nc-num">{r.id}</span>
+                <span class="dm-grow nc-truncate">{r.task}</span>
+                <span class="nc-meta dm-agent-run-agent">{r.agent}</span>
+                <Show
+                  when={stateOf(r) === "running"}
+                  fallback={<span class="nc-meta nc-num dm-agent-run-took">{r.took || "stopped"}</span>}
                 >
-                  <StopGlyph />
-                  Stop
-                </Button>
-              </Show>
-            </div>
-          )}
-        </List>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    aria-label={`Stop ${r.id}`}
+                    onClick={(e: MouseEvent) => {
+                      e.stopPropagation()
+                      stopRun(r)
+                    }}
+                  >
+                    <StopGlyph />
+                    Stop
+                  </Button>
+                </Show>
+              </div>
+            )}
+          </List>
+        </div>
+      </Show>
+      <Show when={menu()} keyed>
+        {(m) => (
+          <RowMenu
+            at={m.at}
+            label={`Actions for ${m.run.id}`}
+            items={runMenu(m.run)}
+            origin={m.el}
+            returnFocus={() => m.el.closest<HTMLElement>("[role=listbox]") ?? m.el}
+            onClose={() => setMenu(undefined)}
+            onSelect={(id) => {
+              setMenu(undefined)
+              runMenuSelect(id, m.run)
+            }}
+          />
+        )}
       </Show>
     </ViewLayout>
   )

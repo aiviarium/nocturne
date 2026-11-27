@@ -100,9 +100,11 @@ The `syn` tokens colour `CodeBlock` and `DiffView`.
 
 Cards, panels, rows, strips, banners and callouts are the neutral `bg-*` steps with hairlines.
 Hue goes in the foreground, such as an icon, the dot and word of a `State`, or the ink of text.
+The greys have no tint, with equal red, green and blue, and no background is filled with the accent.
+`bun run lint:tokens` fails on a tinted grey token and on a background filled with `--accent-tint`.
 
-- A small inline chip or badge may keep a slight tint with a stronger ink of the same hue.
-  `Badge`, `LabelChip`, the composer's tokens and the "Modified" chip do this, as the mention chip does.
+- A small status chip may keep a slight tint of its status hue with a stronger ink of the same hue.
+  An accent badge, the composer's command token and a running step are neutral, with the accent in their text.
 - Coloured fills are for icon tiles and buttons: an accent or danger button, the tile behind an icon.
 - No hue fill has a hue edge, and a danger button has no red edge.
 - A hue edge is never the only mark of a state on a card. Approval cards have a hairline edge, and show their state with a dot and a word.

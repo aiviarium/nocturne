@@ -9,7 +9,7 @@ The app writes its views and leaves the frame to the shell.
 
 <Example id="app-shell/workbench" />
 
-The <DemoLink to="projects/atlas/build/issues">demo</DemoLink> is a whole app on the shell, at full size.
+The <DemoLink to="projects/atlas/explore/issues">demo</DemoLink> is a whole app on the shell, at full size.
 
 ## The layout
 
@@ -17,7 +17,7 @@ The <DemoLink to="projects/atlas/build/issues">demo</DemoLink> is a whole app on
 | --- | --- | --- |
 | Title bar | The app icon, the history arrows, the scope path, the lens box on the window's centre, status items and the window controls | 44px across the window |
 | Sidebar | Its header, the current scope's places, the account at its foot | 240px, 200px to 360px, folds to a 48px rail |
-| View surface | The view, with its own 44px header | Fills the rest, down to the window's bottom edge |
+| View surface | The view, with its own 36px header | Fills the rest, down to the window's bottom edge |
 | Docked panels | One panel at the view's right and one under it | Resized by their edge |
 | Panel rail | The buttons that open the panels | 44px at the window's right edge |
 
@@ -26,7 +26,7 @@ It and its docked panels are square, because viewport containers have no radius.
 A rounded corner would clash with the title bar's line.
 Buttons, fields, chips, cards, selection fills and everything that floats keep their radius.
 
-The title bar, the sidebar header, the view header and the panel headers are all 44px.
+The title bar is 44px. The sidebar header, the view header and the panel headers are 36px. Their bottom edges line up.
 
 ## The pages
 

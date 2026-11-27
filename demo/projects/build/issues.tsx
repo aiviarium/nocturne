@@ -1,4 +1,4 @@
-// Build › Issues: the list grouped by state with saved views and a multiple selection, an issue with its
+// Explore › Issues: the list grouped by state with saved views and a multiple selection, an issue with its
 // properties column, the Details panel's account of one, and the dialog that makes a new one.
 import {
   Avatar,
@@ -7,11 +7,11 @@ import {
   createSelection,
   DropdownMenu,
   EmptyState,
+  HoverCard,
   Icon,
   IconButton,
   IdBadge,
   InlineField,
-  keyboardMenuPoint,
   LabelChip,
   ListRow,
   Menu,
@@ -19,7 +19,6 @@ import {
   type PropertyItem,
   PropertyList,
   RowList,
-  RowMenu,
   type ShellRegistry,
   ShellViewHeader,
   type ShellViewProps,
@@ -49,18 +48,31 @@ import {
   STATE_ORDER,
 } from "../../data"
 import { PriorityIcon, StateIcon } from "../../glyphs"
-import { changeIssue, issueById, issueByKey, issuesIn, removeIssues } from "./data"
+import { allIssues, changeIssue, issueById, issueByKey, issuesIn, removeIssues } from "./data"
 import { NewIssueDialog } from "./new-issue"
 
 const projectOf = (shell: ShellRegistry) => shell.loc().frame.item as Project
 
 /** Who did something: a person's avatar, or the agent's square. */
+/** An assignee's avatar; hovering it says who it is and what else they hold. */
 export function Who(props: { id?: string }) {
+  const open = () => allIssues().filter((i) => i.assignee === props.id && i.state !== "done").length
   return (
-    <Show when={props.id !== "agent"} fallback={<Avatar kind="agent" name="Coding agent" size="sm" />}>
-      <Show when={person(props.id)} fallback={<Icon name="user-round" size="sm" tone="quiet" />}>
-        {(p) => <Avatar name={p().name} hue={p().hue} size="sm" />}
-      </Show>
+    <Show when={props.id} fallback={<Icon name="user-round" size="sm" tone="quiet" label="No assignee" />}>
+      {(id) => (
+        <HoverCard
+          placement="bottom-end"
+          title={nameOf(id())}
+          meta={id() === "agent" ? "Works on issues it's given" : "Member of Acme"}
+          rows={[{ label: "Open issues", value: String(open()) }]}
+        >
+          <Show when={id() !== "agent"} fallback={<Avatar kind="agent" name="Coding agent" size="sm" />}>
+            <Show when={person(id())} fallback={<Icon name="user-round" size="sm" tone="quiet" />}>
+              {(p) => <Avatar name={p().name} hue={p().hue} size="sm" />}
+            </Show>
+          </Show>
+        </HoverCard>
+      )}
     </Show>
   )
 }
@@ -133,11 +145,6 @@ function IssueList(props: { shell: ShellRegistry; onNew: () => void }) {
     )
   // Cmd or Ctrl and a click toggles an issue, Shift and a click selects a range; a plain click opens it.
   const selection = createSelection<string>({ keys: () => list().map((i) => i.key) })
-  const [rowMenu, setRowMenu] = createSignal<{
-    at: { x: number; y: number }
-    keys: string[]
-    el: HTMLElement
-  }>()
   const [bulk, setBulk] = createSignal<HTMLElement>()
 
   const keysFor = (key: string) =>
@@ -234,47 +241,9 @@ function IssueList(props: { shell: ShellRegistry; onNew: () => void }) {
               menu={issueMenu(keysFor(i.key).length)}
               menuLabel={`Actions for ${i.key}`}
               onMenuSelect={(id) => runIssueMenu(s, id, keysFor(i.key), () => selection.set([]))}
-              actions={
-                <>
-                  <IconButton
-                    icon="panel-right"
-                    label="Show details"
-                    size="sm"
-                    onClick={() => {
-                      s.select(i.key)
-                      s.showPanel("details")
-                    }}
-                  />
-                  <IconButton
-                    icon="more"
-                    label={`More for ${i.key}`}
-                    size="sm"
-                    onClick={(e) => {
-                      const el = e.currentTarget as HTMLElement
-                      setRowMenu({ at: keyboardMenuPoint(el), keys: keysFor(i.key), el })
-                    }}
-                  />
-                </>
-              }
             />
           )}
         </RowList>
-      </Show>
-      <Show when={rowMenu()} keyed>
-        {(m) => (
-          <RowMenu
-            at={m.at}
-            label={`Actions for ${m.keys.length === 1 ? m.keys[0] : `${m.keys.length} issues`}`}
-            items={issueMenu(m.keys.length)}
-            origin={m.el}
-            returnFocus={() => m.el}
-            onClose={() => setRowMenu(undefined)}
-            onSelect={(id) => {
-              setRowMenu(undefined)
-              runIssueMenu(s, id, m.keys, () => selection.set([]))
-            }}
-          />
-        )}
       </Show>
       <Menu
         open={!!bulk()}
@@ -542,7 +511,7 @@ function IssuePage(props: { issue: Issue; shell: ShellRegistry }) {
   )
 }
 
-/** Build › Issues: the list, or the issue the address names. */
+/** Explore › Issues: the list, or the issue the address names. */
 export function IssuesView(props: ShellViewProps) {
   const [creating, setCreating] = createSignal(false)
   const record = () => {

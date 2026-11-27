@@ -15,7 +15,6 @@
   --accent-text: color-mix(in oklch, var(--accent) 42%, #FFFFFF);
   --accent-tint: color-mix(in srgb, var(--accent) 16%, transparent);
   --accent-line: color-mix(in srgb, var(--accent) 50%, transparent);
-  --accent-subtle: color-mix(in oklch, var(--accent) 18%, var(--bg-1));
   --accent-glow: color-mix(in srgb, var(--accent-strong) 85%, transparent);
   --focus-ring: 0 0 0 1px var(--accent-strong), 0 0 0 3px color-mix(in srgb, var(--accent) 28%, transparent);
   --focus-ring-inset: inset 0 0 0 1px var(--accent-strong), inset 0 0 0 3px color-mix(in srgb, var(--accent) 28%, transparent);
@@ -27,7 +26,6 @@
   --accent-text: color-mix(in oklch, var(--accent) 62%, #000000);
   --accent-tint: color-mix(in srgb, var(--accent) 10%, transparent);
   --accent-line: color-mix(in srgb, var(--accent) 40%, transparent);
-  --accent-subtle: color-mix(in oklch, var(--accent) 10%, #FFFFFF);
   --accent-glow: color-mix(in srgb, var(--accent-strong) 45%, transparent);
   --focus-ring: 0 0 0 1px var(--accent-strong), 0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent);
   --focus-ring-inset: inset 0 0 0 1px var(--accent-strong), inset 0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent);
@@ -116,7 +114,7 @@
 .nc-switch[aria-checked="true"]::after { left: 14px; }
 .nc-check { display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box; width: 14px; height: 14px; padding: 0; border: 1px solid var(--line-strong); border-radius: var(--radius-xs); background: transparent; color: var(--bg-0); cursor: pointer; flex-shrink: 0; }
 .nc-check[aria-checked="true"] { border-color: var(--accent-strong); background: var(--accent-strong); }
-.nc-check[aria-checked="mixed"] { border-color: var(--accent-strong); background: var(--accent-tint); }
+.nc-check[aria-checked="mixed"] { border-color: var(--accent-strong); background: var(--bg-4); }
 .nc-radio { box-sizing: border-box; width: 14px; height: 14px; border: 1px solid var(--line-strong); border-radius: var(--radius-full); }
 .nc-radio[aria-checked="true"] { border: 4px solid var(--accent-strong); }
 
@@ -167,6 +165,8 @@
    chevron in the entries' icon column, so the title starts at their labels; the actions always shown. */
 .nc-nav__head[data-section] { align-items: flex-end; }
 .nc-nav__head[data-section] .nc-nav__label { flex: 0 1 auto; padding: 9px 8px 1px; }
+.nc-nav__head[data-section] .nc-nav__label > .nc-icon { width: 11px; height: 11px; color: var(--text-4); }
+.nc-nav__head[data-section] .nc-nav__label { gap: 5px; padding-left: 4px; }
 .nc-nav__head[data-section] .nc-nav__fold { order: -1; flex: none; width: 16px; height: 18px; margin: 0 0 -1px 7px; opacity: 1; }
 .nc-nav__head[data-section] .nc-nav__label + .nc-nav__action { margin-left: auto; }
 .nc-nav__head[data-section] .nc-nav__action:not(.nc-nav__fold) { width: 22px; height: 22px; margin-bottom: -2px; opacity: 1; color: var(--text-4); }
@@ -179,7 +179,7 @@
 .nc-badge--warning { background: var(--warning-tint); color: var(--warning); }
 .nc-badge--danger { background: var(--danger-tint); color: var(--danger); }
 .nc-badge--info { background: var(--info-tint); color: var(--info); }
-.nc-badge--accent { background: var(--accent-tint); color: var(--accent-text); }
+.nc-badge--accent { background: var(--bg-4); color: var(--accent-text); }
 .nc-badge--outline { background: transparent; box-shadow: inset 0 0 0 1px var(--line); }
 .nc-badge--square { border-radius: var(--radius-xs); padding: 0 6px; }
 .nc-code-badge { display: inline-flex; align-items: center; height: 18px; padding: 0 5px; border-radius: var(--radius-xs); background: var(--danger-tint); color: var(--danger); font: 400 10.5px/16px var(--font-mono); }
@@ -205,6 +205,7 @@
 /* Avatars */
 .nc-avatar { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: var(--radius-full); background: var(--bg-4); color: var(--text-1); font: 600 10px/16px var(--font-sans); flex-shrink: 0; }
 .nc-avatar--sm { width: 20px; height: 20px; font-size: 8px; }
+.nc-avatar--xs { width: 16px; height: 16px; font-size: 7px; }
 .nc-avatar--lg { width: 32px; height: 32px; font-size: 12px; }
 .nc-avatar--agent { border-radius: var(--radius-sm); color: var(--bg-0); }
 .nc-avatar--ai { border-radius: 7px; background: var(--bg-4); color: var(--text-1); }
@@ -244,7 +245,7 @@
 /* Surfaces */
 .nc-card { border: 1px solid var(--line-soft); border-radius: var(--radius-md); background: var(--bg-1); }
 .nc-card--nested { background: var(--bg-2); }
-.nc-panel-header { display: flex; align-items: center; gap: var(--space-2); min-height: var(--header); padding: 0 12px; border-bottom: 1px solid var(--line-soft); }
+.nc-panel-header { display: flex; align-items: center; gap: var(--space-2); min-height: var(--header-view); padding: 0 12px; border-bottom: 1px solid var(--line-soft); }
 .nc-panel-title { margin: 0; font-size: var(--nc-type-drill); line-height: var(--nc-type-drill-line); font-weight: var(--nc-type-drill-weight); letter-spacing: var(--nc-type-drill-track); }
 
 /* Menu, tooltip */
@@ -314,7 +315,7 @@
 .nc-step:last-child { border-bottom: 0; }
 .nc-step__verb { color: var(--text-2); font-size: 12px; font-weight: 500; }
 .nc-step__arg { flex: 1; min-width: 0; font: 400 11px/16px var(--font-mono); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.nc-step--running { background: var(--accent-tint); color: var(--accent-text); }
+.nc-step--running { background: var(--bg-4); color: var(--accent-text); }
 .nc-composer { display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: var(--radius-xl); background: var(--bg-2); }
 .nc-composer textarea { resize: none; border: 0; outline: 0; background: transparent; color: var(--text-1); font: 400 13px/20px var(--font-sans); padding: 10px 12px 2px; }
 .nc-composer textarea::placeholder { color: var(--text-3); }
@@ -327,7 +328,7 @@
 .nc-effort__bars > i:nth-child(3) { height: 8px; } .nc-effort__bars > i:nth-child(4) { height: 10px; }
 .nc-effort__bars > i.on { background: currentColor; }
 .nc-token { display: inline-flex; align-items: center; gap: 4px; box-sizing: border-box; height: 22px; padding: 0 6px; border-radius: 5px; vertical-align: middle; font-size: 12.5px; line-height: 16px; white-space: nowrap; }
-.nc-token--cmd { background: var(--accent-tint); color: var(--accent-text); font-family: var(--font-mono); }
+.nc-token--cmd { background: var(--bg-4); color: var(--accent-text); font-family: var(--font-mono); }
 .nc-token--ref { background: var(--info-tint); color: var(--info); }
 .nc-token--skill { background: var(--success-tint); color: var(--success); font-family: var(--font-mono); }
 .nc-token--person { padding: 0 7px 0 3px; border-radius: var(--radius-full); background: var(--bg-4); color: var(--text-1); }

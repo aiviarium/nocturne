@@ -54,7 +54,7 @@ Use an `IconButton` for an action whose icon says enough, in a header, a row or 
 
 <Example id="icon-button/states" />
 
-The timer on the <DemoLink to="dashboard/overview">Dashboard</DemoLink> has its controls as icon buttons.
+The timer on the <DemoLink to="dashboard">Dashboard</DemoLink> has its controls as icon buttons.
 
 <GalleryLink page="icon-button" />
 
@@ -76,7 +76,7 @@ Use `RowMenu` for a row's menu, and `ContextMenu` for the right click of any oth
 <Example id="dropdown-menu/placements" minHeight={260} />
 <DoDont do="design/overflow-menu" dont="design/entry-row" minHeight={260} />
 
-The demo's <DemoLink to="settings/members">Members</DemoLink> have a row menu, and the cards of the <DemoLink to="projects/atlas/build/board">Board</DemoLink> a context menu.
+The demo's <DemoLink to="settings/members">Members</DemoLink> have a row menu, and the cards of the <DemoLink to="projects/atlas/product/board">Board</DemoLink> a context menu.
 
 <GalleryLink page="menu" />
 
@@ -89,7 +89,21 @@ Tooltips are dark in both themes, and phones don't show them.
 
 <Example id="tooltip/default" />
 
-On <DemoLink to="dashboard/fleet">Fleet</DemoLink>, a degraded host's warning glyph has one.
+On <DemoLink to="hosts">Hosts</DemoLink> laid out as panels, a degraded host's warning glyph has one.
+
+## HoverCard
+
+Hover shows what is otherwise hidden.
+A `HoverCard` opens details beside an element while the pointer rests on it.
+It has a `title` and a quiet `meta` line, then label and value `rows` and any `content`.
+A tooltip gives a control's label, and a hover card tells more about a thing.
+Everything in it is also where the element leads, since touch and keyboard users may never see it, and phones don't show it.
+
+A sidebar entry takes one from its record's `hover`, on its icon, placed beside the row.
+
+<Example id="hover-card/default" />
+
+In the demo, rest the pointer on a pull request's author in <DemoLink to="projects/atlas/build/chats">the sidebar of Build</DemoLink>, or on an assignee on <DemoLink to="projects/atlas/explore/issues">Issues</DemoLink>.
 
 ## Kbd
 

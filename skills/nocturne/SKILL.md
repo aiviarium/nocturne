@@ -89,7 +89,7 @@ header's middle. Read `loc()`, `selection()` and the rest from the registry, or 
   place. Call them lenses in code, docs and UI copy.
 - **Command palette.** ⌘K or the magnifier turns the box into `CommandPalette` in place. `:` lists lenses and `>`
   actions (`commands` on the scope or the workspace, plus the panels).
-- **Sidebar header, 44px.** `[↑] [Filter… filling the width] [collapse all] [minimise]`. From a record ↑ goes to
+- **Sidebar header, 36px.** `[↑] [Filter… filling the width] [collapse all] [minimise]`. From a record ↑ goes to
   its list, elsewhere to the scope above. At the top it is disabled but keeps its place.
   The title bar's path shows the scope. The header has no scope name, switcher or back. ⌘F or / focuses the
   filter, which filters the tree in place, and Esc clears it.
@@ -98,7 +98,9 @@ header's middle. Read `loc()`, `selection()` and the rest from the registry, or 
   path, and the tree becomes that scope's places. Entering a scope opens it as the person left it. A place with few
   entries (open pull requests, sessions, chats) sets `entries`, so they open without the list. A top-level place
   becomes a section after the places: its title opens the list, the chevron in the icon column folds it, and the
-  heading ends in "New …" (`entries.create`) and ↗, marked while the list is open. Give records a `status` (a dot
+  heading ends in "New …" (`entries.create`) and ↗, marked while the list is open. The workspace's tree follows the
+  same rules: a module with a `child` (Projects, Hosts) is a section of its items, and any other module is one row. A
+  module with `places` (Settings) drills into them, and its ↑ goes back to the workspace. Give records a `status` (a dot
   on the icon) only for a state such as running or failing, a short `meta` such as the age, and a `detail` second line only when
   the record has details of its own. Past `limit` (8) the rest fold into "Show N more", which expands in place. Long lists, such as issues, stay in the view. A parent's fold chevron is at the row's end, in
   the count's place on hover. Its icon never changes.
@@ -110,7 +112,7 @@ header's middle. Read `loc()`, `selection()` and the rest from the registry, or 
   was. Below 900px window width (`foldBelow`) it starts folded. There is no show-sidebar button in the title bar.
 - **The account** is an `AccountMenu` at the sidebar's foot: who is signed in, the app's items, "Appearance…"
   (`onAppearance`), the theme row, sign out.
-- **View header, 44px.** At a place, its title. At a record, the trail in place of the title:
+- **View header, 36px.** At a place, its title. At a record, the trail in place of the title:
   `Issues / WEB-142 ⌄`. Crumbs that go up are `text-3`, the current one `text-1`, by colour only. The record crumb
   is a switcher over the list the person came from, in its order and filter, current one checked ("Switch
   issue…"). ↑/↓ and "4 / 10" at the right step the same list, as do J and K. There is no back chevron: the first
@@ -118,7 +120,7 @@ header's middle. Read `loc()`, `selection()` and the rest from the registry, or 
   terminal workbench's tabs) sets `trail: false`. Never put a toolbar row under the header. A view switch goes in
   its middle.
 - **Right rail and panels.** `PanelRail` (44px) at the window's right edge opens one `ShellPanel` at the view's
-  right and one under it. A panel's 44px header holds its name or trail, real content tabs only (a terminal's
+  right and one under it. A panel's 36px header holds its name or trail, real content tabs only (a terminal's
   sessions, on `TabStrip`), its actions and close. It never repeats the rail as tabs, and there is no split or
   tiling. A place's `covers` lists the panels its view already is: the rail hides them there and they come back
   after. A panel drills with `shell.drill("details", id)`, which is a stop in the history. The right panel
@@ -144,9 +146,10 @@ header's middle. Read `loc()`, `selection()` and the rest from the registry, or 
   layout (`dockLayout`, `dockAdd`, `dockSplit`, `dockSync`) in the app.
 - **A `Skeleton` fades in after 400ms.** Show it only while there is nothing to show, not on a refresh of data
   already on screen.
-- **Lists fill, documents centre.** Lists, boards, tables, forms and settings fill the main column from the left. A
+- **Lists fill, documents and settings centre.** Lists, boards, tables and forms fill the main column from the left. A
   record that reads as a document (an issue, a pull request, a report, a message, a spec) is a centred reading
   column: `ViewLayout`'s `reading`, or the `nc-reading` class on its body when it shares a pane with its properties.
+  Settings pages are a centred column too, at the width a form reads well at.
 
 ## The look
 
@@ -165,7 +168,7 @@ These hold in every view and every part. Check them before you call a view done.
   items and the sidebar's labels are all 12px/500 on a 20px line. A title and the same label as a crumb share
   size, weight and baseline. Body 13px, page headings 15px, small labels 11px/500 in `text-3`, never in capitals.
   Tabular figures for counts, keys, dates and meters.
-- **30px rows only.** There is no comfortable density. Every header is 44px.
+- **30px rows only.** There is no comfortable density. The title bar is 44px, and the sidebar, view and panel headers are 36px.
 - **Content swaps never animate, so nothing flickers.** A place, lens, record, tab or panel drill replaces the content in
   the same frame. Frames stay mounted and take new data, and nothing shows a transient fallback. Only things that
   appear fade (menus, popovers, the palette, dialogs, toasts), over `--dur-fade`.
@@ -173,6 +176,13 @@ These hold in every view and every part. Check them before you call a view done.
   chips, cards, selection fills and floating things keep theirs.
 - **Text selection is neutral.** `::selection` is `--selection` and the caret is `text-1`, never the accent.
 - **Tooltips are dark in both themes.**
+- **Hover tells more.** A `HoverCard` opens what an element has no room for while the pointer rests on it (a pull
+  request's state, checks and branch; who an assignee is). A sidebar entry takes one from its record's `hover`. An
+  item's icon says something about it (`Avatar`, a type or provider icon, `Mark`, `Identicon`), never its category's
+  icon again, and a state with an icon of its own is the record's `badge` on that icon. See design-rules.md.
+- **One widget board.** Widgets the person arranges, a dashboard grid or the bars and columns around a chat, use
+  `createWidgetBoard`, `WidgetBoard` and `WidgetZone`, with `WidgetRows` over a bar whose widgets grow to rows. Add `board.actions()` to the view header's actions; the header
+  keeps More actions last.
 
 ## Overlays and controls
 

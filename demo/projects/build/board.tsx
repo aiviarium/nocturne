@@ -1,4 +1,4 @@
-// Build › Board: the project's issues in lanes by state. A click selects a card for the Details panel, a double
+// Product › Board: the project's issues in lanes by state. A click selects a card for the Details panel, a double
 // click opens the issue, a card dragged to another lane moves there, and a right click opens the card's menu.
 import {
   Board,

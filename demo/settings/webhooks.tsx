@@ -28,6 +28,7 @@ import {
   type Delivery,
   failing,
   type Header,
+  providerOf,
   removeWebhooks,
   renameWebhook,
   setFailing,
@@ -167,7 +168,8 @@ function WebhookList(props: { shell: ShellViewProps["shell"] }) {
         >
           {(w) => (
             <ListRow
-              icon="webhook"
+              // Where it delivers, not the page's webhook icon on every row.
+              icon={providerOf(w.url).icon}
               title={w.name}
               secondary={w.url}
               status={failing().includes(w.id) ? <State status="error">Failing</State> : undefined}

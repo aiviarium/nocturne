@@ -1,14 +1,14 @@
-// Dashboard › Overview: the week in four figures, then a grid of live widgets the person arranges. The figures and
-// readings move on timers; the layout is kept in the demo's store.
+// Dashboard: the week in four figures, then a grid of live widgets the person arranges. The grid is a zone of a
+// widget board, the same system as the widgets around a chat. The readings move on timers; the layout is kept in the
+// demo's store.
 import {
   Card,
+  createWidgetBoard,
   Delta,
   IconButton,
   InfoTip,
   ListRow,
-  placeInGrid,
   RowList,
-  readJson,
   SectionHeading,
   Select,
   ShellViewHeader,
@@ -18,9 +18,9 @@ import {
   StatCard,
   ViewLayout,
   Widget,
+  WidgetBoard,
   WidgetControls,
   WidgetGauge,
-  WidgetGrid,
   WidgetMeters,
   WidgetProgress,
   WidgetRing,
@@ -29,8 +29,9 @@ import {
   WidgetStats,
   WidgetSteps,
   WidgetTimer,
+  type WidgetType,
   WidgetUptime,
-  writeJson,
+  WidgetZone,
 } from "@aiviarium/nocturne"
 import type { JSX } from "@solidjs/web"
 import { createSignal, For, onSettled, Show } from "solid-js"
@@ -45,12 +46,11 @@ import {
   RANGES,
   type Range,
   series,
-  type Tile,
   type TileKind,
   UPTIME_DAYS,
 } from "./data"
 
-const LAYOUT_KEY = "demo/dashboard/layout"
+const LAYOUT_KEY = "demo/dashboard/widgets"
 const RANGE_KEY = "demo/dashboard/range"
 
 /** The first load happens once a page: a refresh or a second visit shows the figures straight away. */
@@ -113,19 +113,38 @@ export const liveMeter = (label: string, value: () => number) => ({
 
 const fmt = (n: number) => n.toLocaleString("en-US")
 
+/** What every widget of the dashboard reads: the live readings and the range shown. */
+interface Readings {
+  live: Live
+  range: Range
+}
+
+/** The dashboard's widget types, one per kind: each draws a card filling its cell. */
+const TYPES = Object.fromEntries(
+  (Object.keys(KINDS) as TileKind[]).map((kind) => [
+    kind,
+    {
+      id: kind,
+      label: KINDS[kind].label,
+      icon: KINDS[kind].icon,
+      forms: ["card"],
+      grid: { w: KINDS[kind].w, h: KINDS[kind].h, minW: KINDS[kind].minW, minH: KINDS[kind].minH },
+      // Alerts has something to say only while one is firing; outside editing it takes no room until then.
+      live: kind === "alerts" ? (x) => x.live.alerts().length > 0 : undefined,
+      render: (x) => <TileView kind={kind} live={x.live} range={x.range} />,
+    } satisfies WidgetType<Readings>,
+  ]),
+) as Record<string, WidgetType<Readings>>
+
 /** One tile's content, by kind. Each reads the live readings, so it stays mounted as they move. */
-function TileView(props: { kind: TileKind; live: Live; range: Range; editing: boolean }): JSX.Element {
+function TileView(props: { kind: TileKind; live: Live; range: Range }): JSX.Element {
   const l = props.live
   const views: Record<TileKind, () => JSX.Element> = {
-    // Nothing firing: nothing on the page. While editing a placeholder stands in, so it can be moved.
+    // Nothing firing: the board leaves it out, and while editing this placeholder stands in, so it can be moved.
     alerts: () => (
       <Show
         when={l.alerts().length}
-        fallback={
-          <Show when={props.editing}>
-            <Widget fill title="Alerts" caption="Shown while something is firing" />
-          </Show>
-        }
+        fallback={<Widget fill title="Alerts" caption="Shown while something is firing" />}
       >
         <Widget fill hue="danger" title="Alerts" value={`${l.alerts().length} firing`}>
           <RowList label="Alerts" variant="inline">
@@ -316,11 +335,15 @@ export function OverviewView(_props: ShellViewProps) {
   const demo = useDemo()
   const [ready, setReady] = createSignal(loaded)
   const [range, setRange] = createSignal<Range>((demo.storage.get(RANGE_KEY) as Range | null) ?? "7d")
-  const [editing, setEditing] = createSignal(false)
-  const [items, setItemsRaw] = createSignal<Tile[]>(
-    readJson<Tile[]>(demo.storage, LAYOUT_KEY) ?? DEFAULT_LAYOUT,
-  )
   const live = createLive()
+  const board = createWidgetBoard<Readings>({
+    types: TYPES,
+    zones: [{ id: "live", label: "Live", forms: ["card"], layout: "grid" }],
+    initial: DEFAULT_LAYOUT.map((t) => ({ ...t, zone: "live" })),
+    storage: demo.storage,
+    key: LAYOUT_KEY,
+    context: () => ({ live, range: range() }),
+  })
 
   onSettled(() => {
     if (loaded) return
@@ -331,39 +354,13 @@ export function OverviewView(_props: ShellViewProps) {
     return () => clearTimeout(t)
   })
 
-  const setItems = (next: Tile[]) => {
-    setItemsRaw(next)
-    writeJson(demo.storage, LAYOUT_KEY, next)
-  }
-  const missing = () => (Object.keys(KINDS) as TileKind[]).filter((k) => !items().some((i) => i.kind === k))
-  const add = (kind: TileKind) => {
-    const k = KINDS[kind]
-    const at = placeInGrid(items(), { w: k.w, h: k.h })
-    setItems([...items(), { id: kind, kind, ...at, w: k.w, h: k.h, minW: k.minW, minH: k.minH }])
-  }
-
   return (
     <ViewLayout
       id="demo.dashboard"
       header={
         <ShellViewHeader
-          actions={[
-            {
-              id: "edit",
-              label: editing() ? "Done arranging" : "Arrange widgets",
-              icon: "layout-dashboard",
-              pressed: editing(),
-              onClick: () => setEditing(!editing()),
-            },
-            {
-              id: "add",
-              label: "Add widget",
-              icon: "plus",
-              disabled: !missing().length,
-              menu: missing().map((k) => ({ id: k, label: KINDS[k].label })),
-              onSelect: (id) => add(id as TileKind),
-            },
-          ]}
+          // Edit widgets; while editing, Add widget, Reset and Done: the board's own actions.
+          actions={board.actions()}
         >
           <Select
             label="Range"
@@ -406,30 +403,9 @@ export function OverviewView(_props: ShellViewProps) {
               </For>
             </div>
             <SectionHeading title="Live" />
-            <WidgetGrid
-              label="Live widgets"
-              items={items()}
-              editing={editing()}
-              empty={live.alerts().length ? [] : ["alerts"]}
-              onChange={setItems}
-              itemLabel={(t) => KINDS[t.kind].label}
-            >
-              {(tile) => (
-                <div class="dm-dash-tile">
-                  <TileView kind={tile().kind} live={live} range={range()} editing={editing()} />
-                  <Show when={editing()}>
-                    <span class="dm-dash-remove" onPointerDown={(e) => e.stopPropagation()}>
-                      <IconButton
-                        icon="close"
-                        size="sm"
-                        label={`Remove ${KINDS[tile().kind].label}`}
-                        onClick={() => setItems(items().filter((i) => i.id !== tile().id))}
-                      />
-                    </span>
-                  </Show>
-                </div>
-              )}
-            </WidgetGrid>
+            <WidgetBoard board={board}>
+              <WidgetZone board={board} zone="live" />
+            </WidgetBoard>
           </div>
         </Show>
       </div>

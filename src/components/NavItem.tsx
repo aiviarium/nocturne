@@ -4,6 +4,7 @@ import { cx } from "../lib/cx"
 import { callClick, useLinkClick } from "../lib/link"
 import { isMenuKey, type RowMenuEntry } from "../lib/rowmenu"
 import { useShellSidebar } from "../shell/context"
+import { HoverCard, type HoverCardRow } from "./HoverCard"
 import { Icon, type IconName, type LucideNode } from "./Icon"
 import { IconButton } from "./IconButton"
 import { RowMenu } from "./InsetList"
@@ -22,6 +23,11 @@ export interface NavItemProps extends Omit<JSX.AnchorHTMLAttributes<HTMLAnchorEl
   iconNode?: LucideNode
   /** Content in the icon's place, such as a letter mark for an entry that has no icon. */
   leading?: JSX.Element
+  /**
+   * Draws the leading element, in place of `leading`, for each place the row is drawn: the sidebar, the folded rail
+   * and its flyout each get their own, since one element can only be in one place. The shell's entries use it.
+   */
+  lead?: () => JSX.Element
   /** Right-aligned meta: a total in text-3, or a short status such as "1 needs you". */
   meta?: JSX.Element
   /** A count at the row's end (shown when it is not 0 and there is no `meta`). Folded, it is a dot on the icon. */
@@ -33,6 +39,17 @@ export interface NavItemProps extends Omit<JSX.AnchorHTMLAttributes<HTMLAnchorEl
    * icon so it reads on any fill. Left out when all is as usual.
    */
   status?: DotStatus
+  /**
+   * A state as a small icon at the icon's lower right corner, cut out of it, such as a pull request's state on its
+   * author's avatar. It takes the place of `status`. A function, called for each place the row is drawn (the
+   * sidebar, the folded rail, its flyout), since one element can only be in one place.
+   */
+  badge?: () => JSX.Element
+  /**
+   * Details that appear while the pointer rests on the icon, in a card beside the row: what the row has no room
+   * for, such as a pull request's checks and review. Read when the card opens.
+   */
+  hover?: () => NavItemHover
   /**
    * A second line under the label, for an entry with details of its own: a commit and a duration, a failed
    * delivery. The row grows to two lines and the icon centres on both; `meta` stays on the first line.
@@ -55,16 +72,27 @@ export interface NavItemProps extends Omit<JSX.AnchorHTMLAttributes<HTMLAnchorEl
   menu?: () => RowMenuEntry[]
 }
 
+/** What a row's hover card shows: see `HoverCard`. */
+export interface NavItemHover {
+  title?: JSX.Element
+  meta?: JSX.Element
+  rows?: HoverCardRow[]
+  content?: JSX.Element
+}
+
 const OWN = [
   "id",
   "label",
   "icon",
   "iconNode",
   "leading",
+  "lead",
   "meta",
   "count",
   "dot",
   "status",
+  "badge",
+  "hover",
   "detail",
   "current",
   "class",
@@ -139,27 +167,26 @@ export function NavItem(
       )}
     </Show>
   )
-  const glyph = () => (
-    <Show
-      when={props.leading}
-      fallback={
-        <Show when={props.icon || props.iconNode}>
-          <Icon name={props.icon} node={props.iconNode} />
-        </Show>
-      }
-    >
-      {props.leading}
-    </Show>
-  )
+  const [row, setRow] = createSignal<HTMLElement>()
+  const marked = () => <ItemGlyph item={props} />
   const body = (
     <>
-      <Show when={props.status} fallback={glyph()}>
-        {(status) => (
-          <span class="nc-nav-item__glyph" data-part="nav-item-status" data-status={status()}>
-            {glyph()}
-            <StatusDot status={status()} />
-          </span>
-        )}
+      <Show when={props.hover} fallback={marked()}>
+        {(hover) => {
+          const d = () => hover()()
+          return (
+            <HoverCard
+              anchor={row()}
+              label={`Details of ${props.label}`}
+              title={d().title}
+              meta={d().meta}
+              rows={d().rows}
+              content={d().content}
+            >
+              {marked()}
+            </HoverCard>
+          )
+        }}
       </Show>
       <span class="nc-nav-item__label">
         <MatchText text={props.label} q={props.match} />
@@ -191,6 +218,7 @@ export function NavItem(
       when={props.href}
       fallback={
         <button
+          ref={setRow}
           data-part="nav-item"
           type="button"
           class={cls()}
@@ -209,6 +237,7 @@ export function NavItem(
       }
     >
       <a
+        ref={setRow}
         data-part="nav-item"
         href={props.href}
         class={cls()}
@@ -255,8 +284,8 @@ export interface NavGroup {
   collapsible?: boolean
   /**
    * A section of a place's entries, as the shell draws one: the title sits low in its row, near its entries; the
-   * fold chevron takes the icon's column, so the title starts where the entries' labels do; and the actions are
-   * always shown. The `icon` is kept for the folded rail.
+   * fold chevron takes the icon's column, and the `icon`, very small, follows it before the title; and the actions
+   * are always shown. The folded rail shows the `icon` alone.
    */
   section?: boolean
   /** Stable id for `collapsed`. Default the label. */
@@ -469,9 +498,7 @@ export function Nav(props: NavProps): JSX.Element {
                       when={group().onClick}
                       fallback={
                         <span class="nc-nav__label">
-                          <Show when={!group().section && group().icon}>
-                            {(icon) => <Icon name={icon()} size="sm" />}
-                          </Show>
+                          <Show when={group().icon}>{(icon) => <Icon name={icon()} size="sm" />}</Show>
                           {group().label}
                         </span>
                       }
@@ -483,9 +510,7 @@ export function Nav(props: NavProps): JSX.Element {
                         aria-current={group().current ? "page" : undefined}
                         onClick={() => group().onClick?.()}
                       >
-                        <Show when={!group().section && group().icon}>
-                          {(icon) => <Icon name={icon()} size="sm" />}
-                        </Show>
+                        <Show when={group().icon}>{(icon) => <Icon name={icon()} size="sm" />}</Show>
                         <span class="nc-nav__label-text">{group().label}</span>
                         <Show when={group().count}>
                           <span class="nc-nav__count">{group().count}</span>
@@ -663,18 +688,53 @@ function RailGroup(props: {
   )
 }
 
+/**
+ * A row's icon with its marks: the leading element or icon, then a badge, or else a status dot, cut out of its corner.
+ * The row and the folded rail draw the same one, so a state never drops out when the sidebar folds.
+ */
+function ItemGlyph(props: { item: NavItemProps; fallback?: IconName }): JSX.Element {
+  const glyph = () => (
+    <Show
+      when={props.item.lead || props.item.leading}
+      fallback={
+        <Show when={props.item.icon || props.item.iconNode || props.fallback}>
+          <Icon
+            name={props.item.icon ?? (props.item.iconNode ? undefined : props.fallback)}
+            node={props.item.iconNode}
+          />
+        </Show>
+      }
+    >
+      {props.item.lead ? props.item.lead() : props.item.leading}
+    </Show>
+  )
+  return (
+    <Show
+      when={props.item.badge}
+      fallback={
+        <Show when={props.item.status} fallback={glyph()}>
+          {(status) => (
+            <span class="nc-nav-item__glyph" data-part="nav-item-status" data-status={status()}>
+              {glyph()}
+              <StatusDot status={status()} />
+            </span>
+          )}
+        </Show>
+      }
+    >
+      <span class="nc-nav-item__glyph nc-nav-item__glyph--badge" data-part="nav-item-badge">
+        {glyph()}
+        <span class="nc-nav-item__badge">{props.item.badge?.()}</span>
+      </span>
+    </Show>
+  )
+}
+
 /** One top-level item on the folded rail: its icon, its name in a tooltip, a dot where it or its children count. */
 function RailItem(props: { item: NavItemProps }): JSX.Element {
   const linkClick = useLinkClick()
   const current = () => !!props.item.current || currentIn(props.item)
-  const glyph = () => (
-    <Show
-      when={props.item.leading}
-      fallback={<Icon name={props.item.icon ?? "folder"} node={props.item.iconNode} />}
-    >
-      {props.item.leading}
-    </Show>
-  )
+  const glyph = () => <ItemGlyph item={props.item} fallback="folder" />
   return (
     <Tooltip content={props.item.label} placement="right" type="label">
       {(t) => (
@@ -693,7 +753,8 @@ function RailItem(props: { item: NavItemProps }): JSX.Element {
           }}
         >
           {glyph()}
-          <Show when={dotIn(props.item)}>
+          {/* The neutral count dot, where the icon carries no state of its own. */}
+          <Show when={dotIn(props.item) && !props.item.status && !props.item.badge}>
             <i class="nc-nav-rail-item__dot" data-part="nav-dot" aria-hidden="true" />
           </Show>
         </a>

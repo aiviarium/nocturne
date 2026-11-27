@@ -2,15 +2,21 @@
 import type { Lens, ShellLens, ShellPlace } from "@aiviarium/nocturne"
 
 export const LENSES = {
-  explore: { id: "explore", label: "Explore", icon: "sparkle", hue: "orchid", purpose: "Triage and ideas" },
+  explore: {
+    id: "explore",
+    label: "Explore",
+    icon: "sparkle",
+    hue: "orchid",
+    purpose: "Triage, issues and ideas",
+  },
   product: {
     id: "product",
     label: "Product",
     icon: "book-open",
     hue: "amber",
-    purpose: "Specs and the roadmap",
+    purpose: "Specs, the roadmap, the board and cycles",
   },
-  build: { id: "build", label: "Build", icon: "code", hue: "mint", purpose: "Issues, the board and cycles" },
+  build: { id: "build", label: "Build", icon: "code", hue: "mint", purpose: "The agent and pull requests" },
   operate: {
     id: "operate",
     label: "Operate",

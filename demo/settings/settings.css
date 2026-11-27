@@ -1,9 +1,8 @@
-/* Settings pages: one column of sections from the left, at a width a form reads well at. Layout only. */
+/* Settings pages: one column of sections. ViewLayout's `reading` centres it at a width a form reads well at. */
 .dm-settings {
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
-  max-width: 760px;
   padding: var(--space-5) var(--space-6);
 }
 :root[data-phone] .dm-settings {

@@ -122,7 +122,7 @@ export function RoadmapView(props: ShellViewProps) {
                       size="sm"
                       variant="ghost"
                       icon="list-todo"
-                      href={`/projects/${project().id}/build/issues`}
+                      href={`/projects/${project().id}/explore/issues`}
                     >
                       Issues
                     </Button>

@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test"
 import { join } from "node:path"
-import { lintPaths, lintSource } from "../scripts/lint-tokens"
+import { lintGreys, lintPaths, lintSource, lintTint } from "../scripts/lint-tokens"
 
 const rules = (file: string, text: string) => lintSource(file, text).map((f) => f.rule)
 
@@ -93,5 +93,21 @@ describe("lint-tokens over the repository", () => {
     const styles = join(root, "src/styles")
     expect(lintPaths([styles], [])).not.toEqual([])
     expect(lintPaths([styles]).filter((f) => /(tokens|bundle)\.css$/.test(f.file))).toEqual([])
+  })
+})
+
+describe("lint-tokens on tints", () => {
+  test("fails a background filled with the accent's tint, and passes the accent on text and borders", () => {
+    expect(lintTint("a.css", ".x { background: var(--accent-tint); }").map((f) => f.rule)).toEqual(["tint"])
+    expect(lintTint("a.css", ".x { --w-tint: var(--accent-tint); }")).toHaveLength(1)
+    expect(lintTint("a.css", ".x { color: var(--accent-text); border-color: var(--accent-line); }")).toEqual(
+      [],
+    )
+    expect(lintTint("a.css", ".x { background: var(--bg-4); }")).toEqual([])
+  })
+
+  test("fails a grey token that isn't neutral", () => {
+    expect(lintGreys("tokens.css", "  --bg-1: #0e0f10;\n  --bg-2: #151515;").map((f) => f.line)).toEqual([1])
+    expect(lintGreys("tokens.css", "  --line: rgba(255,255,255,0.09);")).toEqual([])
   })
 })

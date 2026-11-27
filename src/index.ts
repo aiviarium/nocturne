@@ -144,4 +144,19 @@ export {
 } from "./lib/selection"
 export { createRowSwipe, type RowSwipeControl, type RowSwipeOptions, touchScreen } from "./lib/swipe"
 export { filterItems, findTrigger, type TriggerChar } from "./lib/triggers"
+export {
+  formsIn,
+  moveWidget,
+  newWidgetId,
+  placementType,
+  stepWidget,
+  WIDGET_FORM_LABEL,
+  type WidgetConfig,
+  type WidgetForm,
+  type WidgetPlacement,
+  type WidgetSetting,
+  type WidgetType,
+  type WidgetZoneDef,
+  widgetConfig,
+} from "./lib/widgets"
 export * from "./shell"

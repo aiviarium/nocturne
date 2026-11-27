@@ -31,7 +31,7 @@ const shell = createShell({
 ```
 
 The demo's registry is `demoOptions` in `demo/app.tsx`, with a module per folder of `demo/`.
-<DemoLink to="projects/atlas/build/issues">Its places</DemoLink> cover each field on this page.
+<DemoLink to="projects/atlas/explore/issues">Its places</DemoLink> cover each field on this page.
 
 ## Scopes
 
@@ -59,7 +59,7 @@ A lens extends `Lens` (`id`, `label`, `icon`, `hue`, `purpose`, `source`) with i
 | Field | What it does |
 | --- | --- |
 | `view` | The view the place shows. A child place uses its parent's, then the scope's |
-| `views` | Saved views, as child rows. The first is the place's own |
+| `views` | Saved views, as the view header's tabs. The first is the place's own |
 | `count` | Shown in the sidebar above zero |
 | `records`, `recordLabel`, `noun` | The list the stepper steps over and the record switcher lists. A record's `status`, `meta` and `detail` show on its sidebar entry |
 | `trail: false` | Leaves out the trail and the stepper, for a view whose tabs show its record |
@@ -80,7 +80,7 @@ Commands take `id`, `label` and `run`, with an optional `shortcut` that the pale
 
 ## The address
 
-An address is a list of segments: `/projects/atlas/build/issues/backlog/WEB-142`.
+An address is a list of segments: `/projects/atlas/explore/issues/backlog/WEB-142`.
 That is the module, its item, the lens, the place, the saved view and the record.
 A place that `enters` a scope adds that scope's item and continues with its lens and place.
 A trailing `@details:WEB-127` is a panel's drill.
@@ -99,7 +99,7 @@ A short address, such as `/projects/atlas`, opens the scope with the lens worn l
 | `panels()` | The rail, the open panels and what the view covers |
 | `panelTrail(id)`, `inspect()` | A panel's trail and the subject Details shows |
 | `search`, `actions()` | The palette's results and its `>` list |
-| `title()` | The window's title, such as `WEB-142 · Issues · Build · Atlas web · Acme` |
+| `title()` | The window's title, such as `WEB-142 · Issues · Explore · Atlas web · Acme` |
 
 The moves are `go`, `open`, `enter`, `wear`, `up`, `step`, `select`, `drill`, `drillUp`, `togglePanel` and `closePanel`.
 Each move is a stop in the [history](./history.mdx).

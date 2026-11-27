@@ -10,7 +10,7 @@ The shell draws the window around it, and the view draws its header and its cont
 
 Use `ViewLayout` for every view, with a `ShellViewHeader` as its header.
 The view area is raised on the canvas, square, and runs to the window's bottom edge.
-The header is the view's one bar, 44px like every header in the window.
+The header is the view's one bar, 36px like the sidebar's and the panels' headers.
 
 ```tsx
 <ViewLayout id="issues" header={<ShellViewHeader actions={actions}>{viewSwitch}</ShellViewHeader>}>
@@ -37,11 +37,12 @@ A form lays out its fields in columns inside its sections instead of narrowing t
 
 `ViewLayout` keeps its column widths and folds in its `storage`, or in the shell's store when it gets none.
 
-Lists, boards, tables, forms and settings fill the main column from the left.
+Lists, boards, tables and forms fill the main column from the left.
 A record that reads as a document, such as an issue, a pull request, a report, a message or a spec, is a centred column at a reading width.
+So are <DemoLink to="settings/general">settings</DemoLink>, a column of sections at a width a form reads well at.
 `reading` centres the view's column, 720px by default.
-Where the body shares a `Split` with its properties, as on <DemoLink to="projects/atlas/build/issues/WEB-129">an issue</DemoLink>, the `nc-reading` class on the body centres it in its pane.
-Forms and settings are never centred.
+Where the body shares a `Split` with its properties, as on <DemoLink to="projects/atlas/explore/issues/WEB-129">an issue</DemoLink>, the `nc-reading` class on the body centres it in its pane.
+A form inside a list's view isn't centred.
 
 ## Tabs
 
@@ -83,7 +84,7 @@ The cards of <DemoLink to="projects/atlas/explore/ideas">Ideas</DemoLink> share 
 Use a `Panel` for a tool region with a header inside a view, such as a host's meters on a dashboard.
 The shell's docked panels are `ShellPanel`, see [Panels](../shell/panels.mdx).
 
-- The header is 44px, with the title, a `state` and `actions`.
+- The header is 36px, with the title, a `state` and `actions`.
 - The body has 12px padding.
 - `footer` is only for totals or pagination.
 - `fill` works as for `Card`.
@@ -91,7 +92,7 @@ The shell's docked panels are `ShellPanel`, see [Panels](../shell/panels.mdx).
 
 <Example id="panel/variants" />
 
-The demo's <DemoLink to="dashboard/fleet">Fleet</DemoLink> has a panel for each host.
+The demo's <DemoLink to="hosts">Hosts</DemoLink>, laid out as panels, has a panel for each host.
 
 ## SectionHeading
 
