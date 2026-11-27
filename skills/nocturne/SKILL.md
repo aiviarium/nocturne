@@ -15,8 +15,11 @@ Nocturne draws them with its `nc-*` classes and keeps a data-driven API.
 
 - For the window, read `site/content/docs/shell/` in Nocturne, or under `node_modules/@aiviarium/nocturne/` in an
   app, starting at `index.mdx`. `create-shell.mdx` lists what an app registers.
-- For a view, start at `site/content/docs/parts/index.mdx`. It's a table of the part to use for each thing a view
-  shows. Read the page it links for the part you need.
+- For a view, start at `site/content/docs/parts/index.mdx`. Its tables give the part to use for each thing a view
+  shows, from the shell down, with the page for the part and a place in the demo that uses it. Read the page it
+  links for the part you need.
+- `demo/` in Nocturne is a whole app on the shell that uses every exported part. Read the view of a place that
+  shows what you are building, such as `demo/projects/build/issues.tsx` for a grouped list with records.
 - Read the component's own file in `src/components/` or `src/shell/` for its props. Each prop has a doc comment.
 - `examples/` has one file per example. The gallery (`bun run gallery` in Nocturne) shows them all.
 
