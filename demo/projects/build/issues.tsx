@@ -488,7 +488,6 @@ function IssueBody(props: { issue: Issue }) {
 }
 
 function IssuePage(props: { issue: Issue; shell: ShellRegistry }) {
-  const phone = usePhone()
   return (
     <ViewLayout
       id="demo.issue"
@@ -518,40 +517,27 @@ function IssuePage(props: { issue: Issue; shell: ShellRegistry }) {
         />
       }
     >
-      {/* A Split keeps its columns side by side on a phone, so there the properties go under the body. */}
-      <Show
-        when={!phone()}
-        fallback={
+      <Split
+        fixed="second"
+        defaultSize={280}
+        min={220}
+        max={440}
+        label="Resize properties"
+        // With Details open on this issue, the panel is its properties: the column steps aside, so a fact shows once.
+        collapsed={
+          props.shell.panels().right?.id === "details" && props.shell.subject("details") === props.issue.key
+        }
+        first={
           <div class="dm-scroll">
             <IssueBody issue={props.issue} />
-            <aside class="dm-build-props" aria-label="Properties">
-              <IssueProperties issue={props.issue} />
-            </aside>
           </div>
         }
-      >
-        <Split
-          fixed="second"
-          defaultSize={280}
-          min={220}
-          max={440}
-          label="Resize properties"
-          // With Details open on this issue, the panel is its properties: the column steps aside, so a fact shows once.
-          collapsed={
-            props.shell.panels().right?.id === "details" && props.shell.subject("details") === props.issue.key
-          }
-          first={
-            <div class="dm-scroll">
-              <IssueBody issue={props.issue} />
-            </div>
-          }
-          second={
-            <aside class="dm-pad dm-scroll" aria-label="Properties">
-              <IssueProperties issue={props.issue} />
-            </aside>
-          }
-        />
-      </Show>
+        second={
+          <aside class="dm-pad dm-scroll" aria-label="Properties">
+            <IssueProperties issue={props.issue} />
+          </aside>
+        }
+      />
     </ViewLayout>
   )
 }

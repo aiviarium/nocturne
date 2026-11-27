@@ -42,8 +42,8 @@ export const NOT_A_PART: Record<string, string> = {
   ViewChrome: "a context the shell's frame provides to view headers",
   ViewHeaderSlot: "a context Dock provides so a header with only actions joins its tab strip",
   ViewLayoutState: "a context ViewLayout provides to the parts inside it",
-  ViewLayoutHost:
-    "a context for a frame that folds its sidebar when a view lacks room; Shell doesn't provide it yet",
+  ViewLayoutHost: "a context Shell provides so a view that lacks room folds the sidebar",
+  PhoneOverride: "a context PhoneFrame provides; the gallery sets it to show phone pieces on a desktop page",
   ScreenContext: "a context NavigationScreen provides to the parts inside it",
 }
 

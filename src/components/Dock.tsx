@@ -13,6 +13,7 @@ import {
   dockSplit,
 } from "../lib/dock"
 import { createId } from "../lib/id"
+import { usePhone } from "../lib/phone"
 import { IconButton } from "./IconButton"
 import type { MenuEntry } from "./Menu"
 import { Frame } from "./Panel"
@@ -59,6 +60,8 @@ export interface DockProps {
  */
 export function Dock(props: DockProps): JSX.Element {
   const group = createId("dock")
+  // A phone shows one frame at a time, so there is nothing to split into.
+  const phone = usePhone()
   const min = () => props.min ?? 200
   // The layout functions give back the same layout when nothing changes, such as focusing the focused frame; the app
   // hears only of a change, so a press on a frame does not draw it again under the pointer.
@@ -128,7 +131,7 @@ export function Dock(props: DockProps): JSX.Element {
                       return slot
                     }}
                   </For>
-                  <Show when={props.onSplit}>
+                  <Show when={props.onSplit && !phone()}>
                     <IconButton
                       size="sm"
                       icon="split-right"

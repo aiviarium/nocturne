@@ -29,9 +29,6 @@
 .dm-build-record > [data-part="id-badge"] {
   align-self: flex-start;
 }
-.dm-build-props {
-  padding: 0 var(--space-3) var(--space-5);
-}
 /* Swimlanes: a row of lane heads, then a row of lanes per assignee, at the board's lane width and gap. */
 .dm-build-swim-heads,
 .dm-build-swim-lanes {

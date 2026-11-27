@@ -1,4 +1,4 @@
-// Settings › Mobile app: Acme's companion app for phones, previewed in a phone-sized frame. PhoneOverride makes the
+// Settings › Mobile app: Acme's companion app for phones, previewed in a phone-sized frame. PhoneFrame makes the
 // parts inside behave as on a phone; the app is a tab bar over one navigation stack per tab.
 import {
   ActionSheet,
@@ -11,7 +11,7 @@ import {
   NavigationBar,
   NavigationScreen,
   NavigationStack,
-  PhoneOverride,
+  PhoneFrame,
   PullToRefresh,
   ScreenOptions,
   ScreenRefresh,
@@ -382,11 +382,9 @@ function MobileView() {
   return (
     <ViewLayout id="demo.mobile" header={<ShellViewHeader noPin />}>
       <div class="dm-mobile-stage">
-        <PhoneOverride value={true}>
-          <div class="dm-mobile-device" role="group" aria-label="Acme on a phone" data-part="demo-phone">
-            <CompanionApp />
-          </div>
-        </PhoneOverride>
+        <PhoneFrame class="dm-mobile-device" role="group" aria-label="Acme on a phone">
+          <CompanionApp />
+        </PhoneFrame>
       </div>
     </ViewLayout>
   )

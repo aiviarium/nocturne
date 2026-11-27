@@ -321,10 +321,14 @@ button.nc-menu__item, div.nc-menu__item { box-sizing: border-box; width: 100%; b
 .nc-composer__notice { display: flex; flex-direction: column; margin: 0 var(--space-3); padding: 6px var(--space-3); border: 1px solid var(--line); border-bottom: 0; border-radius: var(--radius-lg) var(--radius-lg) 0 0; background: var(--bg-1); color: var(--text-2); font-size: var(--nc-type-label); line-height: var(--nc-type-label-line); }
 .nc-composer__notice .nc-dictation { min-height: var(--control-sm); padding: 0; }
 .nc-composer__notice .nc-dictation > .nc-btn, .nc-composer__notice .nc-dictation > .nc-tooltip-anchor { margin-left: auto; }
-.nc-composer__field { position: relative; }
+/* The placeholder and the editor share one cell, so a placeholder that wraps makes the field taller instead of
+   running over the toolbar under it. */
+.nc-composer__field { position: relative; display: grid; }
+.nc-composer__field[hidden] { display: none; }
+.nc-composer__field > * { grid-area: 1 / 1; min-width: 0; }
 .nc-composer__editor { box-sizing: border-box; max-height: 200px; padding: 10px 12px 2px; overflow-y: auto; color: var(--text-1); caret-color: var(--text-1); white-space: pre-wrap; overflow-wrap: anywhere; outline: none; }
 .nc-composer__editor[contenteditable="false"] { color: var(--text-4); cursor: not-allowed; }
-.nc-composer__placeholder { position: absolute; inset: 0 0 auto 0; padding: 10px 12px 2px; color: var(--text-3); pointer-events: none; }
+.nc-composer__placeholder { padding: 10px 12px 2px; color: var(--text-3); pointer-events: none; }
 .nc-composer__editor .nc-token { vertical-align: top; margin: 0 1px; cursor: default; }
 .nc-composer__editor .nc-token .nc-icon { width: 12px; height: 12px; }
 .nc-composer:focus-within { border-color: var(--line-strong); }
@@ -535,6 +539,10 @@ button.nc-effort:focus-visible { outline: none; box-shadow: var(--focus-ring); }
 .nc-splitgroup__pane { display: flex; flex-direction: column; flex: var(--nc-weight, 1) 1 0; overflow: hidden; }
 .nc-splitgroup__pane > .nc-frame { flex: 1; }
 .nc-split[data-dragging] { user-select: none; }
+/* On a phone the panes stack in their order and scroll as one page; the dividers go and a collapsed pane stays hidden. */
+.nc-split[data-stacked] { flex-direction: column; overflow-y: auto; }
+.nc-split[data-stacked] > .nc-split__pane { flex: none; width: auto; height: auto; overflow: visible; }
+.nc-split[data-stacked] > [data-part="split-divider"] { display: none; }
 .nc-split__divider { position: relative; flex: none; width: var(--space-2); cursor: col-resize; outline: none; touch-action: none; }
 .nc-split--vertical > .nc-split__divider { width: auto; height: var(--space-2); cursor: row-resize; }
 .nc-split__divider::before { content: ""; position: absolute; inset: 0 calc(50% - 0.5px); background: var(--line-soft); transition: background 120ms; }

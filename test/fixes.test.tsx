@@ -3,16 +3,22 @@ import { afterEach, describe, expect, test } from "bun:test"
 import { createEffect, createSignal, flush } from "solid-js"
 import {
   type Dictation,
+  Dock,
+  dockLayout,
   ListRow,
   LogViewer,
   MetaLine,
   NumberField,
+  PhoneFrame,
   PhoneOverride,
   type RowKey,
   RowList,
   Select,
   SettingRow,
+  Sheet,
   Slider,
+  Split,
+  SplitGroup,
   TextField,
   ToolStep,
   type Transcriber,
@@ -318,5 +324,67 @@ describe("grouped RowList", () => {
     expect(seen.at(-1)).toEqual(["W-1", "W-2", "W-3"])
     expect(all("[data-part=list-row][data-selected]").length).toBe(3)
     expect(root.querySelector("[data-part=bulk-bar]")).toBeTruthy()
+  })
+})
+
+describe("phone layouts", () => {
+  test("a Split and a SplitGroup stack their panes on a phone and keep them side by side otherwise", () => {
+    const { root } = track(
+      mount(() => (
+        <>
+          <Split first={<p>Body</p>} second={<p>Properties</p>} />
+          <PhoneOverride value={true}>
+            <Split first={<p>Body</p>} second={<p>Properties</p>} />
+            <SplitGroup items={["a", "b"]}>{(k) => <p>{k}</p>}</SplitGroup>
+          </PhoneOverride>
+        </>
+      )),
+    )
+    const splits = [...root.querySelectorAll<HTMLElement>("[data-part=split]")]
+    expect(splits[0]!.hasAttribute("data-stacked")).toBe(false)
+    expect(splits[1]!.hasAttribute("data-stacked")).toBe(true)
+    expect(one("[data-part=split-group]", root).hasAttribute("data-stacked")).toBe(true)
+  })
+
+  test("a Dock on a phone has no split buttons", () => {
+    const layout = dockLayout(["one"])
+    const dock = (phone: boolean) =>
+      track(
+        mount(() => (
+          <PhoneOverride value={phone}>
+            <Dock
+              label="Shells"
+              layout={layout}
+              onLayoutChange={() => {}}
+              tab={(id) => ({ label: id })}
+              onSplit={() => {}}
+            >
+              {(id) => <p>{id}</p>}
+            </Dock>
+          </PhoneOverride>
+        )),
+      ).root
+    expect(dock(false).querySelector("[data-part=dock-split-right]")).toBeTruthy()
+    expect(dock(true).querySelector("[data-part=dock-split-right]")).toBeNull()
+  })
+
+  test("a PhoneFrame lays its parts out as a phone and a sheet inside opens over the frame", async () => {
+    const { root } = track(
+      mount(() => (
+        <PhoneFrame aria-label="Preview">
+          <Split first={<p>A</p>} second={<p>B</p>} />
+          <Sheet open label="Sort" onClose={() => {}}>
+            <button type="button">Apply</button>
+          </Sheet>
+        </PhoneFrame>
+      )),
+    )
+    const frame = one("[data-part=phone-frame]", root)
+    expect(frame.getAttribute("aria-label")).toBe("Preview")
+    expect(one("[data-part=split]", frame).hasAttribute("data-stacked")).toBe(true)
+    await tick()
+    const viewport = one("[data-part=sheet]").parentElement!
+    expect(viewport.style.inset).toBe("auto")
+    expect(viewport.style.width).toBe(`${frame.getBoundingClientRect().width}px`)
   })
 })

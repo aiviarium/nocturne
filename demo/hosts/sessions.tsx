@@ -16,7 +16,6 @@ import {
   State,
   StatusDot,
   Truncate,
-  usePhone,
   ViewHeader,
   ViewLayout,
 } from "@aiviarium/nocturne"
@@ -92,7 +91,6 @@ function Terminal(props: { session: HostSession }) {
 
 export function SessionsView(props: ShellViewProps) {
   const s = props.shell
-  const phone = usePhone()
   const host = () => hostOf(s).id
   const record = () => s.loc().record
   // The address names a session: it joins the open ones and comes to the front.
@@ -174,7 +172,7 @@ export function SessionsView(props: ShellViewProps) {
             onClose={close}
             onNewTab={(frame) => start(frame)}
             // On a phone the frames stack, so splitting has nothing to offer and its buttons take the tab's room.
-            onSplit={phone() ? undefined : (frame, edge) => start(frame, edge)}
+            onSplit={(frame, edge) => start(frame, edge)}
             menu={(id) => [
               { id: "rename", label: "Rename", icon: "edit" },
               {
