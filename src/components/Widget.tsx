@@ -495,21 +495,21 @@ export interface WidgetMeter {
 export function WidgetMeters(props: { items: WidgetMeter[]; label: string }): JSX.Element {
   return (
     <div data-part="widget-meters" class="nc-wmeters" role="group" aria-label={props.label}>
-      <For each={props.items}>
+      <For each={props.items} keyed={(m) => m.label}>
         {(m, i) => (
-          <div class="nc-wmeters__row" style={{ "--nc-part": partColour(m.hue, i()) }}>
-            <span class="nc-wmeters__label">{m.label}</span>
+          <div class="nc-wmeters__row" style={{ "--nc-part": partColour(m().hue, i()) }}>
+            <span class="nc-wmeters__label">{m().label}</span>
             <span
               class="nc-wmeters__track"
               role="progressbar"
-              aria-label={m.label}
+              aria-label={m().label}
               aria-valuemin={0}
               aria-valuemax={100}
-              aria-valuenow={Math.round(pct(m.value))}
+              aria-valuenow={Math.round(pct(m().value))}
             >
-              <span class="nc-wmeters__bar" style={{ width: `${pct(m.value)}%` }} />
+              <span class="nc-wmeters__bar" style={{ width: `${pct(m().value)}%` }} />
             </span>
-            <span class="nc-wmeters__value nc-num">{m.display ?? `${Math.round(pct(m.value))}%`}</span>
+            <span class="nc-wmeters__value nc-num">{m().display ?? `${Math.round(pct(m().value))}%`}</span>
           </div>
         )}
       </For>
@@ -528,11 +528,11 @@ export interface WidgetStat {
 export function WidgetStats(props: { items: WidgetStat[] }): JSX.Element {
   return (
     <dl data-part="widget-stats" class="nc-wstats">
-      <For each={props.items}>
+      <For each={props.items} keyed={(item) => item.label}>
         {(item) => (
           <div class="nc-wstats__item">
-            <dt class="nc-wstats__label">{item.label}</dt>
-            <dd class="nc-wstats__value nc-num">{item.value}</dd>
+            <dt class="nc-wstats__label">{item().label}</dt>
+            <dd class="nc-wstats__value nc-num">{item().value}</dd>
           </div>
         )}
       </For>

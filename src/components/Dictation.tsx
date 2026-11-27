@@ -7,6 +7,7 @@ import {
   onCleanup,
   type ParentProps,
   Show,
+  untrack,
   useContext,
 } from "solid-js"
 import { cx } from "../lib/cx"
@@ -144,8 +145,10 @@ export function useDictation(options: DictationOptions): Dictation {
 
   const available = () => Boolean(transcriber?.available()) && (options.enabled?.() ?? true)
 
+  // start, finish and the keys read the state once, untracked: an app may call them from an effect.
+  const now = () => untrack(phase)
   const start = async () => {
-    if (!transcriber || phase() === "recording" || phase() === "transcribing" || starting) return
+    if (!transcriber || now() === "recording" || now() === "transcribing" || starting) return
     setError(undefined)
     setPartial("")
     setLevel(0)
@@ -177,7 +180,7 @@ export function useDictation(options: DictationOptions): Dictation {
   const finish = async () => {
     if (starting) await starting
     const s = session
-    if (!s || phase() !== "recording") return
+    if (!s || now() !== "recording") return
     session = undefined
     stopTimer()
     setPhase("transcribing")
@@ -207,10 +210,10 @@ export function useDictation(options: DictationOptions): Dictation {
   })
 
   const onKeyDown = (e: KeyboardEvent) => {
-    if (!isDictationKey(e) || !available()) return false
+    if (!isDictationKey(e) || !untrack(available)) return false
     e.preventDefault()
     if (e.repeat) return true
-    if (phase() === "recording") {
+    if (now() === "recording") {
       void finish()
       return true
     }

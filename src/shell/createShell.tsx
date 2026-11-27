@@ -584,7 +584,10 @@ export function createShell(options: ShellOptions) {
   const stateKey = (l: ShellLoc) => memKey(l.frame, l.lens?.id)
   // A lens's `open` panels are for a window with room beside the view: on a phone a panel covers it.
   const seenAt = (l: ShellLoc, read = seen.get): Seen =>
-    read()[stateKey(l)] ?? (phone() ? {} : { right: l.lens?.open?.right, bottom: l.lens?.open?.bottom })
+    read()[stateKey(l)] ??
+    ((read === seen.peek ? untrack(phone) : phone())
+      ? {}
+      : { right: l.lens?.open?.right, bottom: l.lens?.open?.bottom })
   const patch = (p: Seen) => {
     const l = now()
     seen.set({ ...seen.peek(), [stateKey(l)]: { ...seenAt(l, seen.peek), ...p } })

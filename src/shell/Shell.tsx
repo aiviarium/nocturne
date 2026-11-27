@@ -181,32 +181,34 @@ export function Shell(props: ShellProps): JSX.Element {
   const layoutHost: ViewLayoutHostValue = {
     storage: shell.storage,
     mount: () => () => {},
-    report: (handle, shortfall) => {
-      if (shortfall === null) lacking.delete(handle)
-      else lacking.set(handle, shortfall)
-      const ctl = sidebarCtl
-      if (!ctl || ctl.drawer()) return
-      const worst = lacking.size ? Math.max(...lacking.values()) : Number.NEGATIVE_INFINITY
-      if (!auto) {
-        if (worst > 0 && !ctl.folded()) {
-          auto = { before: worst }
-          ctl.setFolded(true)
+    // Called from the layout's effect: what it reads of the sidebar it reads once.
+    report: (handle, shortfall) =>
+      untrack(() => {
+        if (shortfall === null) lacking.delete(handle)
+        else lacking.set(handle, shortfall)
+        const ctl = sidebarCtl
+        if (!ctl || ctl.drawer()) return
+        const worst = lacking.size ? Math.max(...lacking.values()) : Number.NEGATIVE_INFINITY
+        if (!auto) {
+          if (worst > 0 && !ctl.folded()) {
+            auto = { before: worst }
+            ctl.setFolded(true)
+          }
+          return
         }
-        return
-      }
-      if (!ctl.folded()) {
-        auto = undefined
-        return
-      }
-      if (auto.gain === undefined && Number.isFinite(worst)) {
-        auto.gain = Math.max(0, auto.before - worst)
-        return
-      }
-      if (!Number.isFinite(worst) || worst + (auto.gain ?? 0) <= 0) {
-        auto = undefined
-        ctl.setFolded(false)
-      }
-    },
+        if (!ctl.folded()) {
+          auto = undefined
+          return
+        }
+        if (auto.gain === undefined && Number.isFinite(worst)) {
+          auto.gain = Math.max(0, auto.before - worst)
+          return
+        }
+        if (!Number.isFinite(worst) || worst + (auto.gain ?? 0) <= 0) {
+          auto = undefined
+          ctl.setFolded(false)
+        }
+      }),
   }
 
   const panel = (p: ShellPanelSpec) => (

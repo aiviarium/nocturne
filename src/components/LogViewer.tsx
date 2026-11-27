@@ -222,17 +222,17 @@ export function LogViewer(props: LogViewerProps): JSX.Element {
               </div>
             }
           >
-            <For each={props.entries}>
+            <For each={props.entries} keyed={(entry) => entry.id ?? entry}>
               {(entry) => (
                 <div
-                  class={cx("nc-log__line", entry.level && `nc-log__line--${entry.level}`)}
+                  class={cx("nc-log__line", entry().level && `nc-log__line--${entry().level}`)}
                   data-part="log-line"
-                  data-level={entry.level ?? "info"}
+                  data-level={entry().level ?? "info"}
                 >
-                  <Show when={props.showTimestamps && entry.at}>
+                  <Show when={props.showTimestamps && entry().at}>
                     {(at) => <span class="nc-log__time">{formatLogTime(at())}</span>}
                   </Show>
-                  <span class="nc-log__text">{entry.text}</span>
+                  <span class="nc-log__text">{entry().text}</span>
                 </div>
               )}
             </For>

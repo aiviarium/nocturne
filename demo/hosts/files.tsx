@@ -12,7 +12,7 @@ import {
   ViewHeader,
   ViewLayout,
 } from "@aiviarium/nocturne"
-import { createMemo, For, Show } from "solid-js"
+import { For, Show } from "solid-js"
 import { FILES } from "../data"
 import { CONTENT } from "./data"
 
@@ -90,16 +90,16 @@ export function FilesView(props: ShellViewProps) {
     },
   ]
 
-  // Plain accessors, not conditional expressions in the JSX: Trail reads its crumbs while it measures, after the
-  // render, and a conditional prop is compiled to a memo that may not be created then.
-  const crumbs = createMemo(() => (parts().length ? trail() : undefined))
-  const title = () => (parts().length ? undefined : "Files")
-  const actions = () => (isFolder(path()) ? folderActions : fileActions)
-
   return (
     <ViewLayout
       id="demo.hosts.files"
-      header={<ViewHeader title={title()} trail={crumbs()} actions={actions()} />}
+      header={
+        <ViewHeader
+          title={parts().length ? undefined : "Files"}
+          trail={parts().length ? trail() : undefined}
+          actions={isFolder(path()) ? folderActions : fileActions}
+        />
+      }
     >
       <Show
         when={isFolder(path())}

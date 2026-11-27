@@ -53,8 +53,6 @@ function BlockView(props: { block: Block; cid: string; tid: string }) {
           <ToolSteps>
             <For each={b().steps} keyed={false}>
               {(step) => (
-                // `defaultOpen` is left out: ToolStep reads it once without untrack, which strict mode warns about
-                // when the value comes from data.
                 <ToolStep
                   icon={step().icon}
                   verb={step().verb}
@@ -62,6 +60,7 @@ function BlockView(props: { block: Block; cid: string; tid: string }) {
                   meta={step().meta}
                   status={step().status}
                   output={step().output}
+                  defaultOpen={step().status === "error"}
                 />
               )}
             </For>

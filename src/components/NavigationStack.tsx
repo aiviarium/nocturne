@@ -56,10 +56,11 @@ export function NavigationStack<T>(props: NavigationStackProps<T>): JSX.Element 
     const pushed = top !== undefined && !before.includes(top) && before.length > 0
     const done = () => {
       setLeaving([])
-      for (const k of [...latest.keys()]) if (!keys().includes(k)) latest.delete(k)
-      setRendered(keys())
+      const current = untrack(keys)
+      for (const k of [...latest.keys()]) if (!current.includes(k)) latest.delete(k)
+      setRendered(current)
     }
-    if (reduced() || props.hidden) {
+    if (reduced() || untrack(() => props.hidden)) {
       setEntering(null)
       done()
       return

@@ -13,7 +13,7 @@ import {
   useDictation,
   useShell,
 } from "@aiviarium/nocturne"
-import { createEffect, createSignal, Show, untrack } from "solid-js"
+import { createEffect, createSignal, Show } from "solid-js"
 import { ChatComposer, Transcript } from "./chat"
 import { conversationById, newConversation, type Segment, send } from "./data"
 import { transcriber } from "./transcriber"
@@ -51,8 +51,7 @@ function PanelBody() {
   let dropEsc: (() => void) | undefined
   createEffect(voiceAsks, (n) => {
     if (!n) return
-    // A start from an effect reads the dictation's state on purpose, once.
-    untrack(() => void voice.start())
+    void voice.start()
     dropEsc?.()
     dropEsc = shell.pushEsc(() => voice.cancel())
   })

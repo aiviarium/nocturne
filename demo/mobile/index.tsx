@@ -134,10 +134,17 @@ function Stack(props: {
   stack: Screen[]
   setStack: (s: Screen[]) => void
   root: () => JSX.Element
+  hidden?: boolean
 }) {
   const back = () => props.setStack(props.stack.slice(0, -1))
   return (
-    <NavigationStack items={props.stack} getKey={(s) => s.id} onBack={back} label={props.label}>
+    <NavigationStack
+      items={props.stack}
+      getKey={(s) => s.id}
+      onBack={back}
+      label={props.label}
+      hidden={props.hidden}
+    >
       {(s, i) => (
         <Show when={i() > 0 && issueById(s().issue)} fallback={props.root()}>
           {(issue) => <IssueScreen issue={issue()} back={{ label: props.label, onClick: back }} />}
@@ -338,23 +345,21 @@ function CompanionApp() {
     set([...now, { id: `issue:${issue}`, issue }])
   return (
     <div class="dm-mobile-app">
-      {/* One stack at a time: NavigationStack's `hidden` warns in strict mode (see the demo's report). */}
-      <Show when={tab() === "inbox"}>
-        <Stack
-          label="Inbox"
-          stack={inbox()}
-          setStack={setInbox}
-          root={() => <InboxRoot open={(id) => push(setInbox, inbox())(id)} />}
-        />
-      </Show>
-      <Show when={tab() === "issues"}>
-        <Stack
-          label="Issues"
-          stack={list()}
-          setStack={setList}
-          root={() => <IssuesRoot open={(id) => push(setList, list())(id)} />}
-        />
-      </Show>
+      {/* Each tab keeps its stack mounted, so switching back finds it where it was. */}
+      <Stack
+        label="Inbox"
+        stack={inbox()}
+        setStack={setInbox}
+        hidden={tab() !== "inbox"}
+        root={() => <InboxRoot open={(id) => push(setInbox, inbox())(id)} />}
+      />
+      <Stack
+        label="Issues"
+        stack={list()}
+        setStack={setList}
+        hidden={tab() !== "issues"}
+        root={() => <IssuesRoot open={(id) => push(setList, list())(id)} />}
+      />
       <Show when={tab() === "settings"}>
         <SettingsTab />
       </Show>

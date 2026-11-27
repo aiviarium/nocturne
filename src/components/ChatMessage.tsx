@@ -1,5 +1,5 @@
 import type { JSX } from "@solidjs/web"
-import { createSignal, For, omit, Show } from "solid-js"
+import { createSignal, For, omit, Show, untrack } from "solid-js"
 import { aria } from "../lib/aria"
 import { cx } from "../lib/cx"
 import { createId } from "../lib/id"
@@ -67,7 +67,7 @@ export interface ToolStepProps {
 
 /** A one-line tool step. With `output` it expands into terminal output. */
 export function ToolStep(props: ToolStepProps): JSX.Element {
-  const [open, setOpen] = createSignal(props.defaultOpen ?? false)
+  const [open, setOpen] = createSignal(untrack(() => props.defaultOpen ?? false))
   const outputId = createId("step-output")
   const status = () => props.status ?? "ok"
   const dot = () =>

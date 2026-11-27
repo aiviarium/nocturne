@@ -487,18 +487,6 @@ function IssueBody(props: { issue: Issue }) {
   )
 }
 
-/**
- * The body, mounted again for each issue: InlineField keeps its draft in step with `value` through an effect, which
- * Solid 2 warns about (EFFECT_RELAY_TEAR) when the value changes under it, as stepping does.
- */
-function IssueBodyKeyed(props: { issue: Issue }) {
-  return (
-    <Show when={props.issue.id} keyed>
-      {(id) => <IssueBody issue={issueById(id) ?? props.issue} />}
-    </Show>
-  )
-}
-
 function IssuePage(props: { issue: Issue; shell: ShellRegistry }) {
   const phone = usePhone()
   return (
@@ -535,7 +523,7 @@ function IssuePage(props: { issue: Issue; shell: ShellRegistry }) {
         when={!phone()}
         fallback={
           <div class="dm-scroll">
-            <IssueBodyKeyed issue={props.issue} />
+            <IssueBody issue={props.issue} />
             <aside class="dm-build-props" aria-label="Properties">
               <IssueProperties issue={props.issue} />
             </aside>
@@ -554,7 +542,7 @@ function IssuePage(props: { issue: Issue; shell: ShellRegistry }) {
           }
           first={
             <div class="dm-scroll">
-              <IssueBodyKeyed issue={props.issue} />
+              <IssueBody issue={props.issue} />
             </div>
           }
           second={
