@@ -4,7 +4,7 @@ import {
   CodeBlock,
   EmptyState,
   ListRow,
-  MetaLine,
+  PropertyList,
   RowList,
   type ShellViewProps,
   type TrailCrumb,
@@ -105,7 +105,13 @@ export function FilesView(props: ShellViewProps) {
         when={isFolder(path())}
         fallback={
           <div class="dm-page">
-            <MetaLine items={[entry()?.size, entry() && `changed ${entry()!.changed} ago`]} />
+            <PropertyList
+              labelWidth={88}
+              items={[
+                { label: "Size", value: <span class="nc-num">{entry()?.size}</span> },
+                { label: "Changed", value: <span class="nc-num">{entry()?.changed}</span> },
+              ]}
+            />
             <Show
               when={CONTENT[path()]}
               fallback={

@@ -102,7 +102,7 @@ export function RoadmapView(props: ShellViewProps) {
                 <MetaLine
                   items={[
                     p.m.quarter,
-                    `due ${p.m.target}`,
+                    { label: p.m.target, title: `Due ${p.m.target}` },
                     person(p.m.owner)?.name,
                     p.m.issues ? `${p.m.issues} issues` : undefined,
                   ]}

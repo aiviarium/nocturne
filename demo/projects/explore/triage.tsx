@@ -57,7 +57,7 @@ function ReportBody(props: { report: Report; onDecide: (verb: "accept" | "merge"
       </div>
       <div class="dm-row">
         <Badge icon={SOURCE[r().source].icon}>{SOURCE[r().source].label}</Badge>
-        <MetaLine items={[r().from, `${r().ago} ago`]} />
+        <MetaLine items={[r().from, r().ago]} />
       </div>
       <h1 class="heading dm-explore-flush">{r().title}</h1>
       <p class="dm-explore-flush">{r().body}</p>

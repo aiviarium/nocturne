@@ -8,7 +8,7 @@ import {
   IdBadge,
   LabelChip,
   ListRow,
-  MetaLine,
+  PropertyList,
   RowList,
   type ShellRegistry,
   type ShellScope,
@@ -80,12 +80,21 @@ function Reader(props: { issue: Issue }) {
         <For each={i().labels}>{(l) => <LabelChip hue={l.hue}>{l.name}</LabelChip>}</For>
       </div>
       <h1 class="heading dm-inbox-title">{i().title}</h1>
-      <MetaLine
+      <PropertyList
+        labelWidth={88}
         items={[
-          project()?.name,
-          { label: STATE_LABEL[i().state] },
-          i().assignee ? nameOf(i().assignee!) : "No one",
-          `updated ${i().updated} ago`,
+          { label: "Project", value: project()?.name },
+          {
+            label: "Status",
+            value: (
+              <span class="dm-row">
+                <StateIcon state={i().state} />
+                {STATE_LABEL[i().state]}
+              </span>
+            ),
+          },
+          { label: "Assignee", value: i().assignee ? nameOf(i().assignee!) : undefined },
+          { label: "Updated", value: <span class="nc-num">{i().updated}</span> },
         ]}
       />
       <p class="dm-inbox-body">{i().description}</p>

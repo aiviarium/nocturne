@@ -11,7 +11,6 @@ import {
   List,
   ListRow,
   MediaViewer,
-  MetaLine,
   RateWidget,
   RowList,
   SectionHeading,
@@ -118,22 +117,28 @@ function ConversationPage(props: ShellViewProps & { id: string }) {
         <ShellViewHeader
           actions={[
             { id: "new", label: "New chat", icon: "plus", onClick: () => startChat(props.shell) },
-            {
-              id: "details",
-              label: "Context and rate",
-              icon: "panel-right",
-              pressed: props.shell.panels().right?.id === "details",
-              onClick: () => props.shell.togglePanel("details"),
-            },
             MicAction(),
           ]}
         />
       }
     >
+      {/* The column is centred. Beside it, where there is room, the context and the output rate sit in the side
+          columns; with less room they are one row each above the composer. */}
       <div class="dm-agent-chat">
         <Transcript cid={props.id} />
+        <aside class="dm-agent-side dm-agent-side--start" aria-label="Context">
+          <ChatContext id={props.id} />
+          <Images id={props.id} />
+        </aside>
+        <aside class="dm-agent-side dm-agent-side--end" aria-label="Output">
+          <ChatRate id={props.id} />
+        </aside>
         <div class="dm-agent-foot">
           <div class="dm-agent-column">
+            <div class="dm-agent-strip">
+              <ChatContext id={props.id} size="row" />
+              <ChatRate id={props.id} size="row" />
+            </div>
             <ChatComposer cid={props.id} />
           </div>
         </div>
@@ -211,49 +216,70 @@ function Images(props: { id: string }) {
   )
 }
 
-/** What the Details panel shows for a conversation: its context window and output rate. */
-export function ChatDetails(props: { id: string }) {
-  const shell = useShell()
+/** A conversation's context window. */
+function ChatContext(props: { id: string; size?: "row" | "md" | "lg" }) {
   const c = () => conversationById(props.id)
   const share = () => (c()?.used ?? 0) / CONTEXT_TOTAL
   return (
     <Show when={c()}>
       {(conv) => (
-        <div class="dm-col dm-pad">
-          <MetaLine items={[`${conv().turns.length} messages`, `updated ${conv().updated}`]} />
-          <ContextWidget
-            size="lg"
-            used={conv().used}
-            total={CONTEXT_TOTAL}
-            hue={share() > 0.8 ? "danger" : share() > 0.6 ? "warning" : undefined}
-            parts={parts(conv().used)}
-          />
-          <RateWidget
-            size="lg"
-            title="Output"
-            unit="tok/s"
-            value={conv().rates.at(-1) ?? 0}
-            values={conv().rates}
-            axis={["-1m", "Now"]}
-            stats={[
-              { label: "Peak", value: `${Math.max(...conv().rates)}` },
-              { label: "Median", value: `${median(conv().rates)}` },
-            ]}
-          />
-          <Images id={props.id} />
-          <Show when={shell?.loc().record !== props.id}>
-            <Button
-              variant="ghost"
-              size="sm"
-              iconEnd="arrow-up-right"
-              onClick={() => shell?.toPlace(undefined, "chats", undefined, props.id)}
-            >
-              Open
-            </Button>
-          </Show>
-        </div>
+        <ContextWidget
+          size={props.size ?? "md"}
+          used={conv().used}
+          total={CONTEXT_TOTAL}
+          hue={share() > 0.8 ? "danger" : share() > 0.6 ? "warning" : undefined}
+          parts={parts(conv().used)}
+        />
       )}
     </Show>
+  )
+}
+
+/** How fast the agent wrote, over the last minute. */
+function ChatRate(props: { id: string; size?: "row" | "md" | "lg" }) {
+  const c = () => conversationById(props.id)
+  return (
+    <Show when={c()}>
+      {(conv) => (
+        <RateWidget
+          size={props.size ?? "md"}
+          title="Output"
+          unit="tok/s"
+          value={conv().rates.at(-1) ?? 0}
+          values={conv().rates}
+          axis={props.size === "row" ? undefined : ["-1m", "Now"]}
+          stats={[
+            { label: "Peak", value: `${Math.max(...conv().rates)}` },
+            { label: "Median", value: `${median(conv().rates)}` },
+          ]}
+        />
+      )}
+    </Show>
+  )
+}
+
+/**
+ * What the Details panel shows for a conversation picked in the list: its context window and output rate. The
+ * conversation's own page shows them beside the transcript, so the panel steps aside there (`covers`).
+ */
+export function ChatDetails(props: { id: string }) {
+  const shell = useShell()
+  return (
+    <div class="dm-col dm-pad">
+      <ChatContext id={props.id} size="lg" />
+      <ChatRate id={props.id} size="lg" />
+      <Images id={props.id} />
+      <Show when={shell?.loc().record !== props.id}>
+        <Button
+          variant="ghost"
+          size="sm"
+          iconEnd="arrow-up-right"
+          onClick={() => shell?.toPlace(undefined, "chats", undefined, props.id)}
+        >
+          Open
+        </Button>
+      </Show>
+    </div>
   )
 }
 

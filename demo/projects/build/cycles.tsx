@@ -4,7 +4,6 @@ import {
   DataTable,
   Delta,
   ListRow,
-  MetaLine,
   RowList,
   SectionHeading,
   ShellViewHeader,
@@ -68,13 +67,11 @@ export function CyclesView(props: ShellViewProps) {
             title={current.name}
             action={atRisk() ? <State status="warn">At risk</State> : <State status="live">Running</State>}
           />
-          <MetaLine
-            items={[`${current.starts} – ${current.ends}`, "4 days left", `${inCycle().length} issues`]}
-          />
           <div class="dm-build-stats">
             <Stat label="Completed" value={`${rate(current)}`} unit="%" signal={<Change cycle={current} />} />
-            <Stat label="Scope" value={current.scope} unit="pts" caption="3 added since the start" />
+            <Stat label="Scope" value={current.scope} unit="pts" />
             <Stat label="Done" value={current.done} unit="pts" />
+            <Stat label="Left" value={4} unit="days" caption={`${current.starts} – ${current.ends}`} />
           </div>
         </section>
         <section class="dm-col">

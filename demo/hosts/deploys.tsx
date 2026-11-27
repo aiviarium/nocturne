@@ -5,7 +5,7 @@ import {
   EmptyState,
   ListRow,
   LogViewer,
-  MetaLine,
+  PropertyList,
   RowList,
   SectionHeading,
   ShellViewHeader,
@@ -30,15 +30,14 @@ function DeployPage(props: { deploy: Deploy }) {
   const d = () => props.deploy
   return (
     <div class="dm-page">
-      <MetaLine
+      <PropertyList
+        labelWidth={88}
         items={[
-          { label: d().commit, mono: true, icon: "commit" },
-          d().by,
-          `${d().ago} ago`,
-          `took ${d().duration}`,
-          d().state === "live" || d().state === "superseded"
-            ? undefined
-            : { label: stateOf(d()), title: DEPLOY_STATE[d().state].label },
+          { label: "Commit", value: <span class="mono">{d().commit}</span> },
+          { label: "By", value: d().by },
+          { label: "Deployed", value: <span class="nc-num">{d().ago}</span> },
+          { label: "Took", value: <span class="nc-num">{d().duration}</span> },
+          { label: "State", value: stateOf(d()) ?? DEPLOY_STATE[d().state].label },
         ]}
       />
       <SectionHeading title="Change" />

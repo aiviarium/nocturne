@@ -23,6 +23,8 @@ export const agentModule: ShellScope = {
       records: () => conversations().map((c) => ({ id: c.id, label: c.title })),
       recordLabel: (id) => conversationById(id)?.title,
       inspect: (id) => <ChatDetails id={id} />,
+      // A conversation's page shows its context and rate beside the transcript.
+      covers: (record) => (record ? ["details"] : []),
     },
     { id: "runs", label: "Runs", icon: "activity", view: RunsView },
   ],

@@ -71,7 +71,7 @@ export function MembersView(_: ShellViewProps) {
             items={ROLES.map((r) => ({ id: r.value, label: r.label, checked: r.value === m.role }))}
             onSelect={(id) => setRoleOf(m.id, id as Role)}
             trigger={(t) => (
-              <Button {...t} variant="ghost" size="sm" iconEnd="chevron-down">
+              <Button {...t} variant="ghost" size="sm" flush iconEnd="chevron-down">
                 {ROLE_LABEL[m.role]}
               </Button>
             )}

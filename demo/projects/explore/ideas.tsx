@@ -160,7 +160,7 @@ export function IdeasView(props: ShellViewProps) {
                       <Badge tone={STATUS[i().status].tone}>{STATUS[i().status].label}</Badge>
                     </Show>
                   </div>
-                  <MetaLine items={[person(i().author)?.name ?? PEOPLE[0]!.name, `${i().ago} ago`]} />
+                  <MetaLine items={[person(i().author)?.name ?? PEOPLE[0]!.name, i().ago]} />
                 </Card>
               )}
             </For>

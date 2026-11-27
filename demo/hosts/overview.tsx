@@ -66,8 +66,8 @@ export function OverviewView(props: ShellViewProps) {
               { label: facts().ip, mono: true, icon: "link" },
               host().region,
               facts().os,
-              `kernel ${facts().kernel}`,
-              `up ${facts().uptime}`,
+              { label: facts().kernel, title: `Kernel ${facts().kernel}` },
+              { label: facts().uptime, title: `Up ${facts().uptime}` },
               facts().agent,
             ]}
           />
