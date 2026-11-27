@@ -8,7 +8,7 @@ Rookery's shell to Crow and each plugin. Where a part's page and a rule differ, 
 - The window is the shell from `createShell`. Apps don't add a top bar, a status bar or a second header.
 - Scope by drilling. Going into a domain, such as a space, a host or a project, drills the sidebar into that
   domain's places, and the domain is a segment of the title bar's path and of the address.
-- The title bar's path shows the scope once. The sidebar header has ↑ when there is a parent scope, the filter, collapse all
+- The title bar's path shows the scope once. The sidebar header has ↑ (to the list from a record, else to the scope above, disabled at the top), the filter, collapse all
   and minimise, and no scope name or switcher. A one-of-a-kind segment of the path has a switcher to its siblings.
 - Entering a domain opens it as the person left it, with the lens worn last and the place that lens remembers.
 - Structure and time are separate. Trails and ↑ go up, and each crumb goes to what it names. Back and forward walk

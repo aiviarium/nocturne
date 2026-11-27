@@ -1,4 +1,4 @@
-// The sidebar's header row, 44px: [↑ only when there is a parent] [Filter… filling the width] [collapse all]
+// The sidebar's header row, 44px: [↑, disabled at the top] [Filter… filling the width] [collapse all]
 // [minimise]. No scope name and no switcher: the title bar's path names the scope. Folded to the rail, the row is a
 // single unfold button where ↑ was.
 import type { JSX } from "@solidjs/web"
@@ -10,8 +10,11 @@ import { cx } from "../lib/cx"
 import { useShellSidebar } from "./context"
 
 export interface SidebarHeaderProps {
-  /** The scope above the one the sidebar shows: an ↑ button at the left, "Up to Projects". */
-  up?: { label: string; onClick: () => void }
+  /**
+   * Up one level: an ↑ button at the left, "Up to Projects" or, from a record, "Up to Issues". Without `onClick`
+   * there is nowhere up and the button is disabled, so the field beside it keeps its place. Left out, no button.
+   */
+  up?: { label: string; onClick?: () => void }
   /** The filter's text, for an app that keeps it. Left out, the header keeps it and reports it in `onFilterChange`. */
   filter?: string
   onFilterChange?: (value: string) => void
@@ -91,9 +94,11 @@ export function SidebarHeader(props: SidebarHeaderProps): JSX.Element {
           {(up) => (
             <IconButton
               icon="arrow-up"
-              label={`Up to ${up().label}`}
+              label={up().onClick ? `Up to ${up().label}` : "Up"}
               data-part="sidebar-up"
-              onClick={() => up().onClick()}
+              disabled={!up().onClick}
+              tooltip={up().onClick ? undefined : false}
+              onClick={() => up().onClick?.()}
             />
           )}
         </Show>

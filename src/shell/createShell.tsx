@@ -85,8 +85,11 @@ export interface ShellPlace<T = any> {
   children?: ShellPlace<T>[]
   /** The place lists scopes: opening one of its rows (`shell.enter`) nests that scope in the path. */
   enters?: ShellScope<any>
-  /** Panels whose content this place's view already is: the rail hides them, and an open one steps aside. */
-  covers?: string[]
+  /**
+   * Panels whose content this place's view already is: the rail hides them, and an open one steps aside. A function
+   * gets the record shown, for a place whose record page shows what its list needs a panel for.
+   */
+  covers?: string[] | ((record: string | undefined) => string[])
   /** What a panel such as Details shows for one of the place's records. */
   inspect?: (record: string, item: T) => JSX.Element
 }
@@ -250,7 +253,11 @@ export interface ShellSidebar {
   key: string
   label: string
   groups: NavGroup[]
-  up?: { label: string; onClick: () => void }
+  /**
+   * Where ↑ goes: from a record to its list, else to the scope above. Without `onClick` there is nowhere up, and the
+   * button stays in place, disabled, so the filter beside it never moves.
+   */
+  up: { label: string; onClick?: () => void }
   /** The parents in the tree, for collapse all. */
   parents: string[]
 }
@@ -600,7 +607,10 @@ export function createShell(options: ShellOptions) {
         : panelSpecs.filter((p) => p.at === at)
     return { right: pick("right", choice?.right), bottom: pick("bottom", choice?.bottom) }
   }
-  const coversOf = (l: ShellLoc) => l.place?.covers ?? []
+  const coversOf = (l: ShellLoc) => {
+    const c = l.place?.covers
+    return typeof c === "function" ? c(l.record) : (c ?? [])
+  }
   const openOf = (l: ShellLoc, read = seen.get) => {
     const rail = railOf(l)
     const s = seenAt(l, read)
@@ -918,7 +928,7 @@ export function createShell(options: ShellOptions) {
           }),
         })
       }
-      return { key: "workspace", label: ws.name, groups, parents: [] }
+      return { key: "workspace", label: ws.name, groups, parents: [], up: { label: "Up" } }
     }
     const here = f.key === l.frame.key
     const lens = f.lens
@@ -957,7 +967,15 @@ export function createShell(options: ShellOptions) {
       label: labelOf(f),
       groups,
       parents,
-      up: parent ? { label: labelOf(parent), onClick: () => returnTo(parent) } : undefined,
+      up:
+        here && l.record && l.place
+          ? {
+              label: (keepView(l) && l.view?.label) || l.place.label,
+              onClick: () => toPlace(l.frame, l.place?.id, keepView(l)),
+            }
+          : parent
+            ? { label: labelOf(parent), onClick: () => returnTo(parent) }
+            : { label: "Up" },
     }
   })
   const filter = () => filters.get()[sidebar().key] ?? ""

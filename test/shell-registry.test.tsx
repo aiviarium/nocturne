@@ -90,6 +90,8 @@ const projectLenses: ShellLens[] = [
         count: () => issuesIn().length,
         records: (_p, view) => issuesIn(view).map((i) => ({ id: i.id, label: i.id, hint: i.title })),
         inspect: (id) => <p data-test="inspect">{id}</p>,
+        // An issue's page shows its terminal output itself; the list does not.
+        covers: (record) => (record ? ["terminal"] : []),
       },
       { id: "agents", label: "Agents", icon: "agent", view: View, enters: agent },
     ],
@@ -195,7 +197,7 @@ describe("createShell", () => {
     expect(s.lensBox().lenses.map((l) => l.id)).toEqual(["explore", "product", "build"])
     expect(s.lensBox().lens).toBe("build")
     const side = s.sidebar()
-    expect(side.up?.label).toBe("Projects")
+    expect(side.up.label).toBe("Projects")
     const items = side.groups[0]!.items
     expect(items.map((i) => i.label)).toEqual(["Issues", "Agents"])
     expect(items[0]!.current).toBe(true)
@@ -211,8 +213,19 @@ describe("createShell", () => {
     const groups = s.sidebar().groups
     expect(groups[0]!.items.map((i) => i.label)).toEqual(["Projects", "Hosts"])
     expect(groups[1]!.items.map((i) => i.label)).toEqual(["Atlas web", "Borealis"])
-    expect(s.sidebar().up).toBeUndefined()
+    // Nowhere up: the button stays, disabled.
+    expect(s.sidebar().up).toEqual({ label: "Up" })
     expect(s.lensBox().lenses).toEqual([])
+  })
+
+  test("from a record, ↑ goes to its list", () => {
+    const s = make("/projects/atlas/build/issues/WEB-142")
+    flush()
+    expect(s.sidebar().up.label).toBe("Issues")
+    s.sidebar().up.onClick!()
+    flush()
+    expect(s.loc().record).toBeUndefined()
+    expect(s.sidebar().up.label).toBe("Projects")
   })
 
   test("every move is a history entry with its address in full", async () => {
@@ -326,8 +339,8 @@ describe("createShell", () => {
     flush()
     expect(s.path().map((x) => x.label)).toEqual(["Acme", "Projects", "Atlas web", "Review agent"])
     expect(s.loc().place?.id).toBe("runs")
-    expect(s.sidebar().up?.label).toBe("Atlas web")
-    s.sidebar().up!.onClick()
+    expect(s.sidebar().up.label).toBe("Atlas web")
+    s.sidebar().up.onClick!()
     flush()
     expect(s.address()).toBe("/projects/atlas/build/agents")
   })
@@ -454,6 +467,16 @@ describe("Shell", () => {
     const issues = one("[data-test=view]")
     const s = issues.querySelector("[data-test=where]")!
     expect(s.textContent).toBe("/projects/atlas/build/issues")
+  })
+
+  test("a `covers` function gets the record: the panel steps aside on the record's page only", () => {
+    const s = make("/projects/atlas/build/issues")
+    flush()
+    expect(s.panels().covers).toEqual([])
+    s.go("/projects/atlas/build/issues/WEB-142")
+    flush()
+    expect(s.panels().covers).toEqual(["terminal"])
+    expect(s.handleKey(key("j", { metaKey: true }))).toBe(false)
   })
 
   test("`covers` hides the panel and its rail button while the view shows it", async () => {
