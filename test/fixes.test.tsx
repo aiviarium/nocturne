@@ -3,10 +3,13 @@ import { afterEach, describe, expect, test } from "bun:test"
 import { createEffect, createSignal, flush } from "solid-js"
 import {
   type Dictation,
+  ListRow,
   LogViewer,
   MetaLine,
   NumberField,
   PhoneOverride,
+  type RowKey,
+  RowList,
   Select,
   SettingRow,
   Slider,
@@ -278,5 +281,42 @@ describe("view header", () => {
     expect(one("[data-part=view-title]", root).textContent).toBe("WEB-142")
     click(back)
     expect(up).toEqual(["issues"])
+  })
+})
+
+describe("grouped RowList", () => {
+  test("rows under group headings are the list's own: selection works across the groups", () => {
+    const seen: RowKey[][] = []
+    const issues = [
+      { id: "W-1", state: "Todo" },
+      { id: "W-2", state: "Todo" },
+      { id: "W-3", state: "Done" },
+    ]
+    const { root } = track(
+      mount(() => (
+        <RowList
+          label="Issues"
+          items={issues}
+          getKey={(i) => i.id}
+          group={(i) => i.state}
+          section={(g, rows) => ({ label: g, count: rows.length, icon: "list" })}
+          selectable
+          onSelectedChange={(k) => seen.push(k)}
+        >
+          {(i) => <ListRow title={i.id} />}
+        </RowList>
+      )),
+    )
+    const sections = all("[data-part=row-section]")
+    expect(sections.length).toBe(2)
+    expect(sections[0]!.textContent).toContain("Todo")
+    expect(sections[0]!.querySelectorAll("[data-part=list-row]").length).toBe(2)
+    const mains = all(".nc-lrow__main")
+    click(mains[0]!)
+    mains[2]!.dispatchEvent(new MouseEvent("click", { bubbles: true, shiftKey: true }))
+    flush()
+    expect(seen.at(-1)).toEqual(["W-1", "W-2", "W-3"])
+    expect(all("[data-part=list-row][data-selected]").length).toBe(3)
+    expect(root.querySelector("[data-part=bulk-bar]")).toBeTruthy()
   })
 })

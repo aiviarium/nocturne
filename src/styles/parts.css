@@ -499,6 +499,9 @@ button.nc-lrow__toggle:hover { color: var(--text-1); }
 :root[data-phone] .nc-ccard:not(.nc-ccard--action) > .nc-card__body { overflow: hidden; margin-inline: 0; padding-inline: 0; border: 1px solid var(--line-soft); border-radius: var(--radius-lg); background: var(--bg-1); }
 :root[data-phone] .nc-ccard:not(.nc-ccard--action) > .nc-card__body:not(:has(> .nc-rows)) { padding: var(--space-3); }
 :root[data-phone] .nc-ccard:not(.nc-ccard--action) > .nc-card__body { gap: 0; }
+/* Its footer closes the group: the body's lower edge opens into it, so the footer is inside the card, not under it. */
+:root[data-phone] .nc-ccard:not(.nc-ccard--action):has(> .nc-card__footer) > .nc-card__body { padding-bottom: var(--space-2); border-bottom: 0; border-radius: var(--radius-lg) var(--radius-lg) 0 0; }
+:root[data-phone] .nc-ccard:not(.nc-ccard--action) > .nc-card__footer { margin-top: -6px; padding: 0 var(--space-3) var(--space-2); border: 1px solid var(--line-soft); border-top: 0; border-radius: 0 0 var(--radius-lg) var(--radius-lg); background: var(--bg-1); }
 /* A clickable card stays one tappable card on a phone: its title is the card's own, at the body size and the
    card's padding, not the inset-group heading above a group (which is indented and in secondary text). */
 :root[data-phone] .nc-ccard--action > .nc-card__head { padding: 0; }

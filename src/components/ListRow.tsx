@@ -896,6 +896,14 @@ export interface RowListProps<T> extends Omit<JSX.HTMLAttributes<HTMLDivElement>
   rowMenu?: (target: RowMenuContext<T>) => RowMenuEntry[]
   /** An entry of `rowMenu` without an `onSelect` was chosen. */
   onRowMenuSelect?: (id: string, target: RowMenuContext<T>) => void
+  /**
+   * Groups the items under `RowSection` headings: the group of each item, such as its state. A run of items with
+   * the same group is one section, so pass the items in group order. The rows stay the list's own, so selection,
+   * the row menu, removal and the keys work across the groups. A grouped list is never virtualised.
+   */
+  group?: (item: T) => string
+  /** A group's heading: its label, glyph, count and actions. Default the group as its label and its row count. */
+  section?: (group: string, items: T[]) => Omit<RowSectionProps, "children">
 }
 
 /** The trailing columns a virtualised list measures, since its rows cannot share one grid. */
@@ -971,12 +979,27 @@ export function RowList<T = unknown>(props: RowListProps<T>): JSX.Element {
     "tree",
     "rowMenu",
     "onRowMenuSelect",
+    "group",
+    "section",
     "class",
     "ref",
     "style",
   )
   const phone = usePhone()
-  const virtual = createMemo(() => (props.items?.length ?? 0) > (props.virtualizeAt ?? 150))
+  const virtual = createMemo(() => !props.group && (props.items?.length ?? 0) > (props.virtualizeAt ?? 150))
+  // Runs of items with the same group, each with its items' places in the whole list.
+  const runs = createMemo(() => {
+    const by = props.group
+    const out: Array<{ id: string; rows: Array<{ item: T; index: number }> }> = []
+    if (!by) return out
+    ;(props.items ?? []).forEach((item, index) => {
+      const id = by(item)
+      const last = out[out.length - 1]
+      if (last && last.id === id) last.rows.push({ item, index })
+      else out.push({ id, rows: [{ item, index }] })
+    })
+    return out
+  })
   const keyOf = (item: T, index: number): RowKey => props.getKey?.(item, index) ?? index
   const keys = createMemo(() => (props.items ?? []).map(keyOf))
   const render = (item: T, index: () => number) =>
@@ -1448,7 +1471,43 @@ export function RowList<T = unknown>(props: RowListProps<T>): JSX.Element {
           <div role="list" aria-label={props.label} class="nc-rows__list">
             <RowListCtx value={ctx}>
               <Show when={props.items} fallback={props.children as JSX.Element}>
-                {(items) => <For each={items()}>{(item, i) => render(item, i)}</For>}
+                {(items) => (
+                  <Show
+                    when={props.group}
+                    fallback={<For each={items()}>{(item, i) => render(item, i)}</For>}
+                  >
+                    <For each={runs()} keyed={(r) => r.id}>
+                      {(run) => {
+                        const heading = createMemo(
+                          (): Omit<RowSectionProps, "children"> =>
+                            props.section?.(
+                              run().id,
+                              run().rows.map((r) => r.item),
+                            ) ?? { label: run().id, count: run().rows.length },
+                        )
+                        return (
+                          <RowSection
+                            label={heading().label}
+                            icon={heading().icon}
+                            leading={heading().leading}
+                            count={heading().count}
+                            actions={heading().actions}
+                            collapsible={heading().collapsible}
+                            expanded={heading().expanded}
+                            defaultExpanded={untrack(() => heading().defaultExpanded)}
+                            onExpandedChange={(v) => heading().onExpandedChange?.(v)}
+                            class={heading().class}
+                          >
+                            <For each={run().rows} keyed={(r) => r.item}>
+                              {/* Keyed by the item, so it is read once; its place in the list moves. */}
+                              {(r) => render(untrack(r).item, () => r().index)}
+                            </For>
+                          </RowSection>
+                        )
+                      }}
+                    </For>
+                  </Show>
+                )}
               </Show>
             </RowListCtx>
             {addRow()}
@@ -1526,7 +1585,7 @@ export interface RowSectionProps {
 export function RowSection(props: RowSectionProps): JSX.Element {
   const [expanded, setExpanded] = createControllable<boolean>({
     value: () => props.expanded,
-    defaultValue: props.defaultExpanded ?? true,
+    defaultValue: untrack(() => props.defaultExpanded ?? true),
     onChange: (v) => props.onExpandedChange?.(v),
   })
   const groupId = createId("row-section")

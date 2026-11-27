@@ -278,6 +278,10 @@ button.nc-menu__item, div.nc-menu__item { box-sizing: border-box; width: 100%; b
 .nc-diffview__count--del { color: var(--danger); }
 .nc-panel-header__actions { display: flex; align-items: center; gap: var(--space-1); margin-left: auto; }
 .nc-diff { min-width: 100%; width: max-content; }
+/* Split: old and new take half the width each, and a long line wraps in its half, so the two sides stay equal and
+   in view; a row's two cells share its height. Unified scrolls sideways instead. */
+.nc-diff:not(.nc-diff--unified) { width: 100%; }
+.nc-diff:not(.nc-diff--unified) .nc-diff__line { white-space: pre-wrap; overflow-wrap: anywhere; }
 .nc-diff__line { min-width: 0; }
 .nc-diff__text { flex: 1; min-width: 0; padding-right: var(--space-3); }
 .nc-diff__fold { grid-column: 1 / -1; padding: 0 14px; background: var(--bg-1); color: var(--text-3); }

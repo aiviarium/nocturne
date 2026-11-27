@@ -20,7 +20,6 @@ import {
   PropertyList,
   RowList,
   RowMenu,
-  RowSection,
   type ShellRegistry,
   ShellViewHeader,
   type ShellViewProps,
@@ -187,77 +186,78 @@ function IssueList(props: { shell: ShellRegistry; onNew: () => void }) {
           </EmptyState>
         }
       >
-        <RowList label="Issues">
-          <For each={groups()} keyed={(g) => g.state}>
-            {(g) => (
-              <RowSection
-                label={STATE_LABEL[g().state]}
-                leading={<StateIcon state={g().state} label={false} />}
-                count={g().issues.length}
-                actions={
+        <RowList
+          label="Issues"
+          items={groups().flatMap((g) => g.issues)}
+          getKey={(i) => i.key}
+          group={(i) => i.state}
+          section={(state) => ({
+            label: STATE_LABEL[state as IssueState],
+            leading: <StateIcon state={state as IssueState} label={false} />,
+            count: groups().find((g) => g.state === state)?.issues.length,
+            actions: (
+              <IconButton
+                icon="plus"
+                size="sm"
+                label={`New issue in ${STATE_LABEL[state as IssueState]}`}
+                onClick={props.onNew}
+              />
+            ),
+          })}
+          selectable
+          selected={selection.selected()}
+          onSelectedChange={(keys) => selection.set(keys as string[])}
+        >
+          {(i) => (
+            <ListRow
+              leading={<PriorityIcon priority={i.priority} />}
+              prefix={
+                <>
+                  <span>{i.key}</span>
+                  <StateIcon state={i.state} />
+                </>
+              }
+              title={i.title}
+              meta={
+                <>
+                  <For each={i.labels}>{(l) => <LabelChip hue={l.hue}>{l.name}</LabelChip>}</For>
+                  <Who id={i.assignee} />
+                  <span>{i.updated}</span>
+                </>
+              }
+              selected={selection.isSelected(i.key) || s.selection() === i.key}
+              onClick={(e) => {
+                if (selection.click(i.key, e, true)) return
+                selection.set([])
+                s.toPlace(undefined, "issues", viewSeg(), i.key)
+              }}
+              menu={issueMenu(keysFor(i.key).length)}
+              menuLabel={`Actions for ${i.key}`}
+              onMenuSelect={(id) => runIssueMenu(s, id, keysFor(i.key), () => selection.set([]))}
+              actions={
+                <>
                   <IconButton
-                    icon="plus"
+                    icon="panel-right"
+                    label="Show details"
                     size="sm"
-                    label={`New issue in ${STATE_LABEL[g().state]}`}
-                    onClick={props.onNew}
+                    onClick={() => {
+                      s.select(i.key)
+                      s.showPanel("details")
+                    }}
                   />
-                }
-              >
-                <For each={g().issues} keyed={(i) => i.id}>
-                  {(i) => (
-                    <ListRow
-                      leading={<PriorityIcon priority={i().priority} />}
-                      prefix={
-                        <>
-                          <span>{i().key}</span>
-                          <StateIcon state={i().state} />
-                        </>
-                      }
-                      title={i().title}
-                      meta={
-                        <>
-                          <For each={i().labels}>{(l) => <LabelChip hue={l.hue}>{l.name}</LabelChip>}</For>
-                          <Who id={i().assignee} />
-                          <span>{i().updated}</span>
-                        </>
-                      }
-                      selected={selection.isSelected(i().key) || s.selection() === i().key}
-                      onClick={(e) => {
-                        if (selection.click(i().key, e, true)) return
-                        selection.set([])
-                        s.toPlace(undefined, "issues", viewSeg(), i().key)
-                      }}
-                      menu={issueMenu(keysFor(i().key).length)}
-                      menuLabel={`Actions for ${i().key}`}
-                      onMenuSelect={(id) => runIssueMenu(s, id, keysFor(i().key), () => selection.set([]))}
-                      actions={
-                        <>
-                          <IconButton
-                            icon="panel-right"
-                            label="Show details"
-                            size="sm"
-                            onClick={() => {
-                              s.select(i().key)
-                              s.showPanel("details")
-                            }}
-                          />
-                          <IconButton
-                            icon="more"
-                            label={`More for ${i().key}`}
-                            size="sm"
-                            onClick={(e) => {
-                              const el = e.currentTarget as HTMLElement
-                              setRowMenu({ at: keyboardMenuPoint(el), keys: keysFor(i().key), el })
-                            }}
-                          />
-                        </>
-                      }
-                    />
-                  )}
-                </For>
-              </RowSection>
-            )}
-          </For>
+                  <IconButton
+                    icon="more"
+                    label={`More for ${i.key}`}
+                    size="sm"
+                    onClick={(e) => {
+                      const el = e.currentTarget as HTMLElement
+                      setRowMenu({ at: keyboardMenuPoint(el), keys: keysFor(i.key), el })
+                    }}
+                  />
+                </>
+              }
+            />
+          )}
         </RowList>
       </Show>
       <Show when={rowMenu()} keyed>

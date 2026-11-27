@@ -208,7 +208,11 @@
 .nc-mark[data-hue="danger"] { --nc-mark-hue: var(--danger); }
 .nc-mark[data-hue="info"] { --nc-mark-hue: var(--info); }
 .nc-avatars { display: flex; }
-.nc-avatars > * { margin-right: -6px; box-shadow: 0 0 0 2px var(--bg-1); }
+.nc-avatars > * { margin-right: -4px; box-shadow: 0 0 0 2px var(--bg-1); }
+/* The ring of the next avatar stops short of this one's initials: less overlap the smaller they are. */
+.nc-avatars > .nc-avatar--sm { margin-right: -3px; }
+.nc-avatars > .nc-avatar--lg { margin-right: -6px; }
+.nc-avatars > :last-child { margin-right: 0; }
 
 /* Surfaces */
 .nc-card { border: 1px solid var(--line-soft); border-radius: var(--radius-md); background: var(--bg-1); }
