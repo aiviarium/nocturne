@@ -3,6 +3,7 @@ import { createSignal, flush, Show } from "solid-js"
 import {
   ContextWidget,
   compactCount,
+  memoryStorage,
   NavigationScreen,
   RateWidget,
   ScreenRefresh,
@@ -27,6 +28,7 @@ import {
   ViewChrome,
   ViewHeader,
   ViewLayout,
+  ViewLayoutHost,
   Widget,
   WidgetControls,
   WidgetGauge,
@@ -734,13 +736,16 @@ describe("ViewHeader", () => {
 })
 
 describe("ViewLayout", () => {
-  beforeEach(() => localStorage.clear())
-  afterEach(() => localStorage.clear())
+  let store = memoryStorage()
+  beforeEach(() => {
+    store = memoryStorage()
+  })
+  const saved = (id: string) => JSON.parse(store.get(`viewLayout/${id}`) as string)
 
   test("lays out the sidebar and the main column, and the edge's click hides the sidebar", () => {
     const { root } = track(
       mount(() => (
-        <ViewLayout id="test.basic" sidebar={<nav>Tree</nav>} sidebarLabel="Pages">
+        <ViewLayout id="test.basic" storage={store} sidebar={<nav>Tree</nav>} sidebarLabel="Pages">
           <p>Main</p>
         </ViewLayout>
       )),
@@ -757,15 +762,32 @@ describe("ViewLayout", () => {
     layout.dispatchEvent(new PointerEvent("pointerup", { bubbles: true, clientX: 240, pointerId: 1 }))
     flush()
     expect(layout.getAttribute("data-sidebar")).toBe("collapsed")
-    expect(JSON.parse(localStorage.getItem("nc.viewLayout.v1") as string)["test.basic"]).toEqual({
-      collapsed: true,
-    })
+    expect(saved("test.basic")).toEqual({ collapsed: true })
+    expect(localStorage.length).toBe(0)
+  })
+
+  test("without a store of its own it keeps the host's, and never touches localStorage", () => {
+    const host = memoryStorage({ "viewLayout/test.host": JSON.stringify({ w: 300 }) })
+    const { root } = track(
+      mount(() => (
+        <ViewLayoutHost value={{ storage: host, mount: () => () => {}, report: () => {} }}>
+          <ViewLayout id="test.host" sidebar={<nav>Tree</nav>}>
+            <p>Main</p>
+          </ViewLayout>
+        </ViewLayoutHost>
+      )),
+    )
+    const edge = one("[data-part=view-sidebar-edge]", root)
+    expect(edge.getAttribute("aria-valuenow")).toBe("300")
+    press(edge, "ArrowRight")
+    expect(JSON.parse(host.get("viewLayout/test.host") as string).w).toBe(316)
+    expect(localStorage.length).toBe(0)
   })
 
   test("the sidebar edge resizes with the arrow keys and remembers the width", () => {
     const { root } = track(
       mount(() => (
-        <ViewLayout id="test.keys" sidebar={<nav>Tree</nav>}>
+        <ViewLayout id="test.keys" storage={store} sidebar={<nav>Tree</nav>}>
           <p>Main</p>
         </ViewLayout>
       )),
@@ -775,7 +797,7 @@ describe("ViewLayout", () => {
     press(edge, "ArrowRight")
     expect(edge.getAttribute("aria-valuenow")).toBe("256")
     expect(one("[data-part=view-layout]", root).style.getPropertyValue("--nc-view-sidebar")).toBe("256px")
-    expect(JSON.parse(localStorage.getItem("nc.viewLayout.v1") as string)["test.keys"].w).toBe(256)
+    expect(saved("test.keys").w).toBe(256)
   })
 
   test("on a phone screen at a view's start the sidebar is the screen", () => {

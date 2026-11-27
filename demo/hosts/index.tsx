@@ -3,7 +3,7 @@
 import type { ShellScope } from "@aiviarium/nocturne"
 import type { Host } from "../data"
 import { lens } from "../lenses"
-import { DEPLOYS, deploysOf, hosts, hostsNow, SESSION_LABEL, sessionById, sessionsOf } from "./data"
+import { DEPLOYS, deploysOf, hosts, SESSION_LABEL, sessionById, sessionsOf } from "./data"
 import { DeploysView, deployById } from "./deploys"
 import { FilesView } from "./files"
 import { FleetView } from "./fleet"
@@ -23,7 +23,7 @@ const host: ShellScope<Host> = {
     icon: "server",
     hue: h.state === "degraded" ? "amber" : h.state === "offline" ? "neutral" : "mint",
   }),
-  items: () => hostsNow(),
+  items: () => hosts(),
   lenses: [
     lens<Host>("operate", [
       { id: "overview", label: "Overview", icon: "activity", view: OverviewView },
@@ -47,8 +47,9 @@ const host: ShellScope<Host> = {
         label: "Files",
         icon: "folder",
         view: FilesView,
-        // The view draws its own trail of folders.
+        // The view draws its own trail of folders. A file's path is the rest of the address.
         trail: false,
+        path: true,
         recordLabel: (path) => path.split("/").at(-1),
       },
       {

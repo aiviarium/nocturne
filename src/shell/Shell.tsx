@@ -6,11 +6,23 @@
 // Nothing remounts for a data change: the frame, the sidebar and the panels stay mounted and take new data, and the
 // view is mounted once per scope, lens and place (a record, a saved view or a panel's drill swaps its data only).
 import type { JSX } from "@solidjs/web"
-import { createContext, createMemo, onCleanup, onSettled, Show, untrack, useContext } from "solid-js"
+import {
+  createContext,
+  createEffect,
+  createMemo,
+  onCleanup,
+  onSettled,
+  Show,
+  untrack,
+  useContext,
+} from "solid-js"
 import { AccountMenu, type AccountMenuProps } from "../components/AccountMenu"
 import type { IconName } from "../components/Icon"
 import { Nav } from "../components/NavItem"
 import { ViewHeader, type ViewHeaderProps } from "../components/ViewHeader"
+import { type ViewLayoutHandle, ViewLayoutHost, type ViewLayoutHostValue } from "../components/ViewLayout"
+import { cx } from "../lib/cx"
+import { usePhone } from "../lib/phone"
 import { AppShell } from "./AppShell"
 import type { Appearance } from "./appearance"
 import { useShellSidebar } from "./context"
@@ -136,6 +148,10 @@ export function Shell(props: ShellProps): JSX.Element {
     }
   })
 
+  const phone = usePhone()
+  shell.setPhone(untrack(phone))
+  createEffect(phone, (v) => shell.setPhone(v))
+
   const desktop = () => (props.runsIn ?? "desktop") === "desktop"
   const box = () => shell.lensBox()
   const viewKey = createMemo(() => {
@@ -158,14 +174,49 @@ export function Shell(props: ShellProps): JSX.Element {
     )
   }
 
+  // A view whose layout lacks room for its own sidebar beside the shell's folds the shell's sidebar to its rail,
+  // and the sidebar comes back once the view has the room again. One the person folded or opened stays so.
+  const lacking = new Map<ViewLayoutHandle, number>()
+  let auto: { before: number; gain?: number } | undefined
+  const layoutHost: ViewLayoutHostValue = {
+    storage: shell.storage,
+    mount: () => () => {},
+    report: (handle, shortfall) => {
+      if (shortfall === null) lacking.delete(handle)
+      else lacking.set(handle, shortfall)
+      const ctl = sidebarCtl
+      if (!ctl || ctl.drawer()) return
+      const worst = lacking.size ? Math.max(...lacking.values()) : Number.NEGATIVE_INFINITY
+      if (!auto) {
+        if (worst > 0 && !ctl.folded()) {
+          auto = { before: worst }
+          ctl.setFolded(true)
+        }
+        return
+      }
+      if (!ctl.folded()) {
+        auto = undefined
+        return
+      }
+      if (auto.gain === undefined && Number.isFinite(worst)) {
+        auto.gain = Math.max(0, auto.before - worst)
+        return
+      }
+      if (!Number.isFinite(worst) || worst + (auto.gain ?? 0) <= 0) {
+        auto = undefined
+        ctl.setFolded(false)
+      }
+    },
+  }
+
   const panel = (p: ShellPanelSpec) => (
     <ShellPanel
       id={p.id}
       at={p.at}
       title={p.label}
       trail={shell.panelTrail(p.id)}
-      tabs={p.tabs?.()}
-      actions={p.actions?.()}
+      tabs={p.tabs?.({ shell })}
+      actions={p.actions?.({ shell })}
       storage={shell.storage}
       closeShortcut={p.at === "bottom" ? "⌘ J" : "Esc"}
       onClose={() => shell.closePanel(p.at)}
@@ -181,7 +232,7 @@ export function Shell(props: ShellProps): JSX.Element {
           root = el
         }}
         data-part="shell"
-        class={props.class}
+        class={cx("nc", props.class)}
         style={{ display: "contents" }}
       >
         <AppShell
@@ -251,12 +302,14 @@ export function Shell(props: ShellProps): JSX.Element {
             </Show>
           }
         >
-          <Show when={viewKey()} keyed>
-            {(_key) => {
-              const View = untrack(() => shell.loc().render)
-              return View ? <View shell={shell} /> : null
-            }}
-          </Show>
+          <ViewLayoutHost value={layoutHost}>
+            <Show when={viewKey()} keyed>
+              {(_key) => {
+                const View = untrack(() => shell.loc().render)
+                return View ? <View shell={shell} /> : null
+              }}
+            </Show>
+          </ViewLayoutHost>
         </AppShell>
       </div>
     </ShellContext>

@@ -17,11 +17,10 @@ import {
   StatusDot,
   Truncate,
   usePhone,
-  useShell,
   ViewHeader,
   ViewLayout,
 } from "@aiviarium/nocturne"
-import { createMemo, For, getOwner, Show } from "solid-js"
+import { createMemo, For, Show } from "solid-js"
 import type { Host } from "../data"
 import {
   closeSessions,
@@ -235,8 +234,6 @@ const panelHost = (shell: ShellRegistry) => {
   return item?.id ?? "build-01"
 }
 
-let lastShell: ShellRegistry | undefined
-
 /** The Terminal panel under the view: the host's open sessions as tabs. */
 export const terminalPanel: ShellPanelSpec = {
   id: "terminal",
@@ -244,12 +241,8 @@ export const terminalPanel: ShellPanelSpec = {
   icon: "terminal",
   at: "bottom",
   key: "t",
-  // `tabs` gets no props: it reads the shell from the context it is called in, and an event handler that reads it
-  // again has no context, so the last one found stands in.
-  tabs: () => {
-    if (getOwner()) lastShell = useShell() ?? lastShell
-    const sh = lastShell
-    const host = sh ? panelHost(sh) : "build-01"
+  tabs: (p) => {
+    const host = panelHost(p.shell)
     return {
       label: `Sessions on ${host}`,
       items: openOf(host).flatMap((id) => {

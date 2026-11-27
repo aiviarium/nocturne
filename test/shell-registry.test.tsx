@@ -1,15 +1,18 @@
 import { afterEach, describe, expect, test } from "bun:test"
-import { createRoot, flush } from "solid-js"
+import { createRoot, createSignal, flush, useContext } from "solid-js"
 import {
   createShell,
   memoryRouter,
   memoryStorage,
+  PhoneOverride,
   Shell,
   type ShellLens,
   type ShellOptions,
   type ShellRegistry,
   type ShellScope,
   ShellViewHeader,
+  ViewLayoutHost,
+  type ViewLayoutHostValue,
 } from "../src"
 import { all, click, mount, one, tick } from "./dom"
 
@@ -542,5 +545,191 @@ describe("Shell", () => {
     document.body.dispatchEvent(key("k", { metaKey: true }))
     flush()
     expect(s.paletteOpen()).toBe(true)
+  })
+})
+
+describe("the shell in an app", () => {
+  const files: ShellScope<{ id: string }> = {
+    id: "box",
+    label: (b) => b.id,
+    items: () => [{ id: "b1" }],
+    places: [{ id: "files", label: "Files", icon: "folder", view: View, path: true, trail: false }],
+  }
+
+  test("a place with `path` takes the rest of the address as its record, written as segments", () => {
+    const s = make("/boxes/b1/files/src/lib/x.ts", {
+      scopes: [{ id: "boxes", label: "Boxes", icon: "server", view: View, child: files }],
+    })
+    flush()
+    expect(s.loc().record).toBe("src/lib/x.ts")
+    expect(s.address()).toBe("/boxes/b1/files/src/lib/x.ts")
+    s.toPlace(undefined, "files", undefined, "docs/read me.md")
+    flush()
+    expect(s.router.path()).toBe("/boxes/b1/files/docs/read%20me.md")
+    expect(s.loc().record).toBe("docs/read me.md")
+    s.toPlace(undefined, "files")
+    flush()
+    expect(s.loc().record).toBeUndefined()
+  })
+
+  test("an Esc entry runs once, even when it does not remove itself", () => {
+    const s = make("/projects/atlas/build/issues/WEB-142")
+    flush()
+    let closed = 0
+    s.pushEsc(() => closed++)
+    expect(s.handleKey(key("Escape"))).toBe(true)
+    flush()
+    expect(closed).toBe(1)
+    expect(s.loc().record).toBe("WEB-142")
+    s.handleKey(key("Escape"))
+    flush()
+    expect(closed).toBe(1)
+    expect(s.loc().record).toBeUndefined()
+  })
+
+  test("items that read a signal: the sidebar and the path follow it, without a warning", () => {
+    const warn = console.warn
+    const warned: unknown[] = []
+    console.warn = (...a: unknown[]) => warned.push(a)
+    try {
+      const [extra, setExtra] = createSignal<{ id: string; name: string }[]>([], { ownedWrite: true })
+      const dyn: ShellScope<{ id: string; name: string }> = {
+        ...host,
+        items: () => [{ id: "build-01", name: "build-01" }, ...extra()],
+      }
+      const s = make("/hosts", {
+        scopes: [{ id: "hosts", label: "Hosts", icon: "server", view: View, child: dyn }],
+      })
+      flush()
+      const listed = () => s.sidebar().groups[1]?.items.map((i) => i.label)
+      expect(listed()).toEqual(["build-01"])
+      setExtra([{ id: "new-02", name: "new-02" }])
+      flush()
+      expect(listed()).toEqual(["build-01", "new-02"])
+      s.go("/hosts/new-02/operate/logs")
+      flush()
+      expect(s.path().map((p) => p.label)).toEqual(["Acme", "Hosts", "new-02"])
+      s.handleKey(key("Escape"))
+      s.step(1)
+      expect(warned).toEqual([])
+    } finally {
+      console.warn = warn
+    }
+  })
+
+  test("the place stays current in the sidebar while one of its records is open", () => {
+    const s = make("/projects/atlas/build/issues/WEB-142")
+    flush()
+    const issues = s.sidebar().groups[0]!.items.find((i) => i.id === "issues")
+    expect(issues?.current).toBe(true)
+  })
+
+  test("a panel's tabs and actions get the shell, as its body does", async () => {
+    let got: ShellRegistry | undefined
+    let s!: ShellRegistry
+    const m = mount(() => {
+      s = createShell(
+        options("/hosts/build-01/operate/logs", {
+          panels: [
+            {
+              id: "terminal",
+              label: "Terminal",
+              icon: "terminal",
+              at: "bottom",
+              render: () => <pre>$</pre>,
+              tabs: (p) => {
+                got = p.shell
+                return {
+                  label: "Sessions",
+                  items: [{ id: "a", label: "zsh" }],
+                  value: "a",
+                  onChange: () => {},
+                }
+              },
+              actions: (p) => <span data-test="acts">{p.shell.loc().place?.label}</span>,
+            },
+          ],
+        }),
+      )
+      return <Shell shell={s} />
+    })
+    cleanup.push(m.dispose)
+    s.showPanel("terminal")
+    flush()
+    await tick()
+    expect(got).toBe(s)
+    expect(one("[data-test=acts]").textContent).toBe("Logs")
+  })
+
+  test("the root carries the `nc` class, so the app's own root needs none", async () => {
+    const m = mount(() => <Shell shell={createShell(options("/projects/atlas/build/issues"))} />)
+    cleanup.push(m.dispose)
+    await tick()
+    expect(one("[data-part=shell]").classList.contains("nc")).toBe(true)
+    expect(one("[data-part=app-shell]").classList.contains("nc")).toBe(true)
+  })
+
+  test("on a phone a lens's `open` panels stay closed; on a desktop they open", async () => {
+    let s!: ShellRegistry
+    const m = mount(() => (
+      <PhoneOverride value={true}>
+        {(() => {
+          s = createShell(options("/projects/atlas/build/issues"))
+          return <Shell shell={s} />
+        })()}
+      </PhoneOverride>
+    ))
+    cleanup.push(m.dispose)
+    await tick()
+    expect(s.panels().right).toBeUndefined()
+    s.showPanel("details")
+    flush()
+    expect(s.panels().right?.id).toBe("details")
+    expect(make("/projects/atlas/build/issues").panels().right?.id).toBe("details")
+  })
+
+  test("a view layout short of room folds the shell's sidebar, and it comes back with the room", async () => {
+    let host: ViewLayoutHostValue | null = null
+    const Probe = () => {
+      host = useContext(ViewLayoutHost)
+      return <div data-test="probe" />
+    }
+    let s!: ShellRegistry
+    const m = mount(() => {
+      s = createShell(
+        options("/projects/atlas/build/issues", {
+          scopes: [
+            {
+              id: "projects",
+              label: "Projects",
+              icon: "folder",
+              view: Probe,
+              child: {
+                ...project,
+                lenses: undefined,
+                places: [{ id: "issues", label: "Issues", view: Probe }],
+              },
+            },
+          ],
+        }),
+      )
+      return <Shell shell={s} foldBelow={0} />
+    })
+    cleanup.push(m.dispose)
+    await tick()
+    const h = host as unknown as ViewLayoutHostValue
+    expect(h.storage).toBe(s.storage)
+    const handle = { id: "v", element: document.body, toggleSidebar: () => {} }
+    const folded = () => one("[data-part=app-shell]").hasAttribute("data-folded")
+    h.report(handle, 100)
+    flush()
+    expect(folded()).toBe(true)
+    // Folding gave the layout 192px: it now has 92 to spare, short of what unfolding would take back.
+    h.report(handle, -92)
+    flush()
+    expect(folded()).toBe(true)
+    h.report(handle, -200)
+    flush()
+    expect(folded()).toBe(false)
   })
 })

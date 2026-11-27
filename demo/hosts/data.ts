@@ -2,7 +2,7 @@
 // terminals, the deploys with their config changes, the files' contents and a log that grows while it is live.
 // The view and the bottom panel share the open terminals, so a session opened in one is a tab in the other.
 import type { DockLayout, LogEntry, TabStatus } from "@aiviarium/nocturne"
-import { createSignal, untrack } from "solid-js"
+import { createSignal } from "solid-js"
 import { HOSTS, type Host, LOGS, SESSIONS, type Session } from "../data"
 
 // ── The fleet ─────────────────────────────────────────────────────────────────────────────────────────
@@ -65,11 +65,6 @@ export const factsOf = (id: string): HostFacts => FACTS[id] ?? NEW_FACTS
 const [added, setAdded] = createSignal<Host[]>([], { ownedWrite: true })
 /** The fleet: the shared hosts and the ones added in the demo. */
 export const hosts = () => [...HOSTS, ...added()]
-/**
- * The same, read without tracking, for the shell's scope: it resolves the address outside a tracking scope, so a
- * tracked read there warns. A host added later is found on the next navigation.
- */
-export const hostsNow = () => [...HOSTS, ...untrack(added)]
 export const hostById = (id: string) => hosts().find((h) => h.id === id)
 export const addHost = (name: string, region: string) => {
   const id = name.toLowerCase().replace(/[^a-z0-9-]+/g, "-")
