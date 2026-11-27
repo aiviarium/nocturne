@@ -38,7 +38,7 @@ const host: ShellScope<Host> = {
         records: (h) =>
           sessionsOf(h.id).map((s) => ({ id: s.id, label: s.title, hint: SESSION_LABEL[s.state] })),
         recordLabel: (id) => sessionById(id)?.title,
-        entries: true,
+        entries: { limit: 3 },
         menu: (id) => {
           const x = sessionById(id)
           return x ? sessionMenu([x]) : []

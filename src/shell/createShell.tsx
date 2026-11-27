@@ -45,7 +45,10 @@ export interface ShellSavedView {
 
 /** How a place lists its entries in the sidebar. */
 export interface ShellEntries {
-  /** How many show. Default 8. The one open always shows. */
+  /**
+   * How many show. Default 8. The rest fold into a "Show N more" row that expands the list in place, with "Show
+   * fewer" at its end; the shell remembers which lists are open. The one open always shows.
+   */
   limit?: number
   /** A record's name in the sidebar. Default its `label`; `(r) => r.hint ?? r.label` for "#412" with a title. */
   label?: (record: ShellRecord) => string
@@ -362,6 +365,16 @@ export function createShell(options: ShellOptions) {
     prefs.set({ ...prefs.peek(), [scope.id]: next })
     writeJson(storage, `${id}/lenses/${scope.id}`, next)
   }
+  // ── Sidebar entry lists the person expanded past their limit, by frame and place ─────────────────
+  const expandedKey = `${id}/entries/expanded`
+  const expanded = box<string[]>(readJson<string[]>(storage, expandedKey) ?? [])
+  const setExpanded = (key: string, on: boolean) => {
+    const next = expanded.peek().filter((k) => k !== key)
+    if (on) next.push(key)
+    expanded.set(next)
+    writeJson(storage, expandedKey, next)
+  }
+
   /** The scope's lenses in the person's order, the shown ones first. */
   const lensesOf = (scope: ShellScope): ShellLens[] => {
     const all = scope.lenses ?? []
@@ -989,55 +1002,83 @@ export function createShell(options: ShellOptions) {
       if (!p.entries) return []
       const opts: ShellEntries = p.entries === true ? {} : p.entries
       const cap = opts.limit ?? 8
-      const at = (cur: boolean, i: number) => i < cap || cur
+      const fold = `${f.key}|${p.id}`
+      const open = expanded.get().includes(fold)
+      return capped(p, fold, open, cap, allEntries(f, p, opts))
+    }
+    /** Every entry of a place, before the limit, each with whether it is the one open. */
+    function allEntries(f: ShellFrame, p: ShellPlace, opts: ShellEntries): NavItemProps[] {
       if (p.enters) {
         const scope = p.enters
         const open = l.frames.find((x) => x.parent === f && x.scope === scope)
-        return (scope.items?.(f.item) ?? [])
-          .map((it, i) => {
-            const id = idOf(scope, it)
-            const mark = scope.mark?.(it)
-            const current = here ? false : open?.item !== undefined && idOf(scope, open.item) === id
-            return {
-              item: {
-                id: `${p.id}>${id}`,
-                label: labelOf({ scope, item: it }),
-                leading: mark ? (
-                  <Mark name={mark.name} hue={mark.hue} icon={mark.icon} size="sm" decorative />
-                ) : undefined,
-                icon: mark ? undefined : scope.icon,
-                drill: true,
-                current,
-                menu: scope.menu ? () => scope.menu!(it) : undefined,
-                onClick: () =>
-                  returnTo(frame(scope, it, f, [...(segsOf(f, p.id).filter(Boolean) as string[]), id])),
-              } satisfies NavItemProps,
-              keep: at(current, i),
-            }
-          })
-          .filter((e) => e.keep)
-          .map((e) => e.item)
-      }
-      return (p.records?.(f.item, undefined) ?? [])
-        .map((r, i) => {
-          const current = here && l.place === p && l.record === r.id
+        return (scope.items?.(f.item) ?? []).map((it) => {
+          const id = idOf(scope, it)
+          const mark = scope.mark?.(it)
+          const current = here ? false : open?.item !== undefined && idOf(scope, open.item) === id
           return {
-            item: {
-              id: `${p.id}/${r.id}`,
-              label: opts.label?.(r) ?? r.label,
-              leading: r.mark ? (
-                <Mark name={r.mark.name} hue={r.mark.hue} icon={r.mark.icon} size="sm" decorative />
-              ) : undefined,
-              icon: r.mark ? undefined : r.icon,
-              current,
-              menu: p.menu ? () => p.menu!(r.id, f.item) : undefined,
-              onClick: () => toPlace(f, p.id, undefined, r.id),
-            } satisfies NavItemProps,
-            keep: at(current, i),
-          }
+            id: `${p.id}>${id}`,
+            label: labelOf({ scope, item: it }),
+            leading: mark ? (
+              <Mark name={mark.name} hue={mark.hue} icon={mark.icon} size="sm" decorative />
+            ) : undefined,
+            icon: mark ? undefined : scope.icon,
+            drill: true,
+            current,
+            menu: scope.menu ? () => scope.menu!(it) : undefined,
+            onClick: () =>
+              returnTo(frame(scope, it, f, [...(segsOf(f, p.id).filter(Boolean) as string[]), id])),
+          } satisfies NavItemProps
         })
-        .filter((e) => e.keep)
-        .map((e) => e.item)
+      }
+      return (p.records?.(f.item, undefined) ?? []).map((r) => {
+        const current = here && l.place === p && l.record === r.id
+        return {
+          id: `${p.id}/${r.id}`,
+          label: opts.label?.(r) ?? r.label,
+          leading: r.mark ? (
+            <Mark name={r.mark.name} hue={r.mark.hue} icon={r.mark.icon} size="sm" decorative />
+          ) : undefined,
+          icon: r.mark ? undefined : r.icon,
+          current,
+          menu: p.menu ? () => p.menu!(r.id, f.item) : undefined,
+          onClick: () => toPlace(f, p.id, undefined, r.id),
+        } satisfies NavItemProps
+      })
+    }
+    /**
+     * The entries past the limit fold into one row, "Show 3 more", which expands the list in place; an expanded list
+     * ends in "Show fewer". The open entry shows even when folded.
+     */
+    function capped(
+      p: ShellPlace,
+      fold: string,
+      open: boolean,
+      cap: number,
+      all: NavItemProps[],
+    ): NavItemProps[] {
+      if (all.length <= cap) return all
+      if (open)
+        return [
+          ...all,
+          {
+            id: `${p.id}:fewer`,
+            label: "Show fewer",
+            class: "nc-nav-item--more",
+            "aria-expanded": "true",
+            onClick: () => setExpanded(fold, false),
+          },
+        ]
+      const shown = all.filter((e, i) => i < cap || e.current)
+      return [
+        ...shown,
+        {
+          id: `${p.id}:more`,
+          label: `Show ${all.length - shown.length} more`,
+          class: "nc-nav-item--more",
+          "aria-expanded": "false",
+          onClick: () => setExpanded(fold, true),
+        },
+      ]
     }
     const groups: NavGroup[] = [{ items: items(tree) }]
     const i = l.frames.indexOf(f)

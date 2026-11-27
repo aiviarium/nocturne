@@ -44,6 +44,8 @@ A child view starts at its parent's label, 8 + 15 + 8px from the row's edge.
 The current item takes the `active` fill and `text-1`, at the same size and weight.
 Hover only lightens the label and the icon.
 A count shows above zero.
+On hover, a chevron at the row's end takes the count's place and folds the parent's children.
+The parent's icon stays.
 
 A place with `enters` lists scopes: opening one of its rows nests that scope in the path, and the tree drills into it.
 Entering a scope opens it as the person left it, with the lens worn last and the place that lens remembers.
@@ -53,13 +55,16 @@ Entering a scope opens it as the person left it, with the lens worn last and the
 A place with few entries lists them under its row with `entries`. The person opens one without going through the list.
 The place's row still opens its list.
 Its records open in place, and the scopes it `enters` drill in, with a chevron.
-The open entry is marked in place of its place, and shows even past the `limit`.
+The open entry is marked in place of its place.
+Past the `limit`, 8 by default, the rest fold into one row, "Show 3 more", which lists them in place.
+The list then ends in "Show fewer".
+The shell keeps which lists are open in its storage, and the open entry shows when its list is folded.
 A long or filtered list, such as issues, is left to its view.
 A right click, the Menu key or Shift and F10 on an entry opens the same menu as its row in the list: the place's `menu` for a record, the scope's `menu` for a scope.
 The root's groups of projects and hosts open their scope's menu too.
 `NavItem` takes the menu as `menu`.
 
-On <DemoLink to="projects/atlas/build/pulls">a project</DemoLink> the open pull requests are listed under Pull requests by title, and on <DemoLink to="hosts/build-01/operate/overview">a host</DemoLink> the sessions and the latest deploys.
+On <DemoLink to="projects/atlas/build/pulls">a project</DemoLink> the open pull requests are listed under Pull requests by title, and on <DemoLink to="hosts/build-01/operate/overview">a host</DemoLink> the sessions, three before "Show 2 more", and the latest deploys.
 
 <Example id="navigation/drilldown" />
 <Example id="nav-item/sidebar" />

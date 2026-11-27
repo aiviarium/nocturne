@@ -124,21 +124,14 @@ export function NavItem(
   const body = (
     <>
       <Show
-        when={props.disclose}
+        when={props.leading}
         fallback={
-          <Show
-            when={props.leading}
-            fallback={
-              <Show when={props.icon || props.iconNode}>
-                <Icon name={props.icon} node={props.iconNode} />
-              </Show>
-            }
-          >
-            {props.leading}
+          <Show when={props.icon || props.iconNode}>
+            <Icon name={props.icon} node={props.iconNode} />
           </Show>
         }
       >
-        {props.disclose}
+        {props.leading}
       </Show>
       <span class="nc-nav-item__label">
         <MatchText text={props.label} q={props.match} />
@@ -156,6 +149,8 @@ export function NavItem(
       <Show when={props.drill}>
         <Icon name="chevron-right" size="sm" class="nc-nav-item__drill" />
       </Show>
+      {/* A parent's fold control, at the row's end over its count, shown on hover; the icon stays. */}
+      {props.disclose}
     </>
   )
   const cls = () => cx("nc-nav-item", props.child && "nc-nav-item--child", props.class)
@@ -296,12 +291,6 @@ export function Nav(props: NavProps): JSX.Element {
                     toggle(item())
                   }}
                 >
-                  <Show
-                    when={item().leading}
-                    fallback={<Icon name={item().icon ?? "folder"} node={item().iconNode} />}
-                  >
-                    {item().leading}
-                  </Show>
                   <Icon
                     name={isClosed(item()) ? "chevron-right" : "chevron-down"}
                     size="sm"

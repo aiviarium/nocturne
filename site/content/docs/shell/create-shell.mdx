@@ -66,7 +66,7 @@ A lens extends `Lens` (`id`, `label`, `icon`, `hue`, `purpose`, `source`) with i
 | `path` | The record is a path, such as a file's. Every segment after the place is part of it, so `loc().record` reads `src/lib/x.ts` |
 | `children` | Places nested under this one |
 | `enters` | The place lists scopes. Opening one nests it in the path |
-| `entries` | Lists the place's records, or the scopes it enters, under its row in the sidebar. `limit` caps them, 8 by default, and `label` names a record. See [Sidebar](./sidebar.mdx#entries) |
+| `entries` | Lists the place's records, or the scopes it enters, under its row in the sidebar. Past `limit`, 8 by default, the rest fold into a "Show N more" row. `label` names a record. See [Sidebar](./sidebar.mdx#entries) |
 | `covers` | Panels whose content the view already is. See [Panels](./panels.mdx#covers) |
 | `inspect` | What a panel such as Details shows for one of the place's records |
 | `menu` | The menu of one of the place's records. Its sidebar entry opens it, and the place's list passes the same entries to its `rowMenu`. A scope's `menu` does the same for its items |

@@ -501,7 +501,8 @@ describe("Shell", () => {
     const s = make("/desk/pulls", { scopes: [desk] })
     flush()
     const rows = () => s.sidebar().groups[0]!.items
-    expect(rows()[0]!.items?.map((i) => i.label)).toEqual(["First"])
+    // Past the limit, the rest fold into one row.
+    expect(rows()[0]!.items?.map((i) => i.label)).toEqual(["First", "Show 2 more"])
     // An entry's menu is its place's, or its scope's, for that record or item.
     const label = (e: unknown) => (e as { label: string }).label
     expect(rows()[0]!.items![0]!.menu?.().map(label)).toEqual(["Close #1"])
@@ -517,9 +518,18 @@ describe("Shell", () => {
     expect(rows()[0]!.items?.map((i) => [i.label, !!i.current])).toEqual([
       ["First", false],
       ["Third", true],
+      ["Show 1 more", false],
     ])
     expect(rows()[0]!.current).toBe(false)
     const open = (row: number, entry: number) => (rows()[row]!.items![entry]!.onClick as () => void)()
+    // "Show 1 more" expands the list in place, and "Show fewer" folds it again; the shell remembers it.
+    open(0, 2)
+    flush()
+    expect(rows()[0]!.items?.map((i) => i.label)).toEqual(["First", "Second", "Third", "Show fewer"])
+    expect(s.loc().record).toBe("3")
+    open(0, 3)
+    flush()
+    expect(rows()[0]!.items?.map((i) => i.label)).toEqual(["First", "Third", "Show 1 more"])
     open(0, 0)
     flush()
     expect(s.loc().record).toBe("1")
