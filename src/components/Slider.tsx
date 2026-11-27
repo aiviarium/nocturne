@@ -163,113 +163,111 @@ function SliderCore(props: CoreProps): JSX.Element {
   const [moving, setMoving] = createSignal<number | number[]>(props.defaultValue)
   const current = () => values(props.value ?? moving())
   return (
-    <>
-      <SliderRoot
-        id={id}
-        data-part="slider"
-        data-orientation={vertical() ? "vertical" : "horizontal"}
-        data-disabled={props.disabled || undefined}
-        class={cx("nc-field nc-slider-field", props.class)}
-        aria-labelledby={props.count > 1 && props.label ? labelId : undefined}
-        value={props.value}
-        defaultValue={props.value === undefined ? props.defaultValue : undefined}
-        onValueChange={(v: number | number[]) => {
-          setMoving(v)
-          props.onValue(v)
-        }}
-        onValueCommit={() => props.onCommit?.()}
-        min={min()}
-        max={max()}
-        step={step()}
-        largeStep={large()}
-        minStepsBetweenThumbs={props.minDistance ? Math.round(props.minDistance / step()) : 0}
-        orientation={vertical() ? "vertical" : "horizontal"}
-        disabled={props.disabled}
-        format={(v: number) => text(v)}
-        controller={controller}
-      >
-        <Show when={props.label || showValue()}>
-          <div class="nc-slider__head">
-            <Show when={props.label}>
-              <span id={labelId} class="nc-field__label">
-                {props.label}
-              </span>
-            </Show>
-            <Show when={showValue()}>
-              <span class="nc-slider__value" aria-hidden="true">
-                {current().map(text).join(" – ")}
-              </span>
-            </Show>
-          </div>
-        </Show>
-        <div class="nc-slider__row">
-          <div class="nc-slider__body">
-            <SliderControl class="nc-slider">
-              <SliderTrack class="nc-slider__track">
-                <SliderIndicator class="nc-slider__fill" />
-                <For each={Array.from({ length: props.count }, (_, i) => i)}>
-                  {(i) => (
-                    <SliderThumb
-                      index={i}
-                      class="nc-slider__thumb"
-                      aria-label={props.thumbLabel(i)}
-                      aria-labelledby={props.label && !props.thumbLabel(i) ? labelId : undefined}
-                      aria-describedby={props.help ? helpId : undefined}
-                    />
-                  )}
-                </For>
-              </SliderTrack>
-              <For each={tickValues()}>
-                {(t) => {
-                  const on = () => {
-                    const v = current()
-                    const [a, b] = v.length > 1 ? [v[0]!, v[1]!] : [min(), v[0]!]
-                    return t >= Math.min(a, b) - 1e-9 && t <= Math.max(a, b) + 1e-9
-                  }
-                  return <span class="nc-slider__tick" data-on={on() || undefined} style={pos(pct(t))} />
-                }}
-              </For>
-            </SliderControl>
-            <Show when={props.marks?.length && !vertical()}>
-              <div class="nc-slider__marks" aria-hidden="true">
-                <For each={props.marks}>
-                  {(m) => (
-                    <span
-                      class="nc-slider__mark"
-                      data-edge={pct(m.value) <= 0 ? "start" : pct(m.value) >= 100 ? "end" : undefined}
-                      style={pos(pct(m.value))}
-                    >
-                      {m.label ?? text(m.value)}
-                    </span>
-                  )}
-                </For>
-              </div>
-            </Show>
-          </div>
-          <Show when={props.field && !vertical()}>
-            <NumberField
-              class="nc-slider__field"
-              aria-label={props.label ?? props["aria-label"] ?? "Value"}
-              value={current()[0] ?? null}
-              min={min()}
-              max={max()}
-              step={step()}
-              unit={props.unit}
-              format={props.format && !props.unit ? props.format : undefined}
-              required
-              disabled={props.disabled}
-              steppers={false}
-              onChange={(v) => v !== null && controller.setValue(fix(v))}
-              onCommit={() => props.onCommit?.()}
-            />
+    <SliderRoot
+      id={id}
+      data-part="slider"
+      data-orientation={vertical() ? "vertical" : "horizontal"}
+      data-disabled={props.disabled || undefined}
+      class={cx("nc-field nc-slider-field", props.class)}
+      aria-labelledby={props.count > 1 && props.label ? labelId : undefined}
+      value={props.value}
+      defaultValue={props.value === undefined ? props.defaultValue : undefined}
+      onValueChange={(v: number | number[]) => {
+        setMoving(v)
+        props.onValue(v)
+      }}
+      onValueCommit={() => props.onCommit?.()}
+      min={min()}
+      max={max()}
+      step={step()}
+      largeStep={large()}
+      minStepsBetweenThumbs={props.minDistance ? Math.round(props.minDistance / step()) : 0}
+      orientation={vertical() ? "vertical" : "horizontal"}
+      disabled={props.disabled}
+      format={(v: number) => text(v)}
+      controller={controller}
+    >
+      <Show when={props.label || showValue()}>
+        <div class="nc-slider__head">
+          <Show when={props.label}>
+            <span id={labelId} class="nc-field__label">
+              {props.label}
+            </span>
+          </Show>
+          <Show when={showValue()}>
+            <span class="nc-slider__value" aria-hidden="true">
+              {current().map(text).join(" – ")}
+            </span>
           </Show>
         </div>
-        <Show when={props.help}>
-          <span id={helpId} class="nc-field__help">
-            {props.help}
-          </span>
+      </Show>
+      <div class="nc-slider__row">
+        <div class="nc-slider__body">
+          <SliderControl class="nc-slider">
+            <SliderTrack class="nc-slider__track">
+              <SliderIndicator class="nc-slider__fill" />
+              <For each={Array.from({ length: props.count }, (_, i) => i)}>
+                {(i) => (
+                  <SliderThumb
+                    index={i}
+                    class="nc-slider__thumb"
+                    aria-label={props.thumbLabel(i)}
+                    aria-labelledby={props.label && !props.thumbLabel(i) ? labelId : undefined}
+                    aria-describedby={props.help ? helpId : undefined}
+                  />
+                )}
+              </For>
+            </SliderTrack>
+            <For each={tickValues()}>
+              {(t) => {
+                const on = () => {
+                  const v = current()
+                  const [a, b] = v.length > 1 ? [v[0]!, v[1]!] : [min(), v[0]!]
+                  return t >= Math.min(a, b) - 1e-9 && t <= Math.max(a, b) + 1e-9
+                }
+                return <span class="nc-slider__tick" data-on={on() || undefined} style={pos(pct(t))} />
+              }}
+            </For>
+          </SliderControl>
+          <Show when={props.marks?.length && !vertical()}>
+            <div class="nc-slider__marks" aria-hidden="true">
+              <For each={props.marks}>
+                {(m) => (
+                  <span
+                    class="nc-slider__mark"
+                    data-edge={pct(m.value) <= 0 ? "start" : pct(m.value) >= 100 ? "end" : undefined}
+                    style={pos(pct(m.value))}
+                  >
+                    {m.label ?? text(m.value)}
+                  </span>
+                )}
+              </For>
+            </div>
+          </Show>
+        </div>
+        <Show when={props.field && !vertical()}>
+          <NumberField
+            class="nc-slider__field"
+            aria-label={props.label ?? props["aria-label"] ?? "Value"}
+            value={current()[0] ?? null}
+            min={min()}
+            max={max()}
+            step={step()}
+            unit={props.unit}
+            format={props.format && !props.unit ? props.format : undefined}
+            required
+            disabled={props.disabled}
+            steppers={false}
+            onChange={(v) => v !== null && controller.setValue(fix(v))}
+            onCommit={() => props.onCommit?.()}
+          />
         </Show>
-      </SliderRoot>
-    </>
+      </div>
+      <Show when={props.help}>
+        <span id={helpId} class="nc-field__help">
+          {props.help}
+        </span>
+      </Show>
+    </SliderRoot>
   )
 }
