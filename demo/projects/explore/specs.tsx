@@ -294,7 +294,7 @@ export const specsPlace: ShellPlace<Project> = {
   icon: "book-open",
   view: SpecsView,
   noun: "spec",
-  records: (p) => specsOf(p.id).map((sp) => ({ id: sp.id, label: sp.title, icon: "file" })),
+  records: (p) => specsOf(p.id).map((sp) => ({ id: sp.id, label: sp.title, icon: "file", meta: sp.updated })),
   recordLabel: (id) => specById(id)?.title,
   entries: true,
   menu: (id) => {

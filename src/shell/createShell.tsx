@@ -16,7 +16,9 @@ import type { LabelHue } from "../components/Badge"
 import type { IconName } from "../components/Icon"
 import { Mark } from "../components/Mark"
 import type { NavGroup, NavItemProps } from "../components/NavItem"
+import type { DotStatus } from "../components/StatusDot"
 import type { ViewStepper } from "../components/ViewHeader"
+import { cx } from "../lib/cx"
 import { openLayers } from "../lib/layers"
 import { isPhone } from "../lib/phone"
 import type { RowMenuEntry } from "../lib/rowmenu"
@@ -43,8 +45,11 @@ export interface ShellSavedView {
   icon?: IconName
 }
 
-/** How a place lists its entries in the sidebar. */
-export interface ShellEntries {
+/**
+ * How a place lists its entries in the sidebar. A top-level place with entries is a section of its own under the
+ * places: its title opens the place, the chevron folds it, and its saved views and child places lead its entries.
+ */
+export interface ShellEntries<T = any> {
   /**
    * How many show. Default 8. The rest fold into a "Show N more" row that expands the list in place, with "Show
    * fewer" at its end; the shell remembers which lists are open. The one open always shows.
@@ -52,6 +57,11 @@ export interface ShellEntries {
   limit?: number
   /** A record's name in the sidebar. Default its `label`; `(r) => r.hint ?? r.label` for "#412" with a title. */
   label?: (record: ShellRecord) => string
+  /**
+   * Makes a new record: a "New {noun}" button in the section's heading and the folded rail's flyout. Return the new
+   * record's id to open it.
+   */
+  create?: (item: T) => string | undefined
 }
 
 /** One record of a place's list: what the stepper steps over and the record crumb's switcher lists. */
@@ -64,6 +74,12 @@ export interface ShellRecord {
   hint?: string
   icon?: IconName
   mark?: ShellMark
+  /** A state worth seeing on its sidebar entry's icon: running, failing, waiting. Left out when all is as usual. */
+  status?: DotStatus
+  /** Short text at its sidebar entry's end, such as when it last changed: "12m". */
+  meta?: string
+  /** A second line on its sidebar entry, for details of its own: "9c1e4fa · 48s". */
+  detail?: string
 }
 
 /** A place in a scope's sidebar tree. */
@@ -96,10 +112,11 @@ export interface ShellPlace<T = any> {
   /** Places nested under this one. */
   children?: ShellPlace<T>[]
   /**
-   * The sidebar lists the place's entries under its row, so the person opens one without the list: its `records`,
-   * or the scopes it `enters`, which drill in. The place's own row still opens its view. See `ShellEntries`.
+   * The sidebar lists the place's entries, so the person opens one without the list: its `records`, or the scopes it
+   * `enters`, which drill in. A top-level place becomes a section headed by its name, which opens its view; a nested
+   * one lists them under its row. See `ShellEntries`.
    */
-  entries?: true | ShellEntries
+  entries?: true | ShellEntries<T>
   /** The place lists scopes: opening one of its rows (`shell.enter`) nests that scope in the path. */
   enters?: ShellScope<any>
   /**
@@ -969,8 +986,9 @@ export function createShell(options: ShellOptions) {
     const lens = f.lens
     const tree = lens ? lens.places : (f.scope.places ?? [])
     const parents: string[] = []
-    const items = (places: ShellPlace[]): NavItemProps[] =>
-      places.map((p) => {
+    const sections: NavGroup[] = []
+    const items = (places: ShellPlace[], top = false): NavItemProps[] =>
+      places.flatMap((p): NavItemProps[] => {
         const views = (p.views ?? []).slice(1)
         const kids = [
           ...views.map((v) => ({
@@ -982,20 +1000,60 @@ export function createShell(options: ShellOptions) {
           ...items(p.children ?? []),
         ]
         const shown = entriesOf(f, p)
+        const inside = here && l.place === p
+        // Current at its records too: the place stays marked while the person is inside one, unless the record is
+        // one of its entries, which is marked instead.
+        const current = inside && (!keepView(l) || !views.length) && !shown.some((e) => e.current)
+        if (top && p.entries) {
+          // A section: the place's name heads its views, child places and entries, and opens the place.
+          const opts: ShellEntries = p.entries === true ? {} : p.entries
+          const create = opts.create
+          const id = `section:${p.id}`
+          parents.push(id)
+          sections.push({
+            id,
+            label: p.label,
+            icon: p.icon ?? "folder",
+            section: true,
+            collapsible: true,
+            onClick: () => toPlace(f, p.id),
+            actions: [
+              ...(create
+                ? [
+                    {
+                      label: `New ${p.noun ?? "item"}`,
+                      icon: "plus" as const,
+                      onClick: () => {
+                        const made = create(f.item)
+                        if (made) toPlace(f, p.id, undefined, made)
+                      },
+                    },
+                  ]
+                : []),
+              {
+                label: `Open ${p.label}`,
+                icon: "arrow-up-right" as const,
+                onClick: () => toPlace(f, p.id),
+                current,
+              },
+            ],
+            items: [...kids, ...shown.map((e) => ({ ...e, class: cx(e.class, "nc-nav-item--entry") }))],
+          })
+          return []
+        }
         kids.push(...shown)
         if (kids.length) parents.push(p.id)
-        const inside = here && l.place === p
-        return {
-          id: p.id,
-          label: p.label,
-          icon: p.icon ?? (kids.length ? "folder" : "file"),
-          count: p.count?.(f.item) || undefined,
-          // Current at its records too: the place stays marked while the person is inside one, unless the record
-          // is one of its entries, which is marked instead.
-          current: inside && (!keepView(l) || !views.length) && !shown.some((e) => e.current),
-          onClick: () => toPlace(f, p.id),
-          items: kids.length ? kids : undefined,
-        }
+        return [
+          {
+            id: p.id,
+            label: p.label,
+            icon: p.icon ?? (kids.length ? "folder" : "file"),
+            count: p.count?.(f.item) || undefined,
+            current,
+            onClick: () => toPlace(f, p.id),
+            items: kids.length ? kids : undefined,
+          },
+        ]
       })
     /** A place's `entries`: its records, or the scopes it enters. */
     function entriesOf(f: ShellFrame, p: ShellPlace): NavItemProps[] {
@@ -1039,6 +1097,9 @@ export function createShell(options: ShellOptions) {
             <Mark name={r.mark.name} hue={r.mark.hue} icon={r.mark.icon} size="sm" decorative />
           ) : undefined,
           icon: r.mark ? undefined : r.icon,
+          status: r.status,
+          meta: r.meta,
+          detail: r.detail,
           current,
           menu: p.menu ? () => p.menu!(r.id, f.item) : undefined,
           onClick: () => toPlace(f, p.id, undefined, r.id),
@@ -1080,7 +1141,7 @@ export function createShell(options: ShellOptions) {
         },
       ]
     }
-    const groups: NavGroup[] = [{ items: items(tree) }]
+    const groups: NavGroup[] = [{ items: items(tree, true) }, ...sections]
     const i = l.frames.indexOf(f)
     const parent = i > 0 ? l.frames[i - 1] : undefined
     return {

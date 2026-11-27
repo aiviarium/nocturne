@@ -280,3 +280,70 @@ test("folded, a section's icon runs its open, not the heading's click, and is ma
   expect(ran).toEqual(["open"])
   expect(icon.getAttribute("aria-current")).toBe("page")
 })
+
+test("a section heading puts its chevron before the title, keeps the icon for the rail, and its title opens", () => {
+  const ran: string[] = []
+  const [collapsed, setCollapsed] = createSignal<string[]>([])
+  const { root } = track(
+    mount(() => (
+      <Nav
+        label="Host"
+        collapsed={collapsed()}
+        onCollapsedChange={setCollapsed}
+        groups={[
+          {
+            id: "section:sessions",
+            label: "Sessions",
+            icon: "terminal",
+            section: true,
+            collapsible: true,
+            onClick: () => ran.push("open"),
+            actions: [{ label: "New session", icon: "plus", onClick: () => ran.push("new") }],
+            items: [{ id: "s1", label: "build", onClick: () => {} }],
+          },
+        ]}
+      />
+    )),
+  )
+  const head = one(".nc-nav__head", root)
+  expect(head.hasAttribute("data-section")).toBe(true)
+  expect(head.querySelector(".nc-nav__label .nc-icon")).toBeNull()
+  click(one("[data-part=nav-group-link]", root))
+  click(one("[aria-label='New session']", root))
+  expect(ran).toEqual(["open", "new"])
+  click(one("[data-part=nav-group-fold]", root))
+  flush()
+  expect(collapsed()).toEqual(["section:sessions"])
+  expect(root.querySelector("[data-part=nav-item]")).toBeNull()
+})
+
+test("a row's status sits on its icon, and a detail makes it two lines", () => {
+  const { root } = track(
+    mount(() => (
+      <Nav
+        label="Host"
+        groups={[
+          {
+            items: [
+              {
+                id: "d1",
+                label: "Pin docker",
+                icon: "package",
+                status: "error",
+                meta: "4d",
+                detail: "e03d9b2 · 35s",
+              },
+              { id: "d2", label: "Healthcheck", icon: "package" },
+            ],
+          },
+        ]}
+      />
+    )),
+  )
+  const [first, second] = [...root.querySelectorAll<HTMLElement>("[data-part=nav-item]")]
+  expect(first!.querySelector("[data-part=nav-item-status]")?.getAttribute("data-status")).toBe("error")
+  expect(first!.classList.contains("nc-nav-item--two")).toBe(true)
+  expect(first!.querySelector(".nc-nav-item__detail")?.textContent).toBe("e03d9b2 · 35s")
+  expect(second!.querySelector("[data-part=nav-item-status]")).toBeNull()
+  expect(second!.classList.contains("nc-nav-item--two")).toBe(false)
+})

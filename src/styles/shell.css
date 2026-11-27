@@ -340,6 +340,24 @@ button.nc-title-bar__app:hover, button.nc-title-bar__app[aria-expanded="true"] {
 /* "Show 3 more" and "Show fewer" at the end of a list of entries: centred, small and faint, below the rows' weight. */
 .nc-nav-item.nc-nav-item--more { justify-content: center; height: 24px; padding-inline: var(--space-2); color: var(--text-4); font-size: var(--nc-type-section); font-weight: 400; }
 .nc-nav-item.nc-nav-item--more > .nc-nav-item__label { flex: none; }
+/* A row's status on its icon's lower right corner, 6px, cut out of the icon by a 1.5px gap. */
+.nc-nav-item__glyph { position: relative; display: inline-flex; flex: none; align-items: center; justify-content: center; }
+.nc-nav-item__glyph > :first-child { mask: radial-gradient(circle 4.5px at calc(100% - 2px) calc(100% - 2px), transparent 98%, currentColor 100%); }
+.nc-nav-item__glyph > .nc-dot { position: absolute; right: -1px; bottom: -1px; width: 6px; height: 6px; }
+/* A place's entries, in its section: a step quieter than places, so the content reads apart from the organising. */
+.nc-nav-item.nc-nav-item--entry { color: var(--text-3); }
+.nc-nav-item.nc-nav-item--entry:is(:hover, [aria-current="page"]) { color: var(--text-2); }
+.nc-nav-item.nc-nav-item--entry[aria-current="page"] { color: var(--text-1); }
+.nc-nav-item--entry > .nc-nav-item__meta { color: var(--text-4); }
+.nc-nav-item--entry:is(:hover, [aria-current="page"]) > .nc-nav-item__meta { color: var(--text-3); }
+/* Two lines: the icon spans both and centres on them; the label and its meta on the first, the detail under the
+   label. 40px. */
+.nc-nav-item.nc-nav-item--two { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; grid-template-rows: 17px 15px; align-content: center; align-items: center; column-gap: 8px; row-gap: 1px; height: auto; min-height: 40px; }
+.nc-nav-item--two > :first-child { grid-column: 1; grid-row: 1 / span 2; }
+.nc-nav-item--two > .nc-nav-item__label { grid-column: 2; grid-row: 1; line-height: 17px; }
+.nc-nav-item--two > .nc-nav-item__meta { grid-column: 3; grid-row: 1; line-height: 17px; }
+.nc-nav-item--two > .nc-nav-item__detail { grid-column: 2 / span 2; grid-row: 2; min-width: 0; overflow: hidden; color: var(--text-4); font-size: var(--nc-type-section); font-weight: 400; line-height: 15px; text-overflow: ellipsis; white-space: nowrap; }
+.nc-nav-item--two:is(:hover, [aria-current="page"]) > .nc-nav-item__detail { color: var(--text-3); }
 .nc-nav-item.nc-nav-item--more:hover { color: var(--text-2); }
 .nc-nav-item[data-within], .nc-nav-item[data-within] > .nc-icon { color: var(--text-1); }
 .nc-nav-item__count { font-size: var(--nc-type-section); }

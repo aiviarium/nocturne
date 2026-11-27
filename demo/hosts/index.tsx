@@ -3,7 +3,7 @@
 import type { ShellScope } from "@aiviarium/nocturne"
 import type { Host } from "../data"
 import { lens } from "../lenses"
-import { DEPLOYS, deploysOf, hosts, SESSION_LABEL, sessionById, sessionsOf } from "./data"
+import { DEPLOYS, deploysOf, hosts, newSession, SESSION_LABEL, sessionById, sessionsOf } from "./data"
 import { DeploysView, deployById, deployMenu } from "./deploys"
 import { FilesView } from "./files"
 import { FleetView, hostMenu } from "./fleet"
@@ -36,9 +36,16 @@ const host: ShellScope<Host> = {
         noun: "session",
         count: (h) => sessionsOf(h.id).filter((s) => s.state === "running").length,
         records: (h) =>
-          sessionsOf(h.id).map((s) => ({ id: s.id, label: s.title, hint: SESSION_LABEL[s.state] })),
+          sessionsOf(h.id).map((s) => ({
+            id: s.id,
+            label: s.title,
+            hint: SESSION_LABEL[s.state],
+            icon: "terminal",
+            status: s.state === "running" ? "live" : s.state === "failed" ? "error" : undefined,
+            meta: s.started,
+          })),
         recordLabel: (id) => sessionById(id)?.title,
-        entries: { limit: 3 },
+        entries: { limit: 3, create: (h) => newSession(h.id) },
         menu: (id) => {
           const x = sessionById(id)
           return x ? sessionMenu([x]) : []
@@ -64,7 +71,17 @@ const host: ShellScope<Host> = {
         icon: "package",
         view: DeploysView,
         noun: "deploy",
-        records: (h) => deploysOf(h.id).map((d) => ({ id: d.id, label: `#${d.id}`, hint: d.title })),
+        records: (h) =>
+          deploysOf(h.id).map((d) => ({
+            id: d.id,
+            label: `#${d.id}`,
+            hint: d.title,
+            icon: "package",
+            status: d.state === "failed" ? "error" : d.state === "rolled-back" ? "warn" : undefined,
+            meta: d.ago,
+            // Commit and duration: what tells one deploy from the next.
+            detail: `${d.commit.slice(0, 7)} · ${d.duration}`,
+          })),
         recordLabel: (id) => (deployById(id) ? `#${id}` : undefined),
         entries: { limit: 5, label: (r) => r.hint ?? r.label },
         menu: (id) => {

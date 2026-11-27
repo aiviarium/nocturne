@@ -96,9 +96,11 @@ header's middle. Read `loc()`, `selection()` and the rest from the registry, or 
 - **Sidebar tree.** `Nav` at the drill size: 30px rows, 12px/500 labels, 15px icons, 8px gap, 11px counts. Child
   views start at the parent's label. Scope by drilling: a place with `enters` nests the scope it opens in the
   path, and the tree becomes that scope's places. Entering a scope opens it as the person left it. A place with few
-  entries (open pull requests, sessions, chats) sets `entries`, and the tree lists its records or the scopes it
-  enters under its row, so they open without the list. Past `limit` (8) the rest fold into "Show N more", which
-  expands in place. Long lists, such as issues, stay in the view. A parent's fold chevron is at the row's end, in
+  entries (open pull requests, sessions, chats) sets `entries`, so they open without the list. A top-level place
+  becomes a section after the places: its title opens the list, the chevron in the icon column folds it, and the
+  heading ends in "New …" (`entries.create`) and ↗, marked while the list is open. Give records a `status` (a dot
+  on the icon) only for a state such as running or failing, a short `meta` such as the age, and a `detail` second line only when
+  the record has details of its own. Past `limit` (8) the rest fold into "Show N more", which expands in place. Long lists, such as issues, stay in the view. A parent's fold chevron is at the row's end, in
   the count's place on hover. Its icon never changes.
 - **One menu per record.** A container's list is a managed `RowList` or `DataTable` (selection, `rowMenu`, rename,
   remove with undo, an add action in the header). The place's `menu` (a scope's `menu` for its items) builds the

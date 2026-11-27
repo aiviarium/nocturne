@@ -1,7 +1,7 @@
 // The workspace's settings: one place per page. Webhooks has records, so a webhook gets a trail and a stepper.
 import type { ShellScope } from "@aiviarium/nocturne"
 import { AppearanceView } from "./appearance"
-import { failingHooks, webhookById, webhooks } from "./data"
+import { addWebhook, failing, failingHooks, webhookById, webhooks } from "./data"
 import { FieldsView } from "./fields"
 import { GeneralView } from "./general"
 import { KeysView } from "./keys"
@@ -29,9 +29,21 @@ export const settingsModule: ShellScope = {
       view: WebhooksView,
       noun: "webhook",
       count: () => failingHooks().length,
-      records: () => webhooks().map((w) => ({ id: w.id, label: w.name, icon: "webhook" })),
+      records: () =>
+        webhooks().map((w) => {
+          const last = w.deliveries[0]
+          return {
+            id: w.id,
+            label: w.name,
+            icon: "webhook",
+            status: failing().includes(w.id) ? "error" : undefined,
+            meta: last?.at,
+            // Only a failed delivery is worth a line: its status and event.
+            detail: last && last.status >= 400 ? `${last.status} · ${last.event}` : undefined,
+          }
+        }),
       recordLabel: (id) => webhookById(id)?.name,
-      entries: true,
+      entries: { create: () => addWebhook("New webhook") },
       menu: (id) => {
         const w = webhookById(id)
         return w ? webhookMenu([w]) : []

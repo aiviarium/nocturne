@@ -469,7 +469,7 @@ describe("Shell", () => {
     expect(s.textContent).toBe("/projects/atlas/build/issues")
   })
 
-  test("`entries` lists a place's records or the scopes it enters under its row, capped, the open one marked", () => {
+  test("`entries` makes a top-level place a section of its records or the scopes it enters, capped, the open one marked", () => {
     const desk: ShellScope = {
       id: "desk",
       label: "Desk",
@@ -500,7 +500,22 @@ describe("Shell", () => {
     }
     const s = make("/desk/pulls", { scopes: [desk] })
     flush()
-    const rows = () => s.sidebar().groups[0]!.items
+    // Each place with entries is a section after the places: its heading opens it, and its rows are the entries.
+    const groups = () => s.sidebar().groups
+    expect(groups()[0]!.items).toEqual([])
+    expect(
+      groups()
+        .slice(1)
+        .map((g) => [g.id, g.label, g.section, g.collapsible]),
+    ).toEqual([
+      ["section:pulls", "Pull requests", true, true],
+      ["section:agents", "Agents", true, true],
+    ])
+    expect(s.sidebar().parents).toEqual(["section:pulls", "section:agents"])
+    const rows = () =>
+      groups()
+        .slice(1)
+        .map((g) => ({ items: g.items, current: g.actions?.at(-1)?.current }))
     // Past the limit, the rest fold into one row.
     expect(rows()[0]!.items?.map((i) => i.label)).toEqual(["First", "Show 2 more"])
     // An entry's menu is its place's, or its scope's, for that record or item.
@@ -536,6 +551,42 @@ describe("Shell", () => {
     open(1, 1)
     flush()
     expect(s.path().at(-1)?.label).toBe("Triage agent")
+  })
+
+  test("a section's New button makes a record and opens it; a record's status, meta and detail reach its entry", () => {
+    let made = 0
+    const desk: ShellScope = {
+      id: "desk",
+      label: "Desk",
+      icon: "inbox",
+      places: [
+        {
+          id: "notes",
+          label: "Notes",
+          icon: "file",
+          noun: "note",
+          view: View,
+          records: () => [{ id: "n1", label: "One", status: "warn", meta: "2h", detail: "draft" }],
+          entries: {
+            create: () => {
+              made++
+              return "n1"
+            },
+          },
+        },
+      ],
+    }
+    const s = make("/desk/notes", { scopes: [desk] })
+    flush()
+    const section = s.sidebar().groups[1]!
+    const entry = section.items[0]!
+    expect([entry.status, entry.meta, entry.detail]).toEqual(["warn", "2h", "draft"])
+    const add = section.actions![0]!
+    expect(add.label).toBe("New note")
+    add.onClick()
+    flush()
+    expect(made).toBe(1)
+    expect(s.loc().record).toBe("n1")
   })
 
   test("a `covers` function gets the record: the panel steps aside on the record's page only", () => {

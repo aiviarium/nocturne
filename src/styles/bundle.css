@@ -163,6 +163,15 @@
 .nc-nav__action[aria-current="page"] { opacity: 1; background: var(--active); color: var(--text-1); }
 .nc-nav__head:hover .nc-nav__action, .nc-nav__head[data-empty] .nc-nav__action, .nc-nav__action:focus-visible, .nc-nav:focus-within .nc-nav__action { opacity: 1; }
 @media (hover: none) { .nc-nav__action { opacity: 1; } }
+/* A section of a place's entries: the title low in its row, near its entries and away from the block above; the
+   chevron in the entries' icon column, so the title starts at their labels; the actions always shown. */
+.nc-nav__head[data-section] { align-items: flex-end; }
+.nc-nav__head[data-section] .nc-nav__label { flex: 0 1 auto; padding: 9px 8px 1px; }
+.nc-nav__head[data-section] .nc-nav__fold { order: -1; flex: none; width: 16px; height: 18px; margin: 0 0 -1px 7px; opacity: 1; }
+.nc-nav__head[data-section] .nc-nav__label + .nc-nav__action { margin-left: auto; }
+.nc-nav__head[data-section] .nc-nav__action:not(.nc-nav__fold) { width: 22px; height: 22px; margin-bottom: -2px; opacity: 1; color: var(--text-4); }
+.nc-nav__head[data-section] .nc-nav__action:not(.nc-nav__fold):hover { color: var(--text-2); }
+.nc-nav__head[data-section] .nc-nav__action[aria-current="page"] { color: var(--text-1); }
 
 /* Badges, chips, counts */
 .nc-badge { display: inline-flex; align-items: center; gap: 6px; height: 18px; padding: 0 7px; border-radius: var(--radius-full); background: var(--bg-3); color: var(--text-2); font: 500 11px/16px var(--font-sans); white-space: nowrap; }

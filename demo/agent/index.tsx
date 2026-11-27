@@ -1,7 +1,7 @@
 // The Agent module: the workspace's conversations with the agent and its runs, and the Assistant panel.
 import type { ShellScope } from "@aiviarium/nocturne"
 import "./agent.css"
-import { conversationById, conversations, isStreaming, waitsOnYou } from "./data"
+import { conversationById, conversations, isStreaming, newConversation, waitsOnYou } from "./data"
 import { ChatDetails, ChatsView, chatMenu, RunsView, startChat } from "./views"
 
 export { assistantPanel } from "./panel"
@@ -20,8 +20,15 @@ export const agentModule: ShellScope = {
       view: ChatsView,
       noun: "chat",
       count: () => conversations().filter((c) => waitsOnYou(c) || isStreaming(c)).length || undefined,
-      records: () => conversations().map((c) => ({ id: c.id, label: c.title })),
-      entries: true,
+      records: () =>
+        conversations().map((c) => ({
+          id: c.id,
+          label: c.title,
+          icon: "chat",
+          status: isStreaming(c) ? "ai" : waitsOnYou(c) ? "warn" : undefined,
+          meta: c.updated,
+        })),
+      entries: { create: () => newConversation() },
       recordLabel: (id) => conversationById(id)?.title,
       inspect: (id) => <ChatDetails id={id} />,
       menu: (id) => {

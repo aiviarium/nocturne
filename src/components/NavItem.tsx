@@ -8,6 +8,7 @@ import { Icon, type IconName, type LucideNode } from "./Icon"
 import { IconButton } from "./IconButton"
 import { RowMenu } from "./InsetList"
 import { Popover } from "./Popover"
+import { type DotStatus, StatusDot } from "./StatusDot"
 import { Tooltip } from "./Tooltip"
 
 export interface NavItemProps extends Omit<JSX.AnchorHTMLAttributes<HTMLAnchorElement>, "children"> {
@@ -27,6 +28,16 @@ export interface NavItemProps extends Omit<JSX.AnchorHTMLAttributes<HTMLAnchorEl
   count?: number
   /** A dot on the folded rail's icon without a count. */
   dot?: boolean
+  /**
+   * A state worth seeing, such as running or failing, as a dot on the icon's lower right corner, cut out of the
+   * icon so it reads on any fill. Left out when all is as usual.
+   */
+  status?: DotStatus
+  /**
+   * A second line under the label, for an entry with details of its own: a commit and a duration, a failed
+   * delivery. The row grows to two lines and the icon centres on both; `meta` stays on the first line.
+   */
+  detail?: string
   /** The current page. Sets `aria-current="page"`. */
   current?: boolean
   /** Where the row goes: rendered as a link. */
@@ -53,6 +64,8 @@ const OWN = [
   "meta",
   "count",
   "dot",
+  "status",
+  "detail",
   "current",
   "class",
   "href",
@@ -126,21 +139,34 @@ export function NavItem(
       )}
     </Show>
   )
+  const glyph = () => (
+    <Show
+      when={props.leading}
+      fallback={
+        <Show when={props.icon || props.iconNode}>
+          <Icon name={props.icon} node={props.iconNode} />
+        </Show>
+      }
+    >
+      {props.leading}
+    </Show>
+  )
   const body = (
     <>
-      <Show
-        when={props.leading}
-        fallback={
-          <Show when={props.icon || props.iconNode}>
-            <Icon name={props.icon} node={props.iconNode} />
-          </Show>
-        }
-      >
-        {props.leading}
+      <Show when={props.status} fallback={glyph()}>
+        {(status) => (
+          <span class="nc-nav-item__glyph" data-part="nav-item-status" data-status={status()}>
+            {glyph()}
+            <StatusDot status={status()} />
+          </span>
+        )}
       </Show>
       <span class="nc-nav-item__label">
         <MatchText text={props.label} q={props.match} />
       </span>
+      <Show when={props.detail}>
+        <span class="nc-nav-item__detail">{props.detail}</span>
+      </Show>
       <Show
         when={props.meta}
         fallback={
@@ -158,7 +184,8 @@ export function NavItem(
       {props.disclose}
     </>
   )
-  const cls = () => cx("nc-nav-item", props.child && "nc-nav-item--child", props.class)
+  const cls = () =>
+    cx("nc-nav-item", props.child && "nc-nav-item--child", props.detail && "nc-nav-item--two", props.class)
   return (
     <Show
       when={props.href}
@@ -226,6 +253,12 @@ export interface NavGroup {
    * `onCollapsedChange`.
    */
   collapsible?: boolean
+  /**
+   * A section of a place's entries, as the shell draws one: the title sits low in its row, near its entries; the
+   * fold chevron takes the icon's column, so the title starts where the entries' labels do; and the actions are
+   * always shown. The `icon` is kept for the folded rail.
+   */
+  section?: boolean
   /** Stable id for `collapsed`. Default the label. */
   id?: string
   /**
@@ -428,14 +461,17 @@ export function Nav(props: NavProps): JSX.Element {
                   <div
                     class="nc-nav__head"
                     data-empty={group().items.length === 0 ? "" : undefined}
-                    data-icon={group().icon ? "" : undefined}
+                    data-icon={group().icon && !group().section ? "" : undefined}
+                    data-section={group().section ? "" : undefined}
                     data-current={group().current ? "" : undefined}
                   >
                     <Show
                       when={group().onClick}
                       fallback={
                         <span class="nc-nav__label">
-                          <Show when={group().icon}>{(icon) => <Icon name={icon()} size="sm" />}</Show>
+                          <Show when={!group().section && group().icon}>
+                            {(icon) => <Icon name={icon()} size="sm" />}
+                          </Show>
                           {group().label}
                         </span>
                       }
@@ -447,7 +483,9 @@ export function Nav(props: NavProps): JSX.Element {
                         aria-current={group().current ? "page" : undefined}
                         onClick={() => group().onClick?.()}
                       >
-                        <Show when={group().icon}>{(icon) => <Icon name={icon()} size="sm" />}</Show>
+                        <Show when={!group().section && group().icon}>
+                          {(icon) => <Icon name={icon()} size="sm" />}
+                        </Show>
                         <span class="nc-nav__label-text">{group().label}</span>
                         <Show when={group().count}>
                           <span class="nc-nav__count">{group().count}</span>
