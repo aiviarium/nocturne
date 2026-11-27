@@ -28,6 +28,8 @@ Some strings and numbers get their own control.
 | A number | A `NumberField`. `x-unit` sets the unit |
 | A number with both bounds and `"x-control": "slider"` | A `Slider` with its field |
 
+A webhook's settings in the demo are a schema form: open <DemoLink to="settings/webhooks/deploys-slack">a webhook</DemoLink> and its Settings tab.
+
 <Example id="schema-form/connect" />
 <Example id="schema-form/numbers" />
 <Example id="patterns/form" />
@@ -57,6 +59,16 @@ Its editor is `inline` on a record page, or `boxed` in a dialog or form.
 Inline editors hand over the value when the person leaves them or presses Enter, and boxed editors hand over every change.
 
 The field runtime is a provider, so the fields have no network code.
+
+| Part | What it draws |
+| --- | --- |
+| `FormField` | One field of a form, with its label and control. It marks a field that may be left out and shows what was refused. A switch is beside its label, and every other control is under it |
+| `FieldEditor` | The editor of one field, `inline` or `boxed` |
+| `FieldValue` | A value, read only, in a cell, a row or a chip line with `compact` |
+| `FieldFilter` | The control of a filter rule's value, or nothing for a kind that can't be filtered |
+| `FieldEmpty` | One muted em dash, for a field with no value |
+
+The demo's <DemoLink to="settings/profile">Profile</DemoLink> is a form of field editors, and <DemoLink to="settings/fields">Issue fields</DemoLink> lists each kind.
 
 <Example id="fields/kinds" />
 <Example id="fields/form" />

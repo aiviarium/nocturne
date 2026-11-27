@@ -58,6 +58,9 @@ A view built from `ViewLayout` and `ViewHeader` gets this with no extra code.
 
 <Example id="navigation-stack/inbox" />
 
+The demo's <DemoLink to="settings/mobile">Mobile app</DemoLink> runs a phone app in a frame, with `PhoneOverride`.
+Below 720px wide, the whole demo takes the phone layout.
+
 A drill-down on a desktop is a stack on a phone.
 In the app shell the sidebar is a drawer and the right panel covers the view.
 The panel rail is hidden.
@@ -79,6 +82,8 @@ Grouped inset lists hold settings and pickers.
 <Example id="sheet/sheets" />
 <Example id="inset-list/settings" />
 
+`Sheet` and `ActionSheet` draw the sheets, and `InsetList`, `InsetGroup` and `InsetRow` the grouped lists.
+
 ## The on-screen keyboard
 
 `trackViewport()` follows the visual viewport and keeps `--nc-keyboard`, `--nc-vv-height` and `--nc-vv-top` on the document element.
@@ -86,6 +91,8 @@ Grouped inset lists hold settings and pickers.
 `keyboardOpen()` and `keyboardInset()` give the same facts to code.
 
 A test that swaps in a visual viewport of its own can dispatch an `nc:viewport` event on `window` to make the module read it.
+
+`PullToRefresh` refreshes a list pulled down from its top, and `ScreenRefresh` gives a screen of a `NavigationStack` the same.
 
 <Example id="pull-to-refresh/list" />
 

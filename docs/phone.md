@@ -49,9 +49,20 @@ covers the view. The panel rail is hidden. The trail's parent crumb becomes the 
 after the parent. `ViewHeader` doesn't show the trail or the stepper there, because the stack is the way back.
 Time is the system's back gesture, and where the two differ, the gesture decides.
 
+## Sheets and lists
+
+Sheets come from the bottom with a grab handle. A sheet rests at the height of its content, up to nearly the
+whole screen, and taller content scrolls inside it. A long list can rest at medium and large instead: drag or
+press the handle between them, or drag down to dismiss. Destructive confirmations and short choices are action
+sheets. Grouped inset lists hold settings and pickers. `Sheet` and `ActionSheet` draw the sheets, and
+`InsetList`, `InsetGroup` and `InsetRow` the grouped lists.
+
 ## The on-screen keyboard
 
 `trackViewport()` follows the visual viewport and keeps `--nc-keyboard`, `--nc-vv-height` and `--nc-vv-top` on
 the document element. `BottomArea` stays above the keyboard; `keyboardOpen()` and `keyboardInset()` give the
 same facts to code. A test that swaps in a visual viewport of its own can dispatch an `nc:viewport` event on
 `window` to make the module read it.
+
+`PullToRefresh` refreshes a list pulled down from its top, and `ScreenRefresh` gives a screen of a
+`NavigationStack` the same.

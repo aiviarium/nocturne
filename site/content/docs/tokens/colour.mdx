@@ -10,7 +10,7 @@ Tints show as they look on a card.
 
 Neutral greys with no tint.
 `bg-0` is the canvas, `bg-1` the frames and cards, and `bg-2` fields and nested cards.
-`bg-3` is the button fill.
+`bg-3` is the button fill, and `bg-4` the fill of key caps, counts, avatars and meter tracks.
 The view area is raised on the canvas, and headers and list group heads have no fill.
 
 <ColourTable prefix={['bg']} />
@@ -108,12 +108,7 @@ Hue goes in the foreground, such as an icon, the dot and word of a `State`, or t
 - A hue edge is never the only mark of a state on a card. Approval cards have a hairline edge, and show their state with a dot and a word.
 - Selection is the neutral `active` fill with a step up in text colour, from `text-2` to `text-1`. It never adds a bar or an underline, and never changes the size or the weight. Hover on rows, sidebar items and text buttons only lightens the text.
 - A selected card takes a `line-strong` ring.
-  So are the selected rows of a table and its bulk bar, a running tool step and the composer while the assistant works.
-  A running step has the hue in its text.
-
-`bundle.css` still has status tints behind callouts, approval cards, the bulk bar, selected table rows and running steps.
-It also has hue edges around danger buttons and stream pills.
-`src/styles/parts.css` overrides those rules in its colour section.
+- The selected rows of a table, its bulk bar, a running tool step and the composer while the assistant works are neutral too. A running step has the hue in its text.
 
 <DoDont do="design/neutral-callout" dont="design/tinted-callout" />
 <DoDont do="design/approval-hairline" dont="design/approval-edge" />

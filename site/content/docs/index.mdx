@@ -52,15 +52,16 @@ See [The app shell](./shell/index.mdx).
 | Area | Parts |
 | --- | --- |
 | Shell | `createShell` and `Shell`: the title bar with its path, lens box and palette, the sidebar that folds to a rail, the view header and trail, the panel rail and docked panels, the history and the appearance. See [The app shell](./shell/index.mdx) |
-| Layout | `AppShell`, `Frame` with a `TabStrip` header, `ViewLayout`, `ViewHeader`, `Panel`, `Split`, `SplitGroup`, `Dock` and `Dialog` |
-| Lists and data | `RowList` and `ListRow`, `DataTable`, `DataList`, `Board`, `List` |
+| Views | `ViewLayout` with `ShellViewHeader`, `Tabs`, `Card`, `Panel`, `SectionHeading`, `Split`, `SplitGroup`, `Dock` with `Frame` and `TabStrip` |
+| Lists and data | `RowList` and `ListRow`, `DataTable`, `DataList`, `Board`, `List`, `PropertyList` |
+| Actions and overlays | `Button`, `IconButton`, menus, `Popover`, `Dialog`, `Sheet`, tooltips and toasts |
 | Forms | `TextField`, `TextArea`, `Select`, `Switch`, `NumberField`, `Slider`, `SchemaForm` and the field kinds |
 | Display | `Badge`, `State`, `Avatar`, `Mark`, `Callout`, `Icon`, `Stat`, `StatCard`, `Widget`, `WidgetGrid` |
-| Text | `RichTextEditor`, `Composer`, `CodeBlock`, `DiffView` |
+| Text | `RichTextEditor`, `ChatMessage`, `Composer`, `CodeBlock`, `DiffView`, `LogViewer` |
 | Filters | `FilterBar`, `QueryBuilder` |
 | Phone | Navigation stacks, tab bars, sheets, inset lists and the phone scale |
 
-`LinkProvider` sends `NavItem` and `Button` links through your router.
+[Which part for what](./parts/index.mdx) lists every part, with its page and a place in the [demo](./demo.mdx) where it's used.
 Component roots have a stable `data-part` attribute.
 Props are documented with TSDoc.
 
