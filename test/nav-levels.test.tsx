@@ -228,3 +228,29 @@ test("a heading's action can be marked current, such as a section's list open in
   )
   expect(one("[aria-label='Open Sessions']", root).getAttribute("aria-current")).toBe("page")
 })
+
+test("a heading's actions show in its header, and in the folded rail's flyout", async () => {
+  const made: string[] = []
+  const groups = [
+    {
+      label: "Sessions",
+      icon: "terminal" as const,
+      onClick: () => {},
+      actions: [
+        { label: "New session", icon: "plus" as const, onClick: () => made.push("new") },
+        { label: "Open Sessions", icon: "arrow-up-right" as const, onClick: () => made.push("open") },
+      ],
+      items: [{ id: "s1", label: "build", icon: "terminal" as const, onClick: () => {} }],
+    },
+  ]
+  const open = track(mount(() => <Nav label="Host" groups={groups} />))
+  click(one("[aria-label='New session']", open.root))
+  expect(made).toEqual(["new"])
+  const folded = track(mount(() => <Nav label="Host" folded groups={groups} />))
+  const icon = one("[data-part=nav-rail-group] [data-part=nav-item]", folded.root)
+  icon.dispatchEvent(new MouseEvent("mouseenter"))
+  await new Promise((r) => setTimeout(r, 200))
+  flush()
+  click(one("[data-part=nav-flyout] [aria-label='Open Sessions']"))
+  expect(made).toEqual(["new", "open"])
+})

@@ -371,6 +371,8 @@ button.nc-nav-rail-item { margin: 0; padding: 0; border: 0; background: none; cu
 /* The flyout: the section's name and count, then its rows as in the open sidebar. */
 .nc-nav-flyout { width: 248px; padding: var(--space-1); }
 .nc-nav-flyout__head { display: flex; align-items: center; padding: 6px 8px 4px; color: var(--text-3); font-size: var(--nc-type-section); font-weight: 500; }
+.nc-nav-flyout__head { gap: 2px; padding-right: 2px; }
+.nc-nav-flyout__action[aria-current="page"] { background: var(--active); color: var(--text-1); }
 .nc-nav-flyout__title { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .nc-nav-flyout__rows { display: flex; flex-direction: column; gap: 1px; }
 .nc-nav-rail-item__dot { position: absolute; top: 6px; right: 6px; width: 6px; height: 6px; border-radius: var(--radius-full); background: var(--text-2); box-shadow: 0 0 0 2px var(--bg-0); }

@@ -197,6 +197,18 @@ export function NavItem(
 }
 
 /** NavGroup is a run of items under an optional heading. */
+/** A small icon action at a group heading's end. */
+export interface NavGroupAction {
+  label: string
+  icon: IconName
+  onClick: () => void
+  /** The action's target is the current page, such as a section's list open in the view: the button is marked. */
+  current?: boolean
+}
+
+/** A heading's actions: `action` first, then `actions`. */
+const actionsOf = (g: NavGroup): NavGroupAction[] => [...(g.action ? [g.action] : []), ...(g.actions ?? [])]
+
 export interface NavGroup {
   /** The sentence-case heading. */
   label?: string
@@ -224,13 +236,12 @@ export interface NavGroup {
    */
   footer?: JSX.Element
   /** One small icon action at the heading's end, such as adding an item to the group. Needs a `label`. */
-  action?: {
-    label: string
-    icon: IconName
-    onClick: () => void
-    /** The action's target is the current page, such as a section's list open in the view: the button is marked. */
-    current?: boolean
-  }
+  action?: NavGroupAction
+  /**
+   * More icon actions at the heading's end, after `action`, such as making a new item and opening the group's list.
+   * The folded rail's flyout shows them too. Needs a `label`.
+   */
+  actions?: NavGroupAction[]
   items: NavItemProps[]
 }
 
@@ -399,7 +410,7 @@ export function Nav(props: NavProps): JSX.Element {
             <>
               <Show when={group().label}>
                 <Show
-                  when={group().action || group().icon || group().onClick || foldable(group())}
+                  when={actionsOf(group()).length || group().icon || group().onClick || foldable(group())}
                   fallback={<span class="nc-nav__label">{group().label}</span>}
                 >
                   <div
@@ -431,7 +442,7 @@ export function Nav(props: NavProps): JSX.Element {
                         </Show>
                       </button>
                     </Show>
-                    <Show when={group().action}>
+                    <For keyed={false} each={actionsOf(group())}>
                       {(action) => (
                         <IconButton
                           size="sm"
@@ -442,7 +453,7 @@ export function Nav(props: NavProps): JSX.Element {
                           onClick={() => action().onClick()}
                         />
                       )}
-                    </Show>
+                    </For>
                     <Show when={foldable(group())}>
                       <IconButton
                         size="sm"
@@ -564,6 +575,22 @@ function RailGroup(props: {
           <Show when={props.group.count}>
             <span class="nc-nav__count">{props.group.count}</span>
           </Show>
+          {/* The section's actions, as in the open sidebar. */}
+          <For keyed={false} each={actionsOf(props.group)}>
+            {(action) => (
+              <IconButton
+                size="sm"
+                class="nc-nav-flyout__action"
+                icon={action().icon}
+                label={action().label}
+                aria-current={action().current ? "page" : undefined}
+                onClick={() => {
+                  setShown(false)
+                  action().onClick()
+                }}
+              />
+            )}
+          </For>
         </div>
         <div class="nc-nav-flyout__rows" role="group" aria-label={label()}>
           <For keyed={false} each={props.group.items}>

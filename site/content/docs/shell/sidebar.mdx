@@ -79,6 +79,7 @@ Minimise, ⌘B or ⌘\\, or a drag of the edge below 140px folds the sidebar to 
 - A section whose heading is its place shows as the place's icon alone, which opens it.
   Hovering or focusing the icon shows the section's entries in a flyout to its right.
   The small chevron under the icon lists them on the rail.
+  The flyout's heading has the section's `actions` too.
 - The account shows as its avatar at the foot.
 - The header is one button where ↑ was, "Show sidebar" (⌘B), which restores the last full width. A drag of the rail's edge past 140px does the same.
 
@@ -95,7 +96,7 @@ Folded, it is the avatar alone.
 ## Group headings
 
 A `NavGroup` heading, such as Projects in the root, is 11px `text-3`.
-It may start with a 13px `icon` and end with one `action`, such as adding to the group.
+It may start with a 13px `icon` and end with icon `actions`, such as making a new item and opening the group's list.
 An action with `current` is marked like a current row, such as a section's open button while its list is in the view.
 With `collapsible` it ends in a chevron that folds the group, kept in the same `collapsed` list as folded parents under the group's `id`.
 A `footer` is a row under the group's items for its own controls, such as making a new item, and it shows while the group is folded.
