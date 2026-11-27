@@ -535,6 +535,8 @@ button.nc-menu__item, div.nc-menu__item { box-sizing: border-box; width: 100%; b
 .nc-frame--flush { padding: 0; }
 .nc-frame--stacked { display: flex; flex-direction: column; min-height: 0; }
 .nc-frame--bare { border: 0; border-radius: 0; background: transparent; }
+/* A card that fills a flush frame is the frame's content, not a card in a card: the frame draws the one border. */
+.nc-frame--flush > .nc-card { border: 0; border-radius: 0; }
 /* A body holding one filling part (a drop frame, a log) passes the height on. */
 .nc-frame__body:has(> .nc-dropframe, > .nc-log--fill) { display: flex; flex-direction: column; }
 .nc-frame[data-focused] { border-color: var(--line); }
@@ -572,6 +574,10 @@ button.nc-menu__item, div.nc-menu__item { box-sizing: border-box; width: 100%; b
 .nc-split__divider:hover::before, .nc-split[data-dragging] > .nc-split__divider::before { background: var(--text-4); }
 .nc-split__divider:focus-visible::before { background: var(--accent-strong); }
 .nc-split__divider:focus-visible { box-shadow: var(--focus-ring); border-radius: var(--radius-xs); }
+/* A divider line only where the panes share an edge. Between framed panes (cards with a gap between them) the gap is
+   the handle: no line at rest, lit only while hovered or dragged. */
+.nc-split:has(> .nc-split__pane > :is(.nc-frame:not(.nc-frame--bare), .nc-card)) > .nc-split__divider:not(:hover, :focus-visible)::before { background: transparent; }
+.nc-split[data-dragging]:has(> .nc-split__pane > :is(.nc-frame:not(.nc-frame--bare), .nc-card)) > .nc-split__divider::before { background: var(--text-4); }
 /* Phone: panes stack in a scrolling column and the dividers go. */
 @media (max-width: 720px) {
   .nc-splitgroup { flex-direction: column; height: auto; min-height: 100%; }
