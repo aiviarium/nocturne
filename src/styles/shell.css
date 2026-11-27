@@ -294,7 +294,8 @@ button.nc-title-bar__app:hover, button.nc-title-bar__app[aria-expanded="true"] {
 .nc-app-shell__sidebar-foot .nc-account__trigger-name { font-size: var(--nc-type-drill); }
 .nc-app-shell__sidebar[data-folded] .nc-app-shell__sidebar-body { scrollbar-width: none; }
 .nc-app-shell__sidebar[data-folded] .nc-app-shell__sidebar-foot { justify-content: center; padding: var(--space-1) 0 var(--space-2); }
-.nc-app-shell__surface { position: relative; display: flex; flex: 1; min-width: 0; min-height: 0; border-radius: 0; background: var(--bg-1); box-shadow: var(--shadow-raised); overflow: hidden; }
+/* The surface is on the sidebar's layer and after it, so its ring draws the edge between them. */
+.nc-app-shell__surface { position: relative; z-index: 2; display: flex; flex: 1; min-width: 0; min-height: 0; border-radius: 0; background: var(--bg-1); box-shadow: var(--shadow-raised); overflow: hidden; }
 .nc-app-shell__main { display: flex; flex-direction: column; flex: 1; min-width: 0; min-height: 0; }
 .nc-app-shell__view { position: relative; display: flex; flex-direction: column; flex: 1; min-width: 0; min-height: 0; overflow: hidden; }
 .nc-app-shell__view > .nc-view-layout { flex: 1; }
