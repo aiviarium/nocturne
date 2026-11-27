@@ -226,4 +226,5 @@ export const specsPlace: ShellPlace<Project> = {
   noun: "spec",
   records: (p) => specsOf(p.id).map((sp) => ({ id: sp.id, label: sp.title, icon: "file" })),
   recordLabel: (id) => specById(id)?.title,
+  entries: true,
 }

@@ -21,6 +21,7 @@ export const agentModule: ShellScope = {
       noun: "chat",
       count: () => conversations().filter((c) => waitsOnYou(c) || isStreaming(c)).length || undefined,
       records: () => conversations().map((c) => ({ id: c.id, label: c.title })),
+      entries: true,
       recordLabel: (id) => conversationById(id)?.title,
       inspect: (id) => <ChatDetails id={id} />,
       // A conversation's page shows its context and rate beside the transcript.

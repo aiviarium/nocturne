@@ -31,6 +31,7 @@ export const settingsModule: ShellScope = {
       count: () => failing().length,
       records: () => WEBHOOKS.map((w) => ({ id: w.id, label: w.name, icon: "webhook" })),
       recordLabel: (id) => webhookById(id)?.name,
+      entries: true,
     },
     { id: "shortcuts", label: "Keyboard shortcuts", icon: "keyboard", view: ShortcutsView },
   ],

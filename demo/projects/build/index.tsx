@@ -39,6 +39,8 @@ export const buildPlaces: ShellPlace<Project>[] = [
     noun: "pull request",
     count: (p) => pullsOf(p.id).filter((x) => x.review !== "merged").length,
     records: (p) => pullsOf(p.id).map((x) => ({ id: x.id, label: `#${x.id}`, hint: x.title })),
+    // The open ones are few: the sidebar lists them by title.
+    entries: { label: (r) => r.hint ?? r.label },
     recordLabel: (id) => (pullById(id) ? `#${id}` : undefined),
     inspect: (id) => <PullDetails id={id} />,
   },

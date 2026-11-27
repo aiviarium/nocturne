@@ -469,6 +469,53 @@ describe("Shell", () => {
     expect(s.textContent).toBe("/projects/atlas/build/issues")
   })
 
+  test("`entries` lists a place's records or the scopes it enters under its row, capped, the open one marked", () => {
+    const desk: ShellScope = {
+      id: "desk",
+      label: "Desk",
+      icon: "inbox",
+      places: [
+        {
+          id: "pulls",
+          label: "Pull requests",
+          icon: "git-pull-request",
+          view: View,
+          records: () => [
+            { id: "1", label: "#1", hint: "First" },
+            { id: "2", label: "#2", hint: "Second" },
+            { id: "3", label: "#3", hint: "Third" },
+          ],
+          entries: { limit: 1, label: (r) => r.hint ?? r.label },
+        },
+        { id: "agents", label: "Agents", icon: "agent", view: View, enters: agent, entries: true },
+      ],
+    }
+    const s = make("/desk/pulls", { scopes: [desk] })
+    flush()
+    const rows = () => s.sidebar().groups[0]!.items
+    expect(rows()[0]!.items?.map((i) => i.label)).toEqual(["First"])
+    expect(rows()[0]!.current).toBe(true)
+    expect(rows()[1]!.items?.map((i) => [i.label, i.drill])).toEqual([
+      ["Review agent", true],
+      ["Triage agent", true],
+    ])
+    s.go("/desk/pulls/3")
+    flush()
+    // The open record shows past the cap and is marked in place of its place.
+    expect(rows()[0]!.items?.map((i) => [i.label, !!i.current])).toEqual([
+      ["First", false],
+      ["Third", true],
+    ])
+    expect(rows()[0]!.current).toBe(false)
+    const open = (row: number, entry: number) => (rows()[row]!.items![entry]!.onClick as () => void)()
+    open(0, 0)
+    flush()
+    expect(s.loc().record).toBe("1")
+    open(1, 1)
+    flush()
+    expect(s.path().at(-1)?.label).toBe("Triage agent")
+  })
+
   test("a `covers` function gets the record: the panel steps aside on the record's page only", () => {
     const s = make("/projects/atlas/build/issues")
     flush()

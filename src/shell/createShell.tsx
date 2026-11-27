@@ -42,6 +42,14 @@ export interface ShellSavedView {
   icon?: IconName
 }
 
+/** How a place lists its entries in the sidebar. */
+export interface ShellEntries {
+  /** How many show. Default 8. The one open always shows. */
+  limit?: number
+  /** A record's name in the sidebar. Default its `label`; `(r) => r.hint ?? r.label` for "#412" with a title. */
+  label?: (record: ShellRecord) => string
+}
+
 /** One record of a place's list: what the stepper steps over and the record crumb's switcher lists. */
 export interface ShellRecord {
   /** Its segment in the address. */
@@ -83,6 +91,11 @@ export interface ShellPlace<T = any> {
   path?: boolean
   /** Places nested under this one. */
   children?: ShellPlace<T>[]
+  /**
+   * The sidebar lists the place's entries under its row, so the person opens one without the list: its `records`,
+   * or the scopes it `enters`, which drill in. The place's own row still opens its view. See `ShellEntries`.
+   */
+  entries?: true | ShellEntries
   /** The place lists scopes: opening one of its rows (`shell.enter`) nests that scope in the path. */
   enters?: ShellScope<any>
   /**
@@ -946,6 +959,8 @@ export function createShell(options: ShellOptions) {
           })),
           ...items(p.children ?? []),
         ]
+        const shown = entriesOf(f, p)
+        kids.push(...shown)
         if (kids.length) parents.push(p.id)
         const inside = here && l.place === p
         return {
@@ -953,12 +968,66 @@ export function createShell(options: ShellOptions) {
           label: p.label,
           icon: p.icon ?? (kids.length ? "folder" : "file"),
           count: p.count?.(f.item) || undefined,
-          // Current at its records too: the place stays marked while the person is inside one.
-          current: inside && (!keepView(l) || !views.length),
+          // Current at its records too: the place stays marked while the person is inside one, unless the record
+          // is one of its entries, which is marked instead.
+          current: inside && (!keepView(l) || !views.length) && !shown.some((e) => e.current),
           onClick: () => toPlace(f, p.id),
           items: kids.length ? kids : undefined,
         }
       })
+    /** A place's `entries`: its records, or the scopes it enters. */
+    function entriesOf(f: ShellFrame, p: ShellPlace): NavItemProps[] {
+      if (!p.entries) return []
+      const opts: ShellEntries = p.entries === true ? {} : p.entries
+      const cap = opts.limit ?? 8
+      const at = (cur: boolean, i: number) => i < cap || cur
+      if (p.enters) {
+        const scope = p.enters
+        const open = l.frames.find((x) => x.parent === f && x.scope === scope)
+        return (scope.items?.(f.item) ?? [])
+          .map((it, i) => {
+            const id = idOf(scope, it)
+            const mark = scope.mark?.(it)
+            const current = here ? false : open?.item !== undefined && idOf(scope, open.item) === id
+            return {
+              item: {
+                id: `${p.id}>${id}`,
+                label: labelOf({ scope, item: it }),
+                leading: mark ? (
+                  <Mark name={mark.name} hue={mark.hue} icon={mark.icon} size="sm" decorative />
+                ) : undefined,
+                icon: mark ? undefined : scope.icon,
+                drill: true,
+                current,
+                onClick: () =>
+                  returnTo(frame(scope, it, f, [...(segsOf(f, p.id).filter(Boolean) as string[]), id])),
+              } satisfies NavItemProps,
+              keep: at(current, i),
+            }
+          })
+          .filter((e) => e.keep)
+          .map((e) => e.item)
+      }
+      return (p.records?.(f.item, undefined) ?? [])
+        .map((r, i) => {
+          const current = here && l.place === p && l.record === r.id
+          return {
+            item: {
+              id: `${p.id}/${r.id}`,
+              label: opts.label?.(r) ?? r.label,
+              leading: r.mark ? (
+                <Mark name={r.mark.name} hue={r.mark.hue} icon={r.mark.icon} size="sm" decorative />
+              ) : undefined,
+              icon: r.mark ? undefined : r.icon,
+              current,
+              onClick: () => toPlace(f, p.id, undefined, r.id),
+            } satisfies NavItemProps,
+            keep: at(current, i),
+          }
+        })
+        .filter((e) => e.keep)
+        .map((e) => e.item)
+    }
     const groups: NavGroup[] = [{ items: items(tree) }]
     const i = l.frames.indexOf(f)
     const parent = i > 0 ? l.frames[i - 1] : undefined

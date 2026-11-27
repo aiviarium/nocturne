@@ -37,6 +37,7 @@ const host: ShellScope<Host> = {
         records: (h) =>
           sessionsOf(h.id).map((s) => ({ id: s.id, label: s.title, hint: SESSION_LABEL[s.state] })),
         recordLabel: (id) => sessionById(id)?.title,
+        entries: true,
         // The dock's tabs name the open sessions: no trail. The view is the terminal, so the panel steps aside.
         trail: false,
         covers: ["terminal"],
@@ -60,6 +61,7 @@ const host: ShellScope<Host> = {
         noun: "deploy",
         records: (h) => deploysOf(h.id).map((d) => ({ id: d.id, label: `#${d.id}`, hint: d.title })),
         recordLabel: (id) => (deployById(id) ? `#${id}` : undefined),
+        entries: { limit: 5, label: (r) => r.hint ?? r.label },
         count: (h) => DEPLOYS.filter((d) => d.host === h.id && d.state === "failed").length,
       },
     ]),
