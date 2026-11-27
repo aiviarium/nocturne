@@ -199,6 +199,15 @@ export function NavItem(
 export interface NavGroup {
   /** The sentence-case heading. */
   label?: string
+  /** A small icon before the heading, such as the place a section of entries belongs to. Needs a `label`. */
+  icon?: IconName
+  /**
+   * The heading folds the group with a chevron at its end, kept in `Nav`'s `collapsed` as `id`. Needs a `label` and
+   * `onCollapsedChange`.
+   */
+  collapsible?: boolean
+  /** Stable id for `collapsed`. Default the label. */
+  id?: string
   /** One small icon action at the heading's end, such as adding an item to the group. Needs a `label`. */
   action?: { label: string; icon: IconName; onClick: () => void }
   items: NavItemProps[]
@@ -259,6 +268,19 @@ export function Nav(props: NavProps): JSX.Element {
         items: g.items.map((i) => filtered(i, q())).filter((i): i is NavItemProps => !!i),
       }))
       .filter((g) => !q() || g.items.length > 0)
+  const groupKey = (g: NavGroup) => g.id ?? g.label ?? ""
+  const foldable = (g: NavGroup) => !!g.collapsible && !!g.label && !!props.onCollapsedChange
+  // A group with the open item in it stays open, as a parent does.
+  const groupClosed = (g: NavGroup) =>
+    foldable(g) &&
+    !q() &&
+    !!props.collapsed?.includes(groupKey(g)) &&
+    !g.items.some((i) => i.current || currentIn(i))
+  const toggleGroup = (g: NavGroup) => {
+    const id = groupKey(g)
+    const now = props.collapsed ?? []
+    props.onCollapsedChange?.(now.includes(id) ? now.filter((x) => x !== id) : [...now, id])
+  }
   const isClosed = (item: NavItemProps) =>
     !q() && !!props.collapsed?.includes(keyOf(item)) && !currentIn(item)
   const toggle = (item: NavItemProps) => {
@@ -338,22 +360,47 @@ export function Nav(props: NavProps): JSX.Element {
           {(group) => (
             <>
               <Show when={group().label}>
-                <Show when={group().action} fallback={<span class="nc-nav__label">{group().label}</span>}>
-                  {(action) => (
-                    <div class="nc-nav__head" data-empty={group().items.length === 0 ? "" : undefined}>
-                      <span class="nc-nav__label">{group().label}</span>
+                <Show
+                  when={group().action || group().icon || foldable(group())}
+                  fallback={<span class="nc-nav__label">{group().label}</span>}
+                >
+                  <div
+                    class="nc-nav__head"
+                    data-empty={group().items.length === 0 ? "" : undefined}
+                    data-icon={group().icon ? "" : undefined}
+                  >
+                    <span class="nc-nav__label">
+                      <Show when={group().icon}>{(icon) => <Icon name={icon()} size="sm" />}</Show>
+                      {group().label}
+                    </span>
+                    <Show when={group().action}>
+                      {(action) => (
+                        <IconButton
+                          size="sm"
+                          class="nc-nav__action"
+                          icon={action().icon}
+                          label={action().label}
+                          onClick={() => action().onClick()}
+                        />
+                      )}
+                    </Show>
+                    <Show when={foldable(group())}>
                       <IconButton
                         size="sm"
-                        class="nc-nav__action"
-                        icon={action().icon}
-                        label={action().label}
-                        onClick={() => action().onClick()}
+                        class="nc-nav__action nc-nav__fold"
+                        data-part="nav-group-fold"
+                        icon={groupClosed(group()) ? "chevron-right" : "chevron-down"}
+                        label={groupClosed(group()) ? `Expand ${group().label}` : `Collapse ${group().label}`}
+                        aria-expanded={groupClosed(group()) ? "false" : "true"}
+                        onClick={() => toggleGroup(group())}
                       />
-                    </div>
-                  )}
+                    </Show>
+                  </div>
                 </Show>
               </Show>
-              <Tree items={group().items} />
+              <Show when={!groupClosed(group())}>
+                <Tree items={group().items} />
+              </Show>
             </>
           )}
         </For>

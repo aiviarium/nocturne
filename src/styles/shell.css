@@ -337,6 +337,10 @@ button.nc-title-bar__app:hover, button.nc-title-bar__app[aria-expanded="true"] {
 .nc-nav__children { display: flex; flex-direction: column; gap: 1px; }
 .nc-nav-item--child { padding-left: calc(var(--space-2) + 15px + var(--space-2)); color: var(--text-3); }
 .nc-nav-item--child[aria-current="page"] { color: var(--text-1); }
+/* "Show 3 more" and "Show fewer" at the end of a list of entries: centred, small and faint, below the rows' weight. */
+.nc-nav-item.nc-nav-item--more { justify-content: center; height: 24px; padding-inline: var(--space-2); color: var(--text-4); font-size: var(--nc-type-section); font-weight: 400; }
+.nc-nav-item.nc-nav-item--more > .nc-nav-item__label { flex: none; }
+.nc-nav-item.nc-nav-item--more:hover { color: var(--text-2); }
 .nc-nav-item[data-within], .nc-nav-item[data-within] > .nc-icon { color: var(--text-1); }
 .nc-nav-item__count { font-size: var(--nc-type-section); }
 /* A parent's fold control sits at the row's end, over its count: hidden at rest, it takes the count's place on

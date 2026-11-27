@@ -57,6 +57,7 @@ The place's row still opens its list.
 Its records open in place, and the scopes it `enters` drill in, with a chevron.
 The open entry is marked in place of its place.
 Past the `limit`, 8 by default, the rest fold into one row, "Show 3 more", which lists them in place.
+That row is centred, in 11px `text-4`, and 24px tall.
 The list then ends in "Show fewer".
 The shell keeps which lists are open in its storage, and the open entry shows when its list is folded.
 A long or filtered list, such as issues, is left to its view.
@@ -87,6 +88,13 @@ The fold and the width are kept in the shell's storage.
 The sidebar's foot is an `AccountMenu`.
 It says who is signed in, holds the app's items, "Appearance…" with `onAppearance`, the theme as one row of three icons, and sign out last.
 Folded, it is the avatar alone.
+
+## Group headings
+
+A `NavGroup` heading, such as Projects in the root, is 11px `text-3`.
+It may start with a 13px `icon` and end with one `action`, such as adding to the group.
+With `collapsible` it ends in a chevron that folds the group, kept in the same `collapsed` list as folded parents under the group's `id`.
+A group with the open item in it can't fold.
 
 ## Drill or nest
 

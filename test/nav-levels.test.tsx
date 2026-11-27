@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, test } from "bun:test"
-import { flush } from "solid-js"
+import { createSignal, flush } from "solid-js"
 import { Nav, NavItem, Select, TextArea, TextField } from "../src"
 import { click, mount, one } from "./dom"
 
@@ -72,5 +72,47 @@ describe("field info", () => {
     }
     expect(root.querySelectorAll("[data-part=info-tip]").length).toBe(3)
     expect(root.textContent).not.toContain("The name people see.")
+  })
+})
+
+describe("Nav group headings", () => {
+  test("a heading takes a small icon, and a collapsible one folds its group, kept in collapsed", () => {
+    const [collapsed, setCollapsed] = createSignal<string[]>([])
+    const opened: string[] = []
+    const { root } = track(
+      mount(() => (
+        <Nav
+          label="Host"
+          collapsed={collapsed()}
+          onCollapsedChange={setCollapsed}
+          groups={[
+            {
+              id: "sessions",
+              label: "Sessions",
+              icon: "terminal",
+              collapsible: true,
+              action: { label: "Open Sessions", icon: "arrow-right", onClick: () => opened.push("sessions") },
+              items: [
+                { id: "s1", label: "build", onClick: () => {} },
+                { id: "s2", label: "shell", onClick: () => {} },
+              ],
+            },
+          ]}
+        />
+      )),
+    )
+    const head = one(".nc-nav__head", root)
+    expect(head.querySelector(".nc-nav__label .nc-icon")).not.toBeNull()
+    expect(root.querySelectorAll("[data-part=nav-item]").length).toBe(2)
+    click(one("[aria-label='Open Sessions']", root))
+    expect(opened).toEqual(["sessions"])
+    click(one("[data-part=nav-group-fold]", root))
+    flush()
+    expect(collapsed()).toEqual(["sessions"])
+    expect(root.querySelectorAll("[data-part=nav-item]").length).toBe(0)
+    expect(one("[data-part=nav-group-fold]", root).getAttribute("aria-expanded")).toBe("false")
+    click(one("[data-part=nav-group-fold]", root))
+    flush()
+    expect(root.querySelectorAll("[data-part=nav-item]").length).toBe(2)
   })
 })
