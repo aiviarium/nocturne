@@ -261,11 +261,16 @@ describe("AppShell", () => {
 })
 
 describe("SidebarHeader", () => {
-  test("↑ goes to the scope above, named after it, and shows only when there is one", () => {
+  test("↑ goes up, named after where it goes, and stays in place, disabled, when there is nowhere up", () => {
     let up = 0
     const [parent, setParent] = createSignal(true)
+    const [shown, setShown] = createSignal(true)
     const { root } = track(
-      mount(() => <SidebarHeader up={parent() ? { label: "Projects", onClick: () => up++ } : undefined} />),
+      mount(() => (
+        <SidebarHeader
+          up={shown() ? (parent() ? { label: "Projects", onClick: () => up++ } : { label: "Up" }) : undefined}
+        />
+      )),
     )
     const header = one("[data-part=sidebar-header]", root)
     const button = one("[data-part=sidebar-up]", header)
@@ -273,6 +278,12 @@ describe("SidebarHeader", () => {
     click(button)
     expect(up).toBe(1)
     setParent(false)
+    flush()
+    const still = one("[data-part=sidebar-up]", header)
+    expect(still.hasAttribute("disabled") || still.getAttribute("aria-disabled") === "true").toBe(true)
+    click(still)
+    expect(up).toBe(1)
+    setShown(false)
     flush()
     expect(header.querySelector("[data-part=sidebar-up]")).toBeNull()
     // Outside a shell, with nothing to minimise, the row is the filter alone.

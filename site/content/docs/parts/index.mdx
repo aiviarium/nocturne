@@ -1,60 +1,153 @@
 ---
 title: Overview
-description: The part to use for each thing a view shows.
+description: The part to use for each thing a view shows, from the shell down.
 ---
 
 Build every view from these parts.
 Views then look and behave alike, however many teams or modules write them.
-The window around them is the [app shell](../shell/index.mdx).
+Don't restyle a part for one view.
+If a part lacks something, add a variant to it and update its page.
 
-Do not restyle a part for one view.
-If a part lacks something, add a variant to it.
-
-Sizes are the tokens in `src/styles/tokens.css`: `--control-*`, `--row-*`, `--header`, `--space-*` and `--radius-*`.
+The tables start from the window and go down to the smallest mark.
+Each row gives the part, the page with its rules, and a place in the [demo](../demo.mdx) where it's used.
 On a phone each part takes the phone scale by itself, see [Phones](../phones.mdx).
 
-| You are showing | Use | Page |
-| --- | --- | --- |
-| The app's window: title bar, sidebar, view surface, panels | `createShell` and `Shell` | [The app shell](../shell/index.mdx) |
-| The path, the lenses, search and the window controls | `TitleBar`, `ScopePath`, `ScopeBox`, `LensSwitch`, `WindowControls` | [Title bar and lenses](../shell/title-bar.mdx) |
-| The sidebar's header and tree | `SidebarHeader`, `Nav` | [Sidebar](../shell/sidebar.mdx) |
-| The header of a view, its trail and stepper | `ShellViewHeader`, `ViewHeader`, `Trail` | [View header and trail](../shell/view-header.mdx) |
-| Details, a terminal, logs beside the view | `PanelRail`, `ShellPanel` | [Panels](../shell/panels.mdx) |
-| Back and forward | `createHistory`, `HistoryArrows` | [History](../shell/history.mdx) |
-| Theme and accent settings | `createAppearance`, `AppearanceSettings` | [Appearance](../shell/appearance.mdx) |
-| The frame of a view | `ViewLayout`, `ShellViewHeader` | [Views](./views.mdx#the-frame-of-a-view) |
-| A box of content | `Card` | [Views](./views.mdx#card) |
-| A tool region with a header | `Panel` | [Views](./views.mdx#panel) |
-| The heading of a section | `SectionHeading` | [Views](./views.mdx#section-heading) |
-| A view's own sidebar, drilling down or nesting, phones | `ViewLayout`, `Nav`, `NavigationStack` | [Navigation](./navigation.mdx) |
-| A list of things | `RowList` and `ListRow` | [Lists](./lists.mdx) |
-| Groups of rows under a foldable heading | `RowSection` | [Lists](./lists.mdx#sections) |
-| Records in lanes | `Board`, `BoardLane`, `BoardCard` | [Records](./records.mdx#board) |
-| A table of records | `DataTable` | [Records](./records.mdx#datatable) |
-| Records edited in place | `DataList` | [Records](./records.mdx#datalist) |
-| An action | `Button` | [Actions](./actions.mdx#button) |
-| An action shown as an icon | `IconButton` | [Actions](./actions.mdx#iconbutton) |
-| Text edited in place | `InlineField` | [Forms](./forms.mdx#inlinefield) |
-| A form field | `TextField`, `TextArea`, `Select`, `Switch`, `SchemaForm` | [Forms](./forms.mdx#form-fields) |
-| A number | `NumberField` | [Forms](./forms.mdx#numberfield) |
-| A bounded value, roughly | `Slider`, `RangeSlider` | [Forms](./forms.mdx#slider) |
-| Label and value pairs | `PropertyList` | [Forms](./forms.mdx#propertylist) |
-| A setting a person changes, at a scope | `SettingRow` | [Forms](./forms.mdx#settingrow) |
-| Search and filters | `FilterBar` | [Filters](./filters.mdx#filterbar) |
-| The number of results in a filter bar | `FilterCount` | [Filters](./filters.mdx#filterbar) |
-| Filters over the fields of a list | `QueryBuilder` | [Filters](./filters.mdx#querybuilder) |
-| The state of an item | `State` | [Status](./status.mdx#state) |
-| A kind, category or count | `Badge`, `LabelChip`, `Count` | [Status](./status.mdx#badge-labelchip-and-count) |
-| Facts about an item | `MetaLine` | [Status](./status.mdx#metaline) |
-| Nothing to show | `EmptyState` | [Status](./status.mdx#emptystate) |
-| Text that may not fit | `Truncate` | [Status](./status.mdx#truncate) |
-| A figure | `Stat`, `StatCard` | [Figures](./figures.mdx#stat-and-statcard) |
-| A live value | `Widget` with a live part: progress, steps, segments, a sparkline, a ring, a timer | [Widgets](./widgets.mdx#widget) |
-| Context used, a rate | `ContextWidget`, `RateWidget` | [Widgets](./widgets.mdx#contextwidget-and-ratewidget) |
-| A page of widgets | `WidgetGrid` | [Widgets](./widgets.mdx#widgetgrid) |
-| A conversation with the assistant | `ChatMessage`, `Composer` | [Conversation and code](./conversation.mdx) |
-| Images, audio, video and files in a message | `ChatMedia`, `MediaViewer` | [Conversation and code](./conversation.mdx#media) |
-| Code and changes | `CodeBlock`, `DiffView` | [Conversation and code](./conversation.mdx#codeblock) |
+## The window
+
+The app registers what exists, and `Shell` draws the window.
+An app never renders the parts in this table itself.
+
+| You are showing | Use | Page | In the demo |
+| --- | --- | --- | --- |
+| The app's window | `createShell`, `Shell` and `AppShell` | [The app shell](../shell/index.mdx) | <DemoLink to="projects/atlas/build/issues">Issues</DemoLink> |
+| The path and its switchers | `TitleBar`, `ScopePath`, `Switcher`, `SwitcherList` | [Title bar](../shell/title-bar.mdx#the-scope-path) | <DemoLink to="hosts/build-01/operate/overview">A host</DemoLink> |
+| The lenses, search and the palette | `ScopeBox`, `LensSwitch`, `LensCustomise`, `CommandPalette` | [Title bar](../shell/title-bar.mdx#the-scope-box) | <DemoLink to="projects/atlas/explore/triage">Triage</DemoLink> |
+| A status item in the title bar | `TitleBarItem` | [Title bar](../shell/title-bar.mdx#status-items) | <DemoLink to="inbox">Inbox</DemoLink> |
+| The window controls | `WindowControls` | [Title bar](../shell/title-bar.mdx#window-controls) | <DemoLink to="inbox">Inbox</DemoLink>, as a desktop window |
+| Back and forward | `createHistory`, `HistoryArrows` | [History](../shell/history.mdx) | <DemoLink to="projects/atlas/build/issues/WEB-142">WEB-142</DemoLink> |
+| The sidebar's header and tree | `SidebarHeader`, `Nav`, `NavItem`, `MatchText`, `EntryLead` | [Sidebar](../shell/sidebar.mdx) | <DemoLink to="projects/atlas/build/issues">Issues</DemoLink> |
+| Who is signed in | `AccountMenu` | [Actions](./actions.mdx#accountmenu) | <DemoLink to="settings/general">Settings</DemoLink> |
+| A view's header, its trail and stepper | `ShellViewHeader`, `ViewHeader`, `Trail` | [View header](../shell/view-header.mdx) | <DemoLink to="projects/atlas/build/issues/WEB-142">WEB-142</DemoLink> |
+| Details, a terminal or the assistant beside the view | `PanelRail`, `ShellPanel` | [Panels](../shell/panels.mdx) | <DemoLink to="hosts/build-01/operate/logs">Logs</DemoLink> |
+| A border that resizes | `ResizeHandle` | [Panels](../shell/panels.mdx#resizable-borders) | <DemoLink to="inbox">Inbox</DemoLink> |
+| Theme and accent settings | `createAppearance`, `AppearanceSettings` | [Appearance](../shell/appearance.mdx) | <DemoLink to="settings/appearance">Appearance</DemoLink> |
+
+## Inside a view
+
+| You are showing | Use | Page | In the demo |
+| --- | --- | --- | --- |
+| The frame of a view | `ViewLayout` | [Views](./views.mdx#viewlayout) | <DemoLink to="projects/atlas/explore/ideas">Ideas</DemoLink> |
+| A view's own sidebar | `ViewLayout` with `sidebar` | [Navigation](./navigation.mdx#a-views-own-sidebar) | Not in the demo |
+| A switch between views of one place | Segmented `Tabs` in the header's middle | [Views](./views.mdx#tabs) | <DemoLink to="inbox">Inbox</DemoLink> |
+| Sections of one record | Underline `Tabs` with `TabPanel` | [Views](./views.mdx#tabs) | <DemoLink to="settings/webhooks/deploys-slack">A webhook</DemoLink> |
+| A box of content | `Card` | [Views](./views.mdx#card) | <DemoLink to="projects/atlas/explore/ideas">Ideas</DemoLink> |
+| A tool region with a header | `Panel` | [Views](./views.mdx#panel) | <DemoLink to="dashboard/fleet">Fleet</DemoLink> |
+| The heading of a section | `SectionHeading` | [Views](./views.mdx#sectionheading) | <DemoLink to="hosts/build-01/operate/overview">A host</DemoLink> |
+| Columns with a divider between them | `Split`, `SplitGroup` | [Views](./views.mdx#split-and-splitgroup) | <DemoLink to="projects/atlas/explore/triage">Triage</DemoLink> |
+| Tiles of frames with tabs | `Dock`, `Frame`, `TabStrip`, `TabDropFrame` | [Views](./views.mdx#dock-frame-and-tabstrip) | <DemoLink to="hosts/build-01/operate/sessions/s_7f2a">A session</DemoLink> |
+| Links through the app's router | `LinkProvider` | [Views](./views.mdx#linkprovider) | <DemoLink to="projects/atlas/product/roadmap">Roadmap</DemoLink> |
+
+## Lists and records
+
+| You are showing | Use | Page | In the demo |
+| --- | --- | --- | --- |
+| A list of things | `RowList` and `ListRow` | [Lists](./lists.mdx) | <DemoLink to="inbox">Inbox</DemoLink> |
+| Groups of rows under a heading that folds | `RowSection` | [Lists](./lists.mdx#rowsection) | <DemoLink to="projects/atlas/build/issues">Issues</DemoLink> |
+| A long list of one-line rows | `List` | [Lists](./lists.mdx#list) | <DemoLink to="agent/runs">Runs</DemoLink> |
+| Records in lanes | `Board`, `BoardLane`, `BoardLaneHead`, `BoardCard`, `BoardCardTop`, `BoardCardTitle`, `BoardCardMeta`, `BoardDrop` | [Records](./records.mdx#board) | <DemoLink to="projects/atlas/build/board">Board</DemoLink> |
+| A table of records | `DataTable` | [Records](./records.mdx#datatable) | <DemoLink to="settings/members">Members</DemoLink> |
+| Records edited in place | `DataList`, `DataListInput` | [Records](./records.mdx#datalist) | <DemoLink to="settings/keys">API keys</DemoLink> |
+| Label and value pairs | `PropertyList` | [Forms](./forms.mdx#propertylist) | <DemoLink to="projects/atlas/build/issues/WEB-142">WEB-142</DemoLink> |
+
+## Actions, menus and overlays
+
+| You are showing | Use | Page | In the demo |
+| --- | --- | --- | --- |
+| An action | `Button` | [Actions](./actions.mdx#button) | <DemoLink to="projects/atlas/explore/triage">Triage</DemoLink> |
+| An action shown as an icon | `IconButton` | [Actions](./actions.mdx#iconbutton) | <DemoLink to="dashboard/overview">Dashboard</DemoLink> |
+| A menu behind a button | `DropdownMenu`, `Menu` | [Actions](./actions.mdx#menus) | <DemoLink to="settings/members">Members</DemoLink> |
+| A row's menu and its right click | `RowMenu`, `ContextMenu` | [Actions](./actions.mdx#menus) | <DemoLink to="projects/atlas/build/board">Board</DemoLink> |
+| The name of an icon-only control | `Tooltip` | [Actions](./actions.mdx#tooltip) | <DemoLink to="dashboard/fleet">Fleet</DemoLink> |
+| A keyboard shortcut | `Kbd`, `KbdGroup` | [Actions](./actions.mdx#kbd) | <DemoLink to="settings/shortcuts">Shortcuts</DemoLink> |
+| A box next to an element | `Popover`, `PopoverButton` | [Overlays](../overlays.mdx#popover) | <DemoLink to="projects/atlas/explore/ideas">Ideas</DemoLink> |
+| A form or a confirmation over the view | `Dialog` | [Overlays](../overlays.mdx#dialog) | <DemoLink to="settings/keys">API keys</DemoLink> |
+| A short notice | `toast` and one `ToastRegion` | [Overlays](../overlays.mdx#tooltips-and-toasts) | <DemoLink to="inbox">Inbox</DemoLink> |
+
+## Forms and settings
+
+| You are showing | Use | Page | In the demo |
+| --- | --- | --- | --- |
+| Text edited in place | `InlineField` | [Forms](./forms.mdx#inlinefield) | <DemoLink to="projects/atlas/build/issues/WEB-142">WEB-142</DemoLink> |
+| A form field | `TextField`, `TextArea`, `Select`, `Switch`, `Checkbox`, `RadioGroup` | [Forms](./forms.mdx#form-fields) | <DemoLink to="settings/general">General</DemoLink> |
+| A number | `NumberField` | [Forms](./forms.mdx#numberfield) | <DemoLink to="settings/general">General</DemoLink> |
+| A bounded value, roughly | `Slider`, `RangeSlider` | [Forms](./forms.mdx#slider-and-rangeslider) | <DemoLink to="settings/general">General</DemoLink> |
+| An explanation beside a label | `InfoTip` | [Forms](./forms.mdx#infotip) | <DemoLink to="settings/general">General</DemoLink> |
+| A setting a person changes, at a scope | `SettingRow` | [Forms](./forms.mdx#settingrow) | <DemoLink to="settings/general">General</DemoLink> |
+| A form from a JSON Schema | `SchemaForm` | [Fields](../fields.mdx#schemaform) | <DemoLink to="settings/webhooks/deploys-slack">A webhook</DemoLink> |
+| A typed value, its editor or its filter | `FormField`, `FieldEditor`, `FieldValue`, `FieldFilter`, `FieldEmpty` | [Fields](../fields.mdx#field-kinds) | <DemoLink to="settings/profile">Profile</DemoLink> |
+
+## Filters
+
+| You are showing | Use | Page | In the demo |
+| --- | --- | --- | --- |
+| Search and filters | `FilterBar` | [Filters](./filters.mdx#filterbar) | <DemoLink to="projects/atlas/explore/ideas">Ideas</DemoLink> |
+| The number of results | `FilterCount` | [Filters](./filters.mdx#filtercount) | <DemoLink to="projects/atlas/explore/ideas">Ideas</DemoLink> |
+| Rules over the fields of a list | `QueryBuilder`, `QueryError` | [Filters](./filters.mdx#querybuilder) | <DemoLink to="hosts/build-01/operate/logs">Logs</DemoLink> |
+
+## Status and facts
+
+| You are showing | Use | Page | In the demo |
+| --- | --- | --- | --- |
+| The state of an item | `State`, `StatusDot` | [Status](./status.mdx#state-and-statusdot) | <DemoLink to="hosts">Hosts</DemoLink> |
+| A kind, a label or an attention count | `Badge`, `LabelChip`, `Count` | [Status](./status.mdx#badge-labelchip-and-count) | <DemoLink to="projects/atlas/build/issues">Issues</DemoLink> |
+| An identifier or an error code | `IdBadge`, `CodeBadge` | [Status](./status.mdx#idbadge-and-codebadge) | <DemoLink to="settings/webhooks/deploys-slack">A webhook</DemoLink> |
+| Facts about an item | `MetaLine` | [Status](./status.mdx#metaline) | <DemoLink to="projects/atlas/build/pulls">Pull requests</DemoLink> |
+| Nothing to show | `EmptyState` | [Status](./status.mdx#emptystate) | <DemoLink to="projects/atlas/build/issues">Issues</DemoLink>, in Details with nothing selected |
+| Something went wrong, inline | `Callout` | [Status](./status.mdx#callout) | <DemoLink to="settings/webhooks/deploys-slack">A webhook</DemoLink> |
+| Content that is loading | `Skeleton` | [Status](./status.mdx#skeleton) | <DemoLink to="dashboard/overview">Dashboard</DemoLink> |
+| Text that may not fit | `Truncate` | [Status](./status.mdx#truncate) | <DemoLink to="projects/atlas/explore/ideas">Ideas</DemoLink> |
+| People, agents and places | `Avatar`, `AvatarStack`, `Mark` | [Status](./status.mdx#avatar-and-mark) | <DemoLink to="projects">Projects</DemoLink> |
+| An icon | `Icon`, `StopGlyph` | [Icons](../icons.mdx) | <DemoLink to="agent/runs">Runs</DemoLink> |
+
+## Figures and widgets
+
+| You are showing | Use | Page | In the demo |
+| --- | --- | --- | --- |
+| A figure | `Stat`, `StatCard` | [Figures](./figures.mdx#stat-and-statcard) | <DemoLink to="projects/atlas/build/cycles">Cycles</DemoLink> |
+| A change since last time | `Delta` | [Figures](./figures.mdx#delta) | <DemoLink to="dashboard/overview">Dashboard</DemoLink> |
+| A live value | `Widget` with `WidgetProgress`, `WidgetSteps`, `WidgetSegments`, `WidgetSparkline`, `WidgetGauge`, `WidgetMeters`, `WidgetRing`, `WidgetUptime`, `WidgetTimer`, `WidgetControls` or `WidgetStats` | [Widgets](./widgets.mdx#widget) | <DemoLink to="dashboard/overview">Dashboard</DemoLink> |
+| Context used, a rate | `ContextWidget`, `RateWidget` | [Widgets](./widgets.mdx#contextwidget-and-ratewidget) | <DemoLink to="agent/chats/c-arm64">A chat</DemoLink>, in Details |
+| A page of widgets | `WidgetGrid` | [Widgets](./widgets.mdx#widgetgrid) | <DemoLink to="dashboard/overview">Dashboard</DemoLink> |
+
+## Conversation, code and text
+
+| You are showing | Use | Page | In the demo |
+| --- | --- | --- | --- |
+| A conversation with the assistant | `ChatMessage`, `ToolSteps`, `ToolStep`, `ApprovalCard`, `Token` | [Conversation](./conversation.mdx#chatmessage) | <DemoLink to="agent/chats/c-arm64">A chat</DemoLink> |
+| Images, audio, video and files in a message | `ChatMedia`, `MediaViewer` | [Conversation](./conversation.mdx#media) | <DemoLink to="agent/chats/c-arm64">A chat</DemoLink> |
+| The input to the assistant | `Composer`, `DictationBar`, `TranscriberProvider`, `DictationBlockedError` | [Conversation](./conversation.mdx#composer) | <DemoLink to="agent/chats/c-arm64">A chat</DemoLink> |
+| The state of a stream | `StreamState` | [Conversation](./conversation.mdx#streamstate) | <DemoLink to="hosts/build-01/operate/logs">Logs</DemoLink> |
+| Code and changes | `CodeBlock`, `DiffView` | [Conversation](./conversation.mdx#codeblock) | <DemoLink to="projects/atlas/build/pulls/418">Pull request 418</DemoLink> |
+| Log lines | `LogViewer` | [Conversation](./conversation.mdx#logviewer) | <DemoLink to="hosts/build-01/operate/logs">Logs</DemoLink> |
+| A document or rich text | `RichTextEditor`, `EditorServicesProvider` | [Rich text editor](../editor.mdx) | <DemoLink to="projects/atlas/product/specs/onboarding">A spec</DemoLink> |
+
+## Phones
+
+The parts above switch to the phone scale by themselves.
+These parts exist for phone screens only.
+
+| You are showing | Use | Page | In the demo |
+| --- | --- | --- | --- |
+| A stack of screens with a bar each | `NavigationStack`, `NavigationScreen`, `NavigationBar` | [Phones](../phones.mdx#navigation) | <DemoLink to="settings/mobile">Mobile app</DemoLink> |
+| A screen's options, search and refresh | `ScreenOptions`, `ScreenSearch`, `ScreenRefresh` | [Phones](../phones.mdx#navigation) | <DemoLink to="settings/mobile">Mobile app</DemoLink> |
+| The tab bar | `TabBar` | [Phones](../phones.mdx#navigation) | <DemoLink to="settings/mobile">Mobile app</DemoLink> |
+| Sheets from the bottom | `Sheet`, `ActionSheet` | [Phones](../phones.mdx#sheets-and-lists) | <DemoLink to="settings/mobile">Mobile app</DemoLink> |
+| Grouped settings and pickers | `InsetList`, `InsetGroup`, `InsetRow` | [Phones](../phones.mdx#sheets-and-lists) | <DemoLink to="settings/mobile">Mobile app</DemoLink> |
+| A bar above the keyboard, pull to refresh | `BottomArea`, `PullToRefresh` | [Phones](../phones.mdx#the-on-screen-keyboard) | <DemoLink to="settings/mobile">Mobile app</DemoLink> |
+| A phone preview inside a desktop page | `PhoneFrame` | [Phones](../phones.mdx#navigation) | <DemoLink to="settings/mobile">Mobile app</DemoLink> |
+| The phone layout forced for a subtree | `PhoneOverride` | [Phones](../phones.mdx#phone-mode) | <DemoLink to="settings/mobile">Mobile app</DemoLink> |
+
+## Rules for every part
 
 The rules for focus, contrast, colour and spacing hold for every part.
 See [Focus](../focus.mdx), [Colour](../tokens/colour.mdx#neutral-fills) and [Sizes](../tokens/sizes.mdx#spacing).

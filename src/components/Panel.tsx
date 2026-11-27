@@ -74,11 +74,16 @@ export interface FrameProps extends Omit<JSX.HTMLAttributes<HTMLDivElement>, "ti
   header?: JSX.Element
   /** The frame that has the person's attention among several: a stronger edge. */
   focused?: boolean
+  /**
+   * No edge, radius or fill: the frame is the view itself, as a lone log or terminal that runs to the view's edges.
+   * Tile several frames with their edges.
+   */
+  bare?: boolean
 }
 
 /** A content frame: bg-1, radius 8, a hairline edge, with an optional header bar. For tiled frames such as a `Dock`. */
 export function Frame(props: FrameProps): JSX.Element {
-  const rest = omit(props, "flush", "header", "focused", "class", "children")
+  const rest = omit(props, "flush", "header", "focused", "bare", "class", "children")
   // Read once, as in AppShell: the header is a TabStrip with state and listeners, and must not be built twice.
   const header = createMemo(() => props.header)
   return (
@@ -89,6 +94,7 @@ export function Frame(props: FrameProps): JSX.Element {
         "nc-frame",
         Boolean(props.flush || header()) && "nc-frame--flush",
         Boolean(header()) && "nc-frame--stacked",
+        props.bare && "nc-frame--bare",
         props.class,
       )}
       {...rest}

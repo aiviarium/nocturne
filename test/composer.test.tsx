@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, test } from "bun:test"
 import { createSignal, flush } from "solid-js"
-import { Composer, type ComposerSubmit, type ComposerValue } from "../src"
+import { Button, Composer, type ComposerSubmit, type ComposerValue } from "../src"
 import { flatText, selectFlat, selectionFlat } from "../src/lib/editor"
 import { all, click, editorOf, mount, one, placeCaret, press, tick, typeText } from "./dom"
 
@@ -570,5 +570,43 @@ describe("Composer states", () => {
     await tick()
     click(all("button").find((b) => b.textContent === "Open settings") as HTMLElement)
     expect(calls).toEqual(["start", "finish", "cancel", "settings"])
+  })
+})
+
+describe("Composer pickers", () => {
+  test("the effort picker is a ghost button like the model picker, and keeps its class under the menu's props", () => {
+    const { root } = track(
+      mount(() => (
+        <Composer
+          models={[{ id: "deep", label: "Deep" }]}
+          effort="medium"
+          onEffortChange={() => {}}
+          onSubmit={() => {}}
+        />
+      )),
+    )
+    const effort = one("[aria-label^='Effort']", root)
+    expect(effort.classList.contains("nc-effort")).toBe(true)
+    expect(effort.classList.contains("nc-btn--ghost")).toBe(true)
+    expect(effort.classList.contains("nc-btn--sm")).toBe(true)
+    expect(effort.textContent).toContain("Medium")
+  })
+})
+
+describe("Button flush", () => {
+  test("hangs its padding outside its box so its label lines up with the text around it", () => {
+    let clicked = 0
+    const { root } = track(
+      mount(() => (
+        <Button variant="ghost" size="sm" flush onClick={() => clicked++}>
+          Admin
+        </Button>
+      )),
+    )
+    const button = one("[data-part=button]", root)
+    expect(button.classList.contains("nc-btn--flush")).toBe(true)
+    expect(button.hasAttribute("flush")).toBe(false)
+    click(button)
+    expect(clicked).toBe(1)
   })
 })

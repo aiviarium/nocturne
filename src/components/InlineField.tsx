@@ -1,5 +1,5 @@
 import type { JSX } from "@solidjs/web"
-import { createEffect, createSignal, omit, Show, untrack } from "solid-js"
+import { createEffect, createSignal, omit, Show } from "solid-js"
 import { cx } from "../lib/cx"
 
 export interface InlineFieldProps
@@ -47,29 +47,27 @@ export function InlineField(props: InlineFieldProps): JSX.Element {
     "selectOnFocus",
     "class",
   )
-  // The saved value seeds the draft once; the effect below keeps it in step from then on.
-  const [draft, setDraft] = createSignal(untrack(() => props.value))
+  // What the person typed since the field took focus; until then, and after a commit or Escape, the saved value
+  // shows. Derived rather than copied in an effect, so a new value (another device, the next record) shows at once.
+  const [typed, setTyped] = createSignal<string | undefined>(undefined)
+  const draft = () => typed() ?? props.value
   let editing = false
-  // A new saved value (from another device, or after a save) replaces the draft while it is not being edited.
-  createEffect(
-    () => props.value,
-    (v) => {
-      if (!editing) setDraft(v)
-    },
-  )
   const commit = () => {
     const wasEditing = editing
     editing = false
     // Escape reverts, then blurs: the blur that follows must not commit the text it put back.
     if (!wasEditing) return
-    const next = props.multiline ? draft().replace(/\s*\n\s*/g, " ") : draft()
+    const text = typed()
+    setTyped(undefined)
+    if (text === undefined) return
+    const next = props.multiline ? text.replace(/\s*\n\s*/g, " ") : text
     if (next !== props.value) props.onCommit(next)
   }
   const revert = (el: HTMLInputElement | HTMLTextAreaElement) => {
-    // A draft write is read back only after the next flush, so the restored text goes to the field here.
+    // A write is read back only after the next flush, so the restored text goes to the field here.
     editing = false
     el.value = props.value
-    setDraft(() => props.value)
+    setTyped(undefined)
     el.blur()
   }
   const handlers = {
@@ -79,7 +77,7 @@ export function InlineField(props: InlineFieldProps): JSX.Element {
     },
     onInput: (e: InputEvent) => {
       const v = (e.currentTarget as HTMLInputElement).value
-      setDraft(v)
+      setTyped(v)
       props.onInput?.(v)
     },
     onBlur: () => commit(),

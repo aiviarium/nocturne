@@ -224,7 +224,7 @@ export function AppShell(props: AppShellProps): JSX.Element {
           data-folded={folded() ? "" : undefined}
           data-phone={phone() ? "" : undefined}
           data-drawer={drawerOpen() ? "open" : undefined}
-          class={cx("nc-app-shell", props.class)}
+          class={cx("nc nc-app-shell", props.class)}
           style={{ "--nc-sidebar-w": `${sidebarSize.value()}px` }}
         >
           {props.titleBar}

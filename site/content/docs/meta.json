@@ -2,6 +2,7 @@
   "title": "Guide",
   "pages": [
     "index",
+    "demo",
     "theming",
     "---Design system---",
     "shell",
@@ -14,7 +15,6 @@
     "phones",
     "fields",
     "query-builder",
-    "editor",
-    "from-the-prototype"
+    "editor"
   ]
 }

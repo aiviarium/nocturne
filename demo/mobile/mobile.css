@@ -1,0 +1,46 @@
+/* The companion app's preview: an iPhone-sized frame in the view, with the insets of a phone with a Dynamic Island,
+   which the phone parts pad for. Layout only. */
+.dm-mobile-stage {
+  display: flex;
+  justify-content: center;
+  padding: var(--space-5) var(--space-4);
+}
+.dm-mobile-device {
+  --nc-safe-top: 47px;
+  --nc-safe-bottom: 34px;
+  --nc-safe-left: 0px;
+  --nc-safe-right: 0px;
+  position: relative;
+  width: 393px;
+  height: 760px;
+  max-height: calc(100dvh - 140px);
+  max-width: 100%;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-2xl);
+  background: var(--bg-0);
+}
+:root[data-phone] .dm-mobile-stage {
+  padding: var(--space-3);
+}
+.dm-mobile-app,
+.dm-mobile-tab,
+.dm-mobile-fill {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+.dm-mobile-tab {
+  flex: 1;
+}
+.dm-mobile-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+.dm-mobile-bottom {
+  padding: var(--space-2) var(--phone-gutter);
+  border-top: 1px solid var(--line-soft);
+  background: var(--bg-0);
+}

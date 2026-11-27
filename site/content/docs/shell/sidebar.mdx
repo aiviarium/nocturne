@@ -9,12 +9,14 @@ The title bar's path names the scope, so the sidebar doesn't.
 
 <Example id="navigation/fold-rail" />
 
+In the demo, <DemoLink to="hosts/build-01/operate/overview">a host</DemoLink> drills the sidebar into its places.
+
 ## The header
 
 `SidebarHeader` is a 44px row, from left to right:
 
-1. ↑, only when the scope has a parent. Its tooltip names it: "Up to Projects".
-2. The filter field, which fills the free width. With no ↑ it starts at the left edge, and the row looks the same either way.
+1. ↑, which goes up one level. At a record it goes to the record's list, "Up to Issues". Elsewhere it goes to the scope above, "Up to Projects". With nowhere up it is disabled, and the filter field beside it keeps its position.
+2. The filter field, which fills the free width.
 3. Collapse all, when the tree has parents.
 4. Minimise, which folds the sidebar to its rail.
 
@@ -24,6 +26,7 @@ The field is quiet at rest and 28px tall, with 12px text.
 Typing filters the tree in place.
 Matches and their parents stay, with the match underlined in `text-3`.
 Escape clears it.
+Type in the filter on <DemoLink to="projects/atlas/build/issues">Issues</DemoLink> to try it.
 
 ## The tree
 
@@ -41,9 +44,47 @@ A child view starts at its parent's label, 8 + 15 + 8px from the row's edge.
 The current item takes the `active` fill and `text-1`, at the same size and weight.
 Hover only lightens the label and the icon.
 A count shows above zero.
+On hover, a chevron at the row's end takes the count's place and folds the parent's children.
+The parent's icon stays.
 
 A place with `enters` lists scopes: opening one of its rows nests that scope in the path, and the tree drills into it.
 Entering a scope opens it as the person left it, with the lens worn last and the place that lens remembers.
+
+## Entries
+
+A place with few entries lists them with `entries`. The person opens one without going through the list.
+A top-level place becomes a section after the places, headed by its name, and the place has no row of its own.
+Its saved views and child places lead the section, then its entries.
+A nested place lists its entries under its row.
+Records open in place, and the scopes a place `enters` drill in, with a chevron.
+The open entry is marked.
+
+An entry is a row with the record's icon.
+A record's `status` is a 6px dot on the icon's lower right corner, cut out of the icon, for a state such as running or failing.
+Its `meta` ends the row, such as when it last changed.
+A record with a `detail`, such as a deploy's commit and duration, gets a second line under its name, and the icon centres on both lines.
+Entries are a step quieter than places.
+
+Past the `limit`, 8 by default, the rest fold into one row, "Show 3 more", which lists them in place.
+That row is centred, in 11px `text-4`, and 24px tall.
+The list then ends in "Show fewer".
+The shell keeps which lists are open in its storage, and the open entry shows when its list is folded.
+A long or filtered list, such as issues, is left to its view.
+A right click, the Menu key or Shift and F10 on an entry opens the same menu as its row in the list: the place's `menu` for a record, the scope's `menu` for a scope.
+The root's groups of projects and hosts open their scope's menu too.
+`NavItem` takes the menu as `menu`.
+
+### Section headings
+
+A section's title sits low in its row, near its entries and away from the block above.
+The chevron that folds it takes the entries' icon column. The title starts where their labels do.
+Clicking the title opens the place's list.
+The heading ends in "New …" when the place's `entries` has a `create`, then ↗, which opens the list and is marked while it's in the view.
+Both always show.
+A `create` that returns the new record's id opens that record.
+A section with the open entry in it can't fold.
+
+On <DemoLink to="projects/atlas/build/pulls">a project</DemoLink> the open pull requests are listed under Pull requests by title, and on <DemoLink to="hosts/build-01/operate/overview">a host</DemoLink> the sessions, three before "Show 2 more", and the latest deploys.
 
 <Example id="navigation/drilldown" />
 <Example id="nav-item/sidebar" />
@@ -54,6 +95,10 @@ Minimise, ⌘B or ⌘\\, or a drag of the edge below 140px folds the sidebar to 
 
 - The tree's top-level places show as 32px icon buttons with their names in tooltips.
 - A place whose children count shows a neutral dot.
+- A section shows as its place's icon alone. Pressing it runs the group's `open`, or its `onClick` without one, and the icon is marked while the place is open.
+  Hovering or focusing the icon shows the section's entries in a flyout to its right.
+  The small chevron under the icon lists them on the rail.
+  The flyout's heading has the section's `actions` too.
 - The account shows as its avatar at the foot.
 - The header is one button where ↑ was, "Show sidebar" (⌘B), which restores the last full width. A drag of the rail's edge past 140px does the same.
 
@@ -66,6 +111,18 @@ The fold and the width are kept in the shell's storage.
 The sidebar's foot is an `AccountMenu`.
 It says who is signed in, holds the app's items, "Appearance…" with `onAppearance`, the theme as one row of three icons, and sign out last.
 Folded, it is the avatar alone.
+
+## Group headings
+
+A `NavGroup` heading, such as Projects in the root, is 11px `text-3`.
+It may start with a 13px `icon` and end with icon `actions`, such as making a new item and opening the group's list.
+An action with `current` is marked like a current row, such as a section's open button while its list is in the view.
+With `collapsible` it ends in a chevron that folds the group, kept in the same `collapsed` list as folded parents under the group's `id`.
+A `footer` is a row under the group's items for its own controls, such as making a new item, and it shows while the group is folded.
+A group with the open item in it can't fold.
+A heading with `onClick` stands for its place, such as Sessions over a host's sessions, and the place has no other row.
+Clicking it opens the place, `count` follows the label, and `current` gives it the `active` fill.
+With `section`, it's drawn as a section heading, as the shell draws a place with entries.
 
 ## Drill or nest
 

@@ -16,8 +16,12 @@ import type { LabelHue } from "../components/Badge"
 import type { IconName } from "../components/Icon"
 import { Mark } from "../components/Mark"
 import type { NavGroup, NavItemProps } from "../components/NavItem"
+import type { DotStatus } from "../components/StatusDot"
 import type { ViewStepper } from "../components/ViewHeader"
+import { cx } from "../lib/cx"
 import { openLayers } from "../lib/layers"
+import { isPhone } from "../lib/phone"
+import type { RowMenuEntry } from "../lib/rowmenu"
 import type { PaletteCommand, PaletteQuery, PaletteSection } from "./CommandPalette"
 import { createHistory, type HistoryRouter, type ShellHistory, type StopInfo } from "./history"
 import { shownLenses } from "./LensSwitch"
@@ -41,6 +45,25 @@ export interface ShellSavedView {
   icon?: IconName
 }
 
+/**
+ * How a place lists its entries in the sidebar. A top-level place with entries is a section of its own under the
+ * places: its title opens the place, the chevron folds it, and its saved views and child places lead its entries.
+ */
+export interface ShellEntries<T = any> {
+  /**
+   * How many show. Default 8. The rest fold into a "Show N more" row that expands the list in place, with "Show
+   * fewer" at its end; the shell remembers which lists are open. The one open always shows.
+   */
+  limit?: number
+  /** A record's name in the sidebar. Default its `label`; `(r) => r.hint ?? r.label` for "#412" with a title. */
+  label?: (record: ShellRecord) => string
+  /**
+   * Makes a new record: a "New {noun}" button in the section's heading and the folded rail's flyout. Return the new
+   * record's id to open it.
+   */
+  create?: (item: T) => string | undefined
+}
+
 /** One record of a place's list: what the stepper steps over and the record crumb's switcher lists. */
 export interface ShellRecord {
   /** Its segment in the address. */
@@ -51,6 +74,12 @@ export interface ShellRecord {
   hint?: string
   icon?: IconName
   mark?: ShellMark
+  /** A state worth seeing on its sidebar entry's icon: running, failing, waiting. Left out when all is as usual. */
+  status?: DotStatus
+  /** Short text at its sidebar entry's end, such as when it last changed: "12m". */
+  meta?: string
+  /** A second line on its sidebar entry, for details of its own: "9c1e4fa · 48s". */
+  detail?: string
 }
 
 /** A place in a scope's sidebar tree. */
@@ -75,14 +104,33 @@ export interface ShellPlace<T = any> {
   noun?: string
   /** `false` for a view that names its record itself (a workbench's tabs): no trail and no stepper. */
   trail?: false
+  /**
+   * The record is a path, such as a file's: every segment after the place (or the view) is part of it, joined
+   * with `/`. `loc().record` is `src/lib/x.ts`, and the address writes it as segments, not one encoded segment.
+   */
+  path?: boolean
   /** Places nested under this one. */
   children?: ShellPlace<T>[]
+  /**
+   * The sidebar lists the place's entries, so the person opens one without the list: its `records`, or the scopes it
+   * `enters`, which drill in. A top-level place becomes a section headed by its name, which opens its view; a nested
+   * one lists them under its row. See `ShellEntries`.
+   */
+  entries?: true | ShellEntries<T>
   /** The place lists scopes: opening one of its rows (`shell.enter`) nests that scope in the path. */
   enters?: ShellScope<any>
-  /** Panels whose content this place's view already is: the rail hides them, and an open one steps aside. */
-  covers?: string[]
+  /**
+   * Panels whose content this place's view already is: the rail hides them, and an open one steps aside. A function
+   * gets the record shown, for a place whose record page shows what its list needs a panel for.
+   */
+  covers?: string[] | ((record: string | undefined) => string[])
   /** What a panel such as Details shows for one of the place's records. */
   inspect?: (record: string, item: T) => JSX.Element
+  /**
+   * The menu of one of the place's records: its entry in the sidebar opens it. The place's list passes the same
+   * entries to its `rowMenu`, so a record has one menu wherever it shows.
+   */
+  menu?: (record: string, item: T) => RowMenuEntry[]
 }
 
 /** A way of looking at a scope: its places, its panels and its hue. */
@@ -90,7 +138,7 @@ export interface ShellLens<T = any> extends Lens {
   places: ShellPlace<T>[]
   /** The panels the rail offers through this lens, by id. Default the scope's, then every panel. */
   panels?: PanelChoice
-  /** The panels open the first time the lens is put on. */
+  /** The panels open the first time the lens is put on. Not on a phone, where a panel covers the view. */
   open?: { right?: string; bottom?: string }
   /** `false`: in Customise's hidden list until the person shows it (a plugin's lens). Default shown. */
   pinned?: boolean
@@ -123,7 +171,10 @@ export interface ShellScope<T = any> {
   mark?: (item: T) => ShellMark
   /** What one item is called: "project" reads "Switch project…". */
   noun?: string
-  /** The items of a parameter scope, given the parent's item. Also the siblings its switcher lists. */
+  /**
+   * The items of a parameter scope, given the parent's item. Also the siblings its switcher lists. It may read
+   * signals: the path, the sidebar and the switchers follow them.
+   */
   items?: (parent?: unknown) => T[]
   /** An item's segment. Default its `id`. */
   itemId?: (item: T) => string
@@ -143,6 +194,8 @@ export interface ShellScope<T = any> {
   count?: () => number | undefined
   /** What a panel such as Details shows when nothing in the scope is selected. */
   inspect?: (item: T) => JSX.Element
+  /** The menu of one of the scope's items, where the sidebar lists it (a module's group, a place's `entries`). */
+  menu?: (item: T) => RowMenuEntry[]
 }
 
 /** A panel the rail opens at the view's right or under it. */
@@ -154,10 +207,10 @@ export interface ShellPanelSpec {
   /** The letter it toggles with ⌥: "d" for ⌥D. */
   key?: string
   render: (props: ShellViewProps) => JSX.Element
-  /** Its own content tabs, such as a terminal's sessions. */
-  tabs?: () => ShellPanelTabs | undefined
-  /** Buttons in its header before close. */
-  actions?: () => JSX.Element
+  /** Its own content tabs, such as a terminal's sessions. Called with the shell, like `render`. */
+  tabs?: (props: ShellViewProps) => ShellPanelTabs | undefined
+  /** Buttons in its header before close. Called with the shell, like `render`. */
+  actions?: (props: ShellViewProps) => JSX.Element
 }
 
 export interface ShellWorkspace {
@@ -241,7 +294,11 @@ export interface ShellSidebar {
   key: string
   label: string
   groups: NavGroup[]
-  up?: { label: string; onClick: () => void }
+  /**
+   * Where ↑ goes: from a record to its list, else to the scope above. Without `onClick` there is nowhere up, and the
+   * button stays in place, disabled, so the filter beside it never moves.
+   */
+  up: { label: string; onClick?: () => void }
   /** The parents in the tree, for collapse all. */
   parents: string[]
 }
@@ -265,10 +322,14 @@ const trailTo = (
   }
   return undefined
 }
+/** A record's segments in the address: one, or a path's every folder. */
+const recordSegs = (place: ShellPlace | undefined, record: string | undefined): string[] =>
+  !record ? [] : place?.path ? record.split("/").filter(Boolean) : [record]
 const holds = (lens: ShellLens, place?: string) => !!place && flat(lens.places).some((p) => p.id === place)
 const split = (path: string) => path.split("/").filter(Boolean).map(decodeURIComponent)
-const addr = (segs: Array<string | undefined>) =>
+const addr = (segs: Array<string | string[] | undefined>) =>
   `/${segs
+    .flat()
     .filter((s): s is string => !!s)
     .map((s) => encodeURIComponent(s).replace(/%40/g, "@").replace(/%3A/g, ":").replace(/%2C/g, ","))
     .join("/")}`
@@ -321,6 +382,16 @@ export function createShell(options: ShellOptions) {
     prefs.set({ ...prefs.peek(), [scope.id]: next })
     writeJson(storage, `${id}/lenses/${scope.id}`, next)
   }
+  // ── Sidebar entry lists the person expanded past their limit, by frame and place ─────────────────
+  const expandedKey = `${id}/entries/expanded`
+  const expanded = box<string[]>(readJson<string[]>(storage, expandedKey) ?? [])
+  const setExpanded = (key: string, on: boolean) => {
+    const next = expanded.peek().filter((k) => k !== key)
+    if (on) next.push(key)
+    expanded.set(next)
+    writeJson(storage, expandedKey, next)
+  }
+
   /** The scope's lenses in the person's order, the shown ones first. */
   const lensesOf = (scope: ShellScope): ShellLens[] => {
     const all = scope.lenses ?? []
@@ -410,11 +481,15 @@ export function createShell(options: ShellOptions) {
       if (view) rest = rest.slice(1)
       else view = place.views[0]
     }
-    const record = place?.records || place?.recordLabel ? rest[0] : undefined
+    const record = place?.path
+      ? rest.join("/") || undefined
+      : place?.records || place?.recordLabel
+        ? rest[0]
+        : undefined
     const tail: string[] = []
     if (place) tail.push(place.id)
     if (view && view !== place?.views?.[0]) tail.push(view.id)
-    if (record) tail.push(record)
+    if (record) tail.push(...recordSegs(place, record))
     const placeTrail = place ? (trailTo(tree, place) ?? []) : []
     let aside: ShellAside | undefined
     if (asideSeg) {
@@ -443,7 +518,7 @@ export function createShell(options: ShellOptions) {
   }
 
   /** Where the person is now, read imperatively: the router's address is current even before a flush. */
-  const now = () => resolve(split(untrack(() => router.path())))
+  const now = () => untrack(() => resolve(split(router.path())))
   const signature = (l: ShellLoc) =>
     `${l.path.join("/")}|${l.aside ? `${l.aside.panel}:${l.aside.trail.join()}` : ""}|${l.lenses.map((x) => x.id).join()}`
   const loc = createMemo(
@@ -497,7 +572,7 @@ export function createShell(options: ShellOptions) {
   }
   const history: ShellHistory = createHistory({ router, describe, storage, id: `${id}/history`, keys: false })
 
-  const navigate = (segs: Array<string | undefined>) => history.navigate(addr(segs))
+  const navigate = (segs: Array<string | string[] | undefined>) => history.navigate(addr(segs))
   /** The lens a frame is seen through: the current one in the person's frame, else the one worn last. */
   const lensFor = (f: ShellFrame, l = now()): ShellLens | undefined => {
     const all = lensesOf(f.scope)
@@ -508,7 +583,9 @@ export function createShell(options: ShellOptions) {
   const segsOf = (f: ShellFrame, place?: string, view?: string, record?: string) => {
     const cur = lensFor(f)
     const g = place && cur && !holds(cur, place) ? lensesOf(f.scope).find((x) => holds(x, place)) : cur
-    return [...f.prefix, g?.id, place ?? (g ? g.places[0]?.id : undefined), view, record]
+    const pid = place ?? (g ? g.places[0]?.id : undefined)
+    const spec = flat(g ? g.places : (f.scope.places ?? [])).find((p) => p.id === pid)
+    return [...f.prefix, g?.id, pid, view, recordSegs(spec, record)]
   }
   /** Goes to a place of a scope (the current one when left out), its saved view and a record. */
   const toPlace = (f: ShellFrame | undefined, place?: string, view?: string, record?: string) =>
@@ -559,9 +636,16 @@ export function createShell(options: ShellOptions) {
     picked?: { place?: string; id: string }
   }
   const seen = box<Record<string, Seen>>({})
+  // Whether the window is a phone: what `Shell` says (it reads `usePhone`, so `PhoneOverride` counts), else the query.
+  const phoneBox = box<boolean | undefined>(undefined)
+  const phone = () => phoneBox.get() ?? isPhone()
   const stateKey = (l: ShellLoc) => memKey(l.frame, l.lens?.id)
+  // A lens's `open` panels are for a window with room beside the view: on a phone a panel covers it.
   const seenAt = (l: ShellLoc, read = seen.get): Seen =>
-    read()[stateKey(l)] ?? { right: l.lens?.open?.right, bottom: l.lens?.open?.bottom }
+    read()[stateKey(l)] ??
+    ((read === seen.peek ? untrack(phone) : phone())
+      ? {}
+      : { right: l.lens?.open?.right, bottom: l.lens?.open?.bottom })
   const patch = (p: Seen) => {
     const l = now()
     seen.set({ ...seen.peek(), [stateKey(l)]: { ...seenAt(l, seen.peek), ...p } })
@@ -574,7 +658,10 @@ export function createShell(options: ShellOptions) {
         : panelSpecs.filter((p) => p.at === at)
     return { right: pick("right", choice?.right), bottom: pick("bottom", choice?.bottom) }
   }
-  const coversOf = (l: ShellLoc) => l.place?.covers ?? []
+  const coversOf = (l: ShellLoc) => {
+    const c = l.place?.covers
+    return typeof c === "function" ? c(l.record) : (c ?? [])
+  }
   const openOf = (l: ShellLoc, read = seen.get) => {
     const rail = railOf(l)
     const s = seenAt(l, read)
@@ -887,42 +974,174 @@ export function createShell(options: ShellOptions) {
               ) : undefined,
               icon: mark ? undefined : child.icon,
               drill: true,
+              menu: child.menu ? () => child.menu!(it) : undefined,
               onClick: () => returnTo(frame(child, it, mf, [m.id, idOf(child, it)])),
             }
           }),
         })
       }
-      return { key: "workspace", label: ws.name, groups, parents: [] }
+      return { key: "workspace", label: ws.name, groups, parents: [], up: { label: "Up" } }
     }
     const here = f.key === l.frame.key
     const lens = f.lens
     const tree = lens ? lens.places : (f.scope.places ?? [])
     const parents: string[] = []
-    const items = (places: ShellPlace[]): NavItemProps[] =>
-      places.map((p) => {
+    const sections: NavGroup[] = []
+    const items = (places: ShellPlace[], top = false): NavItemProps[] =>
+      places.flatMap((p): NavItemProps[] => {
         const views = (p.views ?? []).slice(1)
         const kids = [
           ...views.map((v) => ({
             id: `${p.id}/${v.id}`,
             label: v.label,
-            current: here && l.place === p && l.view === v && !l.record,
+            current: here && l.place === p && l.view === v,
             onClick: () => toPlace(f, p.id, v.id),
           })),
           ...items(p.children ?? []),
         ]
-        if (kids.length) parents.push(p.id)
+        const shown = entriesOf(f, p)
         const inside = here && l.place === p
-        return {
-          id: p.id,
-          label: p.label,
-          icon: p.icon ?? (kids.length ? "folder" : "file"),
-          count: p.count?.(f.item) || undefined,
-          current: inside && (!keepView(l) || !views.length) && !l.record,
-          onClick: () => toPlace(f, p.id),
-          items: kids.length ? kids : undefined,
+        // Current at its records too: the place stays marked while the person is inside one, unless the record is
+        // one of its entries, which is marked instead.
+        const current = inside && (!keepView(l) || !views.length) && !shown.some((e) => e.current)
+        if (top && p.entries) {
+          // A section: the place's name heads its views, child places and entries, and opens the place.
+          const opts: ShellEntries = p.entries === true ? {} : p.entries
+          const create = opts.create
+          const id = `section:${p.id}`
+          parents.push(id)
+          sections.push({
+            id,
+            label: p.label,
+            icon: p.icon ?? "folder",
+            section: true,
+            collapsible: true,
+            onClick: () => toPlace(f, p.id),
+            actions: [
+              ...(create
+                ? [
+                    {
+                      label: `New ${p.noun ?? "item"}`,
+                      icon: "plus" as const,
+                      onClick: () => {
+                        const made = create(f.item)
+                        if (made) toPlace(f, p.id, undefined, made)
+                      },
+                    },
+                  ]
+                : []),
+              {
+                label: `Open ${p.label}`,
+                icon: "arrow-up-right" as const,
+                onClick: () => toPlace(f, p.id),
+                current,
+              },
+            ],
+            items: [...kids, ...shown.map((e) => ({ ...e, class: cx(e.class, "nc-nav-item--entry") }))],
+          })
+          return []
         }
+        kids.push(...shown)
+        if (kids.length) parents.push(p.id)
+        return [
+          {
+            id: p.id,
+            label: p.label,
+            icon: p.icon ?? (kids.length ? "folder" : "file"),
+            count: p.count?.(f.item) || undefined,
+            current,
+            onClick: () => toPlace(f, p.id),
+            items: kids.length ? kids : undefined,
+          },
+        ]
       })
-    const groups: NavGroup[] = [{ items: items(tree) }]
+    /** A place's `entries`: its records, or the scopes it enters. */
+    function entriesOf(f: ShellFrame, p: ShellPlace): NavItemProps[] {
+      if (!p.entries) return []
+      const opts: ShellEntries = p.entries === true ? {} : p.entries
+      const cap = opts.limit ?? 8
+      const fold = `${f.key}|${p.id}`
+      const open = expanded.get().includes(fold)
+      return capped(p, fold, open, cap, allEntries(f, p, opts))
+    }
+    /** Every entry of a place, before the limit, each with whether it is the one open. */
+    function allEntries(f: ShellFrame, p: ShellPlace, opts: ShellEntries): NavItemProps[] {
+      if (p.enters) {
+        const scope = p.enters
+        const open = l.frames.find((x) => x.parent === f && x.scope === scope)
+        return (scope.items?.(f.item) ?? []).map((it) => {
+          const id = idOf(scope, it)
+          const mark = scope.mark?.(it)
+          const current = here ? false : open?.item !== undefined && idOf(scope, open.item) === id
+          return {
+            id: `${p.id}>${id}`,
+            label: labelOf({ scope, item: it }),
+            leading: mark ? (
+              <Mark name={mark.name} hue={mark.hue} icon={mark.icon} size="sm" decorative />
+            ) : undefined,
+            icon: mark ? undefined : scope.icon,
+            drill: true,
+            current,
+            menu: scope.menu ? () => scope.menu!(it) : undefined,
+            onClick: () =>
+              returnTo(frame(scope, it, f, [...(segsOf(f, p.id).filter(Boolean) as string[]), id])),
+          } satisfies NavItemProps
+        })
+      }
+      return (p.records?.(f.item, undefined) ?? []).map((r) => {
+        const current = here && l.place === p && l.record === r.id
+        return {
+          id: `${p.id}/${r.id}`,
+          label: opts.label?.(r) ?? r.label,
+          leading: r.mark ? (
+            <Mark name={r.mark.name} hue={r.mark.hue} icon={r.mark.icon} size="sm" decorative />
+          ) : undefined,
+          icon: r.mark ? undefined : r.icon,
+          status: r.status,
+          meta: r.meta,
+          detail: r.detail,
+          current,
+          menu: p.menu ? () => p.menu!(r.id, f.item) : undefined,
+          onClick: () => toPlace(f, p.id, undefined, r.id),
+        } satisfies NavItemProps
+      })
+    }
+    /**
+     * The entries past the limit fold into one row, "Show 3 more", which expands the list in place; an expanded list
+     * ends in "Show fewer". The open entry shows even when folded.
+     */
+    function capped(
+      p: ShellPlace,
+      fold: string,
+      open: boolean,
+      cap: number,
+      all: NavItemProps[],
+    ): NavItemProps[] {
+      if (all.length <= cap) return all
+      if (open)
+        return [
+          ...all,
+          {
+            id: `${p.id}:fewer`,
+            label: "Show fewer",
+            class: "nc-nav-item--more",
+            "aria-expanded": "true",
+            onClick: () => setExpanded(fold, false),
+          },
+        ]
+      const shown = all.filter((e, i) => i < cap || e.current)
+      return [
+        ...shown,
+        {
+          id: `${p.id}:more`,
+          label: `Show ${all.length - shown.length} more`,
+          class: "nc-nav-item--more",
+          "aria-expanded": "false",
+          onClick: () => setExpanded(fold, true),
+        },
+      ]
+    }
+    const groups: NavGroup[] = [{ items: items(tree, true) }, ...sections]
     const i = l.frames.indexOf(f)
     const parent = i > 0 ? l.frames[i - 1] : undefined
     return {
@@ -930,7 +1149,15 @@ export function createShell(options: ShellOptions) {
       label: labelOf(f),
       groups,
       parents,
-      up: parent ? { label: labelOf(parent), onClick: () => returnTo(parent) } : undefined,
+      up:
+        here && l.record && l.place
+          ? {
+              label: (keepView(l) && l.view?.label) || l.place.label,
+              onClick: () => toPlace(l.frame, l.place?.id, keepView(l)),
+            }
+          : parent
+            ? { label: labelOf(parent), onClick: () => returnTo(parent) }
+            : { label: "Up" },
     }
   })
   const filter = () => filters.get()[sidebar().key] ?? ""
@@ -988,7 +1215,7 @@ export function createShell(options: ShellOptions) {
         icon: r.icon ?? p.icon,
         mark: r.mark,
         keywords: r.hint ? [r.hint] : undefined,
-        run: () => navigate([...f.prefix, g?.id, p.id, undefined, r.id]),
+        run: () => navigate([...f.prefix, g?.id, p.id, undefined, recordSegs(p, r.id)]),
       })),
     )
   const itemsOf = (m: ShellScope, skip?: unknown): PaletteCommand[] => {
@@ -1124,7 +1351,10 @@ export function createShell(options: ShellOptions) {
 
   // ── Escape and the keyboard model ─────────────────────────────────────────────────────────────────
   const escStack: Array<() => void> = []
-  /** Registers something Esc closes first (a view's peek, a composer); returns its removal. */
+  /**
+   * Registers something Esc closes first (a view's peek, a composer); returns its removal. Esc removes the entry
+   * it runs, so an entry is run once; call the removal when the thing closes another way.
+   */
   const pushEsc = (close: () => void) => {
     escStack.push(close)
     return () => {
@@ -1137,7 +1367,7 @@ export function createShell(options: ShellOptions) {
    * list), then the sidebar's filter. Returns whether it closed anything.
    */
   const closeTop = () => {
-    const top = escStack[escStack.length - 1]
+    const top = escStack.pop()
     if (top) {
       top()
       return true
@@ -1287,6 +1517,10 @@ export function createShell(options: ShellOptions) {
     actions,
     pushEsc,
     escape: closeTop,
+    /** Says whether the window is a phone; `Shell` calls it. */
+    setPhone: (v: boolean) => {
+      if (phoneBox.peek() !== v) phoneBox.set(v)
+    },
     handleKey,
     title,
     dispose: () => {

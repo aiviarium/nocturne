@@ -8,7 +8,7 @@ icon: Layers
 
 Popovers, menus, selects, dialogs, sheets, tooltips and toasts are built on [ui-sdk](https://ui-sdk.dev).
 ui-sdk does the keyboard, focus, dismissal, placement and ARIA, and Nocturne draws them with its `nc-*` classes.
-The components keep the props they had before.
+The caller keeps `open` or `value` and changes it in `onClose` or `onChange`.
 
 ## Where they mount
 
@@ -38,17 +38,26 @@ A `Popover` is a box that floats next to an anchor element.
 It flips to the other side when there is no room and stays inside the viewport.
 Escape or a press outside it closes it.
 For a button that opens a popover of its own, use `PopoverButton`.
+The popover has a fill, a hairline, a radius, a shadow and padding, unless a part passes its own `class`. `surface` turns it on or off.
 
 <Example id="popover/anchored" minHeight={300} />
 
+The voters of an idea on <DemoLink to="projects/atlas/explore/ideas">Ideas</DemoLink> open in a popover, and a milestone on <DemoLink to="projects/atlas/product/roadmap">Roadmap</DemoLink> peeks in one.
+
 ## Dialog
 
-A `Dialog` is centred, bare, near the top, or a bottom sheet.
+Use a `Dialog` for what a new item needs, or to confirm a step that can't be undone.
+It takes `open`, `onClose`, `title`, `description`, `footer` and `size`, with the primary button last in the footer.
+A form with unsaved input passes `closeOnBackdrop={false}`.
+A dialog is centred, bare, near the top, or a bottom sheet.
 Focus moves in when it opens, Tab cycles inside, and Escape closes it.
 Focus then returns to the button that opened it.
 On a phone a dialog with a title is a `Sheet`, which rests at the height of its content and is dragged down to close.
+A short choice or a destructive confirmation on a phone is an `ActionSheet`, see [Phones](./phones.mdx#sheets-and-lists).
 
 <Example id="dialog/confirm" minHeight={300} />
+
+The plus on <DemoLink to="settings/keys">API keys</DemoLink> opens a dialog, and so does the plus on <DemoLink to="hosts">Hosts</DemoLink>.
 
 ## Tooltips and toasts
 
@@ -58,6 +67,8 @@ Tooltips are dark in both themes: `bg-3` with `text-1` in dark, and `text-1` wit
 Toasts are short notices in a live region at the bottom right.
 Danger toasts are announced assertively, and hover or focus pauses the timer.
 F6 moves focus into the region and back.
-Put one `ToastRegion` next to the root of the app.
+Put one `ToastRegion` next to the root of the app, and call `toast({ title, description, tone, action })`.
 
 <Example id="toast/tones" minHeight={260} />
+
+"Mark all as read" in the <DemoLink to="inbox">Inbox</DemoLink> shows a toast with Undo.

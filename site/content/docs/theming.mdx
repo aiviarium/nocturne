@@ -10,8 +10,8 @@ icon: SunMoon
 <div class="nc" data-theme="dark" style="--accent: #8b7cf6">…</div>
 ```
 
-- Put `class="nc"` on the root of the app.
-- Set `data-theme="dark"` or `data-theme="light"` on the same element.
+- `Shell` and `AppShell` put the `nc` class on their root. A page that uses parts without them puts `class="nc"` on its root.
+- Set `data-theme="dark"` or `data-theme="light"` on the same element, or let [Appearance](./shell/appearance.mdx) set it on `<html>`.
 - Set `--accent` on that element to change the accent.
 
 The tokens for each theme are on `[data-theme]`, so a subtree can take the other theme.
@@ -49,6 +49,8 @@ Under reduced motion it changes at once.
 Text selection and the caret never take the accent or the lens's hue.
 
 <Example id="foundations/accents" />
+
+Switch lenses on <DemoLink to="projects/atlas/explore/triage">a project</DemoLink> to see the accent follow them.
 
 ## Overlays take the theme
 

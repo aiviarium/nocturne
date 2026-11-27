@@ -16,13 +16,15 @@ This file is for coding agents working in it.
 | `src/app/nocturne.css` | The token tables, the icon grid and the frames of the examples |
 | `src/components/tokens.tsx` | The token tables, drawn from the generated data |
 | `src/components/example.tsx` | `Example` and `GalleryLink`, the frames of the gallery |
+| `src/components/demo.tsx` | `DemoFrame` and `DemoLink`: the demo app embedded, and links to a place in it |
 | `scripts/nocturne-data.ts` | Writes `src/generated/nocturne.json` from `tokens.css`, the accents, the examples and the icons |
 | `scripts/gallery.ts` | Builds the gallery into `public/gallery/` with relative URLs and the site's fonts |
+| `scripts/demo.ts` | Builds the demo app into `public/demo/` the same way |
 | `scripts/check-links.ts` | The link check |
 | `scripts/screens.py` | Screenshots of the built site into `screens/`, which is ignored and never committed |
 | `docs/design.md` | The design rules of the base |
 
-`public/gallery/` and `src/generated/` are made by the build and are not committed.
+`public/gallery/`, `public/demo/` and `src/generated/` are made by the build and are not committed.
 
 ## Build and check
 
@@ -44,6 +46,7 @@ bun run build        # writes out/; DOCS_BASE_PATH=/nocturne for the site in a f
 - The site is a static export. Route handlers export `dynamic = 'force-static'`. Plain URLs to files in `public/` go through `asset()` so they get the base path.
 - Take token values from the generated data, never copy them into a page.
 - Show a component with `<Example id="part/example" />`, where the id is a file in `../examples/`. Do not port components to React.
+- Point at a part in context with `<DemoLink to="projects/atlas/build/issues/WEB-142">`. The test in `../test/demo.test.tsx` checks that each address leads to a place of the demo.
 - Follow `docs/design.md`. The project colour never fills a panel, card, button or callout. Only the value of a badge is filled with it.
 - Prose is short, plain sentences, with project names in title case. It has to pass Vale with no output.
 - Commits follow Conventional Commits with a short subject.

@@ -1,11 +1,16 @@
 ---
 title: Filters
-description: FilterBar and QueryBuilder.
+description: FilterBar, FilterCount and QueryBuilder, for narrowing what a view lists.
 ---
+
+A filter narrows what a view lists.
+It is at the top of the view's content, under the header, and the header stays the view's one bar.
+A place's saved views are child rows of the place in the sidebar, and the record stepper and switcher follow the saved view the person came from.
 
 ## FilterBar
 
-`FilterBar` is one row that wraps.
+Use `FilterBar` for search and a few filters over a list or a grid of cards.
+It is one row that wraps.
 
 1. `search` comes first and grows, from 220 to 420px.
 2. Segmented `Tabs`, `Select`s and `Switch`es follow at their width.
@@ -14,7 +19,14 @@ description: FilterBar and QueryBuilder.
 
 Filters that don't fit wrap onto the next line from the left edge of the bar, under the search field.
 
-`FilterCount` is the bare number in tabular digits.
+<Example id="filter-bar/default" minHeight={160} />
+
+The demo's <DemoLink to="projects/atlas/explore/ideas">Ideas</DemoLink> has a filter bar over its cards.
+
+## FilterCount
+
+`FilterCount` is the number of results, in the bar's `end`.
+It is the bare number in tabular digits.
 An icon before it, such as `list` for issues, says what is counted when the list doesn't make it plain.
 Screen readers hear its `unit` and the number, such as "Issues: 40".
 Never write the count as a sentence, such as "40 issues", in the bar.
@@ -23,11 +35,9 @@ The name of a filter is inside the control, as its value or its `aria-label`.
 It is never a caption above it.
 On a phone the filters scroll sideways under the search field.
 
-<Example id="filter-bar/default" minHeight={160} />
-
 ## QueryBuilder
 
-`QueryBuilder` filters over the fields of a list, inside the `FilterBar`.
+Use `QueryBuilder` for rules over the typed fields of a list, such as a log's level and host, inside the `FilterBar`.
 
 - Each rule is a 30px chip, such as "State is Open" or "Estimate > 3", that opens a popover.
 - "Filter" adds a rule.
@@ -36,8 +46,10 @@ On a phone the filters scroll sideways under the search field.
 - Fields are typed by a schema, `QueryField`.
 - `toWhere` and `fromWhere` convert to and from the `where` of the store.
 - On a phone it is one sheet of grouped rows.
+- `toWhere` throws a `QueryError` for a rule the store can't filter by, naming the field.
 
 <Example id="query-builder/chips" minHeight={320} />
 <DoDont do="design/query-chips" dont="design/query-form" />
 
+Try rules and saved searches on a host's <DemoLink to="hosts/build-01/operate/logs">Logs</DemoLink>.
 See [Query builder](../query-builder.mdx) for the query model and its text form.

@@ -3,9 +3,12 @@ title: Widgets
 description: Widget, its live parts and sizes, ContextWidget and RateWidget, WidgetGrid.
 ---
 
-A widget shows one live value in a small space, such as a dashboard cell or the column beside an agent's chat.
-Most of it is the live part. The words are a title, a value and a unit.
+Use a widget for one live value in a small space, such as a dashboard cell or the Details panel beside an agent's chat.
 A `Stat` reports a number once, and a widget follows a value as it changes.
+Most of it is the live part. The words are a title, a value and a unit.
+
+In the shell a page of widgets is a view of its own, on a `WidgetGrid`.
+One widget on its own goes in a panel or a card of a view, at the size that fits there.
 
 ## Widget
 
@@ -23,6 +26,8 @@ A `Stat` reports a number once, and a widget follows a value as it changes.
 <Example id="widget/progress" />
 <Example id="widget/charts" />
 
+Every live part is on the demo's <DemoLink to="dashboard/overview">Dashboard</DemoLink>, and <DemoLink to="dashboard/fleet">Fleet</DemoLink> has meters and uptime per host.
+
 ## Live parts
 
 | The live part | Use |
@@ -35,7 +40,8 @@ A `Stat` reports a number once, and a widget follows a value as it changes.
 | `WidgetMeters` | A few readings of one machine: CPU, memory, disk. |
 | `WidgetRing` | A share in a `row` widget: context used, time left. |
 | `WidgetUptime` | A strip of days. |
-| `WidgetTimer` | Time left or elapsed, with `WidgetControls` or one control. |
+| `WidgetTimer` | Time left or elapsed. |
+| `WidgetControls` | The icon buttons of a timer or a run, at the widget's foot. |
 | `WidgetStats` | A few readings under the chart of a large widget: p50, peak. |
 
 <Example id="widget/segments" />
@@ -67,6 +73,8 @@ At `sm` a part leaves out its names. They stay in its accessible name.
 
 <Example id="widget/sizes" />
 <Example id="widget/agent" />
+
+Open the Details panel on <DemoLink to="agent/chats/c-arm64">a chat</DemoLink> to see both.
 <DoDont do="design/icon-tile" dont="design/coloured-card" />
 
 ## WidgetGrid
@@ -84,6 +92,8 @@ Outside editing it draws the stored layout compacted.
 Cards on a `WidgetGrid` take the widget frame, with 18 or 20px padding and radius 20.
 
 <Example id="patterns/widgets" />
+
+On the <DemoLink to="dashboard/overview">Dashboard</DemoLink>, "Arrange widgets" lets the person drag and resize them.
 <DoDont do="design/grid-compacted" dont="design/grid-hidden-hole" />
 
 <GalleryLink page="widget" />

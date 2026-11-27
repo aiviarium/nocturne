@@ -2,6 +2,7 @@ import type { JSX } from "@solidjs/web"
 import { createSignal, For, Show } from "solid-js"
 import { createControllable } from "../lib/controllable"
 import { cx } from "../lib/cx"
+import { usePhone } from "../lib/phone"
 
 export interface SplitProps {
   /** `horizontal` puts the panes side by side with a vertical divider; `vertical` stacks them. Default `horizontal`. */
@@ -106,6 +107,7 @@ export function Split(props: SplitProps): JSX.Element {
   const min = () => props.min ?? 160
   const max = () => props.max ?? 720
   const fixedSecond = () => props.fixed === "second"
+  const phone = usePhone()
   const [size, setSize] = createControllable<number>({
     value: () => props.size,
     defaultValue: props.defaultSize ?? 320,
@@ -140,6 +142,7 @@ export function Split(props: SplitProps): JSX.Element {
       data-part="split"
       data-orientation={props.orientation ?? "horizontal"}
       data-dragging={dragging() ? "" : undefined}
+      data-stacked={phone() ? "" : undefined}
       class={cx("nc-split", !horizontal() && "nc-split--vertical", props.class)}
     >
       <Show when={!fixedSecond()}>{sized()}</Show>
@@ -196,6 +199,7 @@ export interface SplitGroupProps<T> {
  */
 export function SplitGroup<T>(props: SplitGroupProps<T>): JSX.Element {
   const min = () => props.min ?? 160
+  const phone = usePhone()
   const horizontal = () => props.orientation !== "vertical"
   const weightOf = (i: number) => props.weights?.[i] ?? 1
   // Flex grows panes by their weights only when the weights add up to at least 1, so each pane gets its weight
@@ -238,6 +242,7 @@ export function SplitGroup<T>(props: SplitGroupProps<T>): JSX.Element {
       data-part="split-group"
       data-orientation={props.orientation ?? "horizontal"}
       data-dragging={dragging() !== null ? "" : undefined}
+      data-stacked={phone() ? "" : undefined}
       ref={root}
       class={cx("nc-split nc-splitgroup", !horizontal() && "nc-split--vertical", props.class)}
     >

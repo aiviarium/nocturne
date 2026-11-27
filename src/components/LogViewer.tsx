@@ -159,7 +159,7 @@ export function LogViewer(props: LogViewerProps): JSX.Element {
       data-following={following() ? "" : undefined}
       data-wrap={wrap() ? "" : undefined}
       data-fill={props.fill ? "" : undefined}
-      class={cx("nc-log", !props.bare && "nc-card", props.fill && "nc-log--fill", props.class)}
+      class={cx("nc-log", props.bare ? "nc-log--bare" : "nc-card", props.fill && "nc-log--fill", props.class)}
       {...rest}
     >
       <Show when={!props.bare}>
@@ -222,17 +222,17 @@ export function LogViewer(props: LogViewerProps): JSX.Element {
               </div>
             }
           >
-            <For each={props.entries}>
+            <For each={props.entries} keyed={(entry) => entry.id ?? entry}>
               {(entry) => (
                 <div
-                  class={cx("nc-log__line", entry.level && `nc-log__line--${entry.level}`)}
+                  class={cx("nc-log__line", entry().level && `nc-log__line--${entry().level}`)}
                   data-part="log-line"
-                  data-level={entry.level ?? "info"}
+                  data-level={entry().level ?? "info"}
                 >
-                  <Show when={props.showTimestamps && entry.at}>
+                  <Show when={props.showTimestamps && entry().at}>
                     {(at) => <span class="nc-log__time">{formatLogTime(at())}</span>}
                   </Show>
-                  <span class="nc-log__text">{entry.text}</span>
+                  <span class="nc-log__text">{entry().text}</span>
                 </div>
               )}
             </For>

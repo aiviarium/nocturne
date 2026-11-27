@@ -71,6 +71,9 @@ describe("lint-tokens", () => {
       ),
     ).toEqual([])
     expect(rules("a.tsx", `// fill="#fff"\n<a href="#" />`)).toEqual([])
+    expect(rules("a.tsx", `<ListRow title="Merged PR #418" meta="#418 fixes the runner" />`)).toEqual([])
+    expect(rules("a.tsx", `<rect fill="#222" />`)).toEqual(["colour"])
+    expect(rules("a.css", ".a { color: #123 }")).toEqual(["colour"])
     expect(rules("a.css", ".a { color: #fff } /* lint-tokens-ignore */")).toEqual([])
     expect(rules("a.css", "/* lint-tokens-ignore-next-line */\n.a { color: #fff }")).toEqual([])
   })

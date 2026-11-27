@@ -1,79 +1,118 @@
 ---
 title: Actions
-description: Button and IconButton.
+description: Button, IconButton, menus, tooltips, key caps and the account menu.
 ---
+
+A view's actions are at the right of its header, with the icon actions first and the primary action last.
+Actions on one row sit in the row, and rare actions go in a menu.
+The shell binds the window's keys, so a view's actions don't bind them again, see [Keyboard](../shell/keyboard.mdx).
 
 ## Button
 
+Use a `Button` for an action with words, such as a dialog's submit or the start of an empty state.
+
 | Size | Height | Use |
 | --- | --- | --- |
-| `md` | 28px | Forms, panels, dialogs |
-| `sm` | 24px | Dense rows, list rows, table bars, toolbars |
-| `lg` | 32px | Empty states |
+| `md` | `--control-md` | Forms, panels, dialogs |
+| `sm` | `--control-sm` | Dense rows, list rows, table bars, toolbars |
+| `lg` | `--control-lg` | Empty states |
 
-Radius 6 at every size.
+Every size has `--radius-sm`.
+
+- `primary` is for the one action that completes a flow, such as the last button of a dialog or a form, a sign-in or the answer on a row. It is ink, filled with the text colour, never the accent. Use one for each region.
+- `accent` starts AI work.
+- `danger` destroys. It has no red edge.
+- The starting action of an empty state is a secondary `Button`.
+- Labels say what happens.
+
+A ghost `Button` set among text, such as a picker in a table cell above plain values, is `flush`.
+Its padding hangs outside its box and it takes the type around it. Its label starts where the text above and below it does.
+The roles on <DemoLink to="settings/members">Members</DemoLink> are flush pickers under the owner's plain role.
+
+An action that adds an item is never a `Button`.
+It is a ghost plus `IconButton` among the view header's actions: `icon: "plus"` with `primary` left out.
+On a phone it is among the trailing actions of the navigation bar.
 
 <Example id="button/variants" />
 <Example id="button/sizes" />
-
-- `primary` is for the one action that completes a flow, such as the last button of a dialog or a form. The answer on a row and a sign-in are primary too.
-- `accent` starts AI work.
-- `danger` destroys.
-
-Adding an item is a ghost plus `IconButton` among the header actions of the view.
-On a phone it is among the trailing actions of the navigation bar.
-It is never a primary or text button.
-The starting action of an empty state is a secondary `Button`.
-
-Labels say what happens.
-Use one primary for each region.
-
 <DoDont do="design/add-quiet" dont="design/add-loud" />
 <DoDont do="design/danger-button" dont="design/outlined-danger" />
 <Example id="button/details" />
+
+Each report on <DemoLink to="projects/atlas/explore/triage">Triage</DemoLink> has a primary answer, and <DemoLink to="projects/atlas/explore/ideas">Ideas</DemoLink> adds with a plus.
 
 <GalleryLink page="button" />
 
 ## IconButton
 
-An `IconButton` is 28px with a 16px icon.
-`size="sm"` is 24px with a 13px icon.
+Use an `IconButton` for an action whose icon says enough, in a header, a row or a toolbar.
 
-`label` is required.
-It is the accessible name and the tooltip, so every icon-only control has words.
-Never use a bare `<button>` with an icon.
+- It is `--control-md` square with a 16px icon. `size="sm"` is `--control-sm` with a 13px icon.
+- `label` is required. It is the accessible name and the tooltip, so every icon-only control has words.
+- It keeps a faint `hover` fill so its hit area shows. A pressed toggle takes the neutral `active` fill, never the accent.
+- Never use a bare `<button>` with an icon.
 
 <Example id="icon-button/states" />
-<Example id="tooltip/default" />
+
+The timer on the <DemoLink to="dashboard/overview">Dashboard</DemoLink> has its controls as icon buttons.
 
 <GalleryLink page="icon-button" />
 
 ## Menus
 
-A `DropdownMenu` is a trigger and its `Menu` in a popover.
-Arrow Down opens it, and Escape closes it and returns focus.
-It flips when there is no room.
+Use a `DropdownMenu` for actions or choices behind a button, such as a view's overflow.
+Use `RowMenu` for a row's menu, and `ContextMenu` for the right click of any other element.
 
-The `Menu` surface is shared by dropdowns, context menus and the command palette.
-Arrow Up and Down move with wrapping, and Home, End and typing a letter move too.
-
-Rare actions go behind the overflow button.
+- `DropdownMenu` takes a `trigger` and `items`, a `MenuEntry[]` of items, separators, labels and choices. It hangs from its trigger and flips when there is no room.
+- `Menu` is that menu anchored to an element or a point.
+- `RowMenu` and `ContextMenu` open on a right click, a long press, the Menu key or Shift and F10. On a phone they open as a sheet.
+- Arrow Up and Down move with wrapping, and Home, End and typing a letter move too. Escape closes the menu and returns focus.
+- A checked choice shows a check in the text colour, never the accent.
+- Rare actions go behind the overflow button, not in a row of their own.
+- A current or pressed button has the same fill while its menu is open.
+- A view header action with `menu` opens that menu from its button, see [View header](../shell/view-header.mdx#actions).
 
 <Example id="menu/items" minHeight={260} />
+<Example id="dropdown-menu/placements" minHeight={260} />
 <DoDont do="design/overflow-menu" dont="design/entry-row" minHeight={260} />
+
+The demo's <DemoLink to="settings/members">Members</DemoLink> have a row menu, and the cards of the <DemoLink to="projects/atlas/build/board">Board</DemoLink> a context menu.
 
 <GalleryLink page="menu" />
 
-## The account
+## Tooltip
+
+A tooltip shows the label of a control or explains a mark, such as an `IconButton`'s label with its shortcut.
+`IconButton` draws its own.
+Use `Tooltip` for any other element that needs one.
+Tooltips are dark in both themes, and phones don't show them.
+
+<Example id="tooltip/default" />
+
+On <DemoLink to="dashboard/fleet">Fleet</DemoLink>, a degraded host's warning glyph has one.
+
+## Kbd
+
+`Kbd` is one key cap, and `KbdGroup` a few in a row, such as ⌘ and K.
+They're mono and never wrap.
+Use them to show a shortcut in a list of shortcuts.
+Menus and tooltips draw their own.
+
+The demo's <DemoLink to="settings/shortcuts">Keyboard shortcuts</DemoLink> use them.
+
+## AccountMenu
 
 `AccountMenu` is the signed-in person's menu, at the foot of the sidebar.
-Its trigger is a row with the avatar and the name.
-On the sidebar's icon rail it is the avatar alone, and `trigger="avatar"` gives the same anywhere else.
-At the top of the menu is the signed-in person, with `detail` and `badge` beside the name.
-The app's `items` follow, then "Appearance…" with `onAppearance`, which opens the [appearance settings](../shell/appearance.mdx).
-With `theme`, the menu has one theme row, where System, Light and Dark are three icons.
-With `onSignOut`, the last item signs out.
+`Shell` draws it from its `account` prop.
+
+- Its trigger is a row with the avatar and the name. On the sidebar's icon rail it is the avatar alone, and `trigger="avatar"` gives the same anywhere else.
+- At the top of the menu is the signed-in person, with `detail` and `badge` beside the name.
+- The app's `items` follow, then "Appearance…" with `onAppearance`, which opens the [appearance settings](../shell/appearance.mdx).
+- With `theme`, the menu has one theme row, where System, Light and Dark are three icons.
+- With `onSignOut`, the last item signs out.
 
 A choice with `variant="icons"` is that same row for another setting: its label at the start and its options as icons at the end.
 
 <Example id="account-menu/default" minHeight={340} />
+
+Open it at the foot of the demo's sidebar, on <DemoLink to="settings/general">Settings</DemoLink> or any other place.

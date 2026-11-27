@@ -40,6 +40,12 @@ a.nc-btn { text-decoration: none; }
    on top of it; one opened outside closes on the click that opens a dialog. */
 .nc-tooltip--floating { position: fixed; left: 0; top: 0; z-index: 86; pointer-events: none; }
 .nc-popover { position: fixed; left: 0; top: 0; z-index: 85; }
+/* The floating surface of a Popover and a PopoverButton's panel: one padding, a column of what it holds. */
+.nc-popover--surface { box-sizing: border-box; display: flex; flex-direction: column; gap: var(--space-2); min-width: 200px; max-width: min(360px, calc(100vw - 16px)); margin: 0; padding: var(--space-3); border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--bg-3); color: var(--text-1); box-shadow: var(--shadow-overlay); animation: nc-popover-in var(--dur-fade) var(--ease); }
+.nc-popover__title { margin: 0; color: var(--text-1); font-size: var(--nc-type-label); font-weight: 500; line-height: 20px; }
+.nc-popover__description { margin: 0; color: var(--text-3); font-size: var(--nc-type-label); line-height: 16px; }
+@keyframes nc-popover-in { from { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .nc-popover--surface { animation: none; } }
 
 /* ---------- Inputs ---------- */
 .nc-input { width: 100%; }
@@ -78,7 +84,22 @@ textarea.nc-textarea { width: 100%; height: auto; min-height: calc(var(--control
 .nc-tab:focus-visible, .nc-nav-item:focus-visible { outline: none; box-shadow: var(--focus-ring-inset); }
 .nc-tab { border-radius: var(--radius-sm); }
 .nc-seg__item:is([disabled], [data-disabled]), .nc-tab:is([disabled], [data-disabled]) { color: var(--text-4); cursor: not-allowed; }
-.nc-seg__item:not([aria-selected="true"], [data-checked]):hover { color: var(--text-1); }
+.nc-seg__item:not([aria-selected="true"], [data-checked], [disabled], [data-disabled]):hover { background: var(--hover); color: var(--text-1); }
+/* Selection outlasts hover: a selected, current, pressed or checked part keeps the selection fill while it is hovered
+   or has its menu open, whatever order the hover and open-menu rules (--hover) come in. */
+:is(
+  .nc-nav-item[aria-current="page"],
+  .nc-nav-rail-item[aria-current="page"],
+  .nc-title-bar__item[aria-current="page"],
+  .nc-icon-btn[aria-pressed="true"],
+  .nc-panel-rail__btn[aria-pressed="true"],
+  .nc-tabstrip__tab[data-active],
+  .nc-seg__item:is([aria-selected="true"], [data-checked]),
+  .nc-tab[aria-selected="true"],
+  .nc-lrow[data-selected],
+  .nc-datalist__row[data-selected],
+  .nc-calendar__day[data-selected]
+):is(:hover, [aria-expanded="true"]) { background: var(--active); }
 .nc-tab:not([aria-selected="true"]):hover { color: var(--text-1); }
 button.nc-nav-item { display: flex; width: 100%; gap: 8px; justify-content: flex-start; border: 0; background: transparent; font-family: inherit; text-align: left; cursor: pointer; }
 /* In the sidebar a count is a plain number, like the meta. */
@@ -272,6 +293,10 @@ button.nc-menu__item, div.nc-menu__item { box-sizing: border-box; width: 100%; b
 .nc-diffview__count--del { color: var(--danger); }
 .nc-panel-header__actions { display: flex; align-items: center; gap: var(--space-1); margin-left: auto; }
 .nc-diff { min-width: 100%; width: max-content; }
+/* Split: old and new take half the width each, and a long line wraps in its half, so the two sides stay equal and
+   in view; a row's two cells share its height. Unified scrolls sideways instead. */
+.nc-diff:not(.nc-diff--unified) { width: 100%; }
+.nc-diff:not(.nc-diff--unified) .nc-diff__line { white-space: pre-wrap; overflow-wrap: anywhere; }
 .nc-diff__line { min-width: 0; }
 .nc-diff__text { flex: 1; min-width: 0; padding-right: var(--space-3); }
 .nc-diff__fold { grid-column: 1 / -1; padding: 0 14px; background: var(--bg-1); color: var(--text-3); }
@@ -311,10 +336,14 @@ button.nc-menu__item, div.nc-menu__item { box-sizing: border-box; width: 100%; b
 .nc-composer__notice { display: flex; flex-direction: column; margin: 0 var(--space-3); padding: 6px var(--space-3); border: 1px solid var(--line); border-bottom: 0; border-radius: var(--radius-lg) var(--radius-lg) 0 0; background: var(--bg-1); color: var(--text-2); font-size: var(--nc-type-label); line-height: var(--nc-type-label-line); }
 .nc-composer__notice .nc-dictation { min-height: var(--control-sm); padding: 0; }
 .nc-composer__notice .nc-dictation > .nc-btn, .nc-composer__notice .nc-dictation > .nc-tooltip-anchor { margin-left: auto; }
-.nc-composer__field { position: relative; }
+/* The placeholder and the editor share one cell, so a placeholder that wraps makes the field taller instead of
+   running over the toolbar under it. */
+.nc-composer__field { position: relative; display: grid; }
+.nc-composer__field[hidden] { display: none; }
+.nc-composer__field > * { grid-area: 1 / 1; min-width: 0; }
 .nc-composer__editor { box-sizing: border-box; max-height: 200px; padding: 10px 12px 2px; overflow-y: auto; color: var(--text-1); caret-color: var(--text-1); white-space: pre-wrap; overflow-wrap: anywhere; outline: none; }
 .nc-composer__editor[contenteditable="false"] { color: var(--text-4); cursor: not-allowed; }
-.nc-composer__placeholder { position: absolute; inset: 0 0 auto 0; padding: 10px 12px 2px; color: var(--text-3); pointer-events: none; }
+.nc-composer__placeholder { padding: 10px 12px 2px; color: var(--text-3); pointer-events: none; }
 .nc-composer__editor .nc-token { vertical-align: top; margin: 0 1px; cursor: default; }
 .nc-composer__editor .nc-token .nc-icon { width: 12px; height: 12px; }
 .nc-composer:focus-within { border-color: var(--line-strong); }
@@ -329,9 +358,8 @@ button.nc-menu__item, div.nc-menu__item { box-sizing: border-box; width: 100%; b
 .nc-send--stop { background: var(--bg-4); color: var(--text-1); }
 .nc-send--accent { background: var(--accent); color: var(--on-accent); }
 /* The effort control is one of the composer's three quiet selectors: no fill until hovered, their height. */
-button.nc-effort { height: var(--control-sm); border: 0; background: transparent; cursor: pointer; }
-button.nc-effort:hover { background: var(--bg-3); color: var(--text-1); }
-button.nc-effort:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+/* The effort picker is a ghost button like the model picker beside it, its bars where an icon would be. */
+.nc-effort { gap: 6px; }
 .nc-dictation { display: flex; align-items: center; gap: 10px; min-height: 32px; padding: 10px 12px 2px; }
 .nc-dictation--blocked { color: var(--danger); }
 .nc-dictation__time { color: var(--text-1); }
@@ -491,6 +519,11 @@ button.nc-effort:focus-visible { outline: none; box-shadow: var(--focus-ring); }
 .nc-wcontrols .nc-icon-btn:first-child { margin-left: auto; }
 .nc-wcontrols .nc-icon-btn:last-child { margin-right: auto; }
 .nc-wcontrols .nc-wcontrols__primary { background: var(--w-hue); color: var(--bg-0); box-shadow: 0 0 14px var(--w-line); }
+/* Hover and press keep the widget's hue: a step stronger, never the neutral press fill that turns them dark. */
+.nc-wcontrols .nc-icon-btn:not([disabled]):hover { background: color-mix(in srgb, var(--w-hue) 26%, transparent); color: var(--w-text); }
+.nc-wcontrols .nc-icon-btn:not([disabled]):active { background: color-mix(in srgb, var(--w-hue) 34%, transparent); }
+.nc-wcontrols .nc-wcontrols__primary:not([disabled]):hover { background: color-mix(in srgb, var(--w-hue) 88%, var(--text-1)); color: var(--bg-0); }
+.nc-wcontrols .nc-wcontrols__primary:not([disabled]):active { background: color-mix(in srgb, var(--w-hue) 84%, var(--bg-0)); }
 
 /* ---------- Layout ---------- */
 .nc-panel { display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
@@ -501,6 +534,11 @@ button.nc-effort:focus-visible { outline: none; box-shadow: var(--focus-ring); }
 .nc-frame { box-sizing: border-box; min-width: 0; padding: var(--space-4); border: 1px solid var(--line-soft); border-radius: var(--radius-md); background: var(--bg-1); overflow: hidden; }
 .nc-frame--flush { padding: 0; }
 .nc-frame--stacked { display: flex; flex-direction: column; min-height: 0; }
+.nc-frame--bare { border: 0; border-radius: 0; background: transparent; }
+/* A card that fills a flush frame is the frame's content, not a card in a card: the frame draws the one border. */
+.nc-frame--flush > .nc-card { border: 0; border-radius: 0; }
+/* A body holding one filling part (a drop frame, a log) passes the height on. */
+.nc-frame__body:has(> .nc-dropframe, > .nc-log--fill) { display: flex; flex-direction: column; }
 .nc-frame[data-focused] { border-color: var(--line); }
 .nc-frame__header { display: flex; align-items: center; min-height: var(--header); border-bottom: 1px solid var(--line-soft); }
 .nc-frame__body { flex: 1; min-height: 0; overflow: auto; }
@@ -525,6 +563,10 @@ button.nc-effort:focus-visible { outline: none; box-shadow: var(--focus-ring); }
 .nc-splitgroup__pane { display: flex; flex-direction: column; flex: var(--nc-weight, 1) 1 0; overflow: hidden; }
 .nc-splitgroup__pane > .nc-frame { flex: 1; }
 .nc-split[data-dragging] { user-select: none; }
+/* On a phone the panes stack in their order and scroll as one page; the dividers go and a collapsed pane stays hidden. */
+.nc-split[data-stacked] { flex-direction: column; overflow-y: auto; }
+.nc-split[data-stacked] > .nc-split__pane { flex: none; width: auto; height: auto; overflow: visible; }
+.nc-split[data-stacked] > [data-part="split-divider"] { display: none; }
 .nc-split__divider { position: relative; flex: none; width: var(--space-2); cursor: col-resize; outline: none; touch-action: none; }
 .nc-split--vertical > .nc-split__divider { width: auto; height: var(--space-2); cursor: row-resize; }
 .nc-split__divider::before { content: ""; position: absolute; inset: 0 calc(50% - 0.5px); background: var(--line-soft); transition: background 120ms; }
@@ -532,6 +574,10 @@ button.nc-effort:focus-visible { outline: none; box-shadow: var(--focus-ring); }
 .nc-split__divider:hover::before, .nc-split[data-dragging] > .nc-split__divider::before { background: var(--text-4); }
 .nc-split__divider:focus-visible::before { background: var(--accent-strong); }
 .nc-split__divider:focus-visible { box-shadow: var(--focus-ring); border-radius: var(--radius-xs); }
+/* A divider line only where the panes share an edge. Between framed panes (cards with a gap between them) the gap is
+   the handle: no line at rest, lit only while hovered or dragged. */
+.nc-split:has(> .nc-split__pane > :is(.nc-frame:not(.nc-frame--bare), .nc-card)) > .nc-split__divider:not(:hover, :focus-visible)::before { background: transparent; }
+.nc-split[data-dragging]:has(> .nc-split__pane > :is(.nc-frame:not(.nc-frame--bare), .nc-card)) > .nc-split__divider::before { background: var(--text-4); }
 /* Phone: panes stack in a scrolling column and the dividers go. */
 @media (max-width: 720px) {
   .nc-splitgroup { flex-direction: column; height: auto; min-height: 100%; }
@@ -632,6 +678,8 @@ button.nc-effort:focus-visible { outline: none; box-shadow: var(--focus-ring); }
 .nc-view-layout__main { flex: 1; min-width: 0; min-height: 0; }
 .nc-view-layout__main--scroll { overflow: auto; }
 .nc-view-layout__main[data-reading] > * { box-sizing: border-box; width: 100%; max-width: var(--nc-view-reading, 720px); margin-inline: auto; }
+/* A reading column anywhere, such as a record's body in a pane beside its properties: centred at the reading width. */
+.nc-reading { box-sizing: border-box; width: 100%; max-width: var(--nc-view-reading, 720px); margin-inline: auto; }
 /* Behind a sidebar opened over the main column: a scrim that closes it. The sidebar has a close control on top. */
 .nc-view-layout__scrim { position: absolute; inset: 0; z-index: 29; background: color-mix(in srgb, var(--bg-0) 50%, transparent); }
 .nc-view-layout__over-head { display: flex; flex: none; align-items: center; justify-content: flex-end; height: var(--header); padding: 0 var(--space-2); }
@@ -652,6 +700,8 @@ button.nc-effort:focus-visible { outline: none; box-shadow: var(--focus-ring); }
 /* Log viewer: scrollable monospace stream surface with optional timestamps and level accents. */
 .nc-log { display: flex; flex-direction: column; min-width: 0; overflow: hidden; }
 .nc-log--fill { flex: 1; min-height: 0; height: 100%; }
+/* Bare, the log is part of the view: no card and no well of its own, the lines on the view's surface. */
+.nc-log--bare > .nc-log__stage > .nc-log__body { background: transparent; }
 .nc-log__header { flex: none; }
 .nc-log__stage { position: relative; display: flex; flex-direction: column; flex: 1; min-height: 0; }
 .nc-log__body { flex: 1; min-height: 0; overflow: auto; }

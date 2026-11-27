@@ -1,0 +1,142 @@
+/* The agent's layout: the transcript scrolls across the whole view with its column centred, and the composer sits
+   at the column's foot. Beside the column, where both sides have room, the context and the output rate sit at the
+   top of the side columns, against the column; with less room they are one row each above the composer. */
+.dm-agent-chat {
+  container-type: inline-size;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 760px) minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr) auto;
+  column-gap: var(--space-6);
+  height: 100%;
+  min-height: 0;
+}
+.dm-agent-log {
+  grid-column: 1 / -1;
+  grid-row: 1;
+  min-height: 0;
+  overflow: auto;
+  scrollbar-gutter: stable both-edges;
+  padding: var(--space-6) var(--space-6) var(--space-4);
+}
+.dm-agent-column {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  width: 100%;
+  max-width: 760px;
+  margin-inline: auto;
+}
+.dm-agent-foot {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  padding: 0 var(--space-6) var(--space-4);
+}
+.dm-agent-side {
+  grid-row: 1;
+  align-self: start;
+  display: none;
+  flex-direction: column;
+  gap: var(--space-3);
+  width: 100%;
+  max-width: 280px;
+  min-width: 0;
+  padding-top: var(--space-6);
+}
+.dm-agent-side--start {
+  grid-column: 1;
+  justify-self: end;
+}
+.dm-agent-side--end {
+  grid-column: 3;
+  justify-self: start;
+}
+.dm-agent-strip {
+  display: none;
+  gap: var(--space-2);
+}
+.dm-agent-strip > * {
+  flex: 1 1 0;
+  min-width: 0;
+}
+@container (min-width: 1240px) {
+  .dm-agent-side {
+    display: flex;
+  }
+}
+@container (min-width: 560px) and (max-width: 1239.98px) {
+  .dm-agent-strip {
+    display: flex;
+  }
+}
+:root[data-phone] .dm-agent-log {
+  padding: var(--space-4) var(--space-3);
+}
+:root[data-phone] .dm-agent-foot {
+  padding: 0 var(--space-3) var(--space-3);
+}
+
+/* Runs: the list fills the view; a row lays out its dot, id, task, agent and time. */
+.dm-agent-runs {
+  height: 100%;
+}
+.dm-agent-run {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+  height: 100%;
+}
+.dm-agent-run-id {
+  flex: none;
+  width: 72px;
+}
+.dm-agent-run-agent {
+  flex: none;
+  width: 110px;
+}
+.dm-agent-run-took {
+  flex: none;
+  width: 56px;
+  text-align: right;
+}
+:root[data-phone] .dm-agent-run-agent {
+  display: none;
+}
+
+/* The Assistant panel: its transcript over its composer. */
+.dm-agent-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+.dm-agent-panel-log {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: var(--space-4) var(--space-3);
+}
+.dm-agent-panel-log .dm-agent-column {
+  gap: var(--space-4);
+}
+.dm-agent-panel-empty {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.dm-agent-panel-foot {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3) var(--space-3);
+}
+.dm-agent-voice {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.dm-agent-foot .dm-agent-column {
+  gap: var(--space-2);
+}

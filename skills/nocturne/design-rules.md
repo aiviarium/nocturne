@@ -8,7 +8,7 @@ Rookery's shell to Crow and each plugin. Where a part's page and a rule differ, 
 - The window is the shell from `createShell`. Apps don't add a top bar, a status bar or a second header.
 - Scope by drilling. Going into a domain, such as a space, a host or a project, drills the sidebar into that
   domain's places, and the domain is a segment of the title bar's path and of the address.
-- The title bar's path shows the scope once. The sidebar header has ↑ when there is a parent scope, the filter, collapse all
+- The title bar's path shows the scope once. The sidebar header has ↑ (to the list from a record, else to the scope above, disabled at the top), the filter, collapse all
   and minimise, and no scope name or switcher. A one-of-a-kind segment of the path has a switcher to its siblings.
 - Entering a domain opens it as the person left it, with the lens worn last and the place that lens remembers.
 - Structure and time are separate. Trails and ↑ go up, and each crumb goes to what it names. Back and forward walk
@@ -76,8 +76,10 @@ Rookery's shell to Crow and each plugin. Where a part's page and a rule differ, 
   their colour means something.
 - A small chip or badge may have a slight tint with a stronger foreground of the same hue.
 - A state on a card shows in its foreground, with a neutral outline.
-- The accent is used for focus rings, the icon of the lens that is on, the tint line, the one primary action of a
-  view, composer or dialog, checked switches and boxes, text links and the palette's focus glow. Nothing else.
+- A divider line only separates things that share one border, such as rows in a list or columns in one frame. Cards
+  with a gap between them have no line between them. A card is never placed inside another card's border.
+- The accent is used for focus rings, the icon of the lens that is on, the tint line, checked switches and boxes,
+  text links and the palette's focus glow. Nothing else. A primary button is ink, filled with the text colour.
 - The accent follows the lens that is on, across the whole window and its overlays, unless the person turns it off
   in Appearance.
 - Text selection and the caret are neutral, never the accent or a lens's hue.
@@ -106,5 +108,5 @@ Rookery's shell to Crow and each plugin. Where a part's page and a rule differ, 
 ## Phone
 
 - Phones follow iOS conventions in Nocturne's look, such as push navigation with back and bottom sheets.
-- A trail's parent crumb becomes the screen's back control. Time is the system's back gesture.
+- A trail's parent crumb becomes the screen's back button. Time is the system's back gesture.
 - Hit areas are 44pt, and visible controls stay compact.

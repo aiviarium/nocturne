@@ -16,5 +16,5 @@
     "allowImportingTsExtensions": true,
     "noUncheckedSideEffectImports": false
   },
-  "include": ["src", "test", "gallery", "examples", "scripts"]
+  "include": ["src", "test", "gallery", "examples", "demo", "scripts"]
 }

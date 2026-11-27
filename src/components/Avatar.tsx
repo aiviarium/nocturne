@@ -69,7 +69,7 @@ export function Avatar(props: AvatarProps): JSX.Element {
 }
 
 export interface AvatarStackProps {
-  /** People or agents to show, overlapping by 6px. */
+  /** People or agents to show, overlapping by 3px to 6px with the size, so each one's initials stay whole. */
   people: Array<{ name: string; kind?: AvatarKind; hue?: LabelHue }>
   /** Show this many, then a `+N` chip. Default 4. */
   max?: number

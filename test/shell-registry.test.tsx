@@ -1,15 +1,18 @@
 import { afterEach, describe, expect, test } from "bun:test"
-import { createRoot, flush } from "solid-js"
+import { createRoot, createSignal, flush, useContext } from "solid-js"
 import {
   createShell,
   memoryRouter,
   memoryStorage,
+  PhoneOverride,
   Shell,
   type ShellLens,
   type ShellOptions,
   type ShellRegistry,
   type ShellScope,
   ShellViewHeader,
+  ViewLayoutHost,
+  type ViewLayoutHostValue,
 } from "../src"
 import { all, click, mount, one, tick } from "./dom"
 
@@ -87,6 +90,8 @@ const projectLenses: ShellLens[] = [
         count: () => issuesIn().length,
         records: (_p, view) => issuesIn(view).map((i) => ({ id: i.id, label: i.id, hint: i.title })),
         inspect: (id) => <p data-test="inspect">{id}</p>,
+        // An issue's page shows its terminal output itself; the list does not.
+        covers: (record) => (record ? ["terminal"] : []),
       },
       { id: "agents", label: "Agents", icon: "agent", view: View, enters: agent },
     ],
@@ -192,7 +197,7 @@ describe("createShell", () => {
     expect(s.lensBox().lenses.map((l) => l.id)).toEqual(["explore", "product", "build"])
     expect(s.lensBox().lens).toBe("build")
     const side = s.sidebar()
-    expect(side.up?.label).toBe("Projects")
+    expect(side.up.label).toBe("Projects")
     const items = side.groups[0]!.items
     expect(items.map((i) => i.label)).toEqual(["Issues", "Agents"])
     expect(items[0]!.current).toBe(true)
@@ -208,8 +213,19 @@ describe("createShell", () => {
     const groups = s.sidebar().groups
     expect(groups[0]!.items.map((i) => i.label)).toEqual(["Projects", "Hosts"])
     expect(groups[1]!.items.map((i) => i.label)).toEqual(["Atlas web", "Borealis"])
-    expect(s.sidebar().up).toBeUndefined()
+    // Nowhere up: the button stays, disabled.
+    expect(s.sidebar().up).toEqual({ label: "Up" })
     expect(s.lensBox().lenses).toEqual([])
+  })
+
+  test("from a record, ↑ goes to its list", () => {
+    const s = make("/projects/atlas/build/issues/WEB-142")
+    flush()
+    expect(s.sidebar().up.label).toBe("Issues")
+    s.sidebar().up.onClick!()
+    flush()
+    expect(s.loc().record).toBeUndefined()
+    expect(s.sidebar().up.label).toBe("Projects")
   })
 
   test("every move is a history entry with its address in full", async () => {
@@ -323,8 +339,8 @@ describe("createShell", () => {
     flush()
     expect(s.path().map((x) => x.label)).toEqual(["Acme", "Projects", "Atlas web", "Review agent"])
     expect(s.loc().place?.id).toBe("runs")
-    expect(s.sidebar().up?.label).toBe("Atlas web")
-    s.sidebar().up!.onClick()
+    expect(s.sidebar().up.label).toBe("Atlas web")
+    s.sidebar().up.onClick!()
     flush()
     expect(s.address()).toBe("/projects/atlas/build/agents")
   })
@@ -453,6 +469,136 @@ describe("Shell", () => {
     expect(s.textContent).toBe("/projects/atlas/build/issues")
   })
 
+  test("`entries` makes a top-level place a section of its records or the scopes it enters, capped, the open one marked", () => {
+    const desk: ShellScope = {
+      id: "desk",
+      label: "Desk",
+      icon: "inbox",
+      places: [
+        {
+          id: "pulls",
+          label: "Pull requests",
+          icon: "git-pull-request",
+          view: View,
+          records: () => [
+            { id: "1", label: "#1", hint: "First" },
+            { id: "2", label: "#2", hint: "Second" },
+            { id: "3", label: "#3", hint: "Third" },
+          ],
+          entries: { limit: 1, label: (r) => r.hint ?? r.label },
+          menu: (id) => [{ id: "close", label: `Close #${id}` }],
+        },
+        {
+          id: "agents",
+          label: "Agents",
+          icon: "agent",
+          view: View,
+          enters: { ...agent, menu: (a: { name: string }) => [{ id: "rename", label: `Rename ${a.name}` }] },
+          entries: true,
+        },
+      ],
+    }
+    const s = make("/desk/pulls", { scopes: [desk] })
+    flush()
+    // Each place with entries is a section after the places: its heading opens it, and its rows are the entries.
+    const groups = () => s.sidebar().groups
+    expect(groups()[0]!.items).toEqual([])
+    expect(
+      groups()
+        .slice(1)
+        .map((g) => [g.id, g.label, g.section, g.collapsible]),
+    ).toEqual([
+      ["section:pulls", "Pull requests", true, true],
+      ["section:agents", "Agents", true, true],
+    ])
+    expect(s.sidebar().parents).toEqual(["section:pulls", "section:agents"])
+    const rows = () =>
+      groups()
+        .slice(1)
+        .map((g) => ({ items: g.items, current: g.actions?.at(-1)?.current }))
+    // Past the limit, the rest fold into one row.
+    expect(rows()[0]!.items?.map((i) => i.label)).toEqual(["First", "Show 2 more"])
+    // An entry's menu is its place's, or its scope's, for that record or item.
+    const label = (e: unknown) => (e as { label: string }).label
+    expect(rows()[0]!.items![0]!.menu?.().map(label)).toEqual(["Close #1"])
+    expect(rows()[1]!.items![0]!.menu?.().map(label)).toEqual(["Rename Review agent"])
+    expect(rows()[0]!.current).toBe(true)
+    expect(rows()[1]!.items?.map((i) => [i.label, i.drill])).toEqual([
+      ["Review agent", true],
+      ["Triage agent", true],
+    ])
+    s.go("/desk/pulls/3")
+    flush()
+    // The open record shows past the cap and is marked in place of its place.
+    expect(rows()[0]!.items?.map((i) => [i.label, !!i.current])).toEqual([
+      ["First", false],
+      ["Third", true],
+      ["Show 1 more", false],
+    ])
+    expect(rows()[0]!.current).toBe(false)
+    const open = (row: number, entry: number) => (rows()[row]!.items![entry]!.onClick as () => void)()
+    // "Show 1 more" expands the list in place, and "Show fewer" folds it again; the shell remembers it.
+    open(0, 2)
+    flush()
+    expect(rows()[0]!.items?.map((i) => i.label)).toEqual(["First", "Second", "Third", "Show fewer"])
+    expect(s.loc().record).toBe("3")
+    open(0, 3)
+    flush()
+    expect(rows()[0]!.items?.map((i) => i.label)).toEqual(["First", "Third", "Show 1 more"])
+    open(0, 0)
+    flush()
+    expect(s.loc().record).toBe("1")
+    open(1, 1)
+    flush()
+    expect(s.path().at(-1)?.label).toBe("Triage agent")
+  })
+
+  test("a section's New button makes a record and opens it; a record's status, meta and detail reach its entry", () => {
+    let made = 0
+    const desk: ShellScope = {
+      id: "desk",
+      label: "Desk",
+      icon: "inbox",
+      places: [
+        {
+          id: "notes",
+          label: "Notes",
+          icon: "file",
+          noun: "note",
+          view: View,
+          records: () => [{ id: "n1", label: "One", status: "warn", meta: "2h", detail: "draft" }],
+          entries: {
+            create: () => {
+              made++
+              return "n1"
+            },
+          },
+        },
+      ],
+    }
+    const s = make("/desk/notes", { scopes: [desk] })
+    flush()
+    const section = s.sidebar().groups[1]!
+    const entry = section.items[0]!
+    expect([entry.status, entry.meta, entry.detail]).toEqual(["warn", "2h", "draft"])
+    const add = section.actions![0]!
+    expect(add.label).toBe("New note")
+    add.onClick()
+    flush()
+    expect(made).toBe(1)
+    expect(s.loc().record).toBe("n1")
+  })
+
+  test("a `covers` function gets the record: the panel steps aside on the record's page only", () => {
+    const s = make("/projects/atlas/build/issues")
+    flush()
+    expect(s.panels().covers).toEqual([])
+    s.go("/projects/atlas/build/issues/WEB-142")
+    flush()
+    expect(s.panels().covers).toEqual(["terminal"])
+    expect(s.handleKey(key("j", { metaKey: true }))).toBe(false)
+  })
+
   test("`covers` hides the panel and its rail button while the view shows it", async () => {
     let shell!: ShellRegistry
     const m = mount(() => {
@@ -542,5 +688,191 @@ describe("Shell", () => {
     document.body.dispatchEvent(key("k", { metaKey: true }))
     flush()
     expect(s.paletteOpen()).toBe(true)
+  })
+})
+
+describe("the shell in an app", () => {
+  const files: ShellScope<{ id: string }> = {
+    id: "box",
+    label: (b) => b.id,
+    items: () => [{ id: "b1" }],
+    places: [{ id: "files", label: "Files", icon: "folder", view: View, path: true, trail: false }],
+  }
+
+  test("a place with `path` takes the rest of the address as its record, written as segments", () => {
+    const s = make("/boxes/b1/files/src/lib/x.ts", {
+      scopes: [{ id: "boxes", label: "Boxes", icon: "server", view: View, child: files }],
+    })
+    flush()
+    expect(s.loc().record).toBe("src/lib/x.ts")
+    expect(s.address()).toBe("/boxes/b1/files/src/lib/x.ts")
+    s.toPlace(undefined, "files", undefined, "docs/read me.md")
+    flush()
+    expect(s.router.path()).toBe("/boxes/b1/files/docs/read%20me.md")
+    expect(s.loc().record).toBe("docs/read me.md")
+    s.toPlace(undefined, "files")
+    flush()
+    expect(s.loc().record).toBeUndefined()
+  })
+
+  test("an Esc entry runs once, even when it does not remove itself", () => {
+    const s = make("/projects/atlas/build/issues/WEB-142")
+    flush()
+    let closed = 0
+    s.pushEsc(() => closed++)
+    expect(s.handleKey(key("Escape"))).toBe(true)
+    flush()
+    expect(closed).toBe(1)
+    expect(s.loc().record).toBe("WEB-142")
+    s.handleKey(key("Escape"))
+    flush()
+    expect(closed).toBe(1)
+    expect(s.loc().record).toBeUndefined()
+  })
+
+  test("items that read a signal: the sidebar and the path follow it, without a warning", () => {
+    const warn = console.warn
+    const warned: unknown[] = []
+    console.warn = (...a: unknown[]) => warned.push(a)
+    try {
+      const [extra, setExtra] = createSignal<{ id: string; name: string }[]>([], { ownedWrite: true })
+      const dyn: ShellScope<{ id: string; name: string }> = {
+        ...host,
+        items: () => [{ id: "build-01", name: "build-01" }, ...extra()],
+      }
+      const s = make("/hosts", {
+        scopes: [{ id: "hosts", label: "Hosts", icon: "server", view: View, child: dyn }],
+      })
+      flush()
+      const listed = () => s.sidebar().groups[1]?.items.map((i) => i.label)
+      expect(listed()).toEqual(["build-01"])
+      setExtra([{ id: "new-02", name: "new-02" }])
+      flush()
+      expect(listed()).toEqual(["build-01", "new-02"])
+      s.go("/hosts/new-02/operate/logs")
+      flush()
+      expect(s.path().map((p) => p.label)).toEqual(["Acme", "Hosts", "new-02"])
+      s.handleKey(key("Escape"))
+      s.step(1)
+      expect(warned).toEqual([])
+    } finally {
+      console.warn = warn
+    }
+  })
+
+  test("the place stays current in the sidebar while one of its records is open", () => {
+    const s = make("/projects/atlas/build/issues/WEB-142")
+    flush()
+    const issues = s.sidebar().groups[0]!.items.find((i) => i.id === "issues")
+    expect(issues?.current).toBe(true)
+  })
+
+  test("a panel's tabs and actions get the shell, as its body does", async () => {
+    let got: ShellRegistry | undefined
+    let s!: ShellRegistry
+    const m = mount(() => {
+      s = createShell(
+        options("/hosts/build-01/operate/logs", {
+          panels: [
+            {
+              id: "terminal",
+              label: "Terminal",
+              icon: "terminal",
+              at: "bottom",
+              render: () => <pre>$</pre>,
+              tabs: (p) => {
+                got = p.shell
+                return {
+                  label: "Sessions",
+                  items: [{ id: "a", label: "zsh" }],
+                  value: "a",
+                  onChange: () => {},
+                }
+              },
+              actions: (p) => <span data-test="acts">{p.shell.loc().place?.label}</span>,
+            },
+          ],
+        }),
+      )
+      return <Shell shell={s} />
+    })
+    cleanup.push(m.dispose)
+    s.showPanel("terminal")
+    flush()
+    await tick()
+    expect(got).toBe(s)
+    expect(one("[data-test=acts]").textContent).toBe("Logs")
+  })
+
+  test("the root carries the `nc` class, so the app's own root needs none", async () => {
+    const m = mount(() => <Shell shell={createShell(options("/projects/atlas/build/issues"))} />)
+    cleanup.push(m.dispose)
+    await tick()
+    expect(one("[data-part=shell]").classList.contains("nc")).toBe(true)
+    expect(one("[data-part=app-shell]").classList.contains("nc")).toBe(true)
+  })
+
+  test("on a phone a lens's `open` panels stay closed; on a desktop they open", async () => {
+    let s!: ShellRegistry
+    const m = mount(() => (
+      <PhoneOverride value={true}>
+        {(() => {
+          s = createShell(options("/projects/atlas/build/issues"))
+          return <Shell shell={s} />
+        })()}
+      </PhoneOverride>
+    ))
+    cleanup.push(m.dispose)
+    await tick()
+    expect(s.panels().right).toBeUndefined()
+    s.showPanel("details")
+    flush()
+    expect(s.panels().right?.id).toBe("details")
+    expect(make("/projects/atlas/build/issues").panels().right?.id).toBe("details")
+  })
+
+  test("a view layout short of room folds the shell's sidebar, and it comes back with the room", async () => {
+    let host: ViewLayoutHostValue | null = null
+    const Probe = () => {
+      host = useContext(ViewLayoutHost)
+      return <div data-test="probe" />
+    }
+    let s!: ShellRegistry
+    const m = mount(() => {
+      s = createShell(
+        options("/projects/atlas/build/issues", {
+          scopes: [
+            {
+              id: "projects",
+              label: "Projects",
+              icon: "folder",
+              view: Probe,
+              child: {
+                ...project,
+                lenses: undefined,
+                places: [{ id: "issues", label: "Issues", view: Probe }],
+              },
+            },
+          ],
+        }),
+      )
+      return <Shell shell={s} foldBelow={0} />
+    })
+    cleanup.push(m.dispose)
+    await tick()
+    const h = host as unknown as ViewLayoutHostValue
+    expect(h.storage).toBe(s.storage)
+    const handle = { id: "v", element: document.body, toggleSidebar: () => {} }
+    const folded = () => one("[data-part=app-shell]").hasAttribute("data-folded")
+    h.report(handle, 100)
+    flush()
+    expect(folded()).toBe(true)
+    // Folding gave the layout 192px: it now has 92 to spare, short of what unfolding would take back.
+    h.report(handle, -92)
+    flush()
+    expect(folded()).toBe(true)
+    h.report(handle, -200)
+    flush()
+    expect(folded()).toBe(false)
   })
 })

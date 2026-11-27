@@ -15,8 +15,11 @@ Nocturne draws them with its `nc-*` classes and keeps a data-driven API.
 
 - For the window, read `site/content/docs/shell/` in Nocturne, or under `node_modules/@aiviarium/nocturne/` in an
   app, starting at `index.mdx`. `create-shell.mdx` lists what an app registers.
-- For a view, start at `site/content/docs/parts/index.mdx`. It's a table of the part to use for each thing a view
-  shows. Read the page it links for the part you need.
+- For a view, start at `site/content/docs/parts/index.mdx`. Its tables give the part to use for each thing a view
+  shows, from the shell down, with the page for the part and a place in the demo that uses it. Read the page it
+  links for the part you need.
+- `demo/` in Nocturne is a whole app on the shell that uses every exported part. Read the view of a place that
+  shows what you are building, such as `demo/projects/build/issues.tsx` for a grouped list with records.
 - Read the component's own file in `src/components/` or `src/shell/` for its props. Each prop has a doc comment.
 - `examples/` has one file per example. The gallery (`bun run gallery` in Nocturne) shows them all.
 
@@ -46,7 +49,9 @@ The parts:
 3. **Don't restyle a part for one view.** App CSS lays parts out with grid, gap and width. It leaves their look alone.
 4. **Icon-only controls have a label.** `IconButton` requires `label`, which is its name and its tooltip.
 5. **Phones come for free.** Parts switch to the phone scale under `:root[data-phone]`. A titled `Dialog` becomes a
-   `Sheet`, and menus and selects become sheets. Check a view at 390px wide instead of writing phone variants.
+   `Sheet`, menus and selects become sheets, splits stack, and the view header's trail becomes a back button.
+   Check a view at 390px wide instead of writing phone variants. Show a phone preview on a desktop page in a
+   `PhoneFrame`, whose sheets open over the frame.
 
 ## The app shell
 
@@ -84,12 +89,22 @@ header's middle. Read `loc()`, `selection()` and the rest from the registry, or 
   place. Call them lenses in code, docs and UI copy.
 - **Command palette.** ⌘K or the magnifier turns the box into `CommandPalette` in place. `:` lists lenses and `>`
   actions (`commands` on the scope or the workspace, plus the panels).
-- **Sidebar header, 44px.** `[↑ only with a parent scope] [Filter… filling the width] [collapse all] [minimise]`.
+- **Sidebar header, 44px.** `[↑] [Filter… filling the width] [collapse all] [minimise]`. From a record ↑ goes to
+  its list, elsewhere to the scope above. At the top it is disabled but keeps its place.
   The title bar's path shows the scope. The header has no scope name, switcher or back. ⌘F or / focuses the
   filter, which filters the tree in place, and Esc clears it.
 - **Sidebar tree.** `Nav` at the drill size: 30px rows, 12px/500 labels, 15px icons, 8px gap, 11px counts. Child
   views start at the parent's label. Scope by drilling: a place with `enters` nests the scope it opens in the
-  path, and the tree becomes that scope's places. Entering a scope opens it as the person left it.
+  path, and the tree becomes that scope's places. Entering a scope opens it as the person left it. A place with few
+  entries (open pull requests, sessions, chats) sets `entries`, so they open without the list. A top-level place
+  becomes a section after the places: its title opens the list, the chevron in the icon column folds it, and the
+  heading ends in "New …" (`entries.create`) and ↗, marked while the list is open. Give records a `status` (a dot
+  on the icon) only for a state such as running or failing, a short `meta` such as the age, and a `detail` second line only when
+  the record has details of its own. Past `limit` (8) the rest fold into "Show N more", which expands in place. Long lists, such as issues, stay in the view. A parent's fold chevron is at the row's end, in
+  the count's place on hover. Its icon never changes.
+- **One menu per record.** A container's list is a managed `RowList` or `DataTable` (selection, `rowMenu`, rename,
+  remove with undo, an add action in the header). The place's `menu` (a scope's `menu` for its items) builds the
+  same entries, so the record's sidebar entry opens the menu its row does.
 - **Icon rail.** Minimise, ⌘B or ⌘\, or a drag below 140px folds the sidebar to a 48px rail: top-level places as
   icons with tooltips, a neutral dot for counts, the account's avatar at the foot, and one unfold button where ↑
   was. Below 900px window width (`foldBelow`) it starts folded. There is no show-sidebar button in the title bar.
@@ -129,8 +144,9 @@ header's middle. Read `loc()`, `selection()` and the rest from the registry, or 
   layout (`dockLayout`, `dockAdd`, `dockSplit`, `dockSync`) in the app.
 - **A `Skeleton` fades in after 400ms.** Show it only while there is nothing to show, not on a refresh of data
   already on screen.
-- **One width for every view.** The main column fills its width and content starts at the left. `reading` is only
-  for long prose.
+- **Lists fill, documents centre.** Lists, boards, tables, forms and settings fill the main column from the left. A
+  record that reads as a document (an issue, a pull request, a report, a message, a spec) is a centred reading
+  column: `ViewLayout`'s `reading`, or the `nc-reading` class on its body when it shares a pane with its properties.
 
 ## The look
 
@@ -141,9 +157,9 @@ These hold in every view and every part. Check them before you call a view done.
   and never a change of weight or size, so nothing reflows. A selected card takes a `--line-strong` ring.
 - **Hover lightens.** Rows, nav items, chips and text buttons only lighten their text and icons. Icon-only buttons
   keep a faint `--hover` fill so their hit area shows.
-- **The accent marks a few things only,** namely focus rings, the icon of the lens that is on, the tint line, the one
-  primary action of a view, composer or dialog, checked switches and boxes, text links, and the palette's focus
-  glow. Not for selection, counts, badges, unread dots, tags, progress, toggled buttons, menu checks, filter
+- **The accent marks a few things only,** namely focus rings, the icon of the lens that is on, the tint line,
+  checked switches and boxes, text links, and the palette's focus glow. A primary button is ink, filled with the
+  text colour. Not for selection, counts, badges, unread dots, tags, progress, toggled buttons, menu checks, filter
   matches or drop lines. The accent follows the lens that is on, set on `<html>`.
 - **One drill size.** The path, view titles and trails, panel names and trails, the box's labels, the bar's status
   items and the sidebar's labels are all 12px/500 on a 20px line. A title and the same label as a crumb share

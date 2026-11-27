@@ -12,6 +12,7 @@ import {
 import { cx } from "../lib/cx"
 import { activeElement, focusableIn } from "../lib/focus"
 import { pushLayer } from "../lib/layers"
+import { readJson, type ShellStorage, writeJson } from "../shell/storage"
 import { IconButton } from "./IconButton"
 import { provideScreen, useScreen } from "./NavigationBar"
 
@@ -42,6 +43,8 @@ export interface ViewLayoutHostValue {
   report(handle: ViewLayoutHandle, shortfall: number | null): void
   /** The key that toggles the sidebar, as people read it, for tooltips. */
   keys?: { sidebar?: string }
+  /** Where the layouts inside remember their widths and folds, when they get no `storage` of their own. */
+  storage?: ShellStorage
 }
 
 // `null` is "no host": in Solid 2 a default-less context throws instead of reading as undefined.
@@ -60,6 +63,11 @@ export const ViewLayoutState = createContext<LayoutState | null>(null)
 export interface ViewLayoutProps {
   /** Remembers the widths and what is collapsed: one key per kind of view, such as `docs.page`. */
   id: string
+  /**
+   * Where the widths and the fold are kept. Default the host's (`Shell` passes its own store); without either they
+   * last as long as the page.
+   */
+  storage?: ShellStorage
   /** The view's own navigation, on the left. */
   sidebar?: JSX.Element
   /** Accessible name of the sidebar. */
@@ -84,7 +92,7 @@ export interface ViewLayoutProps {
   children?: JSX.Element
 }
 
-const KEY = "nc.viewLayout.v1"
+const KEY = "viewLayout"
 const SIDEBAR = { min: 180, max: 420, fallback: 240 }
 const EDGE = 1
 /**
@@ -99,21 +107,7 @@ interface Saved {
   collapsed?: boolean
 }
 
-function readAll(): Record<string, Saved> {
-  try {
-    return JSON.parse(localStorage.getItem(KEY) ?? "{}") ?? {}
-  } catch {
-    return {}
-  }
-}
-
-function save(id: string, patch: Saved) {
-  try {
-    const all = readAll()
-    all[id] = { ...all[id], ...patch }
-    localStorage.setItem(KEY, JSON.stringify(all))
-  } catch {}
-}
+const keyOf = (id: string) => `${KEY}/${id}`
 
 const clamp = (n: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, Math.round(n)))
 
@@ -182,7 +176,10 @@ function PhoneViewLayout(props: ViewLayoutProps): JSX.Element {
 export function ViewLayout(props: ViewLayoutProps): JSX.Element {
   if (useScreen()) return <PhoneViewLayout {...props} />
   const host = useContext(ViewLayoutHost)
-  const saved = untrack(() => readAll()[props.id] ?? {})
+  const store = untrack(() => props.storage ?? host?.storage)
+  const saved = untrack(() => readJson<Saved>(store, keyOf(props.id)) ?? {})
+  const save = (id: string, patch: Saved) =>
+    writeJson(store, keyOf(id), { ...readJson<Saved>(store, keyOf(id)), ...patch })
   const [width, setWidth] = createSignal(
     clamp(saved.w ?? props.sidebarWidth ?? SIDEBAR.fallback, SIDEBAR.min, SIDEBAR.max),
   )

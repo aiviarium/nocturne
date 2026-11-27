@@ -4,14 +4,15 @@ description: How a person moves through an app, the bars of the window, a view's
 ---
 
 Every app moves through the [app shell](../shell/index.mdx).
-This page shows how its parts work together, and where a view adds navigation of its own.
+A view doesn't add navigation of its own, except a page tree or a list of chats in its own sidebar.
+This page shows where each way of moving lives, and how to choose between drilling and nesting.
 
 ## Where things go
 
 | Bar | What belongs in it |
 | --- | --- |
 | Title bar | The app icon, the history arrows, the scope path with its switchers, the lens box, status items, the window controls |
-| Sidebar header | ↑ when there is a parent scope, the filter, collapse all, minimise |
+| Sidebar header | ↑, the filter, collapse all, minimise |
 | Sidebar | The current scope's places, with their counts |
 | Sidebar foot | The `AccountMenu` |
 | `ViewHeader` | The view's title or trail, the record switcher, the stepper, the view's actions |
@@ -32,11 +33,13 @@ No surface has a back button of its own.
 
 | To go | Use |
 | --- | --- |
-| Up from a record to its list | The view's first crumb, or Escape |
+| Up from a record to its list | The sidebar's ↑, the view's first crumb, or Escape |
 | Up from a panel's drill | The panel's first crumb, or Escape |
 | Up to the parent scope | The sidebar's ↑, or a path segment |
 | To a sibling scope or record | The switcher on its path segment or crumb |
 | Back to where the person was | ⌘[, Alt+←, the mouse's back button, the desktop arrow or the browser's |
+
+Try each one from <DemoLink to="projects/atlas/build/issues/WEB-142">WEB-142</DemoLink>.
 
 ## Scope by drilling
 
@@ -47,6 +50,8 @@ The core and the plugins contribute places and lenses through `createShell`, and
 See [Sidebar](../shell/sidebar.mdx).
 
 <Example id="navigation/drilldown" />
+
+In the demo, <DemoLink to="projects">Projects</DemoLink> lists the projects, and opening one drills the sidebar into <DemoLink to="projects/atlas/build/issues">its places</DemoLink>.
 
 ## Drill down or nest
 
@@ -74,7 +79,8 @@ A view with navigation of its own, such as a page tree or a list of chats, uses 
 | Main column | What the view shows | At least `minMain`, 560px by default |
 
 The view sidebar resizes by its edge and collapses with its control.
-Widths and collapsed columns are kept per view on the device.
+Its width and fold are kept in the view layout's `storage`, or in the shell's store under `viewLayout/` and the layout's `id`.
+When it lacks room beside the shell's sidebar, the shell folds its own sidebar to the rail until the view has the room.
 
 - It collapses by itself when the main column would get narrower than `minMain`.
 - Opened by hand, it docks beside the main column while the main column keeps 360px.
@@ -96,12 +102,14 @@ Give each row an open action.
 On a phone the sidebar is a drawer and the right panel covers the view.
 The rail is hidden.
 Each drill level is a screen of a `NavigationStack`.
-The trail's parent crumb becomes the screen's back control, named after the parent, and the crumbs are not shown.
+The view header shows a back button named after the trail's parent crumb, and the crumbs and the stepper aren't shown.
 Time is the system's back gesture.
 List screens have a large title.
 A view built from `ViewLayout` and `ViewHeader` gets this with no extra code.
 See [Phones](../phones.mdx#navigation).
 
 <Example id="navigation/phone-drilldown" />
+
+The demo takes the phone layout below 720px wide, and <DemoLink to="settings/mobile">Mobile app</DemoLink> shows a phone stack in a frame.
 
 <GalleryLink page="sidebar">The navigation examples in the gallery</GalleryLink>

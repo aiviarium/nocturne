@@ -470,7 +470,7 @@ export function ScreenSearch(props: ScreenSearchValue & { class?: string }): JSX
   }))
   return (
     <Show when={!onPhone}>
-      <label class={cx("nc-search", props.class)}>
+      <label data-part="screen-search" class={cx("nc-search", props.class)}>
         <Icon name="search" size="sm" />
         <input
           type="search"

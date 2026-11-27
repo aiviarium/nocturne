@@ -330,19 +330,20 @@ export function MetaLine(props: MetaLineProps): JSX.Element {
       .join(" · ")
   return (
     <span data-part="meta-line" class={cx("nc-metaline", props.class)} title={full()} {...rest}>
-      <For each={parts()}>
+      {/* By position: the parts are made afresh on each change, and a part's place is its identity. */}
+      <For each={parts()} keyed={false}>
         {(p, i) => (
           <>
-            <Show when={i() > 0}>
+            <Show when={i > 0}>
               <span class="nc-metaline__sep" aria-hidden="true">
                 ·
               </span>
             </Show>
-            <span class={cx("nc-metaline__item", p.mono && "nc-mono")}>
-              <Show when={p.icon}>
-                <Icon name={p.icon} size="sm" />
+            <span class={cx("nc-metaline__item", p().mono && "nc-mono")}>
+              <Show when={p().icon}>
+                <Icon name={p().icon} size="sm" />
               </Show>
-              <span class="nc-metaline__text">{p.label}</span>
+              <span class="nc-metaline__text">{p().label}</span>
             </span>
           </>
         )}

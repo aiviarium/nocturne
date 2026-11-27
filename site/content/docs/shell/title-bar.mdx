@@ -40,6 +40,8 @@ Every path segment and every record crumb opens the same switcher at the same si
 <Example id="scope-path/segments" />
 <Example id="switcher/scopes" />
 
+On <DemoLink to="hosts/build-01/operate/overview">a host</DemoLink>, the host's segment switches to another host.
+
 ## The scope box
 
 `ScopeBox` sits on the window's absolute centre, not after the path.
@@ -66,6 +68,8 @@ The others are quiet text with their icons in a muted mix of their hue, brighter
 
 <Example id="lens-switch/box" />
 
+A project in the demo wears three lenses, <DemoLink to="projects/atlas/explore/triage">Explore</DemoLink>, <DemoLink to="projects/atlas/product/specs">Product</DemoLink> and <DemoLink to="projects/atlas/build/board">Build</DemoLink>.
+
 ## The tint line
 
 A 1px line runs under the bar.
@@ -87,11 +91,14 @@ The focused field has a 3px glow in the accent, which is its focus ring.
 
 <Example id="command-palette/box" />
 
+Press ⌘K anywhere in the demo, such as on <DemoLink to="projects/atlas/build/issues">Issues</DemoLink>, then type `:` or `>`.
+
 ## Status items
 
 `status` takes `TitleBarItem`s: an icon and a few words at the drill size, quiet until hovered.
 A `tone` colours text that needs attention, such as "1 failing".
 Show an item only while it matters.
+The demo shows "1 failing" for its <DemoLink to="settings/webhooks">webhooks</DemoLink>, which opens them.
 
 ## Window controls
 
@@ -102,6 +109,9 @@ The app passes the handlers that talk to its native window (`onMinimise`, `onMax
 The library calls nothing itself.
 
 <Example id="window-controls/styles" />
+
+The demo plays a browser tab.
+Its app menu, behind the icon at the top left, turns it into a desktop window with the arrows and the controls.
 
 ## Desktop window or browser tab
 

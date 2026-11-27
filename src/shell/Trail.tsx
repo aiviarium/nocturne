@@ -78,13 +78,16 @@ export function Trail(props: TrailProps): JSX.Element {
   let nav: HTMLElement | undefined
   const [auto, setAuto] = createSignal(0, { ownedWrite: true })
   const widths = new Map<string, number>()
+  // Read into a memo here, in the body: `fit` runs from a ResizeObserver, where a prop given as an expression
+  // would have to create its memo outside any owner, which a dev build throws on.
+  const crumbs = createMemo(() => props.crumbs ?? [])
   const folded = createMemo(() => {
-    const n = props.crumbs.length
+    const n = crumbs().length
     const want = props.fold === undefined || props.fold === "auto" ? auto() : props.fold
     return Math.max(0, Math.min(want, n - 1))
   })
-  const shown = createMemo(() => props.crumbs.slice(folded()))
-  const hidden = createMemo(() => props.crumbs.slice(0, folded()))
+  const shown = createMemo(() => crumbs().slice(folded()))
+  const hidden = createMemo(() => crumbs().slice(0, folded()))
 
   // Widths of crumbs as last drawn in full; a crumb not seen yet unfolds everything once so it can be measured.
   const fit = () =>
@@ -92,7 +95,7 @@ export function Trail(props: TrailProps): JSX.Element {
       if (!nav || (props.fold !== undefined && props.fold !== "auto")) return
       for (const li of nav.querySelectorAll<HTMLElement>("[data-crumb]"))
         widths.set(li.dataset.crumb!, li.offsetWidth)
-      const list = props.crumbs
+      const list = crumbs()
       if (list.some((c) => !widths.has(keyOf(c)))) {
         if (auto() !== 0) setAuto(0)
         return
@@ -106,7 +109,7 @@ export function Trail(props: TrailProps): JSX.Element {
       if (k !== auto()) setAuto(k)
     })
   createEffect(
-    () => `${props.crumbs.map(keyOf).join("/")}|${auto()}`,
+    () => `${crumbs().map(keyOf).join("/")}|${auto()}`,
     () => fit(),
   )
   onSettled(() => {

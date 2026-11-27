@@ -143,7 +143,8 @@ button.nc-title-bar__app:hover, button.nc-title-bar__app[aria-expanded="true"] {
 .nc-title-bar__end { display: flex; align-items: center; gap: 2px; flex: none; height: 100%; margin-left: auto; }
 .nc-title-bar__end > .nc-window[data-style="mac"] { margin-left: var(--space-2); }
 .nc-title-bar__item { display: inline-flex; align-items: center; gap: 6px; flex: none; height: var(--control-md); padding: 0 6px; border: 0; border-radius: var(--radius-sm); background: none; color: var(--text-3); font: inherit; letter-spacing: inherit; cursor: pointer; transition: background-color var(--dur-hover) var(--ease), color var(--dur-hover) var(--ease); }
-.nc-title-bar__item:hover, .nc-title-bar__item[aria-current="page"] { background: var(--hover); color: var(--text-1); }
+.nc-title-bar__item:hover { background: var(--hover); color: var(--text-1); }
+.nc-title-bar__item[aria-current="page"] { background: var(--active); color: var(--text-1); }
 .nc-title-bar__item[data-tone="warning"], .nc-title-bar__item[data-tone="warning"]:hover { color: var(--warning); }
 .nc-title-bar__item[data-tone="danger"], .nc-title-bar__item[data-tone="danger"]:hover { color: var(--danger); }
 .nc-title-bar__item[data-tone="success"], .nc-title-bar__item[data-tone="success"]:hover { color: var(--success); }
@@ -293,7 +294,8 @@ button.nc-title-bar__app:hover, button.nc-title-bar__app[aria-expanded="true"] {
 .nc-app-shell__sidebar-foot .nc-account__trigger-name { font-size: var(--nc-type-drill); }
 .nc-app-shell__sidebar[data-folded] .nc-app-shell__sidebar-body { scrollbar-width: none; }
 .nc-app-shell__sidebar[data-folded] .nc-app-shell__sidebar-foot { justify-content: center; padding: var(--space-1) 0 var(--space-2); }
-.nc-app-shell__surface { position: relative; display: flex; flex: 1; min-width: 0; min-height: 0; border-radius: 0; background: var(--bg-1); box-shadow: var(--shadow-raised); overflow: hidden; }
+/* The surface is on the sidebar's layer and after it, so its ring draws the edge between them. */
+.nc-app-shell__surface { position: relative; z-index: 2; display: flex; flex: 1; min-width: 0; min-height: 0; border-radius: 0; background: var(--bg-1); box-shadow: var(--shadow-raised); overflow: hidden; }
 .nc-app-shell__main { display: flex; flex-direction: column; flex: 1; min-width: 0; min-height: 0; }
 .nc-app-shell__view { position: relative; display: flex; flex-direction: column; flex: 1; min-width: 0; min-height: 0; overflow: hidden; }
 .nc-app-shell__view > .nc-view-layout { flex: 1; }
@@ -335,15 +337,38 @@ button.nc-title-bar__app:hover, button.nc-title-bar__app[aria-expanded="true"] {
 .nc-nav__children { display: flex; flex-direction: column; gap: 1px; }
 .nc-nav-item--child { padding-left: calc(var(--space-2) + 15px + var(--space-2)); color: var(--text-3); }
 .nc-nav-item--child[aria-current="page"] { color: var(--text-1); }
+/* "Show 3 more" and "Show fewer" at the end of a list of entries: centred, small and faint, below the rows' weight. */
+.nc-nav-item.nc-nav-item--more { justify-content: center; height: 24px; padding-inline: var(--space-2); color: var(--text-4); font-size: var(--nc-type-section); font-weight: 400; }
+.nc-nav-item.nc-nav-item--more > .nc-nav-item__label { flex: none; }
+/* A row's status on its icon's lower right corner, 6px, cut out of the icon by a 1.5px gap. */
+.nc-nav-item__glyph { position: relative; display: inline-flex; flex: none; align-items: center; justify-content: center; }
+.nc-nav-item__glyph > :first-child { mask: radial-gradient(circle 4.5px at calc(100% - 2px) calc(100% - 2px), transparent 98%, currentColor 100%); }
+.nc-nav-item__glyph > .nc-dot { position: absolute; right: -1px; bottom: -1px; width: 6px; height: 6px; }
+/* A place's entries, in its section: a step quieter than places, so the content reads apart from the organising. */
+.nc-nav-item.nc-nav-item--entry { color: var(--text-3); }
+.nc-nav-item.nc-nav-item--entry:is(:hover, [aria-current="page"]) { color: var(--text-2); }
+.nc-nav-item.nc-nav-item--entry[aria-current="page"] { color: var(--text-1); }
+.nc-nav-item--entry > .nc-nav-item__meta { color: var(--text-4); }
+.nc-nav-item--entry:is(:hover, [aria-current="page"]) > .nc-nav-item__meta { color: var(--text-3); }
+/* Two lines: the icon spans both and centres on them; the label and its meta on the first, the detail under the
+   label. 40px. */
+.nc-nav-item.nc-nav-item--two { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; grid-template-rows: 17px 15px; align-content: center; align-items: center; column-gap: 8px; row-gap: 1px; height: auto; min-height: 40px; }
+.nc-nav-item--two > :first-child { grid-column: 1; grid-row: 1 / span 2; }
+.nc-nav-item--two > .nc-nav-item__label { grid-column: 2; grid-row: 1; line-height: 17px; }
+.nc-nav-item--two > .nc-nav-item__meta { grid-column: 3; grid-row: 1; line-height: 17px; }
+.nc-nav-item--two > .nc-nav-item__detail { grid-column: 2 / span 2; grid-row: 2; min-width: 0; overflow: hidden; color: var(--text-4); font-size: var(--nc-type-section); font-weight: 400; line-height: 15px; text-overflow: ellipsis; white-space: nowrap; }
+.nc-nav-item--two:is(:hover, [aria-current="page"]) > .nc-nav-item__detail { color: var(--text-3); }
+.nc-nav-item.nc-nav-item--more:hover { color: var(--text-2); }
 .nc-nav-item[data-within], .nc-nav-item[data-within] > .nc-icon { color: var(--text-1); }
 .nc-nav-item__count { font-size: var(--nc-type-section); }
-.nc-nav-item__disclose { position: relative; display: inline-grid; place-items: center; flex: none; width: 15px; height: 15px; cursor: pointer; }
-.nc-nav-item__disclose > * { grid-area: 1 / 1; }
-.nc-nav-item__disclose > .nc-icon { width: 15px; height: 15px; color: var(--text-3); }
-.nc-nav-item__disclose > .nc-nav-item__chevron { opacity: 0; color: var(--text-2); }
-.nc-nav-item:hover .nc-nav-item__disclose > .nc-nav-item__chevron { opacity: 1; }
-.nc-nav-item:hover .nc-nav-item__disclose > :not(.nc-nav-item__chevron) { opacity: 0; }
-.nc-nav-item[aria-current="page"] .nc-nav-item__disclose > .nc-icon:not(.nc-nav-item__chevron) { color: var(--text-1); }
+/* A parent's fold control sits at the row's end, over its count: hidden at rest, it takes the count's place on
+   hover or focus. The row's icon never changes. */
+.nc-nav-item:has(> .nc-nav-item__disclose) { position: relative; }
+.nc-nav-item__disclose { position: absolute; top: 50%; right: 4px; display: grid; place-items: center; width: 20px; height: 20px; margin-top: -10px; border-radius: var(--radius-xs); color: var(--text-3); cursor: pointer; opacity: 0; }
+.nc-nav-item__disclose:hover { color: var(--text-1); }
+.nc-nav-item__disclose > .nc-icon { width: 14px; height: 14px; }
+.nc-nav-item:is(:hover, :focus-visible) > .nc-nav-item__disclose { opacity: 1; }
+.nc-nav-item:is(:hover, :focus-visible):has(> .nc-nav-item__disclose) > .nc-nav-item__meta { opacity: 0; }
 .nc-nav-item .nc-match { color: var(--text-1); text-decoration-thickness: 1.5px; }
 .nc-nav[data-folded] { align-items: center; gap: 2px; }
 .nc-nav__rule { width: 16px; height: 1px; margin: var(--space-2) 0; background: var(--line); }
@@ -353,6 +378,21 @@ button.nc-title-bar__app:hover, button.nc-title-bar__app[aria-expanded="true"] {
 .nc-nav-rail-item[aria-current="page"] { background: var(--active); color: var(--text-1); }
 .nc-nav-rail-item:focus-visible { outline: none; box-shadow: var(--focus-ring-inset); }
 /* A place, or a child of it, has a count: a dot at the icon's corner, neutral like the counts it stands for. */
+/* A section that is its place, folded: its icon, a small chevron under it, and its entries on demand. */
+button.nc-nav-rail-item { margin: 0; padding: 0; border: 0; background: none; cursor: pointer; }
+.nc-nav-rail-group { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.nc-nav-rail-group__expand { display: grid; place-items: center; width: 32px; height: 12px; margin: -2px 0 0; padding: 0; border: 0; border-radius: var(--radius-xs); background: none; color: var(--text-4); cursor: pointer; }
+.nc-nav-rail-group__expand > .nc-icon { width: 12px; height: 12px; }
+.nc-nav-rail-group__expand:hover { color: var(--text-2); }
+.nc-nav-rail-group__expand:focus-visible { outline: none; box-shadow: var(--focus-ring-inset); }
+.nc-nav-rail-item[data-within] { color: var(--text-1); }
+/* The flyout: the section's name and count, then its rows as in the open sidebar. */
+.nc-nav-flyout { width: 248px; padding: var(--space-1); }
+.nc-nav-flyout__head { display: flex; align-items: center; padding: 6px 8px 4px; color: var(--text-3); font-size: var(--nc-type-section); font-weight: 500; }
+.nc-nav-flyout__head { gap: 2px; padding-right: 2px; }
+.nc-nav-flyout__action[aria-current="page"] { background: var(--active); color: var(--text-1); }
+.nc-nav-flyout__title { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nc-nav-flyout__rows { display: flex; flex-direction: column; gap: 1px; }
 .nc-nav-rail-item__dot { position: absolute; top: 6px; right: 6px; width: 6px; height: 6px; border-radius: var(--radius-full); background: var(--text-2); box-shadow: 0 0 0 2px var(--bg-0); }
 
 /* ── Panel rail ───────────────────────────────────────────────────────────────────────────────────────────
@@ -398,6 +438,11 @@ button.nc-title-bar__app:hover, button.nc-title-bar__app[aria-expanded="true"] {
    drills to "Issues / WEB-142"; then the stepper and the actions. No fill. */
 .nc-view-header { display: flex; flex: none; align-items: center; gap: var(--space-3); box-sizing: border-box; height: var(--header); padding: 0 var(--space-2) 0 var(--space-5); border-bottom: 1px solid var(--line-soft); background: none; }
 .nc-view-header__title { display: flex; align-items: center; height: var(--control-sm); margin: 0; overflow: hidden; color: var(--text-1); font-size: var(--nc-type-drill); line-height: var(--nc-type-drill-line); font-weight: var(--nc-type-drill-weight); letter-spacing: var(--nc-type-drill-track); text-overflow: ellipsis; white-space: nowrap; }
+.nc-view-header__back { display: inline-flex; flex: none; align-items: center; gap: var(--space-1); max-width: 40%; height: var(--control-sm); margin-left: calc(var(--space-2) * -1); padding: 0 var(--space-2) 0 var(--space-1); border: 0; border-radius: var(--radius-sm); background: none; color: var(--text-3); font: inherit; font-size: var(--nc-type-drill); line-height: var(--nc-type-drill-line); font-weight: var(--nc-type-drill-weight); cursor: pointer; }
+.nc-view-header__back:hover { color: var(--text-1); }
+.nc-view-header__back-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+:root[data-phone] .nc-view-header__back { position: relative; }
+:root[data-phone] .nc-view-header__back::after { content: ""; position: absolute; inset: min(0px, calc(50% - var(--phone-hit) / 2)) 0; }
 .nc-view-header__trail { flex: 0 1 auto; }
 .nc-view-header__context { display: inline-flex; align-items: center; gap: var(--space-2); min-width: 0; }
 .nc-view-header__middle { display: flex; flex: 1; align-items: center; gap: var(--space-2); min-width: 0; }

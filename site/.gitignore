@@ -8,6 +8,7 @@ next-env.d.ts
 # Local screenshots, never committed
 screens/
 
-# Made by the build from the library: the gallery and the token and example data.
+# Made by the build from the library: the gallery, the demo and the token and example data.
 public/gallery/
+public/demo/
 src/generated/

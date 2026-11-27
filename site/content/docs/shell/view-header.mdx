@@ -19,6 +19,8 @@ function IssuesView() {
 
 <Example id="trail/record" />
 
+Try the trail, the switcher and the stepper on <DemoLink to="projects/atlas/build/issues/WEB-142">an issue in the demo</DemoLink>.
+
 ## Title or trail
 
 At a place the header shows the place's name, or the saved view's.
@@ -26,6 +28,7 @@ The sidebar already marks the place, and the header has no trail there.
 
 Drilled to a record, the header shows the trail in place of the title: `Issues / WEB-142 ⌄`.
 A place whose records nest, such as folders, gives its own crumbs: `Files / src / auth ⌄`.
+A host's <DemoLink to="hosts/build-01/operate/files">Files</DemoLink> in the demo have them.
 
 - Crumbs are at the drill size, 12px/500, with a "/" in `text-4` between them.
 - The crumbs that go up are `text-3`, and light on hover. The current one is `text-1`. Only the colour changes.
@@ -56,11 +59,13 @@ J and K do the same from the keyboard.
 The view's actions sit at the header's right in one order:
 
 1. icon actions
-2. pin
-3. overflow
-4. the primary action
+2. overflow
+3. the primary action
 
 An add action is a ghost plus icon button, `icon: "plus"` with `primary` left out.
+An action with a `menu` opens it from its button and calls `onSelect` with the chosen item's id, such as Add widget listing the widgets that aren't there yet.
+It takes no `onClick`.
+On a phone its items go into the bar's menu under the action's label.
 A view switch or search goes in the header's middle, as its children.
 Never put a toolbar row under the header.
 
@@ -73,7 +78,8 @@ Opening a record goes to it and changes the trail.
 The trail is where the record sits, not the list the person came from.
 
 On a phone the header is the screen's navigation bar.
-The trail isn't shown there, and the parent crumb becomes the screen's back control, named after the parent.
+The trail and the stepper aren't shown there.
+The parent crumb becomes a back button (`data-part="view-back"`), named after the parent.
 See [Phones](../phones.mdx#navigation).
 
 <GalleryLink page="view-header">The view header in the gallery</GalleryLink>

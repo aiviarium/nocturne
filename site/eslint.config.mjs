@@ -5,6 +5,14 @@ import nextTs from 'eslint-config-next/typescript';
 export default defineConfig([
   ...nextVitals,
   ...nextTs,
-  // public/gallery/ is the built gallery; src/generated/ is data from the library.
-  globalIgnores(['.next/**', 'out/**', '.source/**', 'next-env.d.ts', 'public/gallery/**', 'src/generated/**']),
+  // public/gallery/ and public/demo/ are built from the library; src/generated/ is data from it.
+  globalIgnores([
+    '.next/**',
+    'out/**',
+    '.source/**',
+    'next-env.d.ts',
+    'public/gallery/**',
+    'public/demo/**',
+    'src/generated/**',
+  ]),
 ]);

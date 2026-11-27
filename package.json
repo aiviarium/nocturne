@@ -11,6 +11,8 @@
   "scripts": {
     "gallery": "vite --config gallery/vite.config.ts gallery",
     "gallery:build": "vite build --config gallery/vite.config.ts gallery",
+    "demo": "vite --config demo/vite.config.ts demo",
+    "demo:build": "vite build --config demo/vite.config.ts demo",
     "examples:build": "vite build --config examples/vite.config.ts",
     "typecheck": "tsc --noEmit",
     "test": "bun test",

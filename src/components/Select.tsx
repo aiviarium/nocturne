@@ -43,6 +43,13 @@ export interface SelectProps<T extends string = string> {
   label?: string
   /** Accessible name when there is no visible label. */
   "aria-label"?: string
+  /** The id of the element that names it, such as a `SettingRow`'s title (`ids.labelId`). */
+  "aria-labelledby"?: string
+  /**
+   * The label at the control's left, on one line, so the select keeps a control's height: for a view header or a
+   * toolbar.
+   */
+  inline?: boolean
   /** Shown while nothing is selected. */
   placeholder?: string
   /** Disables the control. */
@@ -73,7 +80,11 @@ export function Select<T extends string = string>(props: SelectProps<T>): JSX.El
   const invalid = () => Boolean(props.error)
   const presentation = usePresentation()
   return (
-    <div data-part="select" class={cx("nc-field", props.class)}>
+    <div
+      data-part="select"
+      data-inline={props.inline ? "" : undefined}
+      class={cx("nc-field", props.inline && "nc-field--inline", props.class)}
+    >
       <SelectRoot<T>
         // A value no option has, such as "", is no choice yet: the placeholder shows.
         value={props.value === undefined ? undefined : selected() === undefined ? null : props.value}
@@ -98,7 +109,8 @@ export function Select<T extends string = string>(props: SelectProps<T>): JSX.El
         </Show>
         <SelectTrigger
           class={cx("nc-input nc-select", props.mono && "nc-mono", invalid() && "nc-input--error")}
-          aria-label={props.label ? undefined : props["aria-label"]}
+          aria-label={props.label || props["aria-labelledby"] ? undefined : props["aria-label"]}
+          aria-labelledby={props.label ? undefined : props["aria-labelledby"]}
           aria-invalid={invalid() ? "true" : undefined}
           aria-describedby={message() ? `${id}-help` : undefined}
         >

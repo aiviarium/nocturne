@@ -8,7 +8,7 @@ import {
   DrawerTitle,
   type SnapPoint,
 } from "@ui-sdk/solid/drawer"
-import { For, Show } from "solid-js"
+import { For, onCleanup, Show } from "solid-js"
 import { cx } from "../lib/cx"
 import { focusableIn } from "../lib/focus"
 import type { Detent } from "../lib/gestures"
@@ -16,6 +16,7 @@ import { usePhone } from "../lib/phone"
 import { Button } from "./Button"
 import { Dialog } from "./Dialog"
 import { IconButton } from "./IconButton"
+import { usePhoneFrame } from "./PhoneFrame"
 import { OpenLayer } from "./Popover"
 
 // A sheet from the bottom of the screen (iOS's page sheet): what the desktop shows as an inspector, a right-hand
@@ -58,6 +59,36 @@ const SNAP: Record<Detent, SnapPoint> = { medium: 0.5, large: 1, fit: "content" 
 export function Sheet(props: SheetProps): JSX.Element {
   const snaps = () => (props.detents ?? ["fit"]).map((d) => SNAP[d])
   let surface: HTMLDivElement | undefined
+  let scrim: HTMLDivElement | undefined
+  // Inside a PhoneFrame the sheet and its dim cover the frame: they are in the top layer, which is placed against
+  // the window, so they take the frame's box.
+  const frame = usePhoneFrame()
+  const fit = () => {
+    const box = frame?.()
+    if (!box || !surface?.isConnected) return
+    const r = box.getBoundingClientRect()
+    const radius = getComputedStyle(box).borderRadius
+    for (const el of [surface.parentElement, scrim]) {
+      if (!el) continue
+      Object.assign(el.style, {
+        inset: "auto",
+        left: `${r.left}px`,
+        top: `${r.top}px`,
+        width: `${r.width}px`,
+        height: `${r.height}px`,
+        borderRadius: radius,
+        overflow: "hidden",
+      })
+    }
+  }
+  if (frame && typeof window !== "undefined") {
+    window.addEventListener("resize", fit)
+    window.addEventListener("scroll", fit, true)
+    onCleanup(() => {
+      window.removeEventListener("resize", fit)
+      window.removeEventListener("scroll", fit, true)
+    })
+  }
   // The first control that is not a text field, so opening a sheet does not raise the keyboard.
   const firstFocus = () =>
     props.initialFocus?.() ??
@@ -79,10 +110,17 @@ export function Sheet(props: SheetProps): JSX.Element {
         if (!next) props.onClose()
       }}
     >
-      <DrawerBackdrop class="nc-sheet-scrim" data-part="sheet-scrim" />
+      <DrawerBackdrop
+        ref={(el: HTMLDivElement) => {
+          scrim = el
+        }}
+        class="nc-sheet-scrim"
+        data-part="sheet-scrim"
+      />
       <DrawerContent
         ref={(el: HTMLDivElement) => {
           surface = el
+          if (frame) queueMicrotask(fit)
         }}
         initialFocus={firstFocus}
         aria-label={props.title ? undefined : props.label}

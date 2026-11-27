@@ -45,9 +45,21 @@ has the back control, the title and at most two actions. List and root screens h
 built from `ViewLayout` and `ViewHeader` gets this with no extra code.
 
 A drill-down on a desktop is a stack on a phone. In the app shell the sidebar is a drawer and the right panel
-covers the view. The panel rail is hidden. The trail's parent crumb becomes the screen's back control, named
-after the parent. `ViewHeader` doesn't show the trail or the stepper there, because the stack is the way back.
+covers the view. The panel rail is hidden, and a lens's panels don't open by themselves. `ViewHeader` shows a
+back button (`data-part="view-back"`) named after the trail's parent crumb, in place of the trail and the
+stepper. `Split` and `SplitGroup` stack their columns, and `Dock` has no split buttons.
+
+`PhoneFrame` shows a phone preview on a desktop page. The parts inside lay out as on a phone, and a `Sheet` or
+`ActionSheet` opened inside covers the frame, not the window.
 Time is the system's back gesture, and where the two differ, the gesture decides.
+
+## Sheets and lists
+
+Sheets come from the bottom with a grab handle. A sheet rests at the height of its content, up to nearly the
+whole screen, and taller content scrolls inside it. A long list can rest at medium and large instead: drag or
+press the handle between them, or drag down to dismiss. Destructive confirmations and short choices are action
+sheets. Grouped inset lists hold settings and pickers. `Sheet` and `ActionSheet` draw the sheets, and
+`InsetList`, `InsetGroup` and `InsetRow` the grouped lists.
 
 ## The on-screen keyboard
 
@@ -55,3 +67,6 @@ Time is the system's back gesture, and where the two differ, the gesture decides
 the document element. `BottomArea` stays above the keyboard; `keyboardOpen()` and `keyboardInset()` give the
 same facts to code. A test that swaps in a visual viewport of its own can dispatch an `nc:viewport` event on
 `window` to make the module read it.
+
+`PullToRefresh` refreshes a list pulled down from its top, and `ScreenRefresh` gives a screen of a
+`NavigationStack` the same.
