@@ -88,7 +88,7 @@ export function KeysView(_: ShellViewProps) {
                 value={k().name}
                 onInput={(v) => set({ ...k(), name: v })}
               />
-              <span class="nc-meta dm-settings-mono">{k().prefix}</span>
+              <span class="nc-meta nc-mono">{k().prefix}</span>
               <span class="nc-meta">{k().scope === "write" ? "Read and write" : "Read only"}</span>
               <span class="nc-meta">{k().created}</span>
             </div>

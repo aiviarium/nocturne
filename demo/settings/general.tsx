@@ -47,9 +47,9 @@ export function GeneralView(_: ShellViewProps) {
           description="The lens a project opens with until someone picks another."
           modified={lens() !== "explore"}
           onReset={() => setLens("explore")}
-          control={
+          control={(ids) => (
             <Select
-              aria-label="Lens for new projects"
+              aria-labelledby={ids.labelId}
               value={lens()}
               onChange={setLens}
               options={[
@@ -58,7 +58,7 @@ export function GeneralView(_: ShellViewProps) {
                 { value: "build", label: "Build", icon: "code" },
               ]}
             />
-          }
+          )}
         />
         <SettingRow
           title="Week starts on"
@@ -77,9 +77,9 @@ export function GeneralView(_: ShellViewProps) {
         <SettingRow
           title="Keep closed issues"
           description="After this, closed issues move to the archive."
-          control={
+          control={(ids) => (
             <NumberField
-              aria-label="Keep closed issues"
+              aria-labelledby={ids.labelId}
               integer
               min={7}
               max={365}
@@ -87,7 +87,7 @@ export function GeneralView(_: ShellViewProps) {
               value={keep()}
               onCommit={setKeep}
             />
-          }
+          )}
         />
       </Card>
       <Card title="Notifications" padding="none">

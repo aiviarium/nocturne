@@ -5,6 +5,11 @@ import {
   type Dictation,
   LogViewer,
   MetaLine,
+  NumberField,
+  Select,
+  SettingRow,
+  Slider,
+  TextField,
   ToolStep,
   type Transcriber,
   TranscriberProvider,
@@ -127,5 +132,62 @@ describe("one-time reads", () => {
     await tick()
     flush()
     expect(one("[data-test=phase]", root).textContent).toBe("recording")
+  })
+})
+
+describe("controls named by a setting row", () => {
+  test("Select, NumberField and Slider take aria-labelledby", () => {
+    const { root } = track(
+      mount(() => (
+        <div>
+          <SettingRow
+            title="Lens"
+            control={(ids) => (
+              <Select aria-labelledby={ids.labelId} value="a" options={[{ value: "a", label: "A" }]} />
+            )}
+          />
+          <SettingRow
+            title="Keep"
+            control={(ids) => <NumberField aria-labelledby={ids.labelId} value={3} onCommit={() => {}} />}
+          />
+          <SettingRow
+            title="Volume"
+            control={(ids) => <Slider aria-labelledby={ids.labelId} defaultValue={40} field />}
+          />
+        </div>
+      )),
+    )
+    const rows = all("[data-part=setting-row]")
+    const named = (row: HTMLElement, selector: string) => {
+      const el = one(selector, row)
+      const id = el.getAttribute("aria-labelledby")
+      expect(id).toBeTruthy()
+      expect(el.hasAttribute("aria-label")).toBe(false)
+      return document.getElementById(id!)?.textContent
+    }
+    expect(named(rows[0]!, "[data-part=select] button")).toBe("Lens")
+    expect(named(rows[1]!, "[data-part=number-field] input:not([aria-hidden])")).toBe("Keep")
+    expect(named(rows[2]!, "[data-part=slider] [role=slider], [data-part=slider] input[type=range]")).toBe(
+      "Volume",
+    )
+    expect(root).toBeTruthy()
+  })
+
+  test("an inline Select keeps its label beside the control, and the label names it", () => {
+    const { root } = track(
+      mount(() => <Select label="Range" inline value="7d" options={[{ value: "7d", label: "7 days" }]} />),
+    )
+    const select = one("[data-part=select]", root)
+    expect(select.hasAttribute("data-inline")).toBe(true)
+    expect(select.classList.contains("nc-field--inline")).toBe(true)
+    const trigger = one("button", select)
+    const label = one(".nc-field__label", select)
+    const names = `${trigger.getAttribute("aria-labelledby") ?? ""} ${label.id}`
+    expect(label.id && names.includes(label.id)).toBeTruthy()
+  })
+
+  test("TextField's mono puts the input in the mono face", () => {
+    const { root } = track(mount(() => <TextField label="Prefix" mono value="ak_live" />))
+    expect(one("input", root).classList.contains("nc-mono")).toBe(true)
   })
 })

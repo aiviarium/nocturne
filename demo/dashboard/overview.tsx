@@ -373,7 +373,8 @@ export function OverviewView(_props: ShellViewProps) {
           ]}
         >
           <Select
-            aria-label="Range"
+            label="Range"
+            inline
             options={RANGES}
             value={range()}
             onChange={(v) => {

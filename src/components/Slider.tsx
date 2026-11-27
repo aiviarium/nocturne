@@ -33,6 +33,8 @@ interface SliderCommonProps {
   label?: string
   /** Accessible name when there is no visible label. */
   "aria-label"?: string
+  /** The id of the element that names it when there is no visible label, such as a `SettingRow`'s title. */
+  "aria-labelledby"?: string
   /** Help text below. */
   help?: string
   /** Writes a value for the readout and for assistive technology: `(v) => \`${v}%\``. */
@@ -92,7 +94,7 @@ export function Slider(props: SliderProps): JSX.Element {
       value={props.value}
       defaultValue={props.defaultValue ?? props.min ?? 0}
       onValue={(v) => props.onChange?.(v as number)}
-      thumbLabel={() => (props.label ? undefined : props["aria-label"])}
+      thumbLabel={() => (props.label || props["aria-labelledby"] ? undefined : props["aria-label"])}
     />
   )
 }
@@ -169,7 +171,7 @@ function SliderCore(props: CoreProps): JSX.Element {
       data-orientation={vertical() ? "vertical" : "horizontal"}
       data-disabled={props.disabled || undefined}
       class={cx("nc-field nc-slider-field", props.class)}
-      aria-labelledby={props.count > 1 && props.label ? labelId : undefined}
+      aria-labelledby={props.count > 1 ? (props.label ? labelId : props["aria-labelledby"]) : undefined}
       value={props.value}
       defaultValue={props.value === undefined ? props.defaultValue : undefined}
       onValueChange={(v: number | number[]) => {
@@ -212,7 +214,9 @@ function SliderCore(props: CoreProps): JSX.Element {
                     index={i}
                     class="nc-slider__thumb"
                     aria-label={props.thumbLabel(i)}
-                    aria-labelledby={props.label && !props.thumbLabel(i) ? labelId : undefined}
+                    aria-labelledby={
+                      props.thumbLabel(i) ? undefined : props.label ? labelId : props["aria-labelledby"]
+                    }
                     aria-describedby={props.help ? helpId : undefined}
                   />
                 )}
@@ -248,7 +252,10 @@ function SliderCore(props: CoreProps): JSX.Element {
         <Show when={props.field && !vertical()}>
           <NumberField
             class="nc-slider__field"
-            aria-label={props.label ?? props["aria-label"] ?? "Value"}
+            aria-label={
+              props.label ?? props["aria-label"] ?? (props["aria-labelledby"] ? undefined : "Value")
+            }
+            aria-labelledby={props.label || props["aria-label"] ? undefined : props["aria-labelledby"]}
             value={current()[0] ?? null}
             min={min()}
             max={max()}

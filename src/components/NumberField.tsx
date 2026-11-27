@@ -24,6 +24,8 @@ export interface NumberFieldProps {
   label?: string
   /** Accessible name when there is no visible label. */
   "aria-label"?: string
+  /** The id of the element that names it, such as a `SettingRow`'s title (`ids.labelId`). */
+  "aria-labelledby"?: string
   /** Help text below the field. */
   help?: string
   /** An error from outside (a form's validation), or `true` for the state alone. */
@@ -383,8 +385,8 @@ export function NumberField(props: NumberFieldProps): JSX.Element {
         aria-valuemin={props.min}
         aria-valuemax={props.max}
         aria-valuetext={value() === null ? "Empty" : `${shown(value())}${props.unit ? ` ${props.unit}` : ""}`}
-        aria-label={props.label ? undefined : props["aria-label"]}
-        aria-labelledby={props.label ? labelId : undefined}
+        aria-label={props.label || props["aria-labelledby"] ? undefined : props["aria-label"]}
+        aria-labelledby={props.label ? labelId : props["aria-labelledby"]}
         aria-invalid={invalid() ? "true" : undefined}
         aria-describedby={message() ? helpId : undefined}
         aria-required={props.required ? "true" : undefined}

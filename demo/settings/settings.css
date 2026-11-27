@@ -42,9 +42,6 @@
   gap: var(--space-3);
   align-items: center;
 }
-.dm-settings-mono {
-  font-family: var(--font-mono);
-}
 /* A member: the avatar, the name and a badge on one line, in a table cell. */
 .dm-settings-who {
   display: inline-flex;

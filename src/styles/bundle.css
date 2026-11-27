@@ -90,12 +90,16 @@
 .nc-field { display: flex; flex-direction: column; gap: 6px; }
 .nc-field__label { font-size: 12px; line-height: 16px; font-weight: 500; color: var(--text-2); }
 .nc-field__head { display: flex; align-items: center; gap: 4px; min-width: 0; }
+.nc-field--inline { flex-direction: row; flex-wrap: wrap; align-items: center; gap: var(--space-2); }
+.nc-field--inline > .nc-field__head { flex: none; white-space: nowrap; }
+.nc-field--inline > .nc-input { width: auto; min-width: 0; }
 .nc-field__help { font-size: 12px; line-height: 16px; color: var(--text-3); }
 .nc-input { box-sizing: border-box; height: 30px; padding: 0 10px; border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--bg-2); color: var(--text-1); font: 400 13px/16px var(--font-sans); outline: none; }
 .nc-input::placeholder { color: var(--text-3); }
 .nc-input:hover { border-color: var(--line-strong); }
 .nc-input:focus, .nc-input--focus { border-color: var(--accent-strong); box-shadow: var(--focus-ring); }
 .nc-input--error { border-color: var(--danger); }
+.nc-input.nc-mono, .nc-mono .nc-input { font-family: var(--font-mono); }
 .nc-search { display: flex; align-items: center; gap: 8px; box-sizing: border-box; height: 30px; padding: 0 6px 0 10px; border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--bg-2); color: var(--text-3); }
 .nc-search input { flex: 1; min-width: 0; border: 0; outline: 0; background: transparent; color: var(--text-1); font: 400 13px/16px var(--font-sans); }
 
