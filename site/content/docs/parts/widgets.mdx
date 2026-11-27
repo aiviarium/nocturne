@@ -103,6 +103,8 @@ A widget with one size has no handle.
 `board.actions()` is the view header's Edit widgets action.
 While editing, the actions are Add widget, Reset and Done, and More actions stays last.
 Pressing a widget drags it to another zone, and clicking it opens its settings with its place and form. Its menu has the same moves.
+A right click on a widget, editing or not, opens its context menu. The type's own `menu` entries come first, then Settings, the moves within its zone, Remove, and Edit widgets last.
+A type with `interactive`, such as a model picker, is its own control: a press doesn't open its card.
 A widget with nothing to say leaves its zone outside editing when the board has `hideEmpty`.
 
 `fit` shows a zone's widgets in another zone at the measured width, such as a side column folded into a bar on a narrow window, and the layout itself stays as it was.

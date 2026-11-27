@@ -349,6 +349,7 @@ button.nc-menu__item, div.nc-menu__item { box-sizing: border-box; width: 100%; b
 .nc-composer:focus-within { border-color: var(--line-strong); }
 .nc-composer__attachments { display: flex; flex-wrap: wrap; gap: var(--space-1); padding: 10px 12px 0; }
 .nc-composer__spacer { flex: 1; }
+.nc-composer__tools { display: flex; align-items: center; gap: 4px; min-width: 0; }
 .nc-composer--bar { flex-direction: row; align-items: center; gap: 10px; padding: var(--space-2) var(--space-2) var(--space-2) 14px; }
 .nc-composer__status { flex: 1; }
 .nc-composer[data-dictation="recording"] { border-color: var(--accent-line); box-shadow: 0 0 0 3px var(--accent-tint); }

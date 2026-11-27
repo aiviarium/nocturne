@@ -1,5 +1,5 @@
-// Where a conversation's widgets can sit: a bar over the transcript, the side columns, and the bars over and under the
-// composer, each bar with a start, a centre and an end. Without room the side columns fold into the bar over the
+// Where a conversation's widgets can sit: a bar over the transcript, the side columns, the bars over and under the
+// composer, each bar with a start, a centre and an end, and the composer's own bottom row, at its start and its end. Without room the side columns fold into the bar over the
 // composer, and on a phone the top bar does too. The layout itself never changes for it.
 import type { WidgetPlacement, WidgetZoneDef } from "@aiviarium/nocturne"
 
@@ -24,15 +24,26 @@ const column = (side: "left" | "right"): WidgetZoneDef[] =>
     layout: "column",
   }))
 
+// In the composer's bottom row only chips fit: the model, the effort, a context ring.
+const input: WidgetZoneDef[] = (["start", "end"] as const).map((at) => ({
+  id: `input-${at}`,
+  label: `Input row, ${AT[at]}`,
+  forms: ["chip"],
+  layout: "row",
+}))
+
 export const CHAT_ZONES: WidgetZoneDef[] = [
   ...bar("top", "Top"),
   ...column("left"),
   ...column("right"),
   ...bar("above", "Above input"),
+  ...input,
   ...bar("below", "Below input"),
 ]
 
 export const CHAT_LAYOUT: WidgetPlacement[] = [
+  { id: "model", zone: "input-start" },
+  { id: "effort", zone: "input-start" },
   { id: "context", zone: "left-top" },
   { id: "files", zone: "left-top" },
   { id: "images", zone: "left-top" },

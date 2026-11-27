@@ -7,6 +7,8 @@ import {
   Button,
   DiffView,
   EmptyState,
+  EntryGlyph,
+  Icon,
   IdBadge,
   ListRow,
   MetaLine,
@@ -17,6 +19,7 @@ import {
   RowList,
   type RowMenuEntry,
   SectionHeading,
+  type ShellRecord,
   type ShellRegistry,
   ShellViewHeader,
   type ShellViewProps,
@@ -31,6 +34,58 @@ import { createSignal, For, Show } from "solid-js"
 import { type Project, person } from "../../data"
 import { askName, copyLink, demoShell, inList, renameEntry, undoable } from "../../menus"
 import { changePull, closePulls, type Pull, pullById, pullsOf } from "./data"
+
+/** A pull request's state, as its entry's badge: merged, checks failing, changes asked for, approved, or open. */
+const PULL_STATE = (x: Pull) =>
+  x.review === "merged"
+    ? { icon: "git-merge" as const, hue: "var(--label-orchid)", label: "Merged" }
+    : x.checks.some((c) => c.state === "error")
+      ? { icon: "git-pull-request" as const, hue: "var(--danger)", label: "Checks failing" }
+      : x.review === "changes"
+        ? { icon: "git-pull-request" as const, hue: "var(--warning)", label: "Changes requested" }
+        : x.review === "approved"
+          ? { icon: "git-pull-request" as const, hue: "var(--success)", label: "Approved" }
+          : { icon: "git-pull-request" as const, hue: "var(--text-3)", label: "Waiting for review" }
+const checksOf = (x: Pull) => {
+  const failed = x.checks.filter((c) => c.state === "error")
+  const live = x.checks.filter((c) => c.state === "live")
+  if (failed.length) return `${failed.map((c) => c.name).join(", ")} failing`
+  if (live.length) return `${live.length} running`
+  return `${x.checks.length} passed`
+}
+
+/**
+ * A pull request as a record: its entry in the sidebar and its row in the list draw the same author, state badge
+ * and hover card from it.
+ */
+export function pullRecord(x: Pull): ShellRecord {
+  const author = person(x.author)
+  const state = PULL_STATE(x)
+  return {
+    id: x.id,
+    label: `#${x.id}`,
+    hint: x.title,
+    // The author is the icon and the state its badge: the place's own icon would say nothing.
+    leading: () => <Avatar name={author?.name ?? x.author} hue={author?.hue} size="xs" />,
+    badge: () => (
+      <span style={{ color: state.hue, display: "inline-flex" }}>
+        <Icon name={state.icon} label={state.label} />
+      </span>
+    ),
+    hover: () => ({
+      title: x.title,
+      meta: `#${x.id} · ${author?.name ?? x.author} · ${x.updated}`,
+      rows: [
+        { label: "State", value: <span style={{ color: state.hue }}>{state.label}</span> },
+        { label: "Checks", value: checksOf(x) },
+        { label: "Branch", value: <span class="nc-mono">{x.branch}</span> },
+        ...(x.issue ? [{ label: "Issue", value: x.issue }] : []),
+      ],
+    }),
+    meta: x.updated,
+    detail: `#${x.id} · ${author?.name.split(" ")[0] ?? x.author}`,
+  }
+}
 
 const REVIEW: Record<Pull["review"], [string, BadgeTone]> = {
   approved: ["Approved", "success"],
@@ -188,7 +243,8 @@ function PullList(props: { shell: ShellRegistry }) {
           {(p) => (
             <ListRow
               lines={3}
-              icon={p.review === "merged" ? "commit" : "git-pull-request"}
+              // The sidebar's entry: the author, with the state as its badge.
+              leading={<EntryGlyph {...pullRecord(p)} />}
               prefix={<span>#{p.id}</span>}
               title={p.title}
               muted={p.review === "merged"}

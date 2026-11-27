@@ -132,6 +132,7 @@ export const NAMES: Record<string, string> = {
   commit: "GitCommitHorizontal",
   "file-diff": "FileDiff",
   database: "Database",
+  signal: "Signal",
 }
 
 /**

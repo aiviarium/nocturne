@@ -602,7 +602,14 @@ export function ListRow(props: ListRowProps): JSX.Element {
   }
   const lead = () => (
     <Show when={props.leading || props.icon || props.iconNode}>
-      <span class="nc-lrow__lead">
+      <span
+        class="nc-lrow__lead"
+        onClick={(e) => {
+          // A glyph with a hover card sits above the row's press area; a click on it still opens the row.
+          const t = e.target as Element
+          if (t.closest('[data-part="hover-card-anchor"]') && !t.closest("input, button, a")) mainEl?.click()
+        }}
+      >
         <Show when={props.leading} fallback={<Icon name={props.icon} node={props.iconNode} />}>
           {props.leading}
         </Show>

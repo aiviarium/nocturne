@@ -95,6 +95,29 @@ describe("the widget model", () => {
   })
 })
 
+describe("WidgetBoard context menu", () => {
+  test("a right click on a widget opens its own entries, then settings, order, removal and Edit widgets", async () => {
+    const { b } = board()
+    await tick()
+    const item = one("[data-widget-id=context]")
+    item.dispatchEvent(
+      new MouseEvent("contextmenu", { bubbles: true, cancelable: true, clientX: 10, clientY: 10 }),
+    )
+    flush()
+    await tick()
+    const labels = all("[role=menuitem]").map((m) => m.textContent?.trim())
+    expect(labels).toEqual(["Settings", "Move earlier", "Move later", "Remove", "Edit widgets"])
+    // Settings starts editing with the widget's settings open.
+    ;(all("[role=menuitem]").find((m) => m.textContent?.includes("Settings")) as HTMLElement).click()
+    flush()
+    await new Promise((r) => setTimeout(r, 20))
+    flush()
+    await tick()
+    expect(b.editing()).toBe(true)
+    expect(b.settingsOf()).toBe("context")
+  })
+})
+
 describe("WidgetBoard", () => {
   test("draws each zone's widgets in their zone's form, and leaves out an empty one outside editing", async () => {
     board()

@@ -168,26 +168,9 @@ export function NavItem(
     </Show>
   )
   const [row, setRow] = createSignal<HTMLElement>()
-  const marked = () => <ItemGlyph item={props} />
   const body = (
     <>
-      <Show when={props.hover} fallback={marked()}>
-        {(hover) => {
-          const d = () => hover()()
-          return (
-            <HoverCard
-              anchor={row()}
-              label={`Details of ${props.label}`}
-              title={d().title}
-              meta={d().meta}
-              rows={d().rows}
-              content={d().content}
-            >
-              {marked()}
-            </HoverCard>
-          )
-        }}
-      </Show>
+      <ItemGlyph item={props} hover anchor={row()} />
       <span class="nc-nav-item__label">
         <MatchText text={props.label} q={props.match} />
       </span>
@@ -688,31 +671,48 @@ function RailGroup(props: {
   )
 }
 
+export interface EntryGlyphProps {
+  /** What the entry is: names the hover card. */
+  label: string
+  icon?: IconName
+  iconNode?: LucideNode
+  /** Content in the icon's place: an avatar, an identicon, a provider's mark. A function draws a fresh one. */
+  leading?: JSX.Element | (() => JSX.Element)
+  /** A state as a dot cut out of the lower right corner. */
+  status?: DotStatus
+  /** A state as a small icon cut out of the lower right corner, in place of `status`. */
+  badge?: () => JSX.Element
+  /** Details in a card while the pointer rests on it. */
+  hover?: () => NavItemHover
+  /** What the hover card stands beside: the whole row. Default the glyph. */
+  anchor?: HTMLElement
+  /** The icon when there is neither `leading` nor `icon`. */
+  fallback?: IconName
+}
+
 /**
- * A row's icon with its marks: the leading element or icon, then a badge, or else a status dot, cut out of its corner.
- * The row and the folded rail draw the same one, so a state never drops out when the sidebar folds.
+ * An entry's icon with its marks: the leading element or icon, then a badge, or else a status dot, cut out of its
+ * corner, and its hover card. The sidebar, the folded rail and a list in a view draw the same one, so a record looks
+ * alike wherever it shows: a `ShellRecord` spreads onto it (`<EntryGlyph {...record} />`).
  */
-function ItemGlyph(props: { item: NavItemProps; fallback?: IconName }): JSX.Element {
+export function EntryGlyph(props: EntryGlyphProps): JSX.Element {
   const glyph = () => (
     <Show
-      when={props.item.lead || props.item.leading}
+      when={props.leading}
       fallback={
-        <Show when={props.item.icon || props.item.iconNode || props.fallback}>
-          <Icon
-            name={props.item.icon ?? (props.item.iconNode ? undefined : props.fallback)}
-            node={props.item.iconNode}
-          />
+        <Show when={props.icon || props.iconNode || props.fallback}>
+          <Icon name={props.icon ?? (props.iconNode ? undefined : props.fallback)} node={props.iconNode} />
         </Show>
       }
     >
-      {props.item.lead ? props.item.lead() : props.item.leading}
+      {typeof props.leading === "function" ? (props.leading as () => JSX.Element)() : props.leading}
     </Show>
   )
-  return (
+  const marked = () => (
     <Show
-      when={props.item.badge}
+      when={props.badge}
       fallback={
-        <Show when={props.item.status} fallback={glyph()}>
+        <Show when={props.status} fallback={glyph()}>
           {(status) => (
             <span class="nc-nav-item__glyph" data-part="nav-item-status" data-status={status()}>
               {glyph()}
@@ -724,9 +724,50 @@ function ItemGlyph(props: { item: NavItemProps; fallback?: IconName }): JSX.Elem
     >
       <span class="nc-nav-item__glyph nc-nav-item__glyph--badge" data-part="nav-item-badge">
         {glyph()}
-        <span class="nc-nav-item__badge">{props.item.badge?.()}</span>
+        <span class="nc-nav-item__badge">{props.badge?.()}</span>
       </span>
     </Show>
+  )
+  return (
+    <Show when={props.hover} fallback={marked()}>
+      {(hover) => {
+        const d = () => hover()()
+        return (
+          <HoverCard
+            anchor={props.anchor}
+            label={`Details of ${props.label}`}
+            title={d().title}
+            meta={d().meta}
+            rows={d().rows}
+            content={d().content}
+          >
+            {marked()}
+          </HoverCard>
+        )
+      }}
+    </Show>
+  )
+}
+
+/** A row's icon with its marks, from the row's props: the row and the folded rail draw the same one. */
+function ItemGlyph(props: {
+  item: NavItemProps
+  fallback?: IconName
+  hover?: boolean
+  anchor?: HTMLElement
+}) {
+  return (
+    <EntryGlyph
+      label={props.item.label}
+      icon={props.item.icon}
+      iconNode={props.item.iconNode}
+      leading={props.item.lead ?? props.item.leading}
+      status={props.item.status}
+      badge={props.item.badge}
+      hover={props.hover ? props.item.hover : undefined}
+      anchor={props.anchor}
+      fallback={props.fallback}
+    />
   )
 }
 

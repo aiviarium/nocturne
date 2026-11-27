@@ -1,7 +1,7 @@
 // The agent's conversations and runs, in memory. A conversation is a list of turns; a reply is a list of blocks
 // (text with chips, tool steps, media, an approval). Sending a message plays a scripted reply with timers, the
 // way a streamed one arrives: steps start and finish, words come in, and the context and the rate move.
-import type { ChatMediaItem, StepStatus, TokenKind, ToolStepProps } from "@aiviarium/nocturne"
+import type { ChatMediaItem, EffortLevel, StepStatus, TokenKind, ToolStepProps } from "@aiviarium/nocturne"
 import { createSignal } from "solid-js"
 import { removeFrom } from "../lists"
 import { chart, screenshot, textFile } from "./media"
@@ -41,7 +41,16 @@ export interface Conversation {
   used: number
   /** Output rate over the last minute, tokens per second, oldest first. */
   rates: number[]
+  /** The model and the effort it answers with, set from their widgets. Default Deep and medium. */
+  model?: string
+  effort?: EffortLevel
 }
+
+/** The models a chat can answer with. */
+export const MODELS = [
+  { id: "deep", label: "Deep", description: "Most capable, slower" },
+  { id: "fast", label: "Fast", description: "Quick and balanced" },
+]
 
 export const CONTEXT_TOTAL = 200_000
 
@@ -246,6 +255,8 @@ export function newConversation(project: string): string {
 }
 
 export const renameConversation = (id: string, title: string) => patch(id, (c) => ({ ...c, title }))
+export const setModel = (id: string, model: string) => patch(id, (c) => ({ ...c, model }))
+export const setEffort = (id: string, effort: EffortLevel) => patch(id, (c) => ({ ...c, effort }))
 /** Deletes conversations; returns the undo, which puts them back where they were. */
 export function removeConversations(ids: string[]): () => void {
   return removeFrom(conversations, setConversations, (c) => ids.includes(c.id))

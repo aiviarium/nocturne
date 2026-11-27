@@ -226,7 +226,7 @@ a.nc-ccard, button.nc-ccard { text-decoration: none; cursor: pointer; font: inhe
 .nc-lrow[data-interactive] .nc-lrow__main::after { content: ""; position: absolute; inset: 0; border-radius: inherit; }
 .nc-lrow__lead { grid-column: lead; display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box; min-width: var(--nc-lrow-lead); height: var(--nc-lrow-lead); margin-right: var(--nc-lrow-gap); color: var(--text-3); transition: color var(--dur-hover) var(--ease); }
 .nc-lrow[data-selected] .nc-lrow__lead { color: var(--text-2); }
-.nc-lrow__lead:has(input, button, a, [tabindex]) { position: relative; z-index: 1; }
+.nc-lrow__lead:has(input, button, a, [tabindex], [data-part="hover-card-anchor"]) { position: relative; z-index: 1; }
 .nc-lrow__text { display: flex; align-items: baseline; gap: var(--space-2); flex: 1; min-width: 0; }
 .nc-lrow[data-lines="2"] .nc-lrow__text, .nc-lrow[data-lines="3"] .nc-lrow__text { flex-direction: column; align-items: stretch; gap: 0; }
 /* Short facts before the title (a key, a state icon): quiet, at the label size, with figures that line up. */

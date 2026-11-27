@@ -663,6 +663,13 @@ export const ICON_NODES = {
     ["rect", { width: "18", height: "18", x: "3", y: "3", rx: "2" }],
     ["path", { d: "M9 3v18" }],
   ],
+  signal: [
+    ["path", { d: "M2 20h.01" }],
+    ["path", { d: "M7 20v-4" }],
+    ["path", { d: "M12 20v-8" }],
+    ["path", { d: "M17 20V8" }],
+    ["path", { d: "M22 4v16" }],
+  ],
   "sliders-horizontal": [
     ["path", { d: "M10 5H3" }],
     ["path", { d: "M12 19H3" }],

@@ -140,6 +140,14 @@ export interface ComposerProps {
   /** Effort, a four-step meter. Hidden when `onEffortChange` is not set. */
   effort?: EffortLevel
   onEffortChange?: (effort: EffortLevel) => void
+  /**
+   * Controls of the app's own in the bottom row, after the model, mode and effort: a widget zone, so the person
+   * places widgets there, or `ComposerChoice` and `EffortMenu` in place of the built-in pickers. They make way for
+   * the dictation's status while it records.
+   */
+  tools?: JSX.Element
+  /** The same at the row's end, before the microphone and the send button. */
+  toolsEnd?: JSX.Element
   /** The assistant is working: shows the running bar with a Stop button. */
   running?: boolean
   /** Text of the running bar: "Running tests…". */
@@ -173,6 +181,90 @@ function Bars(props: { level: number }): JSX.Element {
     <span class="nc-effort__bars" aria-hidden="true">
       <For each={[0, 1, 2, 3]}>{(i) => <i class={{ on: i <= props.level }} />}</For>
     </span>
+  )
+}
+
+/**
+ * A choice of the composer's bottom row, such as the model or the mode: a quiet button with the chosen label that
+ * opens a menu of the options. The composer draws one for `models` and `modes`; draw your own for a widget.
+ */
+export function ComposerChoice(props: {
+  /** What is chosen, as the menu's and the button's accessible name: "Model". */
+  label: string
+  options: ComposerOption[]
+  /** The chosen id. Default the first option. */
+  value?: string
+  onChange?: (id: string) => void
+  class?: string
+}): JSX.Element {
+  const current = () => props.options.find((o) => o.id === props.value) ?? props.options[0]
+  return (
+    <DropdownMenu
+      label={props.label}
+      radio
+      placement="top-start"
+      items={props.options.map((o) => ({
+        id: o.id,
+        label: o.label,
+        description: o.description,
+        checked: o.id === current()?.id,
+      }))}
+      onSelect={(id) => props.onChange?.(id)}
+      trigger={(tp) => (
+        <Button
+          variant="ghost"
+          size="sm"
+          iconEnd="chevron-down"
+          aria-label={`${props.label}: ${current()?.label ?? ""}`}
+          data-part="composer-choice"
+          {...tp}
+          class={props.class}
+        >
+          {current()?.label}
+        </Button>
+      )}
+    />
+  )
+}
+
+/** The effort picker of the composer's bottom row: a four-step meter and its level, opening a menu of the levels. */
+export function EffortMenu(props: {
+  value?: EffortLevel
+  onChange?: (effort: EffortLevel) => void
+  class?: string
+}): JSX.Element {
+  const index = () =>
+    Math.max(
+      0,
+      EFFORTS.findIndex((e) => e.id === (props.value ?? "medium")),
+    )
+  return (
+    <DropdownMenu
+      label="Effort"
+      radio
+      placement="top-start"
+      items={EFFORTS.map((e, i) => ({
+        id: e.id,
+        label: e.label,
+        description: e.description,
+        checked: i === index(),
+        leading: <Bars level={i} />,
+      }))}
+      onSelect={(id) => props.onChange?.(id as EffortLevel)}
+      trigger={(tp) => (
+        <Button
+          variant="ghost"
+          size="sm"
+          aria-label={`Effort: ${EFFORTS[index()]?.label}`}
+          data-part="effort-menu"
+          {...tp}
+          class={cx("nc-effort", props.class)}
+        >
+          <Bars level={index()} />
+          {EFFORTS[index()]?.label}
+        </Button>
+      )}
+    />
   )
 }
 
@@ -725,83 +817,35 @@ export function Composer(props: ComposerProps): JSX.Element {
                 </Sheet>
               </Show>
               <Show when={!phone() && props.models?.length}>
-                <DropdownMenu
+                <ComposerChoice
                   label="Model"
-                  radio
-                  placement="top-start"
-                  items={(props.models ?? []).map((m) => ({
-                    id: m.id,
-                    label: m.label,
-                    description: m.description,
-                    checked: m.id === (props.model ?? props.models?.[0]?.id),
-                  }))}
-                  onSelect={(id) => props.onModelChange?.(id)}
-                  trigger={(tp) => (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      iconEnd="chevron-down"
-                      aria-label={`Model: ${optionLabel(props.models, props.model)}`}
-                      {...tp}
-                    >
-                      {optionLabel(props.models, props.model)}
-                    </Button>
-                  )}
+                  options={props.models ?? []}
+                  value={props.model}
+                  onChange={(id) => props.onModelChange?.(id)}
                 />
               </Show>
               <Show when={!phone() && props.modes?.length}>
-                <DropdownMenu
+                <ComposerChoice
                   label="Mode"
-                  radio
-                  placement="top-start"
-                  items={(props.modes ?? []).map((m) => ({
-                    id: m.id,
-                    label: m.label,
-                    description: m.description,
-                    checked: m.id === (props.mode ?? props.modes?.[0]?.id),
-                  }))}
-                  onSelect={(id) => props.onModeChange?.(id)}
-                  trigger={(tp) => (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      iconEnd="chevron-down"
-                      aria-label={`Mode: ${optionLabel(props.modes, props.mode)}`}
-                      {...tp}
-                    >
-                      {optionLabel(props.modes, props.mode)}
-                    </Button>
-                  )}
+                  options={props.modes ?? []}
+                  value={props.mode}
+                  onChange={(id) => props.onModeChange?.(id)}
                 />
               </Show>
               <Show when={!phone() && props.onEffortChange}>
-                <DropdownMenu
-                  label="Effort"
-                  radio
-                  placement="top-start"
-                  items={EFFORTS.map((e, i) => ({
-                    id: e.id,
-                    label: e.label,
-                    description: e.description,
-                    checked: i === effortIndex(),
-                    leading: <Bars level={i} />,
-                  }))}
-                  onSelect={(id) => props.onEffortChange?.(id as EffortLevel)}
-                  trigger={(tp) => (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      aria-label={`Effort: ${EFFORTS[effortIndex()]?.label}`}
-                      {...tp}
-                      class="nc-effort"
-                    >
-                      <Bars level={effortIndex()} />
-                      {EFFORTS[effortIndex()]?.label}
-                    </Button>
-                  )}
-                />
+                <EffortMenu value={props.effort} onChange={(e) => props.onEffortChange?.(e)} />
+              </Show>
+              <Show when={props.tools}>
+                <div class="nc-composer__tools" data-part="composer-tools">
+                  {props.tools}
+                </div>
               </Show>
               <span class="nc-composer__spacer" />
+              <Show when={props.toolsEnd}>
+                <div class="nc-composer__tools" data-part="composer-tools-end">
+                  {props.toolsEnd}
+                </div>
+              </Show>
             </Show>
             <Show when={dictation()}>
               <Show

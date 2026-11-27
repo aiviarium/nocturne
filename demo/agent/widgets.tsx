@@ -3,7 +3,9 @@
 // dashboard's grid uses.
 import {
   Button,
+  ComposerChoice,
   compactCount,
+  EffortMenu,
   Icon,
   type IconName,
   StatusDot,
@@ -13,7 +15,7 @@ import {
 import type { JSX } from "@solidjs/web"
 import { For, Show } from "solid-js"
 import { hostById, hosts } from "../hosts/data"
-import { CONTEXT_TOTAL, conversationById, decide } from "./data"
+import { CONTEXT_TOTAL, conversationById, decide, MODELS, setEffort, setModel } from "./data"
 
 const opts =
   (...vs: [string, string][]) =>
@@ -275,6 +277,51 @@ const STEP_DOT: Record<StepStatus, "ok" | "ai" | "error" | "neutral"> = {
 const ic = (name: IconName) => <Icon name={name} size="sm" />
 
 export const CHAT_WIDGETS: Record<string, WidgetType<string>> = {
+  // The model and the effort are controls: a press opens their menu, not a card. In the composer's bottom row by
+  // default, and the person can move them to any bar or column, or take them away.
+  model: {
+    id: "model",
+    label: "Model",
+    icon: "sparkle",
+    hint: "The model that answers",
+    interactive: true,
+    forms: ["chip", "line"],
+    render: (cid, mode) => {
+      const picker = () => (
+        <ComposerChoice
+          label="Model"
+          options={MODELS}
+          value={conv(cid)?.model}
+          onChange={(id) => setModel(cid, id)}
+        />
+      )
+      if (mode === "line")
+        return (
+          <Line icon="sparkle" label="Model">
+            {picker()}
+          </Line>
+        )
+      return picker()
+    },
+  },
+  effort: {
+    id: "effort",
+    label: "Effort",
+    icon: "signal",
+    hint: "How long the model thinks",
+    interactive: true,
+    forms: ["chip", "line"],
+    render: (cid, mode) => {
+      const picker = () => <EffortMenu value={conv(cid)?.effort} onChange={(e) => setEffort(cid, e)} />
+      if (mode === "line")
+        return (
+          <Line icon="signal" label="Effort">
+            {picker()}
+          </Line>
+        )
+      return picker()
+    },
+  },
   context: {
     id: "context",
     label: "Context",
@@ -410,6 +457,16 @@ export const CHAT_WIDGETS: Record<string, WidgetType<string>> = {
       { key: "transcript", label: "Also in the transcript", kind: "toggle", default: true },
     ],
     expands: (cid) => !!pending(cid),
+    // What its card offers, from its context menu too.
+    menu: (cid) => {
+      const p = pending(cid)
+      return p
+        ? [
+            { id: "allow", label: "Run it", icon: "check", onSelect: () => decide(cid, p.turn, true) },
+            { id: "deny", label: "Deny", icon: "close", onSelect: () => decide(cid, p.turn, false) },
+          ]
+        : []
+    },
     live: (cid) => !!pending(cid),
     mark: (cid) => (pending(cid) ? "warn" : undefined),
     render: (cid, mode, cfg) => {

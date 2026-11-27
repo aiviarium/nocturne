@@ -71,6 +71,8 @@ Use `RowMenu` for a row's menu, and `ContextMenu` for the right click of any oth
 - Rare actions go behind the overflow button, not in a row of their own.
 - A current or pressed button has the same fill while its menu is open.
 - A view header action with `menu` opens that menu from its button, see [View header](../shell/view-header.mdx#actions).
+- Give anything the person acts on a context menu of its own: rows, cards, widgets, messages. A right click never opens the browser's menu in the app.
+- The `Shell` opens its own menu where nothing has one, see [Keyboard](../shell/keyboard.mdx#the-context-menu).
 
 <Example id="menu/items" minHeight={260} />
 <Example id="dropdown-menu/placements" minHeight={260} />

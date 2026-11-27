@@ -8,6 +8,7 @@ import {
   DataListInput,
   DataTable,
   EmptyState,
+  EntryGlyph,
   type JsonSchema,
   ListRow,
   type RowKey,
@@ -15,6 +16,7 @@ import {
   type RowMenuEntry,
   reorderItems,
   SchemaForm,
+  type ShellRecord,
   type ShellViewProps,
   State,
   TabPanel,
@@ -74,6 +76,41 @@ const DELIVERIES: DataColumn<Delivery>[] = [
   },
   { id: "at", header: "Sent", accessor: (d) => d.at, type: "time", width: "80px" },
 ]
+
+/** A webhook as a record: its entry in the sidebar and its row in the list draw the same provider and hover card. */
+export function webhookRecord(w: Webhook): ShellRecord {
+  const last = w.deliveries[0]
+  const provider = providerOf(w.url)
+  return {
+    id: w.id,
+    label: w.name,
+    // The provider it delivers to, not the place's webhook icon again.
+    icon: provider.icon,
+    status: failing().includes(w.id) ? "error" : undefined,
+    hover: () => ({
+      title: w.name,
+      meta: provider.name,
+      rows: [
+        { label: "Events", value: w.events.join(", ") },
+        ...(last
+          ? [
+              {
+                label: "Last delivery",
+                value: (
+                  <span style={{ color: last.status >= 400 ? "var(--danger)" : undefined }}>
+                    {last.status} at {last.at}
+                  </span>
+                ),
+              },
+            ]
+          : [{ label: "Last delivery", value: "None yet" }]),
+      ],
+    }),
+    meta: last?.at,
+    // Only a failed delivery is worth a line: its status and event.
+    detail: last && last.status >= 400 ? `${last.status} · ${last.event}` : undefined,
+  }
+}
 
 const pathOf = (w: Webhook) => `/settings/webhooks/${w.id}`
 
@@ -168,8 +205,8 @@ function WebhookList(props: { shell: ShellViewProps["shell"] }) {
         >
           {(w) => (
             <ListRow
-              // Where it delivers, not the page's webhook icon on every row.
-              icon={providerOf(w.url).icon}
+              // The sidebar's entry: where it delivers, not the page's webhook icon on every row.
+              leading={<EntryGlyph {...webhookRecord(w)} status={undefined} />}
               title={w.name}
               secondary={w.url}
               status={failing().includes(w.id) ? <State status="error">Failing</State> : undefined}

@@ -31,7 +31,7 @@ The time ends the first line, and the state ends the second.
 
 In order:
 
-1. `icon` (16px) or `leading` (an `Avatar size="sm"`), in a fixed 20px box
+1. `icon` (16px) or `leading` (an `Avatar size="sm"`), in a fixed 20px box. A row of a record draws the record's `EntryGlyph`, see below
 2. `prefix`, short facts before the title on its line, such as an issue's key and its state icon
 3. `title`
 4. `secondary`
@@ -47,6 +47,12 @@ A state glyph in it is an `Icon` with a `tone`: `success`, `warning`, `danger`, 
 They show on hover, focus and selection.
 On a phone or a touch screen they take no width, and are a left swipe and a long press menu away.
 `persistentActions` are always shown, such as answer buttons.
+
+A record looks the same in its view's list as in the sidebar.
+Build its `ShellRecord` in one function, give it to the place's `records`, and draw the row's `leading` as `<EntryGlyph {...record} />`.
+The row then has the same identicon or avatar, the same badge and the same hover card as the entry.
+Leave out `status` on the glyph when the row writes the state out at its end.
+A click on a glyph with a hover card still opens the row.
 
 `leadingActions` and `trailingActions` are swipe actions.
 `menu` is the context menu.

@@ -27,6 +27,10 @@
   max-width: 760px;
   margin-inline: auto;
 }
+/* A turn's context menu area takes no box of its own: the bubble still aligns in the column. */
+.dm-agent-turn {
+  display: contents;
+}
 .dm-agent-foot {
   grid-column: 1 / -1;
   grid-row: 3;

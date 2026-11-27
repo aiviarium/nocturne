@@ -1,14 +1,17 @@
 // Operate › Deploys: what was shipped to the host, newest first, and one deploy with the config it changed and
 // its output. The record's trail and stepper come from the place's records.
 import {
+  Avatar,
   DiffView,
   EmptyState,
+  EntryGlyph,
   ListRow,
   LogViewer,
   PropertyList,
   RowList,
   type RowMenuEntry,
   SectionHeading,
+  type ShellRecord,
   ShellViewHeader,
   type ShellViewProps,
   State,
@@ -16,7 +19,7 @@ import {
   ViewLayout,
 } from "@aiviarium/nocturne"
 import { Show } from "solid-js"
-import type { Host } from "../data"
+import { type Host, person } from "../data"
 import { copyLink, demoShell } from "../menus"
 import { DEPLOY_STATE, DEPLOYS, type Deploy, deploysOf } from "./data"
 
@@ -25,6 +28,28 @@ const stateOf = (d: Deploy) =>
   d.state === "superseded" ? undefined : (
     <State status={DEPLOY_STATE[d.state].dot}>{DEPLOY_STATE[d.state].label}</State>
   )
+
+/** A deploy as a record: its entry in the sidebar and its row in the list draw the same author and hover card. */
+export const deployRecord = (d: Deploy): ShellRecord => ({
+  id: d.id,
+  label: `#${d.id}`,
+  hint: d.title,
+  // Who shipped it, not the place's package icon again.
+  leading: () => <Avatar name={person(d.by)?.name ?? d.by} hue={person(d.by)?.hue} size="xs" />,
+  status: d.state === "failed" ? "error" : d.state === "rolled-back" ? "warn" : undefined,
+  hover: () => ({
+    title: d.title,
+    meta: `#${d.id} · ${person(d.by)?.name ?? d.by} · ${d.ago} ago`,
+    rows: [
+      { label: "State", value: DEPLOY_STATE[d.state].label },
+      { label: "Commit", value: <span class="nc-mono">{d.commit.slice(0, 7)}</span> },
+      { label: "Took", value: d.duration },
+    ],
+  }),
+  meta: d.ago,
+  // Commit and duration: what tells one deploy from the next.
+  detail: `${d.commit.slice(0, 7)} · ${d.duration}`,
+})
 
 export const deployById = (id: string) => DEPLOYS.find((d) => d.id === id)
 
@@ -134,7 +159,7 @@ export function DeploysView(props: ShellViewProps) {
             >
               {(d) => (
                 <ListRow
-                  icon="package"
+                  leading={<EntryGlyph {...deployRecord(d)} status={undefined} />}
                   prefix={<span>#{d.id}</span>}
                   title={d.title}
                   status={stateOf(d)}

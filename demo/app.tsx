@@ -22,7 +22,7 @@ import { dashboardModule } from "./dashboard"
 import { ME } from "./data"
 import { hostsModule, terminalPanel } from "./hosts"
 import { inboxModule } from "./inbox"
-import { NameDialog, setDemoShell } from "./menus"
+import { copyLink, NameDialog, setDemoShell } from "./menus"
 import { mobilePlace } from "./mobile"
 import { projectsModule } from "./projects"
 import { settingsModule } from "./settings"
@@ -154,6 +154,21 @@ export function DemoApp(props: DemoAppProps) {
               })
           },
         }}
+        // Every right click opens the workspace's own menu; on a bare spot, a link to the view is the useful entry.
+        contextMenu={() => [
+          {
+            id: "copy-view",
+            label: "Copy link to this view",
+            icon: "link",
+            onSelect: () => copyLink(shell.title()),
+          },
+          {
+            id: "assistant",
+            label: "Ask the assistant",
+            icon: "agent",
+            onSelect: () => shell.showPanel("assistant"),
+          },
+        ]}
         window={{
           style: "mac",
           onMinimise: () => noWindow("minimise"),

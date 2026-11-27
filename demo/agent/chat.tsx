@@ -7,12 +7,14 @@ import {
   Composer,
   type ComposerItem,
   type ComposerValue,
-  type EffortLevel,
+  ContextMenu,
   StreamState,
   Token,
   ToolStep,
   ToolSteps,
+  toast,
 } from "@aiviarium/nocturne"
+import type { JSX } from "@solidjs/web"
 import { createEffect, createSignal, For, Match, onSettled, Show, Switch } from "solid-js"
 import { PEOPLE, projects } from "../data"
 import {
@@ -84,23 +86,73 @@ function BlockView(props: { block: Block; cid: string; tid: string }) {
   )
 }
 
+/** A turn as plain text: its words, chips by their labels, and each step's command. */
+const turnText = (t: Turn) =>
+  t.blocks
+    .map((b) =>
+      b.t === "text"
+        ? b.text.map((s) => (typeof s === "string" ? s : s.label)).join("")
+        : b.t === "steps"
+          ? b.steps.map((s) => [s.verb, s.arg].filter(Boolean).join(" ")).join("\n")
+          : b.t === "approval"
+            ? [b.summary, ...b.items].join("\n")
+            : "",
+    )
+    .filter(Boolean)
+    .join("\n\n")
+const copyText = (text: string, what: string) => {
+  void navigator.clipboard?.writeText(text).catch(() => {})
+  toast({ title: "Copied", description: what })
+}
+
 function TurnView(props: { turn: Turn; cid: string }) {
+  // A right click on a message: copy what is selected in it, or the whole message.
+  const selected = () => {
+    const sel = window.getSelection()
+    return sel && !sel.isCollapsed ? sel.toString() : ""
+  }
   return (
-    <ChatMessage role={props.turn.role} thought={props.turn.thought}>
-      <For each={props.turn.blocks} keyed={false}>
-        {(b) => <BlockView block={b()} cid={props.cid} tid={props.turn.id} />}
-      </For>
-      <Show when={props.turn.stream === "live" && !props.turn.blocks.length}>
-        <div class="dm-row">
-          <StreamState state="connecting" />
-        </div>
-      </Show>
-      <Show when={props.turn.stream === "stopped"}>
-        <div class="dm-row">
-          <StreamState state="ended" meta="Stopped" />
-        </div>
-      </Show>
-    </ChatMessage>
+    <ContextMenu
+      label="Message"
+      class="dm-agent-turn"
+      items={() => [
+        ...(selected().trim()
+          ? [{ id: "copy-selection", label: "Copy", icon: "copy" as const, shortcut: "⌘ C" }]
+          : []),
+        { id: "copy", label: "Copy message", icon: "copy" },
+        ...(props.turn.role === "assistant" && props.turn.blocks.some((b) => b.t === "steps")
+          ? [{ id: "copy-steps", label: "Copy commands", icon: "terminal" as const }]
+          : []),
+      ]}
+      onSelect={(id) => {
+        if (id === "copy-selection") copyText(selected(), "The selected text")
+        else if (id === "copy") copyText(turnText(props.turn), "The message")
+        else if (id === "copy-steps")
+          copyText(
+            props.turn.blocks
+              .flatMap((b) => (b.t === "steps" ? b.steps.map((s) => s.arg ?? "") : []))
+              .filter(Boolean)
+              .join("\n"),
+            "The commands",
+          )
+      }}
+    >
+      <ChatMessage role={props.turn.role} thought={props.turn.thought}>
+        <For each={props.turn.blocks} keyed={false}>
+          {(b) => <BlockView block={b()} cid={props.cid} tid={props.turn.id} />}
+        </For>
+        <Show when={props.turn.stream === "live" && !props.turn.blocks.length}>
+          <div class="dm-row">
+            <StreamState state="connecting" />
+          </div>
+        </Show>
+        <Show when={props.turn.stream === "stopped"}>
+          <div class="dm-row">
+            <StreamState state="ended" meta="Stopped" />
+          </div>
+        </Show>
+      </ChatMessage>
+    </ContextMenu>
   )
 }
 
@@ -174,10 +226,6 @@ const SKILLS: ComposerItem[] = [
   { id: "spec", label: "spec", description: "Write a spec from a request", icon: "book-open" },
   { id: "triage", label: "triage", description: "Sort reports into issues", icon: "inbox" },
 ]
-const MODELS = [
-  { id: "deep", label: "Deep", description: "Most capable, slower" },
-  { id: "fast", label: "Fast", description: "Quick and balanced" },
-]
 
 /** The composer's value as the transcript's segments: chips become tokens. */
 const toSegments = (v: ComposerValue): Segment[] =>
@@ -193,18 +241,20 @@ const toSegments = (v: ComposerValue): Segment[] =>
         },
   )
 
-/** The composer at a conversation's foot. Sending streams a reply; Stop (or Esc) stops it. */
+/**
+ * The composer at a conversation's foot. Sending streams a reply; Stop (or Esc) stops it. Its bottom row holds what
+ * the view puts there: the chat's widget zones, with the model and the effort among their widgets.
+ */
 export function ChatComposer(props: {
   /** The conversation it writes to; left out, `onSend` makes one. */
   cid?: string
   /** Sends in place of writing to `cid`. */
   onSend?: (text: Segment[]) => void
-  compact?: boolean
   placeholder?: string
+  tools?: JSX.Element
+  toolsEnd?: JSX.Element
 }) {
   const [value, setValue] = createSignal<ComposerValue>([])
-  const [model, setModel] = createSignal("deep")
-  const [effort, setEffort] = createSignal<EffortLevel>("medium")
   const running = () => {
     const c = conversationById(props.cid)
     return !!c && isStreaming(c)
@@ -217,11 +267,8 @@ export function ChatComposer(props: {
       commands={COMMANDS}
       mentions={mentions()}
       skills={SKILLS}
-      models={props.compact ? undefined : MODELS}
-      model={model()}
-      onModelChange={setModel}
-      effort={props.compact ? undefined : effort()}
-      onEffortChange={props.compact ? undefined : setEffort}
+      tools={props.tools}
+      toolsEnd={props.toolsEnd}
       running={running()}
       runningLabel="Working…"
       onStop={() => props.cid && stop(props.cid)}

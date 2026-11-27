@@ -1,6 +1,7 @@
 // Operate › Sessions: the host's sessions, and the open ones as terminals in a dock the person tiles. The bottom
 // panel's Terminal shows the same open sessions as tabs, so the view covers it here.
 import {
+  Avatar,
   Button,
   type DataColumn,
   DataTable,
@@ -10,20 +11,21 @@ import {
   dockShow,
   dockSplit,
   dockSync,
+  EntryGlyph,
   type RowMenuEntry,
   type ShellPanelSpec,
+  type ShellRecord,
   type ShellRegistry,
   ShellViewHeader,
   type ShellViewProps,
   State,
-  StatusDot,
   Truncate,
   toast,
   ViewHeader,
   ViewLayout,
 } from "@aiviarium/nocturne"
 import { createMemo, createSignal, For, Show } from "solid-js"
-import type { Host } from "../data"
+import { type Host, person } from "../data"
 import { askName, copyLink, demoShell, named, renameEntry, undoable } from "../menus"
 import {
   closeSessions,
@@ -36,7 +38,6 @@ import {
   openSession,
   removeSessions,
   renameSession,
-  SESSION_DOT,
   SESSION_LABEL,
   sessionById,
   sessionsOf,
@@ -48,6 +49,35 @@ import {
 
 const hostOf = (shell: ShellRegistry) => shell.loc().frame.item as Host
 
+/** A session as a record: its entry in the sidebar and its row in the list draw the same mark and hover card. */
+export const sessionRecord = (s: HostSession): ShellRecord => ({
+  id: s.id,
+  label: s.title,
+  hint: SESSION_LABEL[s.state],
+  // Who runs it: the agent or a person, not the place's terminal icon again.
+  leading: () =>
+    s.user === "agent" ? (
+      <Avatar kind="agent" name={s.title} size="xs" />
+    ) : (
+      <Avatar name={person(s.user)?.name ?? s.user} hue={person(s.user)?.hue} size="xs" />
+    ),
+  status: s.state === "running" ? "live" : s.state === "failed" ? "error" : undefined,
+  hover: () => ({
+    title: s.title,
+    meta: `${SESSION_LABEL[s.state]} · started ${s.started} ago`,
+    rows: [
+      {
+        label: "Run by",
+        value: s.user === "agent" ? "The agent" : (person(s.user)?.name ?? s.user),
+      },
+      ...(s.lines.length
+        ? [{ label: "Last line", value: <span class="nc-mono nc-truncate">{s.lines.at(-1)}</span> }]
+        : []),
+    ],
+  }),
+  meta: s.started,
+})
+
 const COLUMNS: DataColumn<HostSession>[] = [
   {
     id: "title",
@@ -56,7 +86,7 @@ const COLUMNS: DataColumn<HostSession>[] = [
     sortable: true,
     cell: (r) => (
       <span class="dm-row">
-        <StatusDot status={SESSION_DOT[r.state]} />
+        <EntryGlyph {...sessionRecord(r)} />
         {r.title}
       </span>
     ),
