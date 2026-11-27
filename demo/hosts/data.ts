@@ -4,6 +4,7 @@
 import type { DockLayout, LogEntry, TabStatus } from "@aiviarium/nocturne"
 import { createSignal } from "solid-js"
 import { HOSTS, type Host, LOGS, SESSIONS, type Session } from "../data"
+import { removeFrom } from "../lists"
 
 // ── The fleet ─────────────────────────────────────────────────────────────────────────────────────────
 
@@ -62,14 +63,21 @@ const NEW_FACTS: HostFacts = {
 }
 export const factsOf = (id: string): HostFacts => FACTS[id] ?? NEW_FACTS
 
-const [added, setAdded] = createSignal<Host[]>([], { ownedWrite: true })
-/** The fleet: the shared hosts and the ones added in the demo. */
-export const hosts = () => [...HOSTS, ...added()]
+const [hosts, setHosts] = createSignal<Host[]>(HOSTS, { ownedWrite: true })
+
+/** The fleet: the shared hosts and the ones added in the demo, in the order the person keeps them. */
+export { hosts, setHosts }
 export const hostById = (id: string) => hosts().find((h) => h.id === id)
 export const addHost = (name: string, region: string) => {
   const id = name.toLowerCase().replace(/[^a-z0-9-]+/g, "-")
-  setAdded((list) => [...list, { id, name, region, state: "offline" }])
+  setHosts((list) => [...list, { id, name, region, state: "offline" }])
   return id
+}
+export const renameHost = (id: string, name: string) =>
+  setHosts((list) => list.map((h) => (h.id === id ? { ...h, name } : h)))
+/** Removes hosts from the fleet; returns the undo, which puts them back where they were. */
+export function removeHosts(ids: string[]): () => void {
+  return removeFrom(hosts, setHosts, (h) => ids.includes(h.id))
 }
 export const REGIONS = ["fra-1", "ams-2", "lon-1", "nyc-3"]
 
@@ -183,6 +191,12 @@ export const endSession = (id: string) =>
         : s,
     ),
   )
+
+/** Deletes sessions, closing their terminals; returns the undo, which brings them back (closed). */
+export function removeSessions(ids: string[]): () => void {
+  for (const host of Object.keys(open())) closeSessions(host, ids)
+  return removeFrom(sessions, setSessions, (s) => ids.includes(s.id))
+}
 
 /** Each host's dock, as the person arranged it. */
 const [docks, setDocks] = createSignal<Record<string, DockLayout>>({}, { ownedWrite: true })

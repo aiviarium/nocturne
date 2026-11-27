@@ -5,6 +5,7 @@
 import {
   type AiRequest,
   Avatar,
+  Button,
   type EditorServices,
   EditorServicesProvider,
   EmptyState,
@@ -14,7 +15,9 @@ import {
   parseMarkdown,
   RichTextEditor,
   type RichTextJSON,
+  type RowKey,
   RowList,
+  type RowMenuEntry,
   type ShellPlace,
   type ShellRegistry,
   ShellViewHeader,
@@ -23,9 +26,10 @@ import {
   toMarkdown,
   ViewLayout,
 } from "@aiviarium/nocturne"
-import { createMemo, For, Show } from "solid-js"
+import { createMemo, createSignal, Show } from "solid-js"
 import { issueByKey, issues, ME, PEOPLE, type Project, person } from "../../data"
-import { addSpec, type Spec, specById, specs, specsOf } from "./data"
+import { askName, copyLink, demoShell, inList, named, renameEntry, undoable } from "../../menus"
+import { addSpec, moveSpec, nextSpecId, removeSpecs, renameSpec, type Spec, specById, specsOf } from "./data"
 
 const projectOf = (s: ShellRegistry) => s.loc().frame.item as Project
 
@@ -115,7 +119,7 @@ function services(shell: ShellRegistry): EditorServices {
           .map(specItem),
       create: async (title) => {
         const spec: Spec = {
-          id: `spec-${specs().length + 1}`,
+          id: nextSpecId(),
           project: project().id,
           title,
           owner: ME.id,
@@ -129,27 +133,93 @@ function services(shell: ShellRegistry): EditorServices {
   }
 }
 
+const pathOf = (s: Spec) => `/projects/${s.project}/product/specs/${s.id}`
+
+const remove = (list: Spec[]) => {
+  const shell = demoShell()
+  const ids = list.map((s) => s.id)
+  if (shell.loc().place?.id === "specs" && ids.includes(shell.loc().record ?? ""))
+    shell.toPlace(undefined, "specs")
+  undoable(
+    `Deleted ${named(
+      list.map((s) => s.title),
+      "specs",
+    )}`,
+    removeSpecs(ids),
+  )
+}
+
+/** The menu of a spec, or of several: in the list of specs and on its entry in the sidebar. */
+export function specMenu(list: Spec[]): RowMenuEntry[] {
+  const sp = list[0]
+  if (!sp) return []
+  if (list.length > 1)
+    return [
+      { type: "label", label: `${list.length} selected` },
+      {
+        id: "delete",
+        label: `Delete ${list.length}`,
+        icon: "trash",
+        danger: true,
+        onSelect: () => remove(list),
+      },
+    ]
+  return [
+    { id: "open", label: "Open", icon: "arrow-up-right", onSelect: () => demoShell().go(pathOf(sp)) },
+    { id: "copy", label: "Copy link", icon: "link", onSelect: () => copyLink(sp.title, pathOf(sp)) },
+    renameEntry(() =>
+      askName({
+        title: "Rename spec",
+        value: sp.title,
+        submit: "Rename",
+        onSubmit: (title) => renameSpec(sp.id, title),
+      }),
+    ),
+    { type: "separator" },
+    { id: "delete", label: "Delete", icon: "trash", danger: true, onSelect: () => remove([sp]) },
+  ]
+}
+
 function SpecList(props: { shell: ShellRegistry }) {
   const project = () => projectOf(props.shell)
-  const href = (id: string) => `/projects/${project().id}/product/specs/${id}`
+  const [selected, setSelected] = createSignal<RowKey[]>([])
   return (
-    <Show when={specsOf(project().id).length} fallback={<EmptyState icon="book-open" title="No specs yet" />}>
-      <RowList label="Specs">
-        <For each={specsOf(project().id)} keyed={(s) => s.id}>
-          {(s) => (
-            <ListRow
-              icon="file"
-              title={s().title}
-              href={href(s().id)}
-              meta={
-                <>
-                  <Avatar name={person(s().owner)?.name ?? ""} hue={person(s().owner)?.hue} size="sm" />
-                  <span>{s().updated}</span>
-                </>
-              }
-            />
-          )}
-        </For>
+    <Show
+      when={specsOf(project().id).length}
+      fallback={
+        <EmptyState icon="book-open" title="No specs yet">
+          <Button variant="secondary" icon="plus" onClick={() => newSpec(props.shell)}>
+            New spec
+          </Button>
+        </EmptyState>
+      }
+    >
+      <RowList
+        label="Specs"
+        items={specsOf(project().id)}
+        getKey={(s) => s.id}
+        itemLabel={(s) => s.title}
+        selectable
+        selected={selected()}
+        onSelectedChange={setSelected}
+        onReorder={(from, to) => moveSpec(project().id, from, to)}
+        onRemove={(keys) => removeSpecs(keys as string[])}
+        rowMenu={(t) => inList(specMenu(t.items))}
+      >
+        {(s) => (
+          <ListRow
+            icon="file"
+            title={s.title}
+            href={pathOf(s)}
+            meta={
+              <>
+                <Avatar name={person(s.owner)?.name ?? ""} hue={person(s.owner)?.hue} size="sm" />
+                <span>{s.updated}</span>
+              </>
+            }
+            onRename={(title) => renameSpec(s.id, title)}
+          />
+        )}
       </RowList>
     </Show>
   )
@@ -158,7 +228,7 @@ function SpecList(props: { shell: ShellRegistry }) {
 function newSpec(shell: ShellRegistry) {
   const project = projectOf(shell)
   const spec: Spec = {
-    id: `spec-${specs().length + 1}`,
+    id: nextSpecId(),
     project: project.id,
     title: "Untitled spec",
     owner: ME.id,
@@ -227,4 +297,8 @@ export const specsPlace: ShellPlace<Project> = {
   records: (p) => specsOf(p.id).map((sp) => ({ id: sp.id, label: sp.title, icon: "file" })),
   recordLabel: (id) => specById(id)?.title,
   entries: true,
+  menu: (id) => {
+    const sp = specById(id)
+    return sp ? specMenu([sp]) : []
+  },
 }

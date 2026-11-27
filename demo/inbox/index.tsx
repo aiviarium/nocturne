@@ -23,7 +23,7 @@ import {
   ViewLayout,
 } from "@aiviarium/nocturne"
 import { createMemo, createSignal, For, Show } from "solid-js"
-import { ACTIVITY, COMMENTS, type Issue, issueById, PROJECTS, person, STATE_LABEL } from "../data"
+import { ACTIVITY, COMMENTS, type Issue, issueById, person, projectById, STATE_LABEL } from "../data"
 import { StateIcon } from "../glyphs"
 import { isUnread, markRead, markUnread, NOTICES, type Notice, unread } from "./data"
 import "./inbox.css"
@@ -71,7 +71,7 @@ function NoticeRow(props: { notice: Notice; selected: boolean; onPick: () => voi
 /** The issue a notice is about: its title, facts, description and what happened. */
 function Reader(props: { issue: Issue }) {
   const i = () => props.issue
-  const project = () => PROJECTS.find((p) => p.id === i().project)
+  const project = () => projectById(i().project)
   const activity = () => ACTIVITY[i().id] ?? []
   return (
     <article class="dm-page nc-reading">

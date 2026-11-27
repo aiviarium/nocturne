@@ -14,7 +14,7 @@ import {
   ToolSteps,
 } from "@aiviarium/nocturne"
 import { createEffect, createSignal, For, Match, onSettled, Show, Switch } from "solid-js"
-import { PEOPLE, PROJECTS } from "../data"
+import { PEOPLE, projects } from "../data"
 import {
   type Block,
   conversationById,
@@ -151,9 +151,9 @@ const COMMANDS: ComposerItem[] = [
   { id: "review", label: "review", description: "Review a pull request", icon: "git-pull-request" },
   { id: "summarise", label: "summarise", description: "Summarise a list or a thread", icon: "list" },
 ]
-const MENTIONS: ComposerItem[] = [
+const mentions = (): ComposerItem[] => [
   ...PEOPLE.map((p) => ({ id: p.id, label: p.name, kind: "person" as const, group: "People" })),
-  ...PROJECTS.map((p) => ({
+  ...projects().map((p) => ({
     id: p.id,
     label: p.name,
     icon: "board" as const,
@@ -215,7 +215,7 @@ export function ChatComposer(props: {
       onValueChange={setValue}
       placeholder={props.placeholder ?? "Ask the agent…"}
       commands={COMMANDS}
-      mentions={MENTIONS}
+      mentions={mentions()}
       skills={SKILLS}
       models={props.compact ? undefined : MODELS}
       model={model()}

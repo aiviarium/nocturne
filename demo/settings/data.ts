@@ -1,6 +1,7 @@
 // The workspace's settings in memory: members, API keys, webhooks with their deliveries, and the issue fields.
 import type { FieldSpec, LabelHue } from "@aiviarium/nocturne"
 import { createSignal } from "solid-js"
+import { removeFrom } from "../lists"
 
 export type Role = "owner" | "admin" | "member" | "guest"
 export const ROLE_LABEL: Record<Role, string> = {
@@ -109,7 +110,7 @@ export interface Webhook {
   headers: Header[]
 }
 
-export const WEBHOOKS: Webhook[] = [
+const WEBHOOK_SEED: Webhook[] = [
   {
     id: "deploys-slack",
     name: "Deploys to Slack",
@@ -141,7 +142,30 @@ const [failing, setFailing] = createSignal<string[]>(["deploys-slack"], { ownedW
 
 export { failing, setFailing }
 
-export const webhookById = (id?: string) => WEBHOOKS.find((w) => w.id === id)
+const [webhooks, setWebhooks] = createSignal<Webhook[]>(WEBHOOK_SEED, { ownedWrite: true })
+
+/** The workspace's webhooks, in the order the person keeps them. */
+export { setWebhooks, webhooks }
+export const webhookById = (id?: string) => webhooks().find((w) => w.id === id)
+/** The failing webhooks that are still there. */
+export const failingHooks = () => webhooks().filter((w) => failing().includes(w.id))
+
+let made = 0
+/** Adds a webhook with no events yet; returns its id. */
+export function addWebhook(name: string): string {
+  let id: string
+  do id = `hook-${++made}`
+  while (webhookById(id))
+  setWebhooks((l) => [
+    ...l,
+    { id, name, url: "https://example.com/hooks/acme", events: [], deliveries: [], headers: [] },
+  ])
+  return id
+}
+export const renameWebhook = (id: string, name: string) =>
+  setWebhooks((l) => l.map((w) => (w.id === id ? { ...w, name } : w)))
+/** Deletes webhooks; returns the undo, which puts them back where they were. */
+export const removeWebhooks = (ids: string[]) => removeFrom(webhooks, setWebhooks, (w) => ids.includes(w.id))
 
 /** The custom fields every issue in the workspace has, with a value from WEB-142 to show how each reads. */
 export const ISSUE_FIELDS: Array<{ spec: FieldSpec; sample: unknown }> = [

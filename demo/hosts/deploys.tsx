@@ -7,6 +7,7 @@ import {
   LogViewer,
   PropertyList,
   RowList,
+  type RowMenuEntry,
   SectionHeading,
   ShellViewHeader,
   type ShellViewProps,
@@ -14,8 +15,9 @@ import {
   toast,
   ViewLayout,
 } from "@aiviarium/nocturne"
-import { For, Show } from "solid-js"
+import { Show } from "solid-js"
 import type { Host } from "../data"
+import { copyLink, demoShell } from "../menus"
 import { DEPLOY_STATE, DEPLOYS, type Deploy, deploysOf } from "./data"
 
 /** Only what is unusual shows a state: the deploy that is live, and the ones that failed. */
@@ -25,6 +27,33 @@ const stateOf = (d: Deploy) =>
   )
 
 export const deployById = (id: string) => DEPLOYS.find((d) => d.id === id)
+
+const pathOf = (d: Deploy) => `/hosts/${d.host}/operate/deploys/${d.id}`
+const rollBack = (d: Deploy) =>
+  toast({
+    title: `Rolled back to #${d.id}`,
+    tone: "success",
+    action: { label: "Undo", onClick: () => {} },
+  })
+
+/** The menu of a deploy: in the list and on its entry in the sidebar. Deploys are history: none is removed. */
+export function deployMenu(d: Deploy): RowMenuEntry[] {
+  return [
+    { id: "open", label: "Open", icon: "arrow-up-right", onSelect: () => demoShell().go(pathOf(d)) },
+    { id: "copy", label: "Copy link", icon: "link", onSelect: () => copyLink(`Deploy #${d.id}`, pathOf(d)) },
+    ...(d.state === "live"
+      ? []
+      : ([
+          { type: "separator" },
+          {
+            id: "rollback",
+            label: "Roll back to this deploy",
+            icon: "rotate-ccw",
+            onSelect: () => rollBack(d),
+          },
+        ] as const)),
+  ]
+}
 
 function DeployPage(props: { deploy: Deploy }) {
   const d = () => props.deploy
@@ -74,12 +103,7 @@ export function DeploysView(props: ShellViewProps) {
                     id: "rollback",
                     label: "Roll back to this deploy",
                     icon: "rotate-ccw",
-                    onClick: () =>
-                      toast({
-                        title: `Rolled back to #${record()!.id}`,
-                        tone: "success",
-                        action: { label: "Undo", onClick: () => {} },
-                      }),
+                    onClick: () => rollBack(record()!),
                   },
                 ]
               : [
@@ -101,25 +125,29 @@ export function DeploysView(props: ShellViewProps) {
             when={deploysOf(host().id).length}
             fallback={<EmptyState title="Nothing deployed here yet" />}
           >
-            <RowList label="Deploys">
-              <For each={deploysOf(host().id)}>
-                {(d) => (
-                  <ListRow
-                    icon="package"
-                    prefix={<span>#{d.id}</span>}
-                    title={d.title}
-                    status={stateOf(d)}
-                    meta={
-                      <>
-                        <span class="nc-mono">{d.commit}</span>
-                        <span>{d.ago}</span>
-                      </>
-                    }
-                    selected={s.selection() === d.id}
-                    onClick={() => s.toPlace(undefined, "deploys", undefined, d.id)}
-                  />
-                )}
-              </For>
+            <RowList
+              label="Deploys"
+              items={deploysOf(host().id)}
+              getKey={(d) => d.id}
+              itemLabel={(d) => `#${d.id}`}
+              rowMenu={(t) => (t.items[0] ? deployMenu(t.items[0]) : [])}
+            >
+              {(d) => (
+                <ListRow
+                  icon="package"
+                  prefix={<span>#{d.id}</span>}
+                  title={d.title}
+                  status={stateOf(d)}
+                  meta={
+                    <>
+                      <span class="nc-mono">{d.commit}</span>
+                      <span>{d.ago}</span>
+                    </>
+                  }
+                  selected={s.selection() === d.id}
+                  onClick={() => s.toPlace(undefined, "deploys", undefined, d.id)}
+                />
+              )}
             </RowList>
           </Show>
         }

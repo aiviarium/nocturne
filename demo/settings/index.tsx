@@ -1,7 +1,7 @@
 // The workspace's settings: one place per page. Webhooks has records, so a webhook gets a trail and a stepper.
 import type { ShellScope } from "@aiviarium/nocturne"
 import { AppearanceView } from "./appearance"
-import { failing, WEBHOOKS, webhookById } from "./data"
+import { failingHooks, webhookById, webhooks } from "./data"
 import { FieldsView } from "./fields"
 import { GeneralView } from "./general"
 import { KeysView } from "./keys"
@@ -9,7 +9,7 @@ import { MembersView } from "./members"
 import { ProfileView } from "./profile"
 import "./settings.css"
 import { ShortcutsView } from "./shortcuts"
-import { WebhooksView } from "./webhooks"
+import { WebhooksView, webhookMenu } from "./webhooks"
 
 export const settingsModule: ShellScope = {
   id: "settings",
@@ -28,10 +28,14 @@ export const settingsModule: ShellScope = {
       icon: "webhook",
       view: WebhooksView,
       noun: "webhook",
-      count: () => failing().length,
-      records: () => WEBHOOKS.map((w) => ({ id: w.id, label: w.name, icon: "webhook" })),
+      count: () => failingHooks().length,
+      records: () => webhooks().map((w) => ({ id: w.id, label: w.name, icon: "webhook" })),
       recordLabel: (id) => webhookById(id)?.name,
       entries: true,
+      menu: (id) => {
+        const w = webhookById(id)
+        return w ? webhookMenu([w]) : []
+      },
     },
     { id: "shortcuts", label: "Keyboard shortcuts", icon: "keyboard", view: ShortcutsView },
   ],

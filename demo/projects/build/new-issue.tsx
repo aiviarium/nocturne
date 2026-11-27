@@ -2,7 +2,7 @@
 // a click outside it.
 import { Button, Dialog, Select, TextArea, TextField, toast } from "@aiviarium/nocturne"
 import { createSignal } from "solid-js"
-import { type Issue, PRIORITY_LABEL, PROJECTS, type Priority } from "../../data"
+import { type Issue, PRIORITY_LABEL, type Priority, projects } from "../../data"
 import { addIssue } from "./data"
 
 export function NewIssueDialog(props: {
@@ -89,7 +89,7 @@ export function NewIssueDialog(props: {
         <div class="dm-build-pair">
           <Select
             label="Project"
-            options={PROJECTS.map((p) => ({ value: p.id, label: p.name }))}
+            options={projects().map((p) => ({ value: p.id, label: p.name }))}
             value={project() ?? props.project}
             onChange={setProject}
           />

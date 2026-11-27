@@ -7,9 +7,13 @@ import {
   DataList,
   DataListInput,
   DataTable,
+  EmptyState,
   type JsonSchema,
   ListRow,
+  type RowKey,
   RowList,
+  type RowMenuEntry,
+  reorderItems,
   SchemaForm,
   type ShellViewProps,
   State,
@@ -17,8 +21,21 @@ import {
   Tabs,
   toast,
 } from "@aiviarium/nocturne"
-import { createSignal, For, Show } from "solid-js"
-import { type Delivery, failing, type Header, setFailing, WEBHOOKS, type Webhook, webhookById } from "./data"
+import { createSignal, Show } from "solid-js"
+import { askName, copyLink, demoShell, inList, named, renameEntry, undoable } from "../menus"
+import {
+  addWebhook,
+  type Delivery,
+  failing,
+  type Header,
+  removeWebhooks,
+  renameWebhook,
+  setFailing,
+  setWebhooks,
+  type Webhook,
+  webhookById,
+  webhooks,
+} from "./data"
 import { SettingsPage } from "./page"
 
 const EVENTS = ["deploy.finished", "deploy.failed", "issue.created", "issue.closed", "review.requested"]
@@ -57,21 +74,97 @@ const DELIVERIES: DataColumn<Delivery>[] = [
   { id: "at", header: "Sent", accessor: (d) => d.at, type: "time", width: "80px" },
 ]
 
+const pathOf = (w: Webhook) => `/settings/webhooks/${w.id}`
+
+const remove = (list: Webhook[]) => {
+  const shell = demoShell()
+  const ids = list.map((w) => w.id)
+  if (shell.loc().place?.id === "webhooks" && ids.includes(shell.loc().record ?? ""))
+    shell.toPlace(undefined, "webhooks")
+  undoable(
+    `Deleted ${named(
+      list.map((w) => w.name),
+      "webhooks",
+    )}`,
+    removeWebhooks(ids),
+  )
+}
+const retry = (w: Webhook) => {
+  setFailing((f) => f.filter((id) => id !== w.id))
+  toast({ title: "Delivered d-981", description: "hooks.slack.com answered 200.", tone: "success" })
+}
+
+/** The menu of a webhook, or of several: in the list of webhooks and on its entry in the sidebar. */
+export function webhookMenu(list: Webhook[]): RowMenuEntry[] {
+  const w = list[0]
+  if (!w) return []
+  if (list.length > 1)
+    return [
+      { type: "label", label: `${list.length} selected` },
+      {
+        id: "delete",
+        label: `Delete ${list.length}`,
+        icon: "trash",
+        danger: true,
+        onSelect: () => remove(list),
+      },
+    ]
+  return [
+    { id: "open", label: "Open", icon: "arrow-up-right", onSelect: () => demoShell().go(pathOf(w)) },
+    { id: "copy", label: "Copy link", icon: "link", onSelect: () => copyLink(w.name, pathOf(w)) },
+    renameEntry(() =>
+      askName({
+        title: "Rename webhook",
+        value: w.name,
+        submit: "Rename",
+        onSubmit: (name) => renameWebhook(w.id, name),
+      }),
+    ),
+    ...(failing().includes(w.id)
+      ? [{ id: "retry", label: "Retry delivery", icon: "rotate-ccw", onSelect: () => retry(w) } as const]
+      : []),
+    { type: "separator" },
+    { id: "delete", label: "Delete", icon: "trash", danger: true, onSelect: () => remove([w]) },
+  ]
+}
+
+const newWebhook = () =>
+  askName({
+    title: "Add webhook",
+    value: "",
+    submit: "Add webhook",
+    onSubmit: (name) => demoShell().toPlace(undefined, "webhooks", undefined, addWebhook(name)),
+  })
+
 function WebhookList(props: { shell: ShellViewProps["shell"] }) {
+  const [selected, setSelected] = createSignal<RowKey[]>([])
   return (
     <SettingsPage
       id="webhooks"
-      actions={[
-        {
-          id: "new",
-          label: "Add webhook",
-          icon: "plus",
-          onClick: () => toast({ title: "The demo keeps two webhooks" }),
-        },
-      ]}
+      actions={[{ id: "new", label: "Add webhook", icon: "plus", onClick: newWebhook }]}
     >
-      <RowList label="Webhooks">
-        <For each={WEBHOOKS}>
+      <Show
+        when={webhooks().length}
+        fallback={
+          <EmptyState title="No webhooks">
+            <Button variant="secondary" icon="plus" onClick={newWebhook}>
+              Add webhook
+            </Button>
+          </EmptyState>
+        }
+      >
+        <RowList
+          label="Webhooks"
+          items={webhooks()}
+          getKey={(w) => w.id}
+          itemLabel={(w) => w.name}
+          selectable
+          selected={selected()}
+          onSelectedChange={setSelected}
+          onReorder={(from, to) => setWebhooks(reorderItems(webhooks(), from, to))}
+          onRemove={(keys) => removeWebhooks(keys as string[])}
+          rowMenu={(t) => inList(webhookMenu(t.items))}
+        >
           {(w) => (
             <ListRow
               icon="webhook"
@@ -79,10 +172,11 @@ function WebhookList(props: { shell: ShellViewProps["shell"] }) {
               secondary={w.url}
               status={failing().includes(w.id) ? <State status="error">Failing</State> : undefined}
               onClick={() => props.shell.toPlace(undefined, "webhooks", undefined, w.id)}
+              onRename={(name) => renameWebhook(w.id, name)}
             />
           )}
-        </For>
-      </RowList>
+        </RowList>
+      </Show>
     </SettingsPage>
   )
 }
@@ -90,10 +184,6 @@ function WebhookList(props: { shell: ShellViewProps["shell"] }) {
 function WebhookPage(props: { hook: Webhook }) {
   const [tab, setTab] = createSignal("deliveries")
   const [headers, setHeaders] = createSignal<Header[]>(props.hook.headers)
-  const retry = () => {
-    setFailing((f) => f.filter((id) => id !== props.hook.id))
-    toast({ title: "Delivered d-981", description: "hooks.slack.com answered 200.", tone: "success" })
-  }
   return (
     <SettingsPage id="webhook">
       <Show when={failing().includes(props.hook.id)}>
@@ -101,7 +191,7 @@ function WebhookPage(props: { hook: Webhook }) {
           tone="danger"
           code="502"
           action={
-            <Button size="sm" variant="secondary" onClick={retry}>
+            <Button size="sm" variant="secondary" onClick={() => retry(props.hook)}>
               Retry
             </Button>
           }

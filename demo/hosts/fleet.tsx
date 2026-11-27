@@ -4,16 +4,21 @@ import {
   type DataColumn,
   DataTable,
   Dialog,
+  EmptyState,
+  type RowMenuEntry,
+  reorderItems,
   Select,
   ShellViewHeader,
   type ShellViewProps,
   State,
   TextField,
+  toast,
   ViewLayout,
 } from "@aiviarium/nocturne"
-import { createSignal } from "solid-js"
+import { createSignal, Show } from "solid-js"
 import type { Host } from "../data"
-import { addHost, factsOf, hosts, REGIONS, sessionsOf } from "./data"
+import { askName, copyLink, demoShell, named, renameEntry, undoable } from "../menus"
+import { addHost, factsOf, hosts, REGIONS, removeHosts, renameHost, sessionsOf, setHosts } from "./data"
 
 const STATE = {
   online: { dot: "ok", label: "Online" },
@@ -58,9 +63,67 @@ const COLUMNS: DataColumn<Host>[] = [
   },
 ]
 
+const remove = (list: Host[]) =>
+  undoable(
+    `Removed ${named(
+      list.map((h) => h.name),
+      "hosts",
+    )}`,
+    removeHosts(list.map((h) => h.id)),
+  )
+const restart = (list: Host[]) =>
+  toast({ title: `Restarting ${list.length === 1 ? list[0]!.name : `${list.length} hosts`}` })
+
+/** The menu of a host, or of several: in the fleet's table and on its entry in the sidebar. */
+export function hostMenu(list: Host[]): RowMenuEntry[] {
+  const h = list[0]
+  if (!h) return []
+  if (list.length > 1)
+    return [
+      { type: "label", label: `${list.length} selected` },
+      { id: "restart", label: `Restart ${list.length}`, icon: "rotate-ccw", onSelect: () => restart(list) },
+      { type: "separator" },
+      {
+        id: "delete",
+        label: `Remove ${list.length}`,
+        icon: "trash",
+        danger: true,
+        onSelect: () => remove(list),
+      },
+    ]
+  return [
+    { id: "open", label: "Open", icon: "arrow-up-right", onSelect: () => demoShell().go(`/hosts/${h.id}`) },
+    {
+      id: "logs",
+      label: "Logs",
+      icon: "logs",
+      onSelect: () => demoShell().go(`/hosts/${h.id}/operate/logs`),
+    },
+    { id: "copy", label: "Copy link", icon: "link", onSelect: () => copyLink(h.name, `/hosts/${h.id}`) },
+    renameEntry(() =>
+      askName({
+        title: "Rename host",
+        value: h.name,
+        submit: "Rename",
+        onSubmit: (n) => renameHost(h.id, n),
+      }),
+    ),
+    { id: "restart", label: "Restart", icon: "rotate-ccw", onSelect: () => restart([h]) },
+    { type: "separator" },
+    { id: "delete", label: "Remove", icon: "trash", danger: true, onSelect: () => remove([h]) },
+  ]
+}
+
+/** The address names a host that is gone: the shell falls back to the module's view with it left over. */
+const gone = (props: ShellViewProps) => {
+  const id = props.shell.options.router.path().split(/[/?#]/).filter(Boolean)[1]
+  return !!id && !id.startsWith("@") && !hosts().some((h) => h.id === id)
+}
+
 /** The Hosts module's view. */
 export function FleetView(props: ShellViewProps) {
   const [adding, setAdding] = createSignal(false)
+  const [selected, setSelected] = createSignal<string[]>([])
   return (
     <ViewLayout
       id="demo.hosts"
@@ -71,21 +134,29 @@ export function FleetView(props: ShellViewProps) {
         />
       }
     >
-      <DataTable
-        label="Hosts"
-        bare
-        rows={hosts()}
-        columns={COLUMNS}
-        getRowId={(h) => h.id}
-        onRowClick={(h) => props.shell.go(`/hosts/${h.id}`)}
-        rowMenu={() => [
-          { id: "open", label: "Open", icon: "arrow-up-right" },
-          { id: "logs", label: "Logs", icon: "logs" },
-        ]}
-        onRowMenuSelect={(id, t) =>
-          props.shell.go(`/hosts/${t.ids[0]}${id === "logs" ? "/operate/logs" : ""}`)
-        }
-      />
+      <Show when={!gone(props)} fallback={<EmptyState title="This host was removed" />}>
+        <DataTable
+          label="Hosts"
+          bare
+          rows={hosts()}
+          columns={COLUMNS}
+          getRowId={(h) => h.id}
+          rowLabel={(h) => h.name}
+          selectable
+          selected={selected()}
+          onSelectionChange={setSelected}
+          onRowClick={(h) => props.shell.go(`/hosts/${h.id}`)}
+          onReorder={(from, to) => setHosts(reorderItems(hosts(), from, to))}
+          onRemove={(ids) => removeHosts(ids)}
+          rowMenu={(t) => hostMenu(t.rows)}
+          bulkActions={(rows) => (
+            <Button size="sm" variant="ghost" icon="rotate-ccw" onClick={() => restart(rows)}>
+              Restart {rows.length}
+            </Button>
+          )}
+          empty={{ title: "No hosts" }}
+        />
+      </Show>
       <AddHost
         open={adding()}
         onClose={() => setAdding(false)}

@@ -1,7 +1,8 @@
 // A project's ideas, specs and roadmap. Atlas web has the most; the other projects have a few each, so switching
 // project shows different content. Everything is in memory.
-import type { LabelHue } from "@aiviarium/nocturne"
+import { type LabelHue, reorderItems } from "@aiviarium/nocturne"
 import { createSignal } from "solid-js"
+import { removeFrom } from "../../lists"
 
 // ── Ideas ─────────────────────────────────────────────────────────────────────────────────────────────
 
@@ -234,6 +235,25 @@ export { specs }
 export const specsOf = (project: string) => specs().filter((s) => s.project === project)
 export const specById = (id?: string) => specs().find((s) => s.id === id)
 export const addSpec = (spec: Spec) => setSpecs((list) => [...list, spec])
+let made = 0
+/** An id no spec has. */
+export const nextSpecId = () => {
+  let id: string
+  do id = `spec-${SPEC_SEED.length + ++made}`
+  while (specById(id))
+  return id
+}
+export const renameSpec = (id: string, title: string) =>
+  setSpecs((list) => list.map((s) => (s.id === id ? { ...s, title } : s)))
+/** Deletes specs; returns the undo, which puts them back where they were. */
+export const removeSpecs = (ids: string[]) => removeFrom(specs, setSpecs, (s) => ids.includes(s.id))
+/** Moves a project's spec from `from` to `to` (places among the project's specs). */
+export function moveSpec(project: string, from: number, to: number) {
+  const mine = specsOf(project)
+  const moved = reorderItems(mine, from, to)
+  let i = 0
+  setSpecs((list) => list.map((s) => (s.project === project ? moved[i++]! : s)))
+}
 
 // ── Roadmap ───────────────────────────────────────────────────────────────────────────────────────────
 

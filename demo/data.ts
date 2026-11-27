@@ -2,6 +2,7 @@
 // reports and the inbox come from the same list; build-01 has terminal sessions, logs and files.
 import type { LabelHue } from "@aiviarium/nocturne"
 import { createSignal } from "solid-js"
+import { removeFrom } from "./lists"
 
 export interface Person {
   id: string
@@ -23,11 +24,45 @@ export interface Project {
   key: string
   hue: LabelHue
 }
-export const PROJECTS: Project[] = [
+const PROJECT_SEED: Project[] = [
   { id: "atlas", name: "Atlas web", key: "WEB", hue: "sky" },
   { id: "fleet-agent", name: "Fleet agent", key: "FLT", hue: "mint" },
   { id: "docs-site", name: "Docs site", key: "DOC", hue: "amber" },
 ]
+const [projects, setProjects] = createSignal<Project[]>(PROJECT_SEED, { ownedWrite: true })
+
+/** The workspace's projects, in the order the person keeps them. */
+export { projects, setProjects }
+
+/** Every project there was, so what a removed one held still reads its name. */
+const known = new Map(PROJECT_SEED.map((p) => [p.id, p]))
+export const projectById = (id?: string) =>
+  projects().find((p) => p.id === id) ?? (id ? known.get(id) : undefined)
+
+const HUES: LabelHue[] = ["orchid", "rose", "sky", "mint", "amber"]
+/** Adds a project at the end of the list; returns it. */
+export function addProject(name: string): Project {
+  let id =
+    name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "") || "project"
+  while (known.has(id)) id = `${id}-2`
+  const key = (name.replace(/[^A-Za-z]/g, "").slice(0, 3) || "NEW").toUpperCase()
+  const p: Project = { id, name, key, hue: HUES[known.size % HUES.length]! }
+  known.set(id, p)
+  setProjects((l) => [...l, p])
+  return p
+}
+export const renameProject = (id: string, name: string) => {
+  setProjects((l) => l.map((p) => (p.id === id ? { ...p, name } : p)))
+  const p = projects().find((x) => x.id === id)
+  if (p) known.set(id, p)
+}
+/** Removes projects; returns the undo, which puts them back where they were. */
+export function removeProjects(ids: string[]): () => void {
+  return removeFrom(projects, setProjects, (p) => ids.includes(p.id))
+}
 
 export type IssueState = "backlog" | "todo" | "progress" | "review" | "blocked" | "done"
 export type Priority = "urgent" | "high" | "medium" | "low" | "none"

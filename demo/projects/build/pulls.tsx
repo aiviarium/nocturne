@@ -13,7 +13,9 @@ import {
   type PropertyItem,
   PropertyList,
   parsePatch,
+  type RowKey,
   RowList,
+  type RowMenuEntry,
   SectionHeading,
   type ShellRegistry,
   ShellViewHeader,
@@ -27,7 +29,8 @@ import {
 } from "@aiviarium/nocturne"
 import { createSignal, For, Show } from "solid-js"
 import { type Project, person } from "../../data"
-import { type Pull, pullById, pullsOf } from "./data"
+import { askName, copyLink, demoShell, inList, renameEntry, undoable } from "../../menus"
+import { changePull, closePulls, type Pull, pullById, pullsOf } from "./data"
 
 const REVIEW: Record<Pull["review"], [string, BadgeTone]> = {
   approved: ["Approved", "success"],
@@ -65,41 +68,150 @@ function Checks(props: { pull: Pull }) {
   )
 }
 
+const pathOf = (p: Pull) => `/projects/${p.project}/build/pulls/${p.id}`
+const nums = (list: Pull[]) => (list.length === 1 ? `#${list[0]!.id}` : `${list.length} pull requests`)
+
+/** Closes the open ones of `list`, with Undo. */
+const close = (list: Pull[]) => {
+  const open = list.filter((p) => p.review !== "merged")
+  if (open.length) undoable(`Closed ${nums(open)}`, closePulls(open.map((p) => p.id)))
+}
+const approve = (list: Pull[]) => {
+  const open = list.filter((p) => p.review !== "merged" && p.review !== "approved")
+  for (const p of open) changePull(p.id, { review: "approved" })
+  if (open.length) toast({ title: `Approved ${nums(open)}`, tone: "success" })
+}
+
+/** The menu of a pull request, or of several: in the list and on its entry in the sidebar. */
+export function pullMenu(list: Pull[]): RowMenuEntry[] {
+  const p = list[0]
+  if (!p) return []
+  const open = list.filter((x) => x.review !== "merged")
+  const approvable = open.filter((x) => x.review !== "approved")
+  if (list.length > 1)
+    return [
+      { type: "label", label: `${list.length} selected` },
+      ...(approvable.length
+        ? [
+            {
+              id: "approve",
+              label: `Approve ${approvable.length}`,
+              icon: "check",
+              onSelect: () => approve(list),
+            } as const,
+          ]
+        : []),
+      ...(open.length
+        ? ([
+            { type: "separator" },
+            {
+              id: "close",
+              label: `Close ${open.length}`,
+              icon: "close",
+              danger: true,
+              onSelect: () => close(list),
+            },
+          ] as const)
+        : []),
+    ]
+  const shell = demoShell()
+  return [
+    { id: "open", label: "Open", icon: "arrow-up-right", onSelect: () => shell.go(pathOf(p)) },
+    {
+      id: "details",
+      label: "Show details",
+      icon: "panel-right",
+      onSelect: () => {
+        shell.select(p.id)
+        shell.showPanel("details")
+      },
+    },
+    { id: "copy", label: "Copy link", icon: "link", onSelect: () => copyLink(`#${p.id}`, pathOf(p)) },
+    renameEntry(() =>
+      askName({
+        title: "Rename pull request",
+        value: p.title,
+        submit: "Rename",
+        onSubmit: (title) => changePull(p.id, { title }),
+      }),
+    ),
+    ...(approvable.length
+      ? [{ id: "approve", label: "Approve", icon: "check", onSelect: () => approve([p]) } as const]
+      : []),
+    ...(open.length
+      ? ([
+          { type: "separator" },
+          {
+            id: "close",
+            label: "Close pull request",
+            icon: "close",
+            danger: true,
+            onSelect: () => close([p]),
+          },
+        ] as const)
+      : []),
+  ]
+}
+
 function PullList(props: { shell: ShellRegistry }) {
   const s = props.shell
+  const list = () => pullsOf(projectOf(s).id)
+  const [selected, setSelected] = createSignal<RowKey[]>([])
   return (
     <ViewLayout id="demo.pulls" header={<ShellViewHeader />}>
-      <Show when={pullsOf(projectOf(s).id).length} fallback={<EmptyState title="No pull requests" />}>
-        <RowList label="Pull requests" divided>
-          <For each={pullsOf(projectOf(s).id)}>
-            {(p) => (
-              <ListRow
-                lines={3}
-                icon={p.review === "merged" ? "commit" : "git-pull-request"}
-                prefix={<span>#{p.id}</span>}
-                title={p.title}
-                muted={p.review === "merged"}
-                detail={
-                  <MetaLine
-                    items={[
-                      { label: p.branch, mono: true },
-                      person(p.author)?.name,
-                      `+${changes(p).added} −${changes(p).removed}`,
-                    ]}
-                  />
-                }
-                status={<Checks pull={p} />}
-                meta={
-                  <>
-                    <Badge tone={REVIEW[p.review][1]}>{REVIEW[p.review][0]}</Badge>
-                    <span>{p.updated}</span>
-                  </>
-                }
-                selected={s.selection() === p.id}
-                onClick={() => s.toPlace(undefined, "pulls", undefined, p.id)}
-              />
-            )}
-          </For>
+      <Show when={list().length} fallback={<EmptyState title="No pull requests" />}>
+        <RowList
+          label="Pull requests"
+          divided
+          items={list()}
+          getKey={(p) => p.id}
+          itemLabel={(p) => `#${p.id}`}
+          selectable
+          selected={selected()}
+          onSelectedChange={(keys) => {
+            setSelected(keys)
+            s.select(keys.length === 1 ? String(keys[0]) : undefined)
+          }}
+          onRemove={(keys) => {
+            const open = list().filter((p) => keys.includes(p.id) && p.review !== "merged")
+            return open.length ? closePulls(open.map((p) => p.id)) : undefined
+          }}
+          rowMenu={(t) => inList(pullMenu(t.items))}
+          bulkActions={(items) => (
+            <Show when={items.some((p) => p.review !== "merged" && p.review !== "approved")}>
+              <Button size="sm" variant="ghost" icon="check" onClick={() => approve(items)}>
+                Approve
+              </Button>
+            </Show>
+          )}
+        >
+          {(p) => (
+            <ListRow
+              lines={3}
+              icon={p.review === "merged" ? "commit" : "git-pull-request"}
+              prefix={<span>#{p.id}</span>}
+              title={p.title}
+              muted={p.review === "merged"}
+              detail={
+                <MetaLine
+                  items={[
+                    { label: p.branch, mono: true },
+                    person(p.author)?.name,
+                    `+${changes(p).added} −${changes(p).removed}`,
+                  ]}
+                />
+              }
+              status={<Checks pull={p} />}
+              meta={
+                <>
+                  <Badge tone={REVIEW[p.review][1]}>{REVIEW[p.review][0]}</Badge>
+                  <span>{p.updated}</span>
+                </>
+              }
+              onClick={() => s.toPlace(undefined, "pulls", undefined, p.id)}
+              onRename={(title) => changePull(p.id, { title })}
+            />
+          )}
         </RowList>
       </Show>
     </ViewLayout>
@@ -212,7 +324,21 @@ function PullPage(props: { pull: Pull; shell: ShellRegistry }) {
 export function PullsView(props: ShellViewProps) {
   const pull = () => pullById(props.shell.loc().record)
   return (
-    <Show when={pull()} fallback={<PullList shell={props.shell} />}>
+    <Show
+      when={pull()}
+      fallback={
+        <Show
+          when={!props.shell.loc().record}
+          fallback={
+            <ViewLayout id="demo.pull" header={<ShellViewHeader />}>
+              <EmptyState title="This pull request was closed" />
+            </ViewLayout>
+          }
+        >
+          <PullList shell={props.shell} />
+        </Show>
+      }
+    >
       {(p) => <PullPage pull={p()} shell={props.shell} />}
     </Show>
   )

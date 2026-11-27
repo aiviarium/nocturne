@@ -2,7 +2,7 @@
 import type { ShellScope } from "@aiviarium/nocturne"
 import "./agent.css"
 import { conversationById, conversations, isStreaming, waitsOnYou } from "./data"
-import { ChatDetails, ChatsView, RunsView, startChat } from "./views"
+import { ChatDetails, ChatsView, chatMenu, RunsView, startChat } from "./views"
 
 export { assistantPanel } from "./panel"
 
@@ -24,6 +24,10 @@ export const agentModule: ShellScope = {
       entries: true,
       recordLabel: (id) => conversationById(id)?.title,
       inspect: (id) => <ChatDetails id={id} />,
+      menu: (id) => {
+        const c = conversationById(id)
+        return c ? chatMenu([c]) : []
+      },
       // A conversation's page shows its context and rate beside the transcript.
       covers: (record) => (record ? ["details"] : []),
     },

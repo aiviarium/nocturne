@@ -6,9 +6,9 @@ import { BoardView } from "./board"
 import { CyclesView } from "./cycles"
 import { issueByKey, issuesIn, pullById, pullsOf } from "./data"
 import { IssueDetails, IssuesView } from "./issues"
-import { PullDetails, PullsView } from "./pulls"
+import { PullDetails, PullsView, pullMenu } from "./pulls"
 
-export { ProjectsView, projectInspect } from "./projects"
+export { ProjectsView, projectInspect, projectMenu } from "./projects"
 
 export const buildPlaces: ShellPlace<Project>[] = [
   {
@@ -43,5 +43,6 @@ export const buildPlaces: ShellPlace<Project>[] = [
     entries: { label: (r) => r.hint ?? r.label },
     recordLabel: (id) => (pullById(id) ? `#${id}` : undefined),
     inspect: (id) => <PullDetails id={id} />,
+    menu: (id) => pullMenu(pullById(id) ? [pullById(id)!] : []),
   },
 ]

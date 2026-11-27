@@ -6,11 +6,13 @@ import {
   type Issue,
   type IssueState,
   issues,
-  PROJECTS,
   type Priority,
+  projectById,
+  projects,
   STATE_ORDER,
   updateIssue,
 } from "../../data"
+import { removeFrom } from "../../lists"
 
 const [made, setMade] = createSignal<Issue[]>([], { ownedWrite: true })
 const [gone, setGone] = createSignal<string[]>([], { ownedWrite: true })
@@ -39,7 +41,7 @@ export function addIssue(o: {
   state?: IssueState
   description: string
 }): Issue {
-  const project = PROJECTS.find((p) => p.id === o.project) ?? PROJECTS[0]!
+  const project = projectById(o.project) ?? projects()[0]!
   const n = next++
   const issue: Issue = {
     id: `n${n}`,
@@ -224,7 +226,7 @@ new file mode 100644
 +}
 `
 
-export const PULLS: Pull[] = [
+const PULL_SEED: Pull[] = [
   {
     id: "418",
     project: "atlas",
@@ -292,5 +294,15 @@ export const PULLS: Pull[] = [
   },
 ]
 
-export const pullsOf = (project: string) => PULLS.filter((p) => p.project === project)
-export const pullById = (id?: string) => PULLS.find((p) => p.id === id)
+const [pulls, setPulls] = createSignal<Pull[]>(PULL_SEED, { ownedWrite: true })
+
+/** The pull requests still open or merged: a closed one leaves the list. */
+export { pulls }
+export const pullsOf = (project: string) => pulls().filter((p) => p.project === project)
+export const pullById = (id?: string) => pulls().find((p) => p.id === id)
+export const changePull = (id: string, patch: Partial<Pull>) =>
+  setPulls((l) => l.map((p) => (p.id === id ? { ...p, ...patch } : p)))
+/** Closes pull requests; returns the undo, which reopens them where they were. */
+export function closePulls(ids: string[]): () => void {
+  return removeFrom(pulls, setPulls, (p) => ids.includes(p.id))
+}

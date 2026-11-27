@@ -4,13 +4,13 @@ import type { ShellScope } from "@aiviarium/nocturne"
 import type { Host } from "../data"
 import { lens } from "../lenses"
 import { DEPLOYS, deploysOf, hosts, SESSION_LABEL, sessionById, sessionsOf } from "./data"
-import { DeploysView, deployById } from "./deploys"
+import { DeploysView, deployById, deployMenu } from "./deploys"
 import { FilesView } from "./files"
-import { FleetView } from "./fleet"
+import { FleetView, hostMenu } from "./fleet"
 import "./hosts.css"
 import { LogsView } from "./logs"
 import { OverviewView } from "./overview"
-import { SessionsView } from "./sessions"
+import { SessionsView, sessionMenu } from "./sessions"
 
 export { terminalPanel } from "./sessions"
 
@@ -24,6 +24,7 @@ const host: ShellScope<Host> = {
     hue: h.state === "degraded" ? "amber" : h.state === "offline" ? "neutral" : "mint",
   }),
   items: () => hosts(),
+  menu: (h) => hostMenu([h]),
   lenses: [
     lens<Host>("operate", [
       { id: "overview", label: "Overview", icon: "activity", view: OverviewView },
@@ -38,6 +39,10 @@ const host: ShellScope<Host> = {
           sessionsOf(h.id).map((s) => ({ id: s.id, label: s.title, hint: SESSION_LABEL[s.state] })),
         recordLabel: (id) => sessionById(id)?.title,
         entries: true,
+        menu: (id) => {
+          const x = sessionById(id)
+          return x ? sessionMenu([x]) : []
+        },
         // The dock's tabs name the open sessions: no trail. The view is the terminal, so the panel steps aside.
         trail: false,
         covers: ["terminal"],
@@ -62,6 +67,10 @@ const host: ShellScope<Host> = {
         records: (h) => deploysOf(h.id).map((d) => ({ id: d.id, label: `#${d.id}`, hint: d.title })),
         recordLabel: (id) => (deployById(id) ? `#${id}` : undefined),
         entries: { limit: 5, label: (r) => r.hint ?? r.label },
+        menu: (id) => {
+          const d = deployById(id)
+          return d ? deployMenu(d) : []
+        },
         count: (h) => DEPLOYS.filter((d) => d.host === h.id && d.state === "failed").length,
       },
     ]),

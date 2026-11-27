@@ -1,6 +1,7 @@
 // Operate › Sessions: the host's sessions, and the open ones as terminals in a dock the person tiles. The bottom
 // panel's Terminal shows the same open sessions as tabs, so the view covers it here.
 import {
+  Button,
   type DataColumn,
   DataTable,
   Dock,
@@ -9,6 +10,7 @@ import {
   dockShow,
   dockSplit,
   dockSync,
+  type RowMenuEntry,
   type ShellPanelSpec,
   type ShellRegistry,
   ShellViewHeader,
@@ -16,11 +18,13 @@ import {
   State,
   StatusDot,
   Truncate,
+  toast,
   ViewHeader,
   ViewLayout,
 } from "@aiviarium/nocturne"
-import { createMemo, For, Show } from "solid-js"
+import { createMemo, createSignal, For, Show } from "solid-js"
 import type { Host } from "../data"
+import { askName, copyLink, demoShell, named, renameEntry, undoable } from "../menus"
 import {
   closeSessions,
   dockOf,
@@ -30,6 +34,7 @@ import {
   newSession,
   openOf,
   openSession,
+  removeSessions,
   renameSession,
   SESSION_DOT,
   SESSION_LABEL,
@@ -74,6 +79,73 @@ const COLUMNS: DataColumn<HostSession>[] = [
   { id: "id", header: "ID", accessor: (r) => r.id, type: "mono", width: "88px" },
   { id: "started", header: "Started", accessor: (r) => r.started, type: "time", width: "80px" },
 ]
+
+const pathOf = (x: HostSession) => `/hosts/${x.host}/operate/sessions/${x.id}`
+const titles = (list: HostSession[]) => (list.length === 1 ? list[0]!.title : `${list.length} sessions`)
+
+const end = (list: HostSession[]) => {
+  const running = list.filter((x) => x.state === "running")
+  for (const x of running) endSession(x.id)
+  if (running.length) toast({ title: `Ended ${titles(running)}` })
+}
+const remove = (list: HostSession[]) => {
+  const shell = demoShell()
+  const ids = list.map((x) => x.id)
+  if (shell.loc().place?.id === "sessions" && ids.includes(shell.loc().record ?? ""))
+    shell.toPlace(undefined, "sessions")
+  undoable(
+    `Deleted ${named(
+      list.map((x) => x.title),
+      "sessions",
+    )}`,
+    removeSessions(ids),
+  )
+}
+const rename = (x: HostSession) =>
+  askName({
+    title: "Rename session",
+    value: x.title,
+    submit: "Rename",
+    onSubmit: (title) => renameSession(x.id, title),
+  })
+
+/** The menu of a session, or of several: in the list, on its entry in the sidebar and on its terminal's tab. */
+export function sessionMenu(list: HostSession[]): RowMenuEntry[] {
+  const x = list[0]
+  if (!x) return []
+  const running = list.filter((s) => s.state === "running")
+  const endEntry = (label: string): RowMenuEntry[] =>
+    running.length ? [{ id: "end", label, icon: "square", onSelect: () => end(list) }] : []
+  if (list.length > 1)
+    return [
+      { type: "label", label: `${list.length} selected` },
+      ...endEntry(`End ${running.length}`),
+      { type: "separator" },
+      {
+        id: "delete",
+        label: `Delete ${list.length}`,
+        icon: "trash",
+        danger: true,
+        onSelect: () => remove(list),
+      },
+    ]
+  return [
+    {
+      id: "open",
+      label: "Open",
+      icon: "terminal",
+      onSelect: () => {
+        openSession(x.host, x.id)
+        demoShell().go(pathOf(x))
+      },
+    },
+    { id: "copy", label: "Copy link", icon: "link", onSelect: () => copyLink(x.title, pathOf(x)) },
+    renameEntry(() => rename(x)),
+    ...endEntry("End session"),
+    { type: "separator" },
+    { id: "delete", label: "Delete", icon: "trash", danger: true, onSelect: () => remove([x]) },
+  ]
+}
 
 /** A session's terminal: its lines, then a prompt while it runs. */
 function Terminal(props: { session: HostSession }) {
@@ -127,6 +199,7 @@ export function SessionsView(props: ShellViewProps) {
     if (frame && edge) setDockOf(host(), dockSplit(dockSync(layout(), [...ids(), id]), id, frame, edge))
     s.toPlace(undefined, "sessions", undefined, id)
   }
+  const [selected, setSelected] = createSignal<string[]>([])
   const list = () => (
     <ViewLayout
       id="demo.hosts.sessions"
@@ -143,17 +216,21 @@ export function SessionsView(props: ShellViewProps) {
         rows={sessionsOf(host())}
         columns={COLUMNS}
         getRowId={(r) => r.id}
+        rowLabel={(r) => r.title}
+        selectable
+        selected={selected()}
+        onSelectionChange={setSelected}
         onRowClick={(r) => show(r.id)}
-        rowMenu={(t) => [
-          { id: "open", label: "Open", icon: "terminal" },
-          ...(t.rows.some((r) => r.state === "running")
-            ? [{ id: "end", label: "End session", icon: "square", danger: true } as const]
-            : []),
-        ]}
-        onRowMenuSelect={(id, t) => {
-          if (id === "open") for (const r of t.rows) show(r.id)
-          else for (const r of t.rows) endSession(r.id)
-        }}
+        onRemove={(ids) => removeSessions(ids)}
+        rowMenu={(t) => sessionMenu(t.rows)}
+        bulkActions={(rows) => (
+          <Show when={rows.some((r) => r.state === "running")}>
+            <Button size="sm" variant="ghost" icon="square" onClick={() => end(rows)}>
+              End
+            </Button>
+          </Show>
+        )}
+        empty={{ title: "No sessions" }}
       />
     </ViewLayout>
   )
@@ -173,22 +250,25 @@ export function SessionsView(props: ShellViewProps) {
             onNewTab={(frame) => start(frame)}
             // On a phone the frames stack, so splitting has nothing to offer and its buttons take the tab's room.
             onSplit={(frame, edge) => start(frame, edge)}
-            menu={(id) => [
-              { id: "rename", label: "Rename", icon: "edit" },
-              {
-                id: "end",
-                label: "End session",
-                icon: "square",
-                disabled: sessionById(id)?.state !== "running",
-              },
-              { type: "separator" },
-              { id: "close", label: "Close", icon: "close" },
-            ]}
+            menu={(id) => {
+              const x = sessionById(id)
+              return [
+                { id: "rename", label: "Rename", icon: "edit" },
+                {
+                  id: "end",
+                  label: "End session",
+                  icon: "square",
+                  disabled: x?.state !== "running",
+                },
+                { type: "separator" },
+                { id: "close", label: "Close", icon: "close" },
+              ]
+            }}
             onMenuSelect={(id, entry) => {
+              const x = sessionById(id)
               if (entry === "close") close(id)
-              else if (entry === "end") endSession(id)
-              else if (entry === "rename")
-                renameSession(id, `${sessionById(id)?.title ?? "session"} (renamed)`)
+              else if (entry === "end" && x) end([x])
+              else if (entry === "rename" && x) rename(x)
             }}
           >
             {(id) => (

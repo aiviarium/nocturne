@@ -15,16 +15,18 @@ import {
   ToastRegion,
   toast,
 } from "@aiviarium/nocturne"
-import { createSignal, onCleanup, untrack } from "solid-js"
+import { createSignal, onCleanup, Show, untrack } from "solid-js"
 import { agentModule, assistantPanel } from "./agent"
 import { type Demo, DemoContext, type RunsIn } from "./context"
 import { dashboardModule } from "./dashboard"
 import { ME } from "./data"
 import { hostsModule, terminalPanel } from "./hosts"
 import { inboxModule } from "./inbox"
+import { NameDialog, setDemoShell } from "./menus"
 import { mobilePlace } from "./mobile"
 import { projectsModule } from "./projects"
 import { settingsModule } from "./settings"
+import { failingHooks } from "./settings/data"
 
 /** The shell's id: the demo's keys in the store and the router's state. */
 export const DEMO_ID = "demo"
@@ -106,6 +108,7 @@ export function DemoApp(props: DemoAppProps) {
       demo,
     ),
   )
+  setDemoShell(shell)
   untrack(() => props.onShell?.(shell))
   const stop = untrack(() => props.onReady?.(appearance))
   if (stop) onCleanup(stop)
@@ -158,14 +161,18 @@ export function DemoApp(props: DemoAppProps) {
           onClose: () => noWindow("close"),
         }}
         status={
-          <TitleBarItem
-            icon="webhook"
-            label="1 failing"
-            tone="warning"
-            tooltip="Webhooks: 1 failing"
-            onClick={() => shell.go("/settings/webhooks")}
-            current={shell.loc().place?.id === "webhooks"}
-          />
+          <Show when={failingHooks().length}>
+            {(n) => (
+              <TitleBarItem
+                icon="webhook"
+                label={`${n()} failing`}
+                tone="warning"
+                tooltip={`Webhooks: ${n()} failing`}
+                onClick={() => shell.go("/settings/webhooks")}
+                current={shell.loc().place?.id === "webhooks"}
+              />
+            )}
+          </Show>
         }
         account={{
           name: ME.name,
@@ -181,6 +188,7 @@ export function DemoApp(props: DemoAppProps) {
           onSignOut: () => toast({ title: "Signed out", description: "Not really: this is the demo." }),
         }}
       />
+      <NameDialog />
       <ToastRegion />
     </DemoContext>
   )

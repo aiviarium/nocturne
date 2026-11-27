@@ -3,6 +3,7 @@
 // way a streamed one arrives: steps start and finish, words come in, and the context and the rate move.
 import type { ChatMediaItem, StepStatus, TokenKind, ToolStepProps } from "@aiviarium/nocturne"
 import { createSignal } from "solid-js"
+import { removeFrom } from "../lists"
 import { chart, screenshot, textFile } from "./media"
 
 /** A chip in text: a reference, a person, a command or a skill. */
@@ -235,6 +236,12 @@ export function newConversation(): string {
     ...list,
   ])
   return id
+}
+
+export const renameConversation = (id: string, title: string) => patch(id, (c) => ({ ...c, title }))
+/** Deletes conversations; returns the undo, which puts them back where they were. */
+export function removeConversations(ids: string[]): () => void {
+  return removeFrom(conversations, setConversations, (c) => ids.includes(c.id))
 }
 
 /** Whether a conversation waits on the person: an approval still pending. */

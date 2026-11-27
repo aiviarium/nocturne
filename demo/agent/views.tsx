@@ -12,7 +12,9 @@ import {
   ListRow,
   MediaViewer,
   RateWidget,
+  type RowKey,
   RowList,
+  type RowMenuEntry,
   SectionHeading,
   ShellViewHeader,
   type ShellViewProps,
@@ -25,16 +27,20 @@ import {
   ViewLayout,
   type WidgetSegment,
 } from "@aiviarium/nocturne"
-import { createEffect, createSignal, For, Show, untrack } from "solid-js"
+import { createEffect, createSignal, Show, untrack } from "solid-js"
+import { askName, copyLink, demoShell, inList, named, renameEntry, undoable } from "../menus"
 import { ChatComposer, Transcript } from "./chat"
 import {
   CONTEXT_TOTAL,
+  type Conversation,
   conversationById,
   conversations,
   isStreaming,
   newConversation,
   RUNS,
   type Run,
+  removeConversations,
+  renameConversation,
   stop,
   waitsOnYou,
 } from "./data"
@@ -56,7 +62,77 @@ function MicAction() {
   }
 }
 
+const remove = (list: Conversation[]) => {
+  const shell = demoShell()
+  const ids = list.map((c) => c.id)
+  // The chat open in the view goes back to the list.
+  if (shell.loc().place?.id === "chats" && ids.includes(shell.loc().record ?? ""))
+    shell.toPlace(undefined, "chats")
+  undoable(
+    `Deleted ${named(
+      list.map((c) => c.title),
+      "chats",
+    )}`,
+    removeConversations(ids),
+  )
+}
+
+/** The menu of a chat, or of several: in the list of chats and on its entry in the sidebar. */
+export function chatMenu(list: Conversation[]): RowMenuEntry[] {
+  const c = list[0]
+  if (!c) return []
+  if (list.length > 1)
+    return [
+      { type: "label", label: `${list.length} selected` },
+      {
+        id: "delete",
+        label: `Delete ${list.length}`,
+        icon: "trash",
+        danger: true,
+        onSelect: () => remove(list),
+      },
+    ]
+  const shell = demoShell()
+  return [
+    {
+      id: "open",
+      label: "Open",
+      icon: "arrow-up-right",
+      onSelect: () => shell.go(`/agent/chats/${c.id}`),
+    },
+    {
+      id: "details",
+      label: "Show details",
+      icon: "panel-right",
+      onSelect: () => {
+        shell.select(c.id)
+        shell.showPanel("details")
+      },
+    },
+    {
+      id: "copy",
+      label: "Copy link",
+      icon: "link",
+      onSelect: () => copyLink(c.title, `/agent/chats/${c.id}`),
+    },
+    renameEntry(() =>
+      askName({
+        title: "Rename chat",
+        value: c.title,
+        submit: "Rename",
+        onSubmit: (title) => renameConversation(c.id, title),
+      }),
+    ),
+    ...(isStreaming(c)
+      ? [{ id: "stop", label: "Stop", icon: "square", onSelect: () => stop(c.id) } as const]
+      : []),
+    { type: "separator" },
+    { id: "delete", label: "Delete", icon: "trash", danger: true, onSelect: () => remove([c]) },
+  ]
+}
+
 function ConversationList(props: ShellViewProps) {
+  const [selected, setSelected] = createSignal<RowKey[]>([])
   return (
     <ViewLayout
       id="demo.agent.chats"
@@ -74,26 +150,53 @@ function ConversationList(props: ShellViewProps) {
         />
       }
     >
-      <RowList label="Chats">
-        <For each={conversations()} keyed={(c) => c.id}>
-          {(c) => (
-            <ListRow
-              leading={<Avatar kind="agent" name="Agent" size="sm" />}
-              title={c().title}
-              status={
-                isStreaming(c()) ? (
-                  <State status="ai">Working</State>
-                ) : waitsOnYou(c()) ? (
-                  <State status="warn">Needs you</State>
-                ) : undefined
-              }
-              meta={c().updated}
-              selected={props.shell.selection() === c().id}
-              onClick={() => props.shell.toPlace(undefined, "chats", undefined, c().id)}
-            />
+      <Show
+        when={conversations().length}
+        fallback={
+          <EmptyState title="No chats">
+            <Button variant="secondary" icon="plus" onClick={() => startChat(props.shell)}>
+              New chat
+            </Button>
+          </EmptyState>
+        }
+      >
+        {/* The items are the ids, so a row stays while its chat streams (a new object each word). */}
+        <RowList
+          label="Chats"
+          items={conversations().map((c) => c.id)}
+          getKey={(id) => id}
+          itemLabel={(id) => conversationById(id)?.title ?? id}
+          selectable
+          selected={selected()}
+          onSelectedChange={(keys) => {
+            setSelected(keys)
+            props.shell.select(keys.length === 1 ? String(keys[0]) : undefined)
+          }}
+          onRemove={(keys) => removeConversations(keys as string[])}
+          rowMenu={(t) => inList(chatMenu(t.items.flatMap((id) => conversationById(id) ?? [])))}
+        >
+          {(id) => (
+            <Show when={conversationById(id)}>
+              {(c) => (
+                <ListRow
+                  leading={<Avatar kind="agent" name="Agent" size="sm" />}
+                  title={c().title}
+                  status={
+                    isStreaming(c()) ? (
+                      <State status="ai">Working</State>
+                    ) : waitsOnYou(c()) ? (
+                      <State status="warn">Needs you</State>
+                    ) : undefined
+                  }
+                  meta={c().updated}
+                  onClick={() => props.shell.toPlace(undefined, "chats", undefined, id)}
+                  onRename={(title) => renameConversation(id, title)}
+                />
+              )}
+            </Show>
           )}
-        </For>
-      </RowList>
+        </RowList>
+      </Show>
     </ViewLayout>
   )
 }
