@@ -1,14 +1,15 @@
 // The agent's places in a project's Build lens: Chats (the project's conversations, each a record with its trail and
 // stepper) and Runs (every run of the project's agents, hundreds of rows in a list that renders only what is in view).
 import {
-  Avatar,
   Button,
   type ChatMediaItem,
   ContextWidget,
   compactCount,
   createWidgetBoard,
   EmptyState,
+  EntryGlyph,
   Icon,
+  Identicon,
   keyboardMenuPoint,
   List,
   ListRow,
@@ -20,6 +21,7 @@ import {
   RowMenu,
   type RowMenuEntry,
   SectionHeading,
+  type ShellRecord,
   ShellViewHeader,
   type ShellViewProps,
   State,
@@ -96,6 +98,31 @@ const remove = (list: Conversation[]) => {
     removeConversations(ids),
   )
 }
+
+/**
+ * A chat as a record: its entry in the sidebar and its row in the list of chats draw the same identicon, state and
+ * hover card from it.
+ */
+export const chatRecord = (c: Conversation): ShellRecord => ({
+  id: c.id,
+  label: c.title,
+  // Every chat its own image: the eye tells them apart where each would show the same chat icon.
+  leading: () => <Identicon seed={c.id} />,
+  status: isStreaming(c) ? "ai" : waitsOnYou(c) ? "warn" : undefined,
+  hover: () => ({
+    title: c.title,
+    meta: c.updated === "now" ? "Updated just now" : `Updated ${c.updated} ago`,
+    rows: [
+      {
+        label: "State",
+        value: isStreaming(c) ? "Working" : waitsOnYou(c) ? "Needs your approval" : "Idle",
+      },
+      { label: "Context", value: `${Math.round((c.used / CONTEXT_TOTAL) * 100)}% used` },
+      { label: "Turns", value: String(c.turns.length) },
+    ],
+  }),
+  meta: c.updated,
+})
 
 /** The menu of a chat, or of several: in the list of chats and on its entry in the sidebar. */
 export function chatMenu(list: Conversation[]): RowMenuEntry[] {
@@ -200,7 +227,8 @@ function ConversationList(props: ShellViewProps) {
             <Show when={conversationById(id)}>
               {(c) => (
                 <ListRow
-                  leading={<Avatar kind="agent" name="Agent" size="sm" />}
+                  // The sidebar's entry, without the dot: the state is written out at the row's end.
+                  leading={<EntryGlyph {...chatRecord(c())} status={undefined} />}
                   title={c().title}
                   status={
                     isStreaming(c()) ? (
@@ -240,7 +268,7 @@ function ConversationPage(props: ShellViewProps & { id: string }) {
     zones: CHAT_ZONES,
     initial: CHAT_LAYOUT,
     storage: demo.storage,
-    key: "demo/agent/widgets",
+    key: "demo/agent/widgets.v2",
     context: () => props.id,
     fit: chatFit,
     hideEmpty: true,
@@ -325,7 +353,11 @@ function ConversationPage(props: ShellViewProps & { id: string }) {
           <div class="dm-agent-foot">
             <div class="dm-agent-column">
               <Bar place="above" />
-              <ChatComposer cid={props.id} />
+              <ChatComposer
+                cid={props.id}
+                tools={<WidgetZone board={board} zone="input-start" placement="top-start" />}
+                toolsEnd={<WidgetZone board={board} zone="input-end" placement="top-end" />}
+              />
               <Bar place="below" />
             </div>
           </div>

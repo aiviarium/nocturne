@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, test } from "bun:test"
-import { HoverCard, Identicon, identiconCells, NavItem, ViewHeader } from "../src"
+import { EntryGlyph, HoverCard, Identicon, identiconCells, ListRow, NavItem, ViewHeader } from "../src"
 import { mount, one, tick } from "./dom"
 
 let cleanup: Array<() => void> = []
@@ -103,5 +103,43 @@ describe("ViewHeader", () => {
     const add = one("[data-action=add]", root)
     expect(add.compareDocumentPosition(done) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
     expect(done.compareDocumentPosition(more) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  })
+})
+
+describe("EntryGlyph", () => {
+  test("draws a record's leading element with its badge, or its status, and its hover card", async () => {
+    track(
+      mount(() => (
+        <div>
+          <EntryGlyph
+            label="#418"
+            leading={() => <i data-test="avatar" />}
+            badge={() => <b data-test="badge" />}
+          />
+          <EntryGlyph label="c-1" leading={<i data-test="mark" />} status="warn" />
+          <EntryGlyph label="hook" icon="webhook" hover={() => ({ title: "Deploy hook" })} />
+        </div>
+      )),
+    )
+    expect(one("[data-part=nav-item-badge] [data-test=avatar]")).toBeTruthy()
+    expect(one("[data-part=nav-item-badge] [data-test=badge]")).toBeTruthy()
+    expect(one("[data-part=nav-item-status]").getAttribute("data-status")).toBe("warn")
+    expect(one("[data-part=hover-card-anchor]").getAttribute("aria-label")).toBe("Details of hook")
+  })
+
+  test("in a list row, a click on a glyph with a hover card still opens the row", async () => {
+    let opened = 0
+    track(
+      mount(() => (
+        <ListRow
+          title="Deploy hook"
+          leading={<EntryGlyph label="hook" icon="webhook" hover={() => ({ title: "Deploy hook" })} />}
+          onClick={() => opened++}
+        />
+      )),
+    )
+    ;(one("[data-part=hover-card-anchor]") as HTMLElement).click()
+    await tick()
+    expect(opened).toBe(1)
   })
 })

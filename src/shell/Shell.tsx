@@ -10,6 +10,7 @@ import {
   createContext,
   createEffect,
   createMemo,
+  createSignal,
   onCleanup,
   onSettled,
   Show,
@@ -18,11 +19,13 @@ import {
 } from "solid-js"
 import { AccountMenu, type AccountMenuProps } from "../components/AccountMenu"
 import type { IconName } from "../components/Icon"
+import { RowMenu } from "../components/InsetList"
 import { Nav } from "../components/NavItem"
 import { ViewHeader, type ViewHeaderProps } from "../components/ViewHeader"
 import { type ViewLayoutHandle, ViewLayoutHost, type ViewLayoutHostValue } from "../components/ViewLayout"
 import { cx } from "../lib/cx"
 import { usePhone } from "../lib/phone"
+import { keyboardMenuPoint, type RowMenuEntry } from "../lib/rowmenu"
 import { AppShell } from "./AppShell"
 import type { Appearance } from "./appearance"
 import { useShellSidebar } from "./context"
@@ -60,8 +63,25 @@ export interface ShellProps {
   keys?: boolean
   /** Below this width the sidebar starts folded. Default 900. */
   foldBelow?: number
+  /**
+   * The shell's own context menu, where nothing inside has one of its own: Copy for selected text, Open and Copy
+   * link address on a link, then the app's entries for the element, Back, Forward and the palette. Text fields keep
+   * the browser's menu. `false` leaves the browser's menu everywhere.
+   */
+  contextMenu?: false | ((at: ShellContextTarget) => RowMenuEntry[])
   class?: string
 }
+
+/** What the shell's context menu opened on. */
+export interface ShellContextTarget {
+  /** The element under the pointer, or the focused one from the keyboard. */
+  target: Element
+  /** The selected text, when the menu opened on a selection; else empty. */
+  selection: string
+}
+
+const EDITABLE = 'input, textarea, select, [contenteditable]:not([contenteditable="false"])'
+const copy = (text: string) => void navigator.clipboard?.writeText(text).catch(() => {})
 
 const ShellContext = createContext<ShellRegistry | null>(null)
 
@@ -146,6 +166,77 @@ export function Shell(props: ShellProps): JSX.Element {
       el.removeEventListener("mousedown", onMouse)
       el.removeEventListener("mouseup", onMouse)
     }
+  })
+
+  // The context menu: a part with a menu of its own (a row, a tab, a widget) opens it and stops the event, so what
+  // arrives here, after Solid's delegated handlers, is everything else. Text fields keep the browser's menu.
+  const [ctx, setCtx] = createSignal<{
+    at: { x: number; y: number }
+    items: RowMenuEntry[]
+    origin: Element
+  } | null>(null, { ownedWrite: true })
+  const fallbackMenu = (t: Element): RowMenuEntry[] => {
+    const sel = window.getSelection()
+    const text = sel && !sel.isCollapsed ? sel.toString() : ""
+    const link = t.closest<HTMLAnchorElement>("a[href]")
+    const href = link?.getAttribute("href")
+    const own =
+      typeof props.contextMenu === "function" ? props.contextMenu({ target: t, selection: text }) : []
+    const out: RowMenuEntry[] = []
+    if (text.trim())
+      out.push({ id: "copy", label: "Copy", icon: "copy", shortcut: "⌘ C", onSelect: () => copy(text) })
+    if (link && href && href !== "#")
+      out.push(
+        { id: "open-link", label: "Open link", icon: "arrow-up-right", onSelect: () => link.click() },
+        { id: "copy-link", label: "Copy link address", icon: "link", onSelect: () => copy(link.href) },
+      )
+    if (out.length && own.length) out.push({ type: "separator" })
+    out.push(...own)
+    if (out.length) out.push({ type: "separator" })
+    out.push(
+      {
+        id: "back",
+        label: "Back",
+        icon: "chevron-left",
+        shortcut: "⌘ [",
+        disabled: !shell.history.canBack(),
+        onSelect: () => shell.history.back(),
+      },
+      {
+        id: "forward",
+        label: "Forward",
+        icon: "chevron-right",
+        shortcut: "⌘ ]",
+        disabled: !shell.history.canForward(),
+        onSelect: () => shell.history.forward(),
+      },
+      { type: "separator" },
+      {
+        id: "palette",
+        label: "Command palette",
+        icon: "command",
+        shortcut: "⌘ K",
+        onSelect: () => shell.setPaletteOpen(true),
+      },
+    )
+    return out
+  }
+  onSettled(() => {
+    if (untrack(() => props.contextMenu) === false) return
+    const onMenu = (e: MouseEvent) => {
+      if (e.defaultPrevented || ownerOf(e) !== me) return
+      const t = e.target instanceof Element ? e.target : null
+      if (!t || t.closest(EDITABLE)) return
+      e.preventDefault()
+      // On a menu or a list of options, no menu over it.
+      if (t.closest("[role=menu], [role=listbox]")) return
+      // From the Menu key or Shift+F10 there is no pointer: under the focused element, as a right click there.
+      const at =
+        e.button === 2 && (e.clientX || e.clientY) ? { x: e.clientX, y: e.clientY } : keyboardMenuPoint(t)
+      setCtx({ at, items: fallbackMenu(t), origin: t })
+    }
+    window.addEventListener("contextmenu", onMenu)
+    return () => window.removeEventListener("contextmenu", onMenu)
   })
 
   const phone = usePhone()
@@ -313,6 +404,28 @@ export function Shell(props: ShellProps): JSX.Element {
             </Show>
           </ViewLayoutHost>
         </AppShell>
+        <Show when={ctx()}>
+          {(c) => {
+            // Read once: the menu is drawn for what it opened on and closes before that changes.
+            const m = untrack(c)
+            return (
+              <RowMenu
+                at={m.at}
+                label="Actions"
+                items={m.items}
+                origin={m.origin}
+                onClose={() => setCtx(null)}
+                onSelect={(id) => {
+                  const entry = m.items.find((x) => "id" in x && x.id === id) as
+                    | { onSelect?: () => void }
+                    | undefined
+                  setCtx(null)
+                  entry?.onSelect?.()
+                }}
+              />
+            )
+          }}
+        </Show>
       </div>
     </ShellContext>
   )

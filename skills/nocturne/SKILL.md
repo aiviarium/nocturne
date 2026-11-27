@@ -180,9 +180,16 @@ These hold in every view and every part. Check them before you call a view done.
   request's state, checks and branch; who an assignee is). A sidebar entry takes one from its record's `hover`. An
   item's icon says something about it (`Avatar`, a type or provider icon, `Mark`, `Identicon`), never its category's
   icon again, and a state with an icon of its own is the record's `badge` on that icon. See design-rules.md.
+- **A record looks the same in its list as in the sidebar.** Build its `ShellRecord` in one function for the place's
+  `records`, and draw the list row's `leading` as `<EntryGlyph {...record} />`: same icon, badge and hover card.
 - **One widget board.** Widgets the person arranges, a dashboard grid or the bars and columns around a chat, use
   `createWidgetBoard`, `WidgetBoard` and `WidgetZone`, with `WidgetRows` over a bar whose widgets grow to rows. Add `board.actions()` to the view header's actions; the header
-  keeps More actions last.
+  keeps More actions last. A composer's bottom row takes zones through `Composer`'s `tools` and `toolsEnd`; controls
+  such as the model and the effort are `interactive` widgets drawn with `ComposerChoice` and `EffortMenu`.
+- **Our context menu, never the browser's.** Anything the person acts on (rows, cards, widgets, messages) gets a
+  context menu of its own: `rowMenu`, `RowMenu`, `ContextMenu`, a widget type's `menu`. The `Shell` opens its own
+  menu everywhere else (Copy, links, the app's `contextMenu` entries, Back, Forward, the palette); text fields keep
+  the browser's.
 
 ## Overlays and controls
 

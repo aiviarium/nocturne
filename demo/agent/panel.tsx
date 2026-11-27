@@ -89,7 +89,7 @@ function PanelBody() {
         </div>
         <Show
           when={phase() !== "idle"}
-          fallback={<ChatComposer cid={panelChat()} onSend={ask} compact placeholder="Ask the agent…" />}
+          fallback={<ChatComposer cid={panelChat()} onSend={ask} placeholder="Ask the agent…" />}
         >
           <div class="dm-agent-voice" data-part="assistant-voice">
             <DictationBar dictation={voice.state()} />

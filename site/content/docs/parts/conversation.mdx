@@ -80,6 +80,11 @@ An attachment with `kind: "image"` and a `preview` URL shows as a thumbnail with
 Other attachments are chips.
 A file pasted or dropped into the composer, such as a screenshot, goes to `onAttachFiles`, and the app adds it to `attachments`.
 
+The app puts controls of its own in the bottom row with `tools`, after the built-in pickers, and in `toolsEnd`, before the microphone.
+Put a `WidgetZone` there, and the person places widgets in the row like anywhere else on the board.
+`ComposerChoice` and `EffortMenu` are the model and effort pickers on their own, for a widget.
+In a chat, the model and the effort are widgets in that row, so the person can move them or take them away.
+
 <Example id="composer/live" />
 <Example id="composer/chips" />
 <Example id="composer/attachments" />

@@ -6,6 +6,7 @@ import { type Accessor, createSignal, For, onCleanup, onSettled, Show, untrack }
 import { cx } from "../lib/cx"
 import { place as placeInGrid } from "../lib/grid"
 import type { Placement } from "../lib/placement"
+import { isMenuKey, keyboardMenuPoint, type RowMenuEntry } from "../lib/rowmenu"
 import {
   formsIn,
   moveWidget,
@@ -24,6 +25,7 @@ import {
 import { readJson, type ShellStorage, writeJson } from "../shell/storage"
 import { Icon } from "./Icon"
 import { IconButton } from "./IconButton"
+import { RowMenu } from "./InsetList"
 import { DropdownMenu } from "./Menu"
 import { Popover } from "./Popover"
 import { Select } from "./Select"
@@ -726,7 +728,35 @@ function WidgetItem<X>(props: {
     else if (id === "earlier") b.step(props.placed.id, -1)
     else if (id === "later") b.step(props.placed.id, 1)
     else if (id === "remove") b.remove(props.placed.id)
-    else if (id === "settings") b.openSettings(props.placed.id)
+    else if (id === "settings") {
+      b.setEditing(true)
+      // After the menu that chose it has closed and given focus back, or its closing would close the settings too.
+      setTimeout(() => b.openSettings(props.placed.id), 0)
+    } else if (id === "edit") b.setEditing(!b.editing())
+  }
+  // The context menu, editing or not: the widget's own actions, then its settings, order and removal, and Edit
+  // widgets (or Done editing).
+  const [menuAt, setMenuAt] = createSignal<{ x: number; y: number } | null>(null, { ownedWrite: true })
+  const contextItems = (): RowMenuEntry[] => {
+    const mine = type.menu?.(x(), cfg()) ?? []
+    return [
+      ...mine,
+      ...(mine.length ? [{ type: "separator" as const }] : []),
+      // Its place is picked in Settings: a "Move to" for every zone would make the menu as long as the board.
+      { id: "settings", label: "Settings", icon: "settings" as const },
+      { id: "earlier", label: "Move earlier", icon: "chevron-up" as const },
+      { id: "later", label: "Move later", icon: "chevron-down" as const },
+      { id: "remove", label: "Remove", icon: "trash" as const, danger: true },
+      { type: "separator" as const },
+      b.editing()
+        ? { id: "edit", label: "Done editing", icon: "check" as const }
+        : { id: "edit", label: "Edit widgets", icon: "layout-dashboard" as const },
+    ]
+  }
+  const openMenu = (e: MouseEvent | KeyboardEvent, at: { x: number; y: number }) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setMenuAt(at)
   }
   const mark = () => type.mark?.(x(), cfg())
   /** Events from the item's portaled menu and popovers bubble here through Solid; only its own element counts. */
@@ -761,7 +791,33 @@ function WidgetItem<X>(props: {
         e.preventDefault()
         b.openSettings(setting() ? null : props.placed.id)
       }}
+      onContextMenu={(e) => {
+        if (own(e)) openMenu(e, { x: e.clientX, y: e.clientY })
+      }}
+      onKeyDown={(e) => {
+        if (own(e) && isMenuKey(e)) openMenu(e, keyboardMenuPoint(e.target as Element))
+      }}
     >
+      <Show when={menuAt()}>
+        {(at) => (
+          <RowMenu
+            at={at()}
+            label={`${title()} widget`}
+            items={contextItems()}
+            origin={untrack(itemEl)}
+            returnFocus={() => itemEl()}
+            onClose={() => setMenuAt(null)}
+            onSelect={(id) => {
+              const entry = contextItems().find((m) => "id" in m && m.id === id) as
+                | { onSelect?: () => void }
+                | undefined
+              setMenuAt(null)
+              if (entry?.onSelect) entry.onSelect()
+              else select(id)
+            }}
+          />
+        )}
+      </Show>
       <Show
         when={opens() || collapsed()}
         fallback={<div class="nc-witem__body">{type.render(x(), form(), cfg())}</div>}

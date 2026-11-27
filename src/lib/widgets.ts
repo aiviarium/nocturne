@@ -3,6 +3,7 @@
 import type { JSX } from "@solidjs/web"
 import type { IconName } from "../components/Icon"
 import type { GridItem } from "./grid"
+import type { RowMenuEntry } from "./rowmenu"
 
 /**
  * The forms a widget takes, from the most room to the least. A widget knows nothing of where it sits: the zone picks
@@ -66,6 +67,11 @@ export interface WidgetType<X = undefined> {
   live?: (x: X, cfg: WidgetConfig) => boolean
   /** A state worth a mark on its chip or tile. */
   mark?: (x: X, cfg: WidgetConfig) => "warn" | "error" | "ai" | undefined
+  /**
+   * Its own entries at the top of its context menu, over the board's (Settings, Move, Remove): the actions its card
+   * offers, such as an approval's Run it and Deny. Each runs its `onSelect`.
+   */
+  menu?: (x: X, cfg: WidgetConfig) => RowMenuEntry[]
   /** In a zone with `grow`, it takes a full-width `row` while this holds. */
   expands?: (x: X, cfg: WidgetConfig) => boolean
   render: (x: X, form: WidgetForm, cfg: WidgetConfig) => JSX.Element

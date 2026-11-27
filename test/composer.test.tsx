@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, test } from "bun:test"
 import { createSignal, flush } from "solid-js"
-import { Button, Composer, type ComposerSubmit, type ComposerValue } from "../src"
+import { Button, Composer, ComposerChoice, type ComposerSubmit, type ComposerValue, EffortMenu } from "../src"
 import { flatText, selectFlat, selectionFlat } from "../src/lib/editor"
 import { all, click, editorOf, mount, one, placeCaret, press, tick, typeText } from "./dom"
 
@@ -590,6 +590,56 @@ describe("Composer pickers", () => {
     expect(effort.classList.contains("nc-btn--ghost")).toBe(true)
     expect(effort.classList.contains("nc-btn--sm")).toBe(true)
     expect(effort.textContent).toContain("Medium")
+  })
+})
+
+describe("Composer tools", () => {
+  test("draws the app's controls in the bottom row, at its start and its end", () => {
+    const { root } = track(
+      mount(() => (
+        <Composer
+          tools={<b data-test="start">start</b>}
+          toolsEnd={<b data-test="end">end</b>}
+          onSubmit={() => {}}
+        />
+      )),
+    )
+    const bar = one(".nc-composer__bar", root)
+    const start = one("[data-part=composer-tools]", bar)
+    const end = one("[data-part=composer-tools-end]", bar)
+    expect(start.textContent).toBe("start")
+    expect(end.textContent).toBe("end")
+    // The start after the pickers, the end past the spacer.
+    expect(start.compareDocumentPosition(end) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  })
+
+  test("ComposerChoice and EffortMenu show the chosen option and pick another from their menu", async () => {
+    const picked: string[] = []
+    const { root } = track(
+      mount(() => (
+        <div>
+          <ComposerChoice
+            label="Model"
+            options={[
+              { id: "deep", label: "Deep" },
+              { id: "fast", label: "Fast" },
+            ]}
+            value="fast"
+            onChange={(id) => picked.push(id)}
+          />
+          <EffortMenu value="high" onChange={(e) => picked.push(e)} />
+        </div>
+      )),
+    )
+    const model = one("[data-part=composer-choice]", root)
+    expect(model.textContent).toBe("Fast")
+    expect(model.getAttribute("aria-label")).toBe("Model: Fast")
+    expect(one("[data-part=effort-menu]", root).textContent).toContain("High")
+    click(model)
+    await tick()
+    click(all("[role=menuitemradio]").find((i) => i.textContent?.includes("Deep"))!)
+    await tick()
+    expect(picked).toEqual(["deep"])
   })
 })
 

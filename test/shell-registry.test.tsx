@@ -474,6 +474,43 @@ describe("createShell", () => {
   })
 })
 
+describe("Shell context menu", () => {
+  test("opens the shell's menu where nothing has its own, and leaves a text field the browser's", async () => {
+    const m = mount(() => {
+      const s = createShell(options("/projects/atlas/build/issues"))
+      return (
+        <Shell
+          shell={s}
+          contextMenu={() => [{ id: "mine", label: "Copy link to this view", onSelect: () => {} }]}
+        />
+      )
+    })
+    cleanup.push(m.dispose)
+    await tick()
+    // Nothing selected: a selection would add Copy first.
+    window.getSelection()?.removeAllRanges()
+    const fire = (el: Element) => {
+      const e = new MouseEvent("contextmenu", {
+        bubbles: true,
+        cancelable: true,
+        button: 2,
+        clientX: 20,
+        clientY: 20,
+      })
+      el.dispatchEvent(e)
+      return e
+    }
+    const field = document.createElement("input")
+    one("[data-test=view]").append(field)
+    expect(fire(field).defaultPrevented).toBe(false)
+    expect(fire(one("[data-test=view]")).defaultPrevented).toBe(true)
+    flush()
+    await tick()
+    const labels = all("[role=menuitem]").map((x) => x.textContent?.trim())
+    expect(labels).toEqual(["Copy link to this view", "Back⌘ [", "Forward⌘ ]", "Command palette⌘ K"])
+  })
+})
+
 describe("Shell", () => {
   test("renders the wired app shell and navigates from the sidebar", async () => {
     const m = mount(() => {

@@ -28,6 +28,15 @@ Every key works in the <DemoLink to="projects/atlas/explore/issues/WEB-142">demo
 Keys that would type a character are left alone while focus is in a field.
 While a menu, a dialog or the palette is open, it takes the keys first.
 
+## The context menu
+
+A right click, the Menu key or Shift and F10 opens a context menu everywhere in the shell.
+A part with a menu of its own, such as a row, a card or a widget, opens that one.
+Elsewhere the shell opens its own menu.
+It has Copy for selected text, Open link and Copy link address on a link, then the app's entries from `contextMenu`, then Back, Forward and Command palette.
+Text fields keep the browser's menu, for spelling and pasting.
+`contextMenu={false}` leaves the browser's menu everywhere.
+
 ## Escape
 
 Escape closes one thing at a time, the topmost first:
