@@ -7,6 +7,7 @@ import {
   defaultRowMenu,
   isMenuKey,
   ListRow,
+  NavItem,
   menuTarget,
   type RowKey,
   RowList,
@@ -442,5 +443,39 @@ describe("DataList", () => {
     expect(names()).toEqual(["B", "A", "C"])
     expect(rows().map((r) => r.hasAttribute("data-selected"))).toEqual([false, true, false])
     expect(menuLabels().length).toBe(0)
+  })
+})
+
+describe("NavItem menu", () => {
+  test("a sidebar row with a menu opens it on a right click and the Menu key; an entry runs itself", () => {
+    let ran = ""
+    const { root } = track(
+      mount(() => (
+        <NavItem
+          label="Atlas web"
+          icon="folder"
+          menu={() => [
+            { id: "open", label: "Open", onSelect: () => (ran = "open") },
+            { id: "rename", label: "Rename", onSelect: () => (ran = "rename") },
+          ]}
+        />
+      )),
+    )
+    const row = one("[data-part=nav-item]", root)
+    const e = rightClick(row)
+    expect(e.defaultPrevented).toBe(true)
+    expect(menuItems()).toEqual(["Open", "Rename"])
+    click(all("[role=menuitem]")[1]!)
+    flush()
+    expect(ran).toBe("rename")
+    expect(all("[role=menuitem]")).toHaveLength(0)
+    press(row, "F10", { shiftKey: true })
+    flush()
+    expect(menuItems()).toEqual(["Open", "Rename"])
+  })
+
+  test("without a menu a right click is the browser's", () => {
+    const { root } = track(mount(() => <NavItem label="Inbox" icon="inbox" />))
+    expect(rightClick(one("[data-part=nav-item]", root)).defaultPrevented).toBe(false)
   })
 })

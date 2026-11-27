@@ -19,6 +19,7 @@ import type { NavGroup, NavItemProps } from "../components/NavItem"
 import type { ViewStepper } from "../components/ViewHeader"
 import { openLayers } from "../lib/layers"
 import { isPhone } from "../lib/phone"
+import type { RowMenuEntry } from "../lib/rowmenu"
 import type { PaletteCommand, PaletteQuery, PaletteSection } from "./CommandPalette"
 import { createHistory, type HistoryRouter, type ShellHistory, type StopInfo } from "./history"
 import { shownLenses } from "./LensSwitch"
@@ -105,6 +106,11 @@ export interface ShellPlace<T = any> {
   covers?: string[] | ((record: string | undefined) => string[])
   /** What a panel such as Details shows for one of the place's records. */
   inspect?: (record: string, item: T) => JSX.Element
+  /**
+   * The menu of one of the place's records: its entry in the sidebar opens it. The place's list passes the same
+   * entries to its `rowMenu`, so a record has one menu wherever it shows.
+   */
+  menu?: (record: string, item: T) => RowMenuEntry[]
 }
 
 /** A way of looking at a scope: its places, its panels and its hue. */
@@ -168,6 +174,8 @@ export interface ShellScope<T = any> {
   count?: () => number | undefined
   /** What a panel such as Details shows when nothing in the scope is selected. */
   inspect?: (item: T) => JSX.Element
+  /** The menu of one of the scope's items, where the sidebar lists it (a module's group, a place's `entries`). */
+  menu?: (item: T) => RowMenuEntry[]
 }
 
 /** A panel the rail opens at the view's right or under it. */
@@ -936,6 +944,7 @@ export function createShell(options: ShellOptions) {
               ) : undefined,
               icon: mark ? undefined : child.icon,
               drill: true,
+              menu: child.menu ? () => child.menu!(it) : undefined,
               onClick: () => returnTo(frame(child, it, mf, [m.id, idOf(child, it)])),
             }
           }),
@@ -999,6 +1008,7 @@ export function createShell(options: ShellOptions) {
                 icon: mark ? undefined : scope.icon,
                 drill: true,
                 current,
+                menu: scope.menu ? () => scope.menu!(it) : undefined,
                 onClick: () =>
                   returnTo(frame(scope, it, f, [...(segsOf(f, p.id).filter(Boolean) as string[]), id])),
               } satisfies NavItemProps,
@@ -1020,6 +1030,7 @@ export function createShell(options: ShellOptions) {
               ) : undefined,
               icon: r.mark ? undefined : r.icon,
               current,
+              menu: p.menu ? () => p.menu!(r.id, f.item) : undefined,
               onClick: () => toPlace(f, p.id, undefined, r.id),
             } satisfies NavItemProps,
             keep: at(current, i),

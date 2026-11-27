@@ -486,14 +486,26 @@ describe("Shell", () => {
             { id: "3", label: "#3", hint: "Third" },
           ],
           entries: { limit: 1, label: (r) => r.hint ?? r.label },
+          menu: (id) => [{ id: "close", label: `Close #${id}` }],
         },
-        { id: "agents", label: "Agents", icon: "agent", view: View, enters: agent, entries: true },
+        {
+          id: "agents",
+          label: "Agents",
+          icon: "agent",
+          view: View,
+          enters: { ...agent, menu: (a: { name: string }) => [{ id: "rename", label: `Rename ${a.name}` }] },
+          entries: true,
+        },
       ],
     }
     const s = make("/desk/pulls", { scopes: [desk] })
     flush()
     const rows = () => s.sidebar().groups[0]!.items
     expect(rows()[0]!.items?.map((i) => i.label)).toEqual(["First"])
+    // An entry's menu is its place's, or its scope's, for that record or item.
+    const label = (e: unknown) => (e as { label: string }).label
+    expect(rows()[0]!.items![0]!.menu?.().map(label)).toEqual(["Close #1"])
+    expect(rows()[1]!.items![0]!.menu?.().map(label)).toEqual(["Rename Review agent"])
     expect(rows()[0]!.current).toBe(true)
     expect(rows()[1]!.items?.map((i) => [i.label, i.drill])).toEqual([
       ["Review agent", true],

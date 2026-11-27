@@ -98,6 +98,9 @@ header's middle. Read `loc()`, `selection()` and the rest from the registry, or 
   path, and the tree becomes that scope's places. Entering a scope opens it as the person left it. A place with few
   entries (open pull requests, sessions, chats) sets `entries`, and the tree lists its records or the scopes it
   enters under its row, so they open without the list. Long lists, such as issues, stay in the view.
+- **One menu per record.** A container's list is a managed `RowList` or `DataTable` (selection, `rowMenu`, rename,
+  remove with undo, an add action in the header). The place's `menu` (a scope's `menu` for its items) builds the
+  same entries, so the record's sidebar entry opens the menu its row does.
 - **Icon rail.** Minimise, ⌘B or ⌘\, or a drag below 140px folds the sidebar to a 48px rail: top-level places as
   icons with tooltips, a neutral dot for counts, the account's avatar at the foot, and one unfold button where ↑
   was. Below 900px window width (`foldBelow`) it starts folded. There is no show-sidebar button in the title bar.

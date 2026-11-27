@@ -1,10 +1,12 @@
 import type { JSX } from "@solidjs/web"
-import { For, omit, Show } from "solid-js"
+import { createSignal, For, omit, Show } from "solid-js"
 import { cx } from "../lib/cx"
 import { callClick, useLinkClick } from "../lib/link"
+import { isMenuKey, type RowMenuEntry } from "../lib/rowmenu"
 import { useShellSidebar } from "../shell/context"
 import { Icon, type IconName, type LucideNode } from "./Icon"
 import { IconButton } from "./IconButton"
+import { RowMenu } from "./InsetList"
 import { Tooltip } from "./Tooltip"
 
 export interface NavItemProps extends Omit<JSX.AnchorHTMLAttributes<HTMLAnchorElement>, "children"> {
@@ -34,6 +36,11 @@ export interface NavItemProps extends Omit<JSX.AnchorHTMLAttributes<HTMLAnchorEl
   items?: NavItemProps[]
   /** Part of the label to mark as a filter's match. `Nav` sets it from its `filter`. */
   match?: string
+  /**
+   * The row's context menu, as a list row's: a right click, the Menu key or Shift+F10. An entry runs its own
+   * `onSelect`. Read when the menu opens.
+   */
+  menu?: () => RowMenuEntry[]
 }
 
 const OWN = [
@@ -52,6 +59,7 @@ const OWN = [
   "drill",
   "items",
   "match",
+  "menu",
 ] as const
 
 /** A label with the first match of `q` marked. */
@@ -75,6 +83,41 @@ export function NavItem(
 ): JSX.Element {
   const rest = omit(props, ...OWN, "disclose", "within", "child")
   const linkClick = useLinkClick()
+  const [menuAt, setMenuAt] = createSignal<{ x: number; y: number; el: HTMLElement } | null>(null)
+  // The row the menu opened on, kept past the menu's close so focus can go back to it.
+  let menuRow: HTMLElement | undefined
+  const entries = () => (menuAt() ? (props.menu?.() ?? []) : [])
+  const onContextMenu = (e: MouseEvent) => {
+    if (!props.menu) return
+    e.preventDefault()
+    setMenuAt({ x: e.clientX, y: e.clientY, el: e.currentTarget as HTMLElement })
+  }
+  const onMenuKey = (e: KeyboardEvent) => {
+    if (!props.menu || !isMenuKey(e)) return
+    e.preventDefault()
+    const el = e.currentTarget as HTMLElement
+    const r = el.getBoundingClientRect()
+    setMenuAt({ x: r.left + 24, y: r.bottom, el })
+  }
+  const menu = (
+    <Show when={menuAt()}>
+      {(at) => (
+        <RowMenu
+          at={{ x: at().x, y: at().y }}
+          label={props.label}
+          items={entries()}
+          origin={(menuRow = at().el)}
+          returnFocus={() => menuRow}
+          onClose={() => setMenuAt(null)}
+          onSelect={(id) => {
+            const entry = entries().find((x) => "id" in x && x.id === id) as { onSelect?: () => void } | undefined
+            setMenuAt(null)
+            entry?.onSelect?.()
+          }}
+        />
+      )}
+    </Show>
+  )
   const body = (
     <>
       <Show
@@ -124,9 +167,12 @@ export function NavItem(
           aria-current={props.current ? "page" : undefined}
           data-within={props.within ? "" : undefined}
           onClick={(e) => callClick(props.onClick, e)}
+          onContextMenu={onContextMenu}
+          onKeyDown={onMenuKey}
           {...(rest as JSX.ButtonHTMLAttributes<HTMLButtonElement>)}
         >
           {body}
+          {menu}
         </button>
       }
     >
@@ -140,9 +186,12 @@ export function NavItem(
           callClick(props.onClick, e)
           linkClick(e, props.href)
         }}
+        onContextMenu={onContextMenu}
+        onKeyDown={onMenuKey}
         {...rest}
       >
         {body}
+        {menu}
       </a>
     </Show>
   )

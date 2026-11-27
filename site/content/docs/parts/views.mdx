@@ -111,6 +111,8 @@ Use `Split` for two columns in a view with a divider between them, such as a lis
 Use `SplitGroup` for more than two.
 
 - The divider is a focusable separator. The arrow keys, Home and End move it, and a double click resets it.
+- The divider draws a line only where the columns share an edge. Between framed columns, cards with a gap between them, the gap is the handle: it has no line and lights only while hovered or dragged, as on <DemoLink to="hosts/build-01/operate/overview">a host's overview</DemoLink>.
+- A card that fills a flush `Frame`, such as a `LogViewer`, drops its own border, so the frame's is the only one.
 - On a phone the columns stack.
 - The selection's details go in the shell's Details panel, not in a column of the view. A split is for a reader the view itself is about.
 
