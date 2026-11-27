@@ -137,8 +137,9 @@ header's middle. Read `loc()`, `selection()` and the rest from the registry, or 
   layout (`dockLayout`, `dockAdd`, `dockSplit`, `dockSync`) in the app.
 - **A `Skeleton` fades in after 400ms.** Show it only while there is nothing to show, not on a refresh of data
   already on screen.
-- **One width for every view.** The main column fills its width and content starts at the left. `reading` is only
-  for long prose.
+- **Lists fill, documents centre.** Lists, boards, tables, forms and settings fill the main column from the left. A
+  record that reads as a document (an issue, a pull request, a report, a message, a spec) is a centred reading
+  column: `ViewLayout`'s `reading`, or the `nc-reading` class on its body when it shares a pane with its properties.
 
 ## The look
 

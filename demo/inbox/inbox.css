@@ -1,7 +1,4 @@
 /* The inbox's layout. The parts keep their own look. */
-.dm-inbox-reader {
-  max-width: 760px;
-}
 .dm-inbox-title,
 .dm-inbox-body {
   margin: 0;

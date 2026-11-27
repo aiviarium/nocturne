@@ -2,9 +2,6 @@
 .dm-explore-flush {
   margin: 0;
 }
-.dm-explore-report {
-  max-width: 760px;
-}
 .dm-explore-ideas {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));

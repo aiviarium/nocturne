@@ -672,6 +672,8 @@ button.nc-menu__item, div.nc-menu__item { box-sizing: border-box; width: 100%; b
 .nc-view-layout__main { flex: 1; min-width: 0; min-height: 0; }
 .nc-view-layout__main--scroll { overflow: auto; }
 .nc-view-layout__main[data-reading] > * { box-sizing: border-box; width: 100%; max-width: var(--nc-view-reading, 720px); margin-inline: auto; }
+/* A reading column anywhere, such as a record's body in a pane beside its properties: centred at the reading width. */
+.nc-reading { box-sizing: border-box; width: 100%; max-width: var(--nc-view-reading, 720px); margin-inline: auto; }
 /* Behind a sidebar opened over the main column: a scrim that closes it. The sidebar has a close control on top. */
 .nc-view-layout__scrim { position: absolute; inset: 0; z-index: 29; background: color-mix(in srgb, var(--bg-0) 50%, transparent); }
 .nc-view-layout__over-head { display: flex; flex: none; align-items: center; justify-content: flex-end; height: var(--header); padding: 0 var(--space-2); }

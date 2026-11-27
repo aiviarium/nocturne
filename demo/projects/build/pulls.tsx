@@ -144,7 +144,7 @@ function PullPage(props: { pull: Pull; shell: ShellRegistry }) {
         </ShellViewHeader>
       }
     >
-      <div class="dm-page">
+      <div class="dm-page nc-reading">
         <section class="dm-col">
           <h1 class="heading dm-build-title">{p().title}</h1>
           <Show when={!inDetails()}>

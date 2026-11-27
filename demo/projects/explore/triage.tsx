@@ -41,7 +41,7 @@ let made = 142
 function ReportBody(props: { report: Report; onDecide: (verb: "accept" | "merge" | "decline") => void }) {
   const r = () => props.report
   return (
-    <article class="dm-page dm-explore-report">
+    <article class="dm-page nc-reading">
       <div class="dm-row">
         <Button variant="primary" size="sm" icon="check" onClick={() => props.onDecide("accept")}>
           Accept

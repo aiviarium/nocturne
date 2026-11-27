@@ -37,9 +37,11 @@ A form lays out its fields in columns inside its sections instead of narrowing t
 
 `ViewLayout` keeps its column widths and folds in its `storage`, or in the shell's store when it gets none.
 
-`reading` is only for long prose, such as a document's body or an article.
-It centres the column at a reading width.
-Don't use it for forms or settings: one centred page among full-width pages reads as a different app.
+Lists, boards, tables, forms and settings fill the main column from the left.
+A record that reads as a document, such as an issue, a pull request, a report, a message or a spec, is a centred column at a reading width.
+`reading` centres the view's column, 720px by default.
+Where the body shares a `Split` with its properties, as on <DemoLink to="projects/atlas/build/issues/WEB-129">an issue</DemoLink>, the `nc-reading` class on the body centres it in its pane.
+Forms and settings are never centred.
 
 ## Tabs
 

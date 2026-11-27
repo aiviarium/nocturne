@@ -74,7 +74,7 @@ function Reader(props: { issue: Issue }) {
   const project = () => PROJECTS.find((p) => p.id === i().project)
   const activity = () => ACTIVITY[i().id] ?? []
   return (
-    <article class="dm-page dm-inbox-reader">
+    <article class="dm-page nc-reading">
       <div class="dm-row">
         <IdBadge>{i().key}</IdBadge>
         <For each={i().labels}>{(l) => <LabelChip hue={l.hue}>{l.name}</LabelChip>}</For>

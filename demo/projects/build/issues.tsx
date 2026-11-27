@@ -467,7 +467,7 @@ function Activity(props: { issue: Issue }) {
 /** An issue's body: its key, the title edited in place, the description, the activity. */
 function IssueBody(props: { issue: Issue }) {
   return (
-    <article class="dm-build-record">
+    <article class="dm-build-record nc-reading">
       <IdBadge>{props.issue.key}</IdBadge>
       <InlineField
         variant="title"
