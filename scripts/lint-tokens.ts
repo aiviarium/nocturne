@@ -2,8 +2,8 @@
 //
 //   bun scripts/lint-tokens.ts [path ...] [--exclude name,name]
 //
-// Paths may be files or folders (default: src, gallery and examples). Apps can run it on their own folders. The design
-// system's own tokens.css and bundle.css are skipped by name, and so are tests and .d.ts files.
+// Paths may be files or folders (default: src, gallery, examples and demo). Apps can run it on their own folders.
+// The design system's own tokens.css and bundle.css are skipped by name, and so are tests and .d.ts files.
 // A line can opt out with `lint-tokens-ignore`, or the next line with `lint-tokens-ignore-next-line`.
 import { readdirSync, readFileSync, statSync } from "node:fs"
 import { basename, extname, join, resolve } from "node:path"
@@ -168,7 +168,7 @@ if (import.meta.main) {
       exclude = [...DEFAULT_EXCLUDES, ...(args[++i] ?? "").split(",").filter(Boolean)]
     else paths.push(args[i] as string)
   }
-  if (paths.length === 0) paths.push("src", "gallery", "examples")
+  if (paths.length === 0) paths.push("src", "gallery", "examples", "demo")
   const findings = lintPaths(paths, exclude)
   for (const f of findings) {
     console.error(

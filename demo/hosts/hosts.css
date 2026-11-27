@@ -1,0 +1,61 @@
+/* The hosts' views: layout only. */
+.dm-hosts-overview {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  height: 100%;
+  min-height: 0;
+  box-sizing: border-box;
+  padding: var(--space-4) var(--space-5);
+}
+.dm-hosts-panes {
+  flex: 1;
+  min-height: 0;
+}
+.dm-hosts-frame {
+  height: 100%;
+  min-height: 0;
+  box-sizing: border-box;
+}
+.dm-hosts-frame:not(.nc-frame--flush) {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.dm-hosts-dock {
+  height: 100%;
+  min-height: 0;
+  box-sizing: border-box;
+  padding: var(--space-2);
+}
+.dm-hosts-dock > .nc-dock {
+  height: 100%;
+}
+.dm-hosts-logs {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  height: 100%;
+  min-height: 0;
+  box-sizing: border-box;
+  padding: var(--space-2);
+}
+.dm-hosts-frames {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+.dm-hosts-frames > .nc-frame {
+  flex: 1;
+}
+.dm-hosts-term-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+:root[data-phone] .dm-hosts-overview {
+  height: auto;
+  padding: var(--space-4) var(--space-3);
+}

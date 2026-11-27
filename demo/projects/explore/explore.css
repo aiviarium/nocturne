@@ -1,0 +1,34 @@
+/* Explore and Product's layout. The parts keep their own look. */
+.dm-explore-flush {
+  margin: 0;
+}
+.dm-explore-report {
+  max-width: 760px;
+}
+.dm-explore-ideas {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: var(--space-3);
+}
+.dm-explore-card-foot {
+  width: 100%;
+}
+.dm-explore-votes {
+  gap: var(--space-2);
+  min-width: 220px;
+  padding: var(--space-2) var(--space-3) var(--space-3);
+}
+.dm-explore-peek {
+  width: 280px;
+  padding: var(--space-3);
+}
+.dm-explore-preview {
+  gap: var(--space-1);
+  padding: var(--space-2);
+}
+.dm-explore-doc {
+  padding: var(--space-5) 0 var(--space-8);
+}
+:root[data-phone] .dm-explore-ideas {
+  gap: var(--space-5);
+}

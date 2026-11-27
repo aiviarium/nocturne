@@ -1,0 +1,92 @@
+/* The agent's layout: the transcript fills the column and scrolls, the composer sits at its foot. */
+.dm-agent-chat {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+.dm-agent-log {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: var(--space-6) var(--space-6) var(--space-4);
+}
+.dm-agent-column {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  width: 100%;
+  max-width: 760px;
+}
+.dm-agent-foot {
+  padding: 0 var(--space-6) var(--space-4);
+}
+:root[data-phone] .dm-agent-log {
+  padding: var(--space-4) var(--space-3);
+}
+:root[data-phone] .dm-agent-foot {
+  padding: 0 var(--space-3) var(--space-3);
+}
+
+/* Runs: the list fills the view; a row lays out its dot, id, task, agent and time. */
+.dm-agent-runs {
+  height: 100%;
+}
+.dm-agent-run {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+  height: 100%;
+}
+.dm-agent-run-id {
+  flex: none;
+  width: 72px;
+}
+.dm-agent-run-agent {
+  flex: none;
+  width: 110px;
+}
+.dm-agent-run-took {
+  flex: none;
+  width: 56px;
+  text-align: right;
+}
+:root[data-phone] .dm-agent-run-agent {
+  display: none;
+}
+
+/* The Assistant panel: its transcript over its composer. */
+.dm-agent-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+.dm-agent-panel-log {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: var(--space-4) var(--space-3);
+}
+.dm-agent-panel-log .dm-agent-column {
+  gap: var(--space-4);
+}
+.dm-agent-panel-empty {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.dm-agent-panel-foot {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3) var(--space-3);
+}
+.dm-agent-voice {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
